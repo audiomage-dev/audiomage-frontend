@@ -33,8 +33,6 @@ export function AudioWorkstation() {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
-  const [leftSidebarWidth, setLeftSidebarWidth] = useState(280); // Default width for left sidebar
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(320); // Default width for right sidebar
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -76,35 +74,8 @@ export function AudioWorkstation() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Vertical Sidebar */}
-        <div 
-          className="flex-none relative"
-          style={{ width: `${leftSidebarWidth}px` }}
-        >
+        <div className="flex-none">
           <VerticalSidebar />
-          
-          {/* Left Sidebar Resize Handle */}
-          <div
-            className="absolute top-0 right-0 bottom-0 w-1 cursor-ew-resize hover:bg-[var(--primary)] transition-colors z-10"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              const startX = e.clientX;
-              const startWidth = leftSidebarWidth;
-              
-              const handleMouseMove = (e: MouseEvent) => {
-                const deltaX = e.clientX - startX;
-                const newWidth = Math.max(200, Math.min(500, startWidth + deltaX));
-                setLeftSidebarWidth(newWidth);
-              };
-              
-              const handleMouseUp = () => {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-              };
-              
-              document.addEventListener('mousemove', handleMouseMove);
-              document.addEventListener('mouseup', handleMouseUp);
-            }}
-          />
         </div>
         
         {/* Center Panel - Timeline */}
@@ -192,8 +163,6 @@ export function AudioWorkstation() {
         isOpen={isChatSidebarOpen}
         onToggle={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
         currentSession={sessions.find(s => s.isActive)?.name}
-        width={rightSidebarWidth}
-        onWidthChange={setRightSidebarWidth}
       />
     </div>
   );
