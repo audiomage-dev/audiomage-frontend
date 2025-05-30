@@ -195,20 +195,7 @@ export function ProjectBrowser() {
     <div className="h-full flex flex-col bg-[var(--background)]">
       {/* Header */}
       <div className="flex-none p-3 border-b border-[var(--border)] bg-gradient-to-r from-[var(--muted)] to-[var(--secondary)]">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">Explorer</h3>
-          <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
-              <i className="fas fa-file-plus text-xs"></i>
-            </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
-              <i className="fas fa-folder-plus text-xs"></i>
-            </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
-              <i className="fas fa-sync text-xs"></i>
-            </Button>
-          </div>
-        </div>
+        <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider mb-3">Explorer</h3>
         
         {/* Search */}
         <div className="relative">
