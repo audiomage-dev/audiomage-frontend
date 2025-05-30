@@ -574,7 +574,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                           borderColor: clip.color,
                           zIndex: 5
                         }}
-                        onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          console.log('Clip drag started:', clip.name);
+                        }}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
                         {/* Clip Header */}
