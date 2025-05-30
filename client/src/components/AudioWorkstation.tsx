@@ -97,8 +97,21 @@ export function AudioWorkstation() {
               transport={transport}
               onTrackMute={toggleTrackMute}
               onTrackSolo={toggleTrackSolo}
+              onTrackSelect={setSelectedTrack}
             />
           </div>
+
+          {/* Track Inspector Bottom Pane */}
+          {selectedTrack && (
+            <div className="flex-none">
+              <TrackInspector
+                track={tracks.find(t => t.id === selectedTrack)!}
+                onTrackMute={toggleTrackMute}
+                onTrackSolo={toggleTrackSolo}
+                onClose={() => setSelectedTrack(null)}
+              />
+            </div>
+          )}
           
           {/* Mixing Console at bottom */}
           <div className="flex-none h-48 border-t border-[var(--border)]">

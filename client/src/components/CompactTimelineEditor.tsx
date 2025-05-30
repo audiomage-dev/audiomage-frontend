@@ -32,7 +32,7 @@ interface CompactTimelineEditorProps {
   onTrackSelect?: (trackId: string) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect }: CompactTimelineEditorProps) {
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackIds: string[] } | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -80,8 +80,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     } else {
       // Single select
       setSelectedTrackIds([trackId]);
+      // Notify parent component of track selection
+      onTrackSelect?.(trackId);
     }
-  }, [tracks, selectedTrackIds]);
+  }, [tracks, selectedTrackIds, onTrackSelect]);
 
   const handleTrackRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
