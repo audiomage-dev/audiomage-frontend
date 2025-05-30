@@ -91,7 +91,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   // LLM prompt state
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
-  const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string } | null>(null);
+  const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
   
   const timelineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -513,6 +513,105 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       });
     }
   }, [tracks]);
+
+  const getPresetPrompts = useCallback((trackType: string, clipName: string) => {
+    const isVocal = clipName.toLowerCase().includes('vocal') || clipName.toLowerCase().includes('voice') || clipName.toLowerCase().includes('bvox');
+    const isDrum = clipName.toLowerCase().includes('drum') || clipName.toLowerCase().includes('kick') || clipName.toLowerCase().includes('snare');
+    const isGuitar = clipName.toLowerCase().includes('guitar') || clipName.toLowerCase().includes('amp');
+    const isBass = clipName.toLowerCase().includes('bass');
+    const isPiano = clipName.toLowerCase().includes('piano');
+    const isStrings = clipName.toLowerCase().includes('string') || clipName.toLowerCase().includes('violin');
+    
+    if (trackType === 'ai-generated') {
+      return [
+        "Enhance the spatial positioning and depth",
+        "Make this sound more organic and natural",
+        "Add subtle harmonic distortion for warmth",
+        "Increase the dynamic range and expression",
+        "Blend this better with acoustic elements"
+      ];
+    }
+    
+    if (trackType === 'midi') {
+      return [
+        "Make this MIDI performance more humanized",
+        "Add realistic velocity variations",
+        "Enhance the expression and dynamics",
+        "Create a more natural timing feel",
+        "Add subtle pitch variations for realism"
+      ];
+    }
+    
+    // Audio clips - type-specific suggestions
+    if (isVocal) {
+      return [
+        "Enhance vocal clarity and presence",
+        "Remove background noise and breath sounds",
+        "Add warmth and smooth out harsh frequencies",
+        "Improve pitch stability and tuning",
+        "Create a more intimate vocal sound"
+      ];
+    }
+    
+    if (isDrum) {
+      return [
+        "Enhance the punch and impact",
+        "Tighten the low end and add clarity",
+        "Create more separation between elements",
+        "Add vintage analog warmth",
+        "Increase the stereo width"
+      ];
+    }
+    
+    if (isGuitar) {
+      return [
+        "Add vintage tube amp character",
+        "Enhance sustain and harmonic content",
+        "Clean up fret noise and artifacts",
+        "Add spatial depth with reverb",
+        "Brighten the tone without harshness"
+      ];
+    }
+    
+    if (isBass) {
+      return [
+        "Enhance low-end definition and punch",
+        "Add harmonic excitement to mids",
+        "Tighten the timing and groove",
+        "Remove muddiness and clarify notes",
+        "Add vintage bass amp character"
+      ];
+    }
+    
+    if (isPiano) {
+      return [
+        "Add concert hall ambience",
+        "Enhance the natural resonance",
+        "Balance the dynamic range",
+        "Add vintage piano character",
+        "Improve note separation and clarity"
+      ];
+    }
+    
+    if (isStrings) {
+      return [
+        "Add orchestral hall reverb",
+        "Enhance the bow articulation",
+        "Smooth out harsh frequencies",
+        "Add emotional expression",
+        "Create a more lush ensemble sound"
+      ];
+    }
+    
+    // Generic audio prompts
+    return [
+      "Enhance overall clarity and presence",
+      "Add vintage analog character",
+      "Improve the stereo image",
+      "Clean up unwanted noise",
+      "Add harmonic enhancement"
+    ];
+  }, []);
 
   const handleLLMPromptSubmit = useCallback(async () => {
     if (!llmPrompt.trim() || !selectedClipForLLM) return;
@@ -1014,10 +1113,12 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 key={label}
                 onClick={() => {
                   if (action === 'ai-prompt') {
+                    const track = tracks.find(t => t.id === clipContextMenu.clip.trackId);
                     setSelectedClipForLLM({
                       id: clipContextMenu.clip.id,
                       name: clipContextMenu.clip.name,
-                      trackName: clipContextMenu.clip.trackName
+                      trackName: clipContextMenu.clip.trackName,
+                      trackType: track?.type || 'audio'
                     });
                     setShowLLMPrompt(true);
                   } else {
@@ -1068,9 +1169,28 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
             </div>
             
             <div className="space-y-3">
+              {/* Preset Prompts */}
+              <div>
+                <label className="text-xs text-[var(--muted-foreground)] mb-2 block">
+                  Quick suggestions for {selectedClipForLLM.trackType} clips:
+                </label>
+                <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
+                  {getPresetPrompts(selectedClipForLLM.trackType, selectedClipForLLM.name).map((preset, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setLLMPrompt(preset)}
+                      className="text-left text-xs p-2 rounded-md bg-[var(--muted)]/20 hover:bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:border-[var(--border)] transition-colors"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Custom Prompt */}
               <div>
                 <label className="text-xs text-[var(--muted-foreground)] mb-1 block">
-                  Enter your prompt:
+                  Or enter your custom prompt:
                 </label>
                 <textarea
                   value={llmPrompt}
