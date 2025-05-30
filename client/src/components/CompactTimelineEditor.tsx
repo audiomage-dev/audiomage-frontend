@@ -489,18 +489,36 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
+          <div className="px-2 py-1 text-xs text-[var(--muted-foreground)] border-b border-[var(--border)]">
+            {contextMenu.trackIds.length === 1 ? '1 track selected' : `${contextMenu.trackIds.length} tracks selected`}
+          </div>
           {[
-            { label: 'Duplicate', icon: Copy },
-            { label: 'Rename', icon: Edit3 },
-            { label: 'Delete', icon: Trash2 },
-          ].map(({ label, icon: Icon }) => (
+            { label: 'Duplicate', icon: Copy, action: 'duplicate' },
+            { label: 'Group', icon: Plus, action: 'group' },
+            { label: 'Mute All', icon: VolumeX, action: 'mute' },
+            { label: 'Solo All', icon: Radio, action: 'solo' },
+            { label: 'Rename', icon: Edit3, action: 'rename', disabled: contextMenu.trackIds.length > 1 },
+            { label: 'Delete', icon: Trash2, action: 'delete', destructive: true },
+          ].map(({ label, icon: Icon, action, disabled, destructive }) => (
             <button
               key={label}
+              disabled={disabled}
               onClick={() => {
-                console.log(`${label} track:`, contextMenu.trackId);
+                console.log(`${action} tracks:`, contextMenu.trackIds);
+                if (action === 'mute') {
+                  contextMenu.trackIds.forEach(id => onTrackMute(id));
+                } else if (action === 'solo') {
+                  contextMenu.trackIds.forEach(id => onTrackSolo(id));
+                }
                 setContextMenu(null);
               }}
-              className="w-full px-2 py-1 text-left text-xs hover:bg-[var(--accent)] flex items-center space-x-2"
+              className={`w-full px-2 py-1 text-left text-xs flex items-center space-x-2 transition-colors ${
+                disabled 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : destructive 
+                    ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]' 
+                    : 'hover:bg-[var(--accent)]'
+              }`}
             >
               <Icon className="w-3 h-3" />
               <span>{label}</span>
