@@ -11,23 +11,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('audiomage-theme');
-    return (saved as Theme) || 'nord-light';
-  });
+  const [theme, setTheme] = useState<Theme>('nord-light');
 
   useEffect(() => {
-    localStorage.setItem('audiomage-theme', theme);
-    
-    // Update document class
+    // Remove all theme classes first
     document.documentElement.classList.remove('nord-light', 'nord-dark');
+    
+    // Add the current theme class
     document.documentElement.classList.add(theme);
+    
+    // Save to localStorage
+    localStorage.setItem('audiomage-theme', theme);
   }, [theme]);
-
-  // Set initial theme on mount
-  useEffect(() => {
-    document.documentElement.classList.add(theme);
-  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'nord-light' ? 'nord-dark' : 'nord-light');
