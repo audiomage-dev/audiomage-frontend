@@ -47,9 +47,9 @@ export function MixingConsole({
   ];
 
   return (
-    <div className="w-80 bg-[hsl(var(--nord-1))] border-l border-[hsl(var(--nord-2))] flex flex-col">
+    <div className="w-80 bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))] flex flex-col">
       {/* Panel Tabs */}
-      <div className="border-b border-[hsl(var(--nord-2))] p-1 flex space-x-1">
+      <div className="border-b border-[hsl(var(--border))] p-1 flex space-x-1">
         {tabs.map((tab) => (
           <Button
             key={tab.id}
@@ -58,8 +58,8 @@ export function MixingConsole({
             size="sm"
             className={`px-3 py-1 rounded text-xs h-auto ${
               activeTab === tab.id
-                ? 'bg-[hsl(var(--frost-4))] text-white'
-                : 'bg-[hsl(var(--nord-2))] hover:bg-[hsl(var(--nord-3))]'
+                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                : 'bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))]'
             }`}
           >
             <i className={`${tab.icon} mr-1`}></i>
@@ -69,7 +69,7 @@ export function MixingConsole({
       </div>
 
       {/* Master Section */}
-      <div className="p-3 border-b border-[hsl(var(--nord-2))]">
+      <div className="p-3 border-b border-[hsl(var(--border))]">
         <div className="text-sm font-semibold mb-2 flex items-center">
           <i className="fas fa-sliders-h text-[hsl(var(--frost-2))] mr-2"></i>
           Master Bus
@@ -78,11 +78,11 @@ export function MixingConsole({
           {/* Master Fader */}
           <div className="flex flex-col items-center">
             <div 
-              className="w-6 h-32 bg-[hsl(var(--nord-2))] rounded-full relative fader-track cursor-pointer"
+              className="w-6 h-32 bg-[hsl(var(--secondary))] rounded-full relative fader-track cursor-pointer"
               onClick={handleMasterFaderChange}
             >
               <div 
-                className="absolute left-1/2 transform -translate-x-1/2 w-4 h-6 bg-[hsl(var(--frost-4))] rounded-sm border border-[hsl(var(--nord-3))] cursor-pointer"
+                className="absolute left-1/2 transform -translate-x-1/2 w-4 h-6 bg-[hsl(var(--primary))] rounded-sm border border-[hsl(var(--muted-foreground))] cursor-pointer"
                 style={{ bottom: `${masterFaderPosition * 0.75 + 8}%` }}
               />
             </div>

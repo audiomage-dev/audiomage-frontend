@@ -19,7 +19,7 @@ export function StatusBar({ projectName, isSaved, aiAnalysis, lastAIAnalysis }: 
   };
 
   return (
-    <div className="bg-[hsl(var(--nord-1))] border-t border-[hsl(var(--nord-2))] px-3 py-1 flex items-center justify-between text-xs">
+    <div className="bg-[hsl(var(--muted))] border-t border-[hsl(var(--border))] px-3 py-1 flex items-center justify-between text-xs">
       <div className="flex items-center space-x-4">
         <span className="font-mono">Project: {projectName}</span>
         <span className={`flex items-center space-x-1 ${isSaved ? 'text-[hsl(var(--aurora-green))]' : 'text-[hsl(var(--aurora-orange))]'}`}>

@@ -123,19 +123,19 @@
 
   .fader-track {
     background: linear-gradient(to bottom, 
-      hsl(var(--nord-2)) 0%, 
-      hsl(var(--nord-1)) 100%
+      hsl(var(--secondary)) 0%, 
+      hsl(var(--muted)) 100%
     );
   }
 
   .knob {
     background: conic-gradient(from 135deg, 
-      hsl(var(--nord-1)) 0deg, 
-      hsl(var(--frost-4)) 0deg, 
-      hsl(var(--nord-1)) 270deg, 
-      hsl(var(--nord-1)) 360deg
+      hsl(var(--muted)) 0deg, 
+      hsl(var(--primary)) 0deg, 
+      hsl(var(--muted)) 270deg, 
+      hsl(var(--muted)) 360deg
     );
-    border: 2px solid hsl(var(--nord-3));
+    border: 2px solid hsl(var(--muted-foreground));
   }
 
   .ai-glow {
@@ -145,17 +145,17 @@
 
   .timeline-grid {
     background-image: 
-      linear-gradient(to right, hsla(var(--nord-3), 0.3) 1px, transparent 1px),
-      linear-gradient(to bottom, hsla(var(--nord-3), 0.3) 1px, transparent 1px);
+      linear-gradient(to right, hsla(var(--muted-foreground), 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsla(var(--muted-foreground), 0.3) 1px, transparent 1px);
     background-size: 40px 24px;
   }
 
   .plugin-slot {
     background: linear-gradient(135deg, 
-      hsl(var(--nord-1)) 0%, 
-      hsl(var(--nord-2)) 100%
+      hsl(var(--muted)) 0%, 
+      hsl(var(--secondary)) 100%
     );
-    border: 1px solid hsl(var(--nord-3));
+    border: 1px solid hsl(var(--border));
   }
 
   .transport-btn {

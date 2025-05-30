@@ -18,7 +18,7 @@ export function WaveformVisualization({ data, color, fileName, isPlaying }: Wave
           }}
         />
       ))}
-      <div className="absolute top-1 left-2 text-xs font-mono text-[hsl(var(--nord-4))] bg-[hsl(var(--nord-0))] bg-opacity-80 px-1 rounded">
+      <div className="absolute top-1 left-2 text-xs font-mono text-[hsl(var(--foreground))] bg-[hsl(var(--background))] bg-opacity-80 px-1 rounded">
         {fileName}
       </div>
     </div>
