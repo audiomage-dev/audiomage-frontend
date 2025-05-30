@@ -32,8 +32,8 @@ interface CompactTimelineEditorProps {
 }
 
 export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: CompactTimelineEditorProps) {
-  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackId: string } | null>(null);
+  const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackIds: string[] } | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentTool, setCurrentTool] = useState<'select' | 'cut' | 'zoom' | 'hand'>('select');
   const [showChatBox, setShowChatBox] = useState(false);
@@ -42,18 +42,41 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   const [scrollY, setScrollY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleTrackSelect = useCallback((trackId: string) => {
-    setSelectedTrackId(trackId);
-  }, []);
+  const handleTrackSelect = useCallback((trackId: string, e?: React.MouseEvent) => {
+    if (e?.ctrlKey || e?.metaKey) {
+      // Multi-select with Ctrl/Cmd
+      setSelectedTrackIds(prev => 
+        prev.includes(trackId) 
+          ? prev.filter(id => id !== trackId)
+          : [...prev, trackId]
+      );
+    } else if (e?.shiftKey && selectedTrackIds.length > 0) {
+      // Range select with Shift
+      const currentIndex = tracks.findIndex(t => t.id === trackId);
+      const lastSelectedIndex = tracks.findIndex(t => t.id === selectedTrackIds[selectedTrackIds.length - 1]);
+      const start = Math.min(currentIndex, lastSelectedIndex);
+      const end = Math.max(currentIndex, lastSelectedIndex);
+      const rangeIds = tracks.slice(start, end + 1).map(t => t.id);
+      setSelectedTrackIds(rangeIds);
+    } else {
+      // Single select
+      setSelectedTrackIds([trackId]);
+    }
+  }, [tracks, selectedTrackIds]);
 
   const handleTrackRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, trackId });
-    setSelectedTrackId(trackId);
-  }, []);
+    const trackIds = selectedTrackIds.includes(trackId) ? selectedTrackIds : [trackId];
+    if (!selectedTrackIds.includes(trackId)) {
+      setSelectedTrackIds([trackId]);
+    }
+    setContextMenu({ x: e.clientX, y: e.clientY, trackIds });
+  }, [selectedTrackIds]);
 
   const handleZoomIn = useCallback(() => {
     setZoomLevel(prev => Math.min(prev * 1.5, 8));
@@ -68,6 +91,15 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       setIsDragging(true);
       setDragStart({ x: e.clientX + scrollX, y: e.clientY + scrollY });
       e.preventDefault();
+    } else if (currentTool === 'select' && e.button === 0) { // Left click for selection
+      const rect = timelineRef.current?.getBoundingClientRect();
+      if (rect) {
+        setIsSelecting(true);
+        const startX = e.clientX - rect.left;
+        const startY = e.clientY - rect.top;
+        setSelectionBox({ startX, startY, endX: startX, endY: startY });
+        setContextMenu(null);
+      }
     }
   }, [currentTool, scrollX, scrollY]);
 
@@ -81,11 +113,31 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       
       setScrollX(Math.max(0, Math.min(maxScrollX, deltaX)));
       setScrollY(Math.max(0, Math.min(maxScrollY, deltaY)));
+    } else if (isSelecting && selectionBox) {
+      const rect = timelineRef.current?.getBoundingClientRect();
+      if (rect) {
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
+        setSelectionBox(prev => prev ? { ...prev, endX, endY } : null);
+        
+        // Calculate which tracks are in selection
+        const minY = Math.min(selectionBox.startY, endY);
+        const maxY = Math.max(selectionBox.startY, endY);
+        const selectedIds = tracks.filter((_, index) => {
+          const trackTop = index * 48;
+          const trackBottom = trackTop + 48;
+          return trackTop < maxY && trackBottom > minY;
+        }).map(t => t.id);
+        
+        setSelectedTrackIds(selectedIds);
+      }
     }
-  }, [isDragging, dragStart, zoomLevel, tracks.length]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    setIsSelecting(false);
+    setSelectionBox(null);
   }, []);
 
   const handleScroll = useCallback((e: React.WheelEvent) => {
@@ -278,11 +330,11 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               <div
                 key={track.id}
                 className={`h-12 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
-                  selectedTrackId === track.id 
+                  selectedTrackIds.includes(track.id) 
                     ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
                     : 'hover:bg-[var(--accent)]/50'
                 }`}
-                onClick={() => handleTrackSelect(track.id)}
+                onClick={(e) => handleTrackSelect(track.id, e)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -361,10 +413,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               <div
                 key={track.id}
                 className={`absolute left-0 right-0 h-12 border-b border-[var(--border)] transition-colors ${
-                  selectedTrackId === track.id ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
+                  selectedTrackIds.includes(track.id) ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
                 }`}
                 style={{ top: `${index * 48}px` }}
-                onClick={() => handleTrackSelect(track.id)}
+                onClick={(e) => handleTrackSelect(track.id, e)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
                 {/* Audio Waveform */}
@@ -404,7 +456,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 )}
                 
                 {/* Track Selection Indicator */}
-                {selectedTrackId === track.id && (
+                {selectedTrackIds.includes(track.id) && (
                   <div className="absolute left-0 top-0 w-1 h-full bg-[var(--primary)]" />
                 )}
               </div>
