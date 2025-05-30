@@ -8,14 +8,14 @@ interface SessionTabsProps {
 
 export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
   return (
-    <div className="bg-[hsl(var(--nord-1))] border-b border-[hsl(var(--nord-2))] px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
+    <div className="bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
       {sessions.map((session) => (
         <div
           key={session.id}
           className={`flex items-center px-3 py-1 rounded-t border-t-2 min-w-max cursor-pointer ${
             session.isActive
-              ? 'bg-[hsl(var(--frost-4))] text-white border-[hsl(var(--frost-2))]'
-              : 'bg-[hsl(var(--nord-2))] text-[hsl(var(--nord-4))] hover:bg-[hsl(var(--nord-3))] border-transparent'
+              ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--frost-2))]'
+              : 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--accent))] border-transparent'
           }`}
           onClick={() => onSwitchSession(session.id)}
         >
@@ -32,9 +32,9 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="p-1 hover:bg-[hsl(var(--nord-2))] rounded h-auto"
+        className="p-1 hover:bg-[hsl(var(--accent))] rounded h-auto"
       >
-        <i className="fas fa-plus text-[hsl(var(--nord-4))]"></i>
+        <i className="fas fa-plus text-[hsl(var(--foreground))]"></i>
       </Button>
     </div>
   );

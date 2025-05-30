@@ -26,8 +26,34 @@
   --aurora-yellow: 235 203 139; /* #EBCB8B */
   --aurora-green: 163 190 140;  /* #A3BE8C */
   --aurora-purple: 180 142 173; /* #B48EAD */
+}
 
-  /* Semantic colors */
+/* Nord Light Theme */
+.nord-light {
+  --background: var(--nord-6);
+  --foreground: var(--nord-0);
+  --muted: var(--nord-5);
+  --muted-foreground: var(--nord-2);
+  --popover: var(--nord-6);
+  --popover-foreground: var(--nord-0);
+  --card: var(--nord-6);
+  --card-foreground: var(--nord-0);
+  --border: var(--nord-4);
+  --input: var(--nord-5);
+  --primary: var(--frost-4);
+  --primary-foreground: var(--nord-6);
+  --secondary: var(--nord-5);
+  --secondary-foreground: var(--nord-1);
+  --accent: var(--nord-4);
+  --accent-foreground: var(--nord-0);
+  --destructive: var(--aurora-red);
+  --destructive-foreground: var(--nord-6);
+  --ring: var(--frost-3);
+  --radius: 0.375rem;
+}
+
+/* Nord Dark Theme */
+.nord-dark {
   --background: var(--nord-0);
   --foreground: var(--nord-4);
   --muted: var(--nord-1);
@@ -50,12 +76,6 @@
   --radius: 0.375rem;
 }
 
-.dark {
-  /* Same as default since we're using dark theme by default */
-  --background: var(--nord-0);
-  --foreground: var(--nord-4);
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -76,16 +96,16 @@
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--nord-1));
+    background: hsl(var(--muted));
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--nord-3));
+    background: hsl(var(--muted-foreground));
     border-radius: 3px;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--frost-4));
+    background: hsl(var(--primary));
   }
 
   .waveform-bar {
