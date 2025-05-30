@@ -1,6 +1,7 @@
 import { MenuBar } from './MenuBar';
 import { SessionTabs } from './SessionTabs';
-import { LeftSidebar } from './LeftSidebar';
+import { VerticalSidebar } from './VerticalSidebar';
+import { CompactTransportBar } from './CompactTransportBar';
 import { TimelineEditor } from './TimelineEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
@@ -65,23 +66,26 @@ export function AudioWorkstation() {
       
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Transport & Project */}
-        <div className="flex-none w-80 bg-gradient-to-b from-[var(--muted)] to-[var(--background)] border-r border-[var(--border)]">
-          <LeftSidebar
-            transport={transport}
-            bpm={currentProject.bpm}
-            timeSignature={currentProject.timeSignature}
-            aiSuggestions={aiSuggestions}
-            isAIProcessing={aiAnalysis.isProcessing}
-            onPlay={play}
-            onPause={pause}
-            onStop={stop}
-            onRecord={toggleRecording}
-          />
+        {/* Left Panel - Vertical Sidebar */}
+        <div className="flex-none">
+          <VerticalSidebar />
         </div>
         
         {/* Center Panel - Timeline */}
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Transport Bar */}
+          <div className="flex-none">
+            <CompactTransportBar
+              transport={transport}
+              bpm={currentProject.bpm}
+              timeSignature={currentProject.timeSignature}
+              onPlay={play}
+              onPause={pause}
+              onStop={stop}
+              onRecord={toggleRecording}
+            />
+          </div>
+          
           {/* Timeline Editor */}
           <div className="flex-1 overflow-hidden">
             <TimelineEditor

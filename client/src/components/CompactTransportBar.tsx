@@ -1,0 +1,114 @@
+import { Button } from '@/components/ui/button';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward } from 'lucide-react';
+import { TransportState } from '@/types/audio';
+
+interface CompactTransportBarProps {
+  transport: TransportState;
+  bpm: number;
+  timeSignature: [number, number];
+  onPlay: () => void;
+  onPause: () => void;
+  onStop: () => void;
+  onRecord: () => void;
+}
+
+export function CompactTransportBar({
+  transport,
+  bpm,
+  timeSignature,
+  onPlay,
+  onPause,
+  onStop,
+  onRecord
+}: CompactTransportBarProps) {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
+      {/* Left: Transport Controls */}
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+          title="Go to beginning"
+        >
+          <SkipBack className="w-4 h-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={transport.isPlaying ? onPause : onPlay}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+          title={transport.isPlaying ? "Pause" : "Play"}
+        >
+          {transport.isPlaying ? (
+            <Pause className="w-4 h-4" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onStop}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+          title="Stop"
+        >
+          <Square className="w-4 h-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRecord}
+          className={`h-8 w-8 p-0 hover:bg-[var(--accent)] ${
+            transport.isRecording ? 'text-[var(--red)] bg-[var(--red)]/20' : ''
+          }`}
+          title="Record"
+        >
+          <Circle className={`w-4 h-4 ${transport.isRecording ? 'fill-current' : ''}`} />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+          title="Go to end"
+        >
+          <SkipForward className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Center: Time Display */}
+      <div className="flex items-center space-x-4">
+        <div className="text-sm font-mono text-[var(--foreground)]">
+          {formatTime(transport.currentTime)}
+        </div>
+        <div className="w-px h-4 bg-[var(--border)]"></div>
+        <div className="text-sm text-[var(--muted-foreground)]">
+          {bpm} BPM • {timeSignature[0]}/{timeSignature[1]}
+        </div>
+      </div>
+
+      {/* Right: Additional Controls */}
+      <div className="flex items-center space-x-2">
+        <div className="text-xs text-[var(--muted-foreground)]">
+          {transport.isLooping ? 'LOOP' : 'LINEAR'}
+        </div>
+        {transport.isRecording && (
+          <div className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-[var(--red)] rounded-full animate-pulse"></div>
+            <span className="text-xs text-[var(--red)] font-medium">REC</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
