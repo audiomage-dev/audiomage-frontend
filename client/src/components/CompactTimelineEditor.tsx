@@ -38,7 +38,12 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   const [currentTool, setCurrentTool] = useState<'select' | 'cut' | 'zoom' | 'hand'>('select');
   const [showChatBox, setShowChatBox] = useState(false);
   const [chatPrompt, setChatPrompt] = useState('');
+  const [scrollX, setScrollX] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const timelineRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   const handleTrackSelect = useCallback((trackId: string) => {
     setSelectedTrackId(trackId);
@@ -58,6 +63,46 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     setZoomLevel(prev => Math.max(prev / 1.5, 0.25));
   }, []);
 
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (currentTool === 'hand' || e.button === 1) { // Middle mouse button or hand tool
+      setIsDragging(true);
+      setDragStart({ x: e.clientX + scrollX, y: e.clientY + scrollY });
+      e.preventDefault();
+    }
+  }, [currentTool, scrollX, scrollY]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging) {
+      const deltaX = dragStart.x - e.clientX;
+      const deltaY = dragStart.y - e.clientY;
+      setScrollX(Math.max(0, deltaX));
+      setScrollY(Math.max(0, deltaY));
+    }
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleScroll = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey) {
+      // Zoom with Ctrl+Wheel
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        handleZoomIn();
+      } else {
+        handleZoomOut();
+      }
+    } else if (e.shiftKey) {
+      // Horizontal scroll with Shift+Wheel
+      e.preventDefault();
+      setScrollX(prev => Math.max(0, prev + e.deltaY));
+    } else {
+      // Vertical scroll
+      setScrollY(prev => Math.max(0, prev + e.deltaY));
+    }
+  }, [handleZoomIn, handleZoomOut]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -65,20 +110,25 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   };
 
   const renderTimelineRuler = () => {
-    const duration = 240; // 4 minutes
-    const steps = Math.floor(duration / (60 / zoomLevel));
+    const duration = 1200; // 20 minutes for long audio support
+    const stepInterval = Math.max(5, 30 / zoomLevel); // Dynamic step based on zoom
+    const steps = Math.floor(duration / stepInterval);
     const markers = [];
     
     for (let i = 0; i <= steps; i++) {
-      const time = (i * 60) / zoomLevel;
+      const time = i * stepInterval;
       const position = (time / duration) * 100;
       
-      markers.push(
-        <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${position}%` }}>
-          <div className="w-px h-2 bg-[var(--border)]"></div>
-          <span className="text-xs text-[var(--muted-foreground)] mt-1">{formatTime(time)}</span>
-        </div>
-      );
+      // Only show markers that are visible in current scroll position
+      const markerScreenPos = position * zoomLevel - (scrollX / window.innerWidth) * 100;
+      if (markerScreenPos >= -10 && markerScreenPos <= 110) {
+        markers.push(
+          <div key={i} className="absolute top-0 flex flex-col items-center" style={{ left: `${position}%` }}>
+            <div className="w-px h-3 bg-[var(--border)]"></div>
+            <span className="text-xs text-[var(--muted-foreground)] mt-0.5">{formatTime(time)}</span>
+          </div>
+        );
+      }
     }
     
     return markers;
@@ -94,6 +144,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               { tool: 'select', icon: Move, active: currentTool === 'select' },
               { tool: 'cut', icon: Scissors, active: currentTool === 'cut' },
               { tool: 'zoom', icon: ZoomIn, active: currentTool === 'zoom' },
+              { tool: 'hand', icon: SkipForward, active: currentTool === 'hand' },
             ].map(({ tool, icon: Icon, active }) => (
               <Button
                 key={tool}
@@ -101,6 +152,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 size="sm"
                 onClick={() => setCurrentTool(tool as any)}
                 className={`h-5 w-5 p-0 ${active ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--accent)]'}`}
+                title={tool === 'hand' ? 'Hand Tool (drag to pan)' : tool}
               >
                 <Icon className="w-3 h-3" />
               </Button>
@@ -130,8 +182,11 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         </div>
         
         <div className="flex items-center space-x-2">
+          <div className="text-xs text-[var(--muted-foreground)] font-mono">
+            {formatTime(transport.currentTime)} / {formatTime(1200)}
+          </div>
           <div className="text-xs text-[var(--muted-foreground)]">
-            {formatTime(transport.currentTime)} / {formatTime(240)}
+            Scroll: {Math.round(scrollX)}px, {Math.round(scrollY)}px
           </div>
           <Button
             onClick={() => setShowChatBox(!showChatBox)}
@@ -169,15 +224,25 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       )}
 
       {/* Timeline Ruler */}
-      <div className="h-6 bg-[var(--muted)] border-b border-[var(--border)] relative overflow-hidden">
-        <div className="relative h-full" style={{ width: `${100 * zoomLevel}%` }}>
+      <div className="h-8 bg-[var(--muted)] border-b border-[var(--border)] relative overflow-hidden">
+        <div 
+          className="relative h-full cursor-pointer" 
+          style={{ 
+            width: `${100 * zoomLevel}%`,
+            transform: `translateX(-${scrollX}px)`
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleScroll}
+        >
           {renderTimelineRuler()}
           {/* Playhead */}
           <div 
-            className="absolute top-0 bottom-0 w-0.5 bg-[var(--primary)] z-10"
-            style={{ left: `${(transport.currentTime / 240) * 100}%` }}
+            className="absolute top-0 bottom-0 w-0.5 bg-[var(--primary)] z-10 pointer-events-none"
+            style={{ left: `${(transport.currentTime / 1200) * 100}%` }}
           >
-            <div className="w-2 h-2 bg-[var(--primary)] -ml-0.75 -mt-0.5 rotate-45"></div>
+            <div className="w-3 h-3 bg-[var(--primary)] -ml-1.5 -mt-1 rotate-45"></div>
           </div>
         </div>
       </div>
@@ -185,24 +250,30 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       {/* Compact Track Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Track Headers */}
-        <div className="w-36 border-r border-[var(--border)] bg-[var(--background)] flex flex-col">
-          <div className="h-5 bg-[var(--muted)] border-b border-[var(--border)] px-2 flex items-center justify-between">
-            <span className="text-xs font-medium">Tracks</span>
-            <div className="flex space-x-0.5">
-              <Button variant="ghost" size="sm" className="h-3 w-3 p-0">
-                <Copy className="w-2 h-2" />
+        <div className="w-48 border-r border-[var(--border)] bg-[var(--background)] flex flex-col">
+          <div className="h-8 bg-[var(--muted)] border-b border-[var(--border)] px-3 flex items-center justify-between">
+            <span className="text-sm font-medium">Tracks ({tracks.length})</span>
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-[var(--accent)]">
+                <Plus className="w-3 h-3" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-3 w-3 p-0">
-                <Trash2 className="w-2 h-2" />
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-[var(--accent)]">
+                <Copy className="w-3 h-3" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-[var(--accent)]">
+                <Trash2 className="w-3 h-3" />
               </Button>
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto">
-            {tracks.map((track) => (
+          <div 
+            className="flex-1 overflow-y-auto scrollbar-thin"
+            style={{ transform: `translateY(-${scrollY}px)` }}
+          >
+            {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`h-6 border-b border-[var(--border)] px-2 py-1 cursor-pointer transition-colors group ${
+                className={`h-12 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
                   selectedTrackId === track.id 
                     ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
                     : 'hover:bg-[var(--accent)]/50'
@@ -210,17 +281,20 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 onClick={() => handleTrackSelect(track.id)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
-                <div className="flex items-center justify-between h-full">
-                  <div className="flex items-center space-x-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <div 
-                      className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
+                      className="w-2 h-2 rounded-sm flex-shrink-0" 
                       style={{ backgroundColor: track.color }}
                     ></div>
-                    <span className="text-xs font-medium text-[var(--foreground)] truncate">
+                    <span className="text-sm font-medium text-[var(--foreground)] truncate">
                       {track.name}
                     </span>
+                    {track.type === 'ai-generated' && (
+                      <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-0.5">
+                  <div className="flex items-center space-x-1">
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -228,13 +302,13 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                       }}
                       variant="ghost"
                       size="sm"
-                      className={`h-3 w-3 p-0 rounded ${
+                      className={`h-5 w-5 p-0 rounded text-xs ${
                         track.muted 
                           ? 'bg-[var(--red)] text-white' 
-                          : 'hover:bg-[var(--accent)] opacity-50 group-hover:opacity-100'
+                          : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
                       }`}
                     >
-                      {track.muted ? <VolumeX className="w-1.5 h-1.5" /> : <Volume2 className="w-1.5 h-1.5" />}
+                      {track.muted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
                     </Button>
                     <Button
                       onClick={(e) => {
@@ -243,15 +317,19 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                       }}
                       variant="ghost"
                       size="sm"
-                      className={`h-3 w-3 p-0 rounded ${
+                      className={`h-5 w-5 p-0 rounded text-xs ${
                         track.soloed 
                           ? 'bg-[var(--yellow)] text-black' 
-                          : 'hover:bg-[var(--accent)] opacity-50 group-hover:opacity-100'
+                          : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
                       }`}
                     >
-                      {track.soloed ? <Radio className="w-1.5 h-1.5" /> : <Circle className="w-1.5 h-1.5" />}
+                      {track.soloed ? <Radio className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
                     </Button>
                   </div>
+                </div>
+                <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                  <span>{track.type.toUpperCase()}</span>
+                  <span className="font-mono">{Math.round(track.volume)}%</span>
                 </div>
               </div>
             ))}
@@ -259,34 +337,51 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         </div>
 
         {/* Timeline Content */}
-        <div className="flex-1 overflow-auto scrollbar-thin" ref={timelineRef}>
-          <div className="relative" style={{ width: `${100 * zoomLevel}%`, minHeight: `${tracks.length * 24}px` }}>
+        <div 
+          className="flex-1 overflow-hidden scrollbar-thin select-none" 
+          ref={timelineRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleScroll}
+          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}
+        >
+          <div 
+            className="relative" 
+            style={{ 
+              width: `${100 * zoomLevel}%`, 
+              minHeight: `${tracks.length * 48}px`,
+              transform: `translate(-${scrollX}px, -${scrollY}px)`
+            }}
+          >
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`absolute left-0 right-0 h-6 border-b border-[var(--border)] ${
-                  selectedTrackId === track.id ? 'bg-[var(--accent)]/30' : 'hover:bg-[var(--muted)]/30'
+                className={`absolute left-0 right-0 h-12 border-b border-[var(--border)] transition-colors ${
+                  selectedTrackId === track.id ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
                 }`}
-                style={{ top: `${index * 24}px` }}
+                style={{ top: `${index * 48}px` }}
                 onClick={() => handleTrackSelect(track.id)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
                 {/* Audio Waveform */}
-                <div className="h-full flex items-center px-1">
+                <div className="h-full flex items-center px-2 py-1">
                   {track.waveformData && (
-                    <WaveformVisualization
-                      data={track.waveformData}
-                      color={track.color}
-                      fileName={track.name}
-                      isPlaying={transport.isPlaying && !track.muted}
-                    />
+                    <div className="w-full h-8">
+                      <WaveformVisualization
+                        data={track.waveformData}
+                        color={track.color}
+                        fileName={track.name}
+                        isPlaying={transport.isPlaying && !track.muted}
+                      />
+                    </div>
                   )}
                   {!track.waveformData && (
                     <div 
-                      className="h-2 rounded opacity-60"
+                      className="h-6 rounded opacity-70 shadow-sm"
                       style={{ 
                         backgroundColor: track.color,
-                        width: `${(Math.random() * 60 + 20)}%`
+                        width: `${(Math.random() * 40 + 30)}%`
                       }}
                     ></div>
                   )}
@@ -294,25 +389,40 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 
                 {/* Track Effects Indicators */}
                 {track.effects && track.effects.length > 0 && (
-                  <div className="absolute top-0 right-1 flex space-x-0.5">
-                    {track.effects.slice(0, 3).map((effect, i) => (
-                      <div key={i} className="w-1 h-1 bg-[var(--primary)] rounded-full opacity-60"></div>
+                  <div className="absolute top-1 right-2 flex space-x-1">
+                    {track.effects.slice(0, 4).map((effect, i) => (
+                      <div 
+                        key={i} 
+                        className="w-1.5 h-1.5 bg-[var(--primary)] rounded-full opacity-70"
+                        title={effect.name}
+                      ></div>
                     ))}
                   </div>
+                )}
+                
+                {/* Track Selection Indicator */}
+                {selectedTrackId === track.id && (
+                  <div className="absolute left-0 top-0 w-1 h-full bg-[var(--primary)]"></div>
                 )}
               </div>
             ))}
             
             {/* Grid Lines */}
             <div className="absolute inset-0 pointer-events-none">
-              {Array.from({ length: Math.floor(240 / (15 / zoomLevel)) }).map((_, i) => (
+              {Array.from({ length: Math.floor(1200 / (30 / zoomLevel)) }).map((_, i) => (
                 <div
                   key={i}
-                  className="absolute top-0 bottom-0 w-px bg-[var(--border)] opacity-30"
-                  style={{ left: `${(i * 15 * zoomLevel / 240) * 100}%` }}
+                  className="absolute top-0 bottom-0 w-px bg-[var(--border)] opacity-20"
+                  style={{ left: `${(i * 30 * zoomLevel / 1200) * 100}%` }}
                 />
               ))}
             </div>
+            
+            {/* Playhead for timeline content */}
+            <div 
+              className="absolute top-0 bottom-0 w-0.5 bg-[var(--primary)] z-20 pointer-events-none"
+              style={{ left: `${(transport.currentTime / 1200) * 100}%` }}
+            ></div>
           </div>
         </div>
       </div>
