@@ -720,8 +720,20 @@ export function useAudioWorkstation() {
 
       // Update tracks with moved clip
       const updatedTracks = prevTracks.map(track => {
-        if (track.id === fromTrackId) {
-          // Remove clip from source track
+        if (track.id === fromTrackId && fromTrackId === toTrackId) {
+          // Same track movement - just update the clip's position
+          const updatedClip = {
+            ...clipToMove,
+            startTime: newStartTime
+          };
+          const updatedTrack = {
+            ...track,
+            clips: track.clips?.map(c => c.id === clipId ? updatedClip : c) || []
+          };
+          console.log(`Updated clip position on same track ${track.name}, total clips:`, updatedTrack.clips?.length);
+          return updatedTrack;
+        } else if (track.id === fromTrackId) {
+          // Remove clip from source track (different track movement)
           const updatedTrack = {
             ...track,
             clips: track.clips?.filter(c => c.id !== clipId) || []
@@ -729,7 +741,7 @@ export function useAudioWorkstation() {
           console.log(`Removed clip from track ${track.name}, remaining clips:`, updatedTrack.clips?.length);
           return updatedTrack;
         } else if (track.id === toTrackId) {
-          // Add clip to target track with new position
+          // Add clip to target track with new position (different track movement)
           const updatedClip = {
             ...clipToMove,
             startTime: newStartTime
