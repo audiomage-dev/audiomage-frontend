@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProjectBrowser } from './ProjectBrowser';
 import { AISuggestionsPanel } from './AISuggestionsPanel';
 import { AudioChangemapsPanel } from './AudioChangemapsPanel';
+import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { 
   FolderOpen, 
   Search, 
@@ -65,20 +66,7 @@ export function VerticalSidebar() {
       id: 'version',
       icon: <GitBranch className="w-5 h-5" />,
       label: 'Version Control',
-      component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Project Versions</h3>
-          <div className="space-y-2">
-            <div className="p-2 bg-[var(--muted)] rounded-md">
-              <div className="text-xs font-medium text-[var(--foreground)]">Current Session</div>
-              <div className="text-xs text-[var(--muted-foreground)]">Auto-saved 2 min ago</div>
-            </div>
-            <div className="text-xs text-[var(--muted-foreground)]">
-              Track changes and save project snapshots
-            </div>
-          </div>
-        </div>
-      )
+      component: <ProjectVersionsPanel />
     },
     {
       id: 'tracks',
