@@ -209,17 +209,40 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         } : null);
       };
       
-      const handleDocumentMouseUp = () => {
+      const handleDocumentMouseUp = (e: MouseEvent) => {
         document.removeEventListener('mousemove', handleDocumentMouseMove);
         document.removeEventListener('mouseup', handleDocumentMouseUp);
         
-        // Will be handled by the existing handleMouseUp
+        // Finalize clip dragging and persist position
+        const deltaX = e.clientX - dragState.startX;
+        const deltaY = e.clientY - dragState.startY;
+        
+        const timelineWidth = getTimelineWidth();
+        const totalTime = timelineWidth / zoomLevel;
+        const deltaTime = (deltaX / timelineWidth) * totalTime;
+        const newStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
+        
+        const trackHeight = 96;
+        const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+          dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
+        ));
+        
+        const newTrackId = tracks[newTrackIndex]?.id;
+        
+        console.log(`Clip ${dragState.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
+        
+        // Persist the clip movement to actual data
+        if (onClipMove && newTrackId) {
+          onClipMove(dragState.clipId, dragState.trackId, newTrackId, newStartTime);
+        }
+        
+        setDraggingClip(null);
       };
       
       document.addEventListener('mousemove', handleDocumentMouseMove);
       document.addEventListener('mouseup', handleDocumentMouseUp);
     }
-  }, [tracks]);
+  }, [tracks, onClipMove, zoomLevel, getTimelineWidth]);
 
   const handleAudioSelectionStart = useCallback((e: React.MouseEvent, trackId: string, trackIndex: number) => {
     if (e.button !== 0) return; // Only left click
