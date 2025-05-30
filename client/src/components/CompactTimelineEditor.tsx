@@ -51,7 +51,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     endTime: number; 
     startX: number; 
     endX: number; 
-    trackIndex: number 
+    trackIndex: number;
+    isActive: boolean;
   } | null>(null);
   const [audioContextMenu, setAudioContextMenu] = useState<{ 
     x: number; 
@@ -135,7 +136,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           endTime: startTime,
           startX,
           endX: startX,
-          trackIndex
+          trackIndex,
+          isActive: true
         });
         setContextMenu(null);
         setAudioContextMenu(null);
@@ -181,7 +183,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         setAudioSelection(prev => prev ? {
           ...prev,
           endTime: currentTime,
-          endX: currentX
+          endX: currentX,
+          isActive: true
         } : null);
       }
     }
@@ -191,8 +194,21 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     setIsDragging(false);
     setIsSelecting(false);
     setSelectionBox(null);
-    // Keep audio selection active for context menu
-  }, []);
+    
+    // Finalize audio selection if it exists and has a meaningful duration
+    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.01) {
+      // Keep the selection active for context menu operations
+      console.log('Audio selection completed:', {
+        trackId: audioSelection.trackId,
+        startTime: Math.min(audioSelection.startTime, audioSelection.endTime),
+        endTime: Math.max(audioSelection.startTime, audioSelection.endTime),
+        duration: Math.abs(audioSelection.endTime - audioSelection.startTime)
+      });
+    } else if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) <= 0.01) {
+      // Clear selection if it's too small (just a click)
+      setAudioSelection(null);
+    }
+  }, [audioSelection]);
 
   const handleAudioRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
