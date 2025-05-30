@@ -12,7 +12,20 @@ import {
   Image, 
   File,
   Drum,
-  Bot
+  Bot,
+  Copy,
+  Trash2,
+  Edit3,
+  FolderPlus,
+  Download,
+  Upload,
+  Eye,
+  Play,
+  Share2,
+  RefreshCw,
+  Move,
+  Scissors,
+  Info
 } from 'lucide-react';
 
 interface ProjectItem {
@@ -26,6 +39,11 @@ interface ProjectItem {
 export function ProjectBrowser() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8', '21']));
   const [searchTerm, setSearchTerm] = useState('');
+  const [contextMenu, setContextMenu] = useState<{ 
+    x: number; 
+    y: number; 
+    item: ProjectItem;
+  } | null>(null);
 
   const projectItems: ProjectItem[] = [
     {
@@ -171,6 +189,114 @@ export function ProjectBrowser() {
     setExpandedFolders(newExpanded);
   };
 
+  const handleContextMenuAction = (action: string, item: ProjectItem) => {
+    switch (action) {
+      case 'open':
+        console.log('Opening:', item.name);
+        break;
+      case 'preview':
+        console.log('Previewing:', item.name);
+        break;
+      case 'play':
+        console.log('Playing:', item.name);
+        break;
+      case 'rename':
+        console.log('Renaming:', item.name);
+        break;
+      case 'duplicate':
+        console.log('Duplicating:', item.name);
+        break;
+      case 'delete':
+        console.log('Deleting:', item.name);
+        break;
+      case 'export':
+        console.log('Exporting:', item.name);
+        break;
+      case 'import':
+        console.log('Importing to:', item.name);
+        break;
+      case 'addToTimeline':
+        console.log('Adding to timeline:', item.name);
+        break;
+      case 'copyPath':
+        navigator.clipboard.writeText(`/project/${item.name}`);
+        break;
+      case 'properties':
+        console.log('Showing properties for:', item.name);
+        break;
+      case 'newFolder':
+        console.log('Creating new folder in:', item.name);
+        break;
+      case 'move':
+        console.log('Moving:', item.name);
+        break;
+      case 'convertFormat':
+        console.log('Converting format for:', item.name);
+        break;
+    }
+    setContextMenu(null);
+  };
+
+  const getContextMenuItems = (item: ProjectItem) => {
+    const baseItems = [
+      { id: 'open', label: 'Open', icon: Eye, shortcut: 'Enter' },
+      { id: 'rename', label: 'Rename', icon: Edit3, shortcut: 'F2' },
+      { id: 'duplicate', label: 'Duplicate', icon: Copy, shortcut: 'Ctrl+D' },
+      { id: 'delete', label: 'Delete', icon: Trash2, shortcut: 'Del', dangerous: true },
+      { id: 'separator1', label: '', icon: null },
+      { id: 'copyPath', label: 'Copy Path', icon: Copy, shortcut: 'Ctrl+Shift+C' },
+      { id: 'properties', label: 'Properties', icon: Info, shortcut: 'Alt+Enter' },
+    ];
+
+    if (item.type === 'folder') {
+      return [
+        { id: 'open', label: 'Expand', icon: FolderOpen, shortcut: 'Enter' },
+        { id: 'newFolder', label: 'New Folder', icon: FolderPlus, shortcut: 'Ctrl+Shift+N' },
+        { id: 'import', label: 'Import Files', icon: Upload, shortcut: 'Ctrl+I' },
+        { id: 'separator1', label: '', icon: null },
+        ...baseItems.slice(1)
+      ];
+    }
+
+    if (item.type === 'audio') {
+      return [
+        { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
+        { id: 'play', label: 'Play', icon: Play, shortcut: 'Enter' },
+        { id: 'addToTimeline', label: 'Add to Timeline', icon: Move, shortcut: 'Ctrl+T' },
+        { id: 'separator1', label: '', icon: null },
+        { id: 'export', label: 'Export', icon: Download, shortcut: 'Ctrl+E' },
+        { id: 'convertFormat', label: 'Convert Format', icon: RefreshCw, shortcut: 'Ctrl+Shift+C' },
+        { id: 'separator2', label: '', icon: null },
+        ...baseItems.slice(1)
+      ];
+    }
+
+    if (item.type === 'midi') {
+      return [
+        { id: 'open', label: 'Open in Piano Roll', icon: Piano, shortcut: 'Enter' },
+        { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
+        { id: 'addToTimeline', label: 'Add to Timeline', icon: Move, shortcut: 'Ctrl+T' },
+        { id: 'separator1', label: '', icon: null },
+        { id: 'export', label: 'Export', icon: Download, shortcut: 'Ctrl+E' },
+        { id: 'separator2', label: '', icon: null },
+        ...baseItems.slice(1)
+      ];
+    }
+
+    if (item.type === 'fx') {
+      return [
+        { id: 'open', label: 'Load Effect', icon: Sliders, shortcut: 'Enter' },
+        { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
+        { id: 'separator1', label: '', icon: null },
+        { id: 'export', label: 'Export Preset', icon: Download, shortcut: 'Ctrl+E' },
+        { id: 'separator2', label: '', icon: null },
+        ...baseItems.slice(1)
+      ];
+    }
+
+    return baseItems;
+  };
+
   const highlightSearchTerm = (text: string, searchTerm: string) => {
     if (!searchTerm) return text;
     
@@ -199,6 +325,14 @@ export function ProjectBrowser() {
           }`}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={() => hasChildren && toggleFolder(item.id)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu({
+              x: e.clientX,
+              y: e.clientY,
+              item
+            });
+          }}
         >
           {hasChildren && (
             <i 
@@ -336,6 +470,52 @@ export function ProjectBrowser() {
           </div>
         )}
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setContextMenu(null)}
+          />
+          <div
+            className="fixed z-50 bg-[var(--popover)] border border-[var(--border)] rounded-md shadow-lg py-1 min-w-48"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+          >
+            {getContextMenuItems(contextMenu.item).map((item, index) => {
+              if (item.id.startsWith('separator')) {
+                return (
+                  <div key={index} className="h-px bg-[var(--border)] my-1 mx-2" />
+                );
+              }
+
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleContextMenuAction(item.id, contextMenu.item)}
+                  className={`w-full px-3 py-1.5 text-left text-sm flex items-center justify-between hover:bg-[var(--accent)] transition-colors ${
+                    item.dangerous ? 'text-[var(--destructive)] hover:bg-[var(--destructive)]/10' : 'text-[var(--foreground)]'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    {Icon && <Icon className="w-4 h-4 mr-2" />}
+                    <span>{item.label}</span>
+                  </div>
+                  {item.shortcut && (
+                    <kbd className="text-xs text-[var(--muted-foreground)] bg-[var(--muted)] px-1 py-0.5 rounded">
+                      {item.shortcut}
+                    </kbd>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
