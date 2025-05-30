@@ -284,8 +284,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       const rect = timelineRef.current?.getBoundingClientRect();
       if (rect) {
         const currentX = e.clientX - rect.left + scrollX;
-        const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-        const currentTime = (currentX / timelineWidth) * 1200;
+        const timelineWidth = getTimelineWidth();
+        const totalTime = timelineWidth / zoomLevel;
+        const currentTime = (currentX / timelineWidth) * totalTime;
         
         setAudioSelection(prev => prev ? {
           ...prev,
@@ -306,8 +307,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       const deltaX = e.clientX - draggingClip.startX;
       const deltaY = e.clientY - draggingClip.startY;
       
-      const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-      const deltaTime = (deltaX / timelineWidth) * 1200;
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const deltaTime = (deltaX / timelineWidth) * totalTime;
       const newStartTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
       
       const trackHeight = 96;
@@ -591,7 +593,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           <canvas
             ref={canvasRef}
             className="absolute top-0 left-0 pointer-events-none z-0"
-            width={Math.max(1200, 1200 * zoomLevel)}
+            width={getTimelineWidth()}
             height={tracks.length * 96}
             style={{ transform: `translateX(-${scrollX}px)` }}
           />
@@ -599,7 +601,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           <div 
             className="relative z-10" 
             style={{ 
-              width: `${Math.max(1200, 1200 * zoomLevel)}px`, 
+              width: `${getTimelineWidth()}px`, 
               height: `${tracks.length * 96}px`,
               transform: `translateX(-${scrollX}px)`
             }}
@@ -625,9 +627,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                   onContextMenu={(e) => handleAudioRightClick(e, track.id)}
                 >
                   {track.clips?.map((clip) => {
-                    const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-                    const clipStartX = (clip.startTime / 1200) * timelineWidth;
-                    const clipWidth = (clip.duration / 1200) * timelineWidth;
+                    const timelineWidth = getTimelineWidth();
+                    const totalTime = timelineWidth / zoomLevel;
+                    const clipStartX = (clip.startTime / totalTime) * timelineWidth;
+                    const clipWidth = (clip.duration / totalTime) * timelineWidth;
                     
                     return (
                       <div
@@ -730,7 +733,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
             {/* Playhead */}
             <div 
               className="absolute top-0 bottom-0 w-0.5 bg-[var(--primary)] z-20 pointer-events-none"
-              style={{ left: `${(transport.currentTime / 1200) * Math.max(1200, 1200 * zoomLevel)}px` }}
+              style={{ 
+                left: `${(transport.currentTime / (getTimelineWidth() / zoomLevel)) * getTimelineWidth()}px` 
+              }}
             />
           </div>
         </div>
