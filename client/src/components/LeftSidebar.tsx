@@ -27,23 +27,32 @@ export function LeftSidebar({
   onRecord,
 }: LeftSidebarProps) {
   return (
-    <div className="w-64 bg-[hsl(var(--muted))] border-r border-[hsl(var(--border))] flex flex-col">
-      <TransportControls
-        transport={transport}
-        bpm={bpm}
-        timeSignature={timeSignature}
-        onPlay={onPlay}
-        onPause={onPause}
-        onStop={onStop}
-        onRecord={onRecord}
-      />
+    <div className="h-full flex flex-col bg-gradient-to-b from-[var(--muted)] to-[var(--background)]">
+      {/* Transport Controls */}
+      <div className="flex-none">
+        <TransportControls
+          transport={transport}
+          bpm={bpm}
+          timeSignature={timeSignature}
+          onPlay={onPlay}
+          onPause={onPause}
+          onStop={onStop}
+          onRecord={onRecord}
+        />
+      </div>
       
-      <AIAssistant
-        suggestions={aiSuggestions}
-        isProcessing={isAIProcessing}
-      />
+      {/* Project Browser */}
+      <div className="flex-1 min-h-0 border-y border-[var(--border)]">
+        <ProjectBrowser />
+      </div>
       
-      <ProjectBrowser />
+      {/* AI Assistant Panel */}
+      <div className="flex-none h-64">
+        <AIAssistant
+          suggestions={aiSuggestions}
+          isProcessing={isAIProcessing}
+        />
+      </div>
     </div>
   );
 }
