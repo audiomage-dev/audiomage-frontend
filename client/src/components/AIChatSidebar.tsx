@@ -24,9 +24,11 @@ interface AIChatSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   currentSession?: string;
+  width?: number;
+  onWidthChange?: (width: number) => void;
 }
 
-export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSidebarProps) {
+export function AIChatSidebar({ isOpen, onToggle, currentSession, width = 320, onWidthChange }: AIChatSidebarProps) {
   // Store messages per session
   const [sessionMessages, setSessionMessages] = useState<Record<string, ChatMessage[]>>({});
   
@@ -130,7 +132,35 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
   }
 
   return (
-    <div className="fixed right-0 top-14 h-[calc(100vh-80px)] w-80 bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg">
+    <div 
+      className="fixed right-0 top-14 h-[calc(100vh-80px)] bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg relative"
+      style={{ width: `${width}px` }}
+    >
+      {/* Left Resize Handle */}
+      {onWidthChange && (
+        <div
+          className="absolute top-0 left-0 bottom-0 w-1 cursor-ew-resize hover:bg-[var(--primary)] transition-colors z-10"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const startWidth = width;
+            
+            const handleMouseMove = (e: MouseEvent) => {
+              const deltaX = startX - e.clientX;
+              const newWidth = Math.max(280, Math.min(600, startWidth + deltaX));
+              onWidthChange(newWidth);
+            };
+            
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+          }}
+        />
+      )}
       {/* Header */}
       <div className="h-14 px-4 py-3 border-b border-[var(--border)] bg-[var(--muted)] flex items-center justify-between">
         <div className="flex items-center space-x-2">
