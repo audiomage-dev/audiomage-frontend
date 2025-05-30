@@ -64,7 +64,7 @@ export function useAudioWorkstation() {
       muted: false,
       soloed: false,
       color: 'hsl(129 161 193)', // frost-3
-      waveformData: [60, 80, 45, 90, 70, 55, 85, 40],
+      waveformData: [45, 60, 30, 85, 70, 40, 90, 35, 75, 55, 80, 25, 95, 60, 50, 85, 40, 70, 90, 30, 65, 85, 45, 75, 60, 90, 35, 80, 55, 70, 85, 40, 60, 75, 50, 90, 45, 65, 80, 35],
       effects: [
         { id: '1', name: 'AI DeNoise Pro', type: 'noise-reduction', enabled: true, parameters: {} },
         { id: '2', name: 'EQ - Vintage', type: 'equalizer', enabled: true, parameters: {} },
@@ -82,7 +82,7 @@ export function useAudioWorkstation() {
       muted: false,
       soloed: false,
       color: 'hsl(191 97 106)', // aurora-red
-      waveformData: [95, 30, 85, 25, 90, 35, 80, 40],
+      waveformData: [95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70, 50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35, 90, 25, 80, 45, 95, 30],
       effects: [
         { id: '4', name: 'Gate - Precision', type: 'gate', enabled: true, parameters: {} },
         { id: '5', name: 'AI Drum Enhance', type: 'ai-enhancement', enabled: true, parameters: {} },
@@ -99,7 +99,7 @@ export function useAudioWorkstation() {
       muted: false,
       soloed: true,
       color: 'hsl(180 142 173)', // aurora-purple
-      waveformData: [75, 75, 70, 80, 65, 85, 70, 75],
+      waveformData: [75, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75, 65, 90, 60, 85, 75, 70, 80, 65, 90, 55, 85, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75],
       effects: [],
     },
     {
@@ -113,7 +113,7 @@ export function useAudioWorkstation() {
       muted: false,
       soloed: false,
       color: 'hsl(143 188 187)', // frost-1
-      waveformData: [35, 40, 30, 45, 35, 50, 30, 40],
+      waveformData: [35, 40, 30, 45, 35, 50, 30, 40, 35, 45, 30, 50, 40, 35, 45, 30, 50, 35, 40, 30, 45, 35, 50, 30, 40, 35, 45, 30, 50, 40, 35, 45, 30, 50, 35, 40, 30, 45, 35, 50],
       effects: [],
     },
   ]);
