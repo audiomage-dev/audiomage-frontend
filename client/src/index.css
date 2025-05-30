@@ -114,16 +114,18 @@ html.nord-light, .nord-light {
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    background: var(--muted);
+    border-radius: 4px;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground));
-    border-radius: 3px;
+    background: var(--muted-foreground);
+    border-radius: 4px;
+    border: 2px solid var(--muted);
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: var(--primary);
   }
 
   .waveform-bar {

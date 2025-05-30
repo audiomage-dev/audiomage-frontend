@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { TransportState } from '../types/audio';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Repeat } from 'lucide-react';
 
 interface TransportControlsProps {
   transport: TransportState;
@@ -24,75 +25,104 @@ export function TransportControls({
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     const frames = Math.floor((seconds % 1) * 100);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(3, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${frames.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="p-3 border-b border-[hsl(var(--border))]">
-      <div className="flex items-center justify-center space-x-2 mb-3">
+    <div className="bg-gradient-to-r from-[var(--background)] to-[var(--muted)] p-6 border-b border-[var(--border)] shadow-sm">
+      <div className="flex items-center justify-center space-x-4 mb-4">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="transport-btn w-8 h-8 bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--primary))] rounded-full flex items-center justify-center"
+          className="w-10 h-10 rounded-xl border-2 border-[var(--border)] hover:bg-[var(--accent)] transition-all duration-200"
         >
-          <i className="fas fa-backward text-xs"></i>
+          <SkipBack className="w-4 h-4" />
         </Button>
         
         {transport.isPlaying ? (
           <Button
             onClick={onPause}
-            variant="ghost"
-            size="sm"
-            className="transport-btn w-10 h-10 bg-[hsl(var(--aurora-yellow))] hover:bg-opacity-80 rounded-full flex items-center justify-center"
+            variant="default"
+            size="lg"
+            className="w-16 h-16 rounded-2xl bg-[var(--yellow)] hover:bg-[var(--yellow)]/80 text-[var(--background)] shadow-lg transition-all duration-200"
           >
-            <i className="fas fa-pause text-[hsl(var(--background))] text-xs"></i>
+            <Pause className="w-6 h-6" fill="currentColor" />
           </Button>
         ) : (
           <Button
             onClick={onPlay}
-            variant="ghost"
-            size="sm"
-            className="transport-btn w-10 h-10 bg-[hsl(var(--aurora-green))] hover:bg-opacity-80 rounded-full flex items-center justify-center"
+            variant="default"
+            size="lg"
+            className="w-16 h-16 rounded-2xl bg-[var(--green)] hover:bg-[var(--green)]/80 text-[var(--background)] shadow-lg transition-all duration-200"
           >
-            <i className="fas fa-play text-[hsl(var(--background))] ml-1"></i>
+            <Play className="w-6 h-6 ml-1" fill="currentColor" />
           </Button>
         )}
         
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="transport-btn w-8 h-8 bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--primary))] rounded-full flex items-center justify-center"
+          className="w-10 h-10 rounded-xl border-2 border-[var(--border)] hover:bg-[var(--accent)] transition-all duration-200"
         >
-          <i className="fas fa-forward text-xs"></i>
+          <SkipForward className="w-4 h-4" />
         </Button>
         
         <Button
           onClick={onStop}
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="transport-btn w-8 h-8 bg-[hsl(var(--aurora-red))] hover:bg-opacity-80 rounded-full flex items-center justify-center"
+          className="w-10 h-10 rounded-xl border-2 border-[var(--red)] text-[var(--red)] hover:bg-[var(--red)] hover:text-white transition-all duration-200"
         >
-          <i className="fas fa-square text-xs text-white"></i>
+          <Square className="w-4 h-4" fill="currentColor" />
         </Button>
         
         <Button
           onClick={onRecord}
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className={`transport-btn w-8 h-8 rounded-full flex items-center justify-center ${
+          className={`w-10 h-10 rounded-xl border-2 transition-all duration-200 ${
             transport.isRecording 
-              ? 'bg-[hsl(var(--aurora-red))] text-white animate-pulse' 
-              : 'bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--aurora-red))]'
+              ? 'bg-[var(--red)] border-[var(--red)] text-white animate-pulse shadow-lg' 
+              : 'border-[var(--red)] text-[var(--red)] hover:bg-[var(--red)] hover:text-white'
           }`}
         >
-          <i className="fas fa-circle text-xs"></i>
+          <Circle className="w-4 h-4" fill="currentColor" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className={`w-10 h-10 rounded-xl border-2 transition-all duration-200 ${
+            transport.isLooping 
+              ? 'bg-[var(--primary)] border-[var(--primary)] text-white' 
+              : 'border-[var(--border)] hover:bg-[var(--accent)]'
+          }`}
+        >
+          <Repeat className="w-4 h-4" />
         </Button>
       </div>
       
-      <div className="text-center font-mono text-sm">
-        <div className="text-[hsl(var(--frost-2))]">{formatTime(transport.currentTime)}</div>
-        <div className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-          {bpm} BPM | {timeSignature[0]}/{timeSignature[1]}
+      <div className="flex items-center justify-center space-x-8">
+        <div className="text-center">
+          <div className="text-2xl font-mono font-bold text-[var(--primary)] mb-1">
+            {formatTime(transport.currentTime)}
+          </div>
+          <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider">Position</span>
+        </div>
+        
+        <div className="w-px h-12 bg-[var(--border)]"></div>
+        
+        <div className="flex items-center space-x-6 bg-[var(--secondary)] px-4 py-2 rounded-lg">
+          <div className="text-center">
+            <div className="text-lg font-mono font-bold text-[var(--secondary-foreground)]">{bpm}</div>
+            <span className="text-xs text-[var(--muted-foreground)]">BPM</span>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-mono font-bold text-[var(--secondary-foreground)]">
+              {timeSignature[0]}/{timeSignature[1]}
+            </div>
+            <span className="text-xs text-[var(--muted-foreground)]">Time</span>
+          </div>
         </div>
       </div>
     </div>
