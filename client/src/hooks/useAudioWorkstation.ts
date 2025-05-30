@@ -125,28 +125,354 @@ export function useAudioWorkstation() {
       id: '3',
       name: 'Bass DI',
       type: 'audio',
-      filePath: 'Bass_DI_compressed.wav',
-      position: 0,
       volume: 70,
-      pan: 50,
+      pan: 45,
       muted: false,
-      soloed: true,
-      color: 'hsl(180 142 173)', // aurora-purple
-      waveformData: [75, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75, 65, 90, 60, 85, 75, 70, 80, 65, 90, 55, 85, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75],
-      effects: [],
+      soloed: false,
+      color: '#B48EAD',
+      clips: [
+        {
+          id: 'clip-4',
+          name: 'Bass_DI_01.wav',
+          startTime: 0,
+          duration: 32.5,
+          offset: 0,
+          volume: 75,
+          color: '#B48EAD',
+          waveformData: [75, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75, 65, 90, 60, 85, 75, 70, 80, 65, 90, 55, 85, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75]
+        },
+        {
+          id: 'clip-5',
+          name: 'Bass_DI_02.wav',
+          startTime: 64.0,
+          duration: 48.0,
+          offset: 0,
+          volume: 78,
+          color: '#B48EAD',
+          waveformData: [80, 70, 85, 75, 90, 65, 75, 85, 70, 90, 60, 85, 75, 80, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 90, 65, 85, 75, 80]
+        },
+        {
+          id: 'clip-6',
+          name: 'Bass_DI_03.wav',
+          startTime: 128.0,
+          duration: 64.0,
+          offset: 0,
+          volume: 72,
+          color: '#B48EAD',
+          waveformData: [70, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85]
+        }
+      ],
+      effects: [
+        { id: '6', name: 'Bass Compressor', type: 'compressor', enabled: true, parameters: {} },
+        { id: '7', name: 'EQ - Low Cut', type: 'eq', enabled: true, parameters: {} }
+      ],
     },
     {
       id: '4',
-      name: 'AI Ambience',
-      type: 'ai-generated',
-      filePath: 'AI_Forest_Ambience.wav',
-      position: 0,
-      volume: 60,
+      name: 'Electric Guitar',
+      type: 'audio',
+      volume: 82,
+      pan: 65,
+      muted: false,
+      soloed: false,
+      color: '#EBCB8B',
+      clips: [
+        {
+          id: 'clip-7',
+          name: 'Guitar_Rhythm_01.wav',
+          startTime: 0,
+          duration: 96.0,
+          offset: 0,
+          volume: 80,
+          color: '#EBCB8B',
+          waveformData: [60, 85, 40, 90, 55, 85, 45, 95, 35, 80, 50, 85, 40, 90, 45, 85, 55, 95, 35, 80, 50, 85, 45, 90, 40, 85, 55, 95, 35, 80, 50, 85, 45, 90, 40, 85, 55, 95, 35, 80]
+        },
+        {
+          id: 'clip-8',
+          name: 'Guitar_Lead_01.wav',
+          startTime: 64.0,
+          duration: 32.0,
+          offset: 0,
+          volume: 85,
+          color: '#EBCB8B',
+          waveformData: [45, 95, 30, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85]
+        },
+        {
+          id: 'clip-9',
+          name: 'Guitar_Solo.wav',
+          startTime: 160.0,
+          duration: 24.0,
+          offset: 0,
+          volume: 88,
+          color: '#EBCB8B',
+          waveformData: [35, 95, 25, 90, 40, 95, 20, 85, 45, 95, 30, 90, 35, 95, 25, 85, 50, 95, 20, 90, 40, 95, 30, 85, 45, 95, 25, 90, 35, 95, 30, 85, 50, 95, 20, 90, 40, 95, 25, 85]
+        }
+      ],
+      effects: [
+        { id: '8', name: 'Amp Simulator', type: 'amp', enabled: true, parameters: {} },
+        { id: '9', name: 'Reverb Hall', type: 'reverb', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '5',
+      name: 'Acoustic Guitar',
+      type: 'audio',
+      volume: 68,
+      pan: 35,
+      muted: false,
+      soloed: false,
+      color: '#A3BE8C',
+      clips: [
+        {
+          id: 'clip-10',
+          name: 'Acoustic_Strumming.wav',
+          startTime: 32.0,
+          duration: 128.0,
+          offset: 0,
+          volume: 70,
+          color: '#A3BE8C',
+          waveformData: [50, 65, 45, 70, 40, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70]
+        },
+        {
+          id: 'clip-11',
+          name: 'Acoustic_Fingerpicking.wav',
+          startTime: 180.0,
+          duration: 40.0,
+          offset: 0,
+          volume: 65,
+          color: '#A3BE8C',
+          waveformData: [40, 55, 35, 60, 30, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60]
+        }
+      ],
+      effects: [
+        { id: '10', name: 'Acoustic Enhancer', type: 'enhancer', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '6',
+      name: 'Piano',
+      type: 'midi',
+      volume: 75,
       pan: 50,
       muted: false,
       soloed: false,
-      color: 'hsl(143 188 187)', // frost-1
-      waveformData: [35, 40, 30, 45, 35, 50, 30, 40, 35, 45, 30, 50, 40, 35, 45, 30, 50, 35, 40, 30, 45, 35, 50, 30, 40, 35, 45, 30, 50, 40, 35, 45, 30, 50, 35, 40, 30, 45, 35, 50],
+      color: '#88C0D0',
+      clips: [
+        {
+          id: 'clip-12',
+          name: 'Piano_Chords.mid',
+          startTime: 0,
+          duration: 64.0,
+          offset: 0,
+          volume: 77,
+          color: '#88C0D0',
+          waveformData: [55, 70, 50, 75, 45, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75]
+        },
+        {
+          id: 'clip-13',
+          name: 'Piano_Melody.mid',
+          startTime: 96.0,
+          duration: 48.0,
+          offset: 0,
+          volume: 73,
+          color: '#88C0D0',
+          waveformData: [45, 85, 35, 80, 50, 85, 30, 75, 55, 85, 40, 80, 45, 85, 35, 75, 60, 85, 30, 80, 50, 85, 40, 75, 55, 85, 35, 80, 45, 85, 40, 75, 60, 85, 30, 80, 50, 85, 35, 75]
+        }
+      ],
+      effects: [
+        { id: '11', name: 'Piano Reverb', type: 'reverb', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '7',
+      name: 'Strings Section',
+      type: 'midi',
+      volume: 65,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: '#D08770',
+      clips: [
+        {
+          id: 'clip-14',
+          name: 'Strings_Pad.mid',
+          startTime: 32.0,
+          duration: 160.0,
+          offset: 0,
+          volume: 68,
+          color: '#D08770',
+          waveformData: [30, 60, 25, 65, 20, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65]
+        }
+      ],
+      effects: [
+        { id: '12', name: 'Strings Reverb', type: 'reverb', enabled: true, parameters: {} },
+        { id: '13', name: 'Chorus', type: 'chorus', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '8',
+      name: 'Synth Lead',
+      type: 'midi',
+      volume: 78,
+      pan: 60,
+      muted: false,
+      soloed: false,
+      color: '#5E81AC',
+      clips: [
+        {
+          id: 'clip-15',
+          name: 'Synth_Lead_01.mid',
+          startTime: 64.0,
+          duration: 32.0,
+          offset: 0,
+          volume: 80,
+          color: '#5E81AC',
+          waveformData: [40, 90, 30, 85, 50, 90, 25, 80, 55, 90, 35, 85, 40, 90, 30, 80, 60, 90, 25, 85, 50, 90, 35, 80, 55, 90, 30, 85, 40, 90, 35, 80, 60, 90, 25, 85, 50, 90, 30, 80]
+        },
+        {
+          id: 'clip-16',
+          name: 'Synth_Lead_02.mid',
+          startTime: 128.0,
+          duration: 48.0,
+          offset: 0,
+          volume: 82,
+          color: '#5E81AC',
+          waveformData: [35, 95, 25, 90, 45, 95, 20, 85, 50, 95, 30, 90, 35, 95, 25, 85, 55, 95, 20, 90, 45, 95, 30, 85, 50, 95, 25, 90, 35, 95, 30, 85, 55, 95, 20, 90, 45, 95, 25, 85]
+        }
+      ],
+      effects: [
+        { id: '14', name: 'Delay', type: 'delay', enabled: true, parameters: {} },
+        { id: '15', name: 'Filter Sweep', type: 'filter', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '9',
+      name: 'Backup Vocals',
+      type: 'audio',
+      volume: 62,
+      pan: 30,
+      muted: false,
+      soloed: false,
+      color: '#BF616A',
+      clips: [
+        {
+          id: 'clip-17',
+          name: 'BVox_Harmony_01.wav',
+          startTime: 32.0,
+          duration: 16.0,
+          offset: 0,
+          volume: 65,
+          color: '#BF616A',
+          waveformData: [50, 75, 45, 80, 40, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80]
+        },
+        {
+          id: 'clip-18',
+          name: 'BVox_Harmony_02.wav',
+          startTime: 80.0,
+          duration: 24.0,
+          offset: 0,
+          volume: 68,
+          color: '#BF616A',
+          waveformData: [45, 80, 40, 85, 35, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85]
+        },
+        {
+          id: 'clip-19',
+          name: 'BVox_Chorus.wav',
+          startTime: 128.0,
+          duration: 32.0,
+          offset: 0,
+          volume: 70,
+          color: '#BF616A',
+          waveformData: [55, 85, 50, 90, 45, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90]
+        }
+      ],
+      effects: [
+        { id: '16', name: 'Vocal Reverb', type: 'reverb', enabled: true, parameters: {} },
+        { id: '17', name: 'De-esser', type: 'de-esser', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '10',
+      name: 'Percussion',
+      type: 'audio',
+      volume: 58,
+      pan: 45,
+      muted: false,
+      soloed: false,
+      color: '#EBCB8B',
+      clips: [
+        {
+          id: 'clip-20',
+          name: 'Tambourine.wav',
+          startTime: 0,
+          duration: 192.0,
+          offset: 0,
+          volume: 60,
+          color: '#EBCB8B',
+          waveformData: [25, 70, 20, 75, 15, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75]
+        },
+        {
+          id: 'clip-21',
+          name: 'Shaker.wav',
+          startTime: 64.0,
+          duration: 128.0,
+          offset: 0,
+          volume: 55,
+          color: '#EBCB8B',
+          waveformData: [15, 55, 10, 60, 5, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60]
+        }
+      ],
+      effects: [
+        { id: '18', name: 'EQ - High Boost', type: 'eq', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '11',
+      name: 'Ambient Texture',
+      type: 'ai-generated',
+      volume: 45,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: '#81A1C1',
+      clips: [
+        {
+          id: 'clip-22',
+          name: 'AI_Ambient_Pad.wav',
+          startTime: 0,
+          duration: 240.0,
+          offset: 0,
+          volume: 48,
+          color: '#81A1C1',
+          waveformData: [20, 40, 15, 45, 10, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45, 15, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45, 15, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45]
+        }
+      ],
+      effects: [
+        { id: '19', name: 'AI Spatial Processor', type: 'ai-spatial', enabled: true, parameters: {} },
+        { id: '20', name: 'Reverb - Large Hall', type: 'reverb', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '12',
+      name: 'FX Return',
+      type: 'audio',
+      volume: 35,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: '#4C566A',
+      clips: [
+        {
+          id: 'clip-23',
+          name: 'Reverb_Return.wav',
+          startTime: 32.0,
+          duration: 160.0,
+          offset: 0,
+          volume: 38,
+          color: '#4C566A',
+          waveformData: [10, 30, 5, 35, 0, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35]
+        }
+      ],
       effects: [],
     },
   ]);
@@ -169,13 +495,143 @@ export function useAudioWorkstation() {
     {
       id: '2',
       trackId: '2',
-      name: 'Ch 2-9 - Drums',
+      name: 'Ch 2 - Drums',
       volume: 80,
       pan: 50,
       muted: false,
       soloed: false,
       gain: 0,
       sends: { reverb: 15 },
+      eq: { highFreq: 0, midFreq: 0, lowFreq: 0 },
+      effects: [],
+    },
+    {
+      id: '3',
+      trackId: '3',
+      name: 'Ch 3 - Bass DI',
+      volume: 70,
+      pan: 45,
+      muted: false,
+      soloed: false,
+      gain: -2,
+      sends: { reverb: 5 },
+      eq: { highFreq: -1.2, midFreq: 0.8, lowFreq: 2.4 },
+      effects: [],
+    },
+    {
+      id: '4',
+      trackId: '4',
+      name: 'Ch 4 - Electric Guitar',
+      volume: 82,
+      pan: 65,
+      muted: false,
+      soloed: false,
+      gain: 1,
+      sends: { reverb: 35 },
+      eq: { highFreq: 1.8, midFreq: 1.2, lowFreq: -0.5 },
+      effects: [],
+    },
+    {
+      id: '5',
+      trackId: '5',
+      name: 'Ch 5 - Acoustic Guitar',
+      volume: 68,
+      pan: 35,
+      muted: false,
+      soloed: false,
+      gain: 0,
+      sends: { reverb: 20 },
+      eq: { highFreq: 0.8, midFreq: 0.2, lowFreq: -1.0 },
+      effects: [],
+    },
+    {
+      id: '6',
+      trackId: '6',
+      name: 'Ch 6 - Piano',
+      volume: 75,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      gain: -1,
+      sends: { reverb: 30 },
+      eq: { highFreq: 0.5, midFreq: 0, lowFreq: 0.2 },
+      effects: [],
+    },
+    {
+      id: '7',
+      trackId: '7',
+      name: 'Ch 7 - Strings',
+      volume: 65,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      gain: -3,
+      sends: { reverb: 45 },
+      eq: { highFreq: 0.3, midFreq: -0.2, lowFreq: -2.0 },
+      effects: [],
+    },
+    {
+      id: '8',
+      trackId: '8',
+      name: 'Ch 8 - Synth Lead',
+      volume: 78,
+      pan: 60,
+      muted: false,
+      soloed: false,
+      gain: 2,
+      sends: { reverb: 25 },
+      eq: { highFreq: 2.0, midFreq: 1.5, lowFreq: -1.5 },
+      effects: [],
+    },
+    {
+      id: '9',
+      trackId: '9',
+      name: 'Ch 9 - Backup Vocals',
+      volume: 62,
+      pan: 30,
+      muted: false,
+      soloed: false,
+      gain: 0,
+      sends: { reverb: 40 },
+      eq: { highFreq: 1.5, midFreq: 0.3, lowFreq: -0.8 },
+      effects: [],
+    },
+    {
+      id: '10',
+      trackId: '10',
+      name: 'Ch 10 - Percussion',
+      volume: 58,
+      pan: 45,
+      muted: false,
+      soloed: false,
+      gain: 1,
+      sends: { reverb: 10 },
+      eq: { highFreq: 3.0, midFreq: 0, lowFreq: -1.0 },
+      effects: [],
+    },
+    {
+      id: '11',
+      trackId: '11',
+      name: 'Ch 11 - Ambient',
+      volume: 45,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      gain: -5,
+      sends: { reverb: 60 },
+      eq: { highFreq: -0.5, midFreq: -1.0, lowFreq: 0.5 },
+      effects: [],
+    },
+    {
+      id: '12',
+      trackId: '12',
+      name: 'Ch 12 - FX Return',
+      volume: 35,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      gain: -8,
+      sends: { reverb: 0 },
       eq: { highFreq: 0, midFreq: 0, lowFreq: 0 },
       effects: [],
     },
