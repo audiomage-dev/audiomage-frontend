@@ -21,7 +21,17 @@ import {
   X,
   Square,
   CheckSquare,
-  History
+  History,
+  Library,
+  Play,
+  Pause,
+  Volume2,
+  Download,
+  Heart,
+  Filter,
+  Tag,
+  Clock,
+  Star
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -284,6 +294,227 @@ export function VerticalSidebar() {
       icon: <History className="w-5 h-5" />,
       label: 'Audio Changemaps',
       component: <AudioChangemapsPanel />
+    },
+    {
+      id: 'library',
+      icon: <Library className="w-5 h-5" />,
+      label: 'AI Sound Library',
+      component: (
+        <div className="h-full flex flex-col">
+          {/* Search and Filters Header */}
+          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
+            <div className="space-y-3">
+              {/* Main Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
+                <input
+                  type="text"
+                  placeholder="Search sounds, tags, or descriptions..."
+                  className="w-full pl-10 pr-4 py-2 text-sm bg-[var(--background)] border border-[var(--border)] rounded-md focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-1">
+                {['SFX', 'Ambiance', 'Foley', 'Music', 'Voice'].map((filter) => (
+                  <Button
+                    key={filter}
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                  >
+                    {filter}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Advanced Filters Toggle */}
+              <div className="flex items-center justify-between">
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Filter className="w-3 h-3 mr-1" />
+                  Advanced Filters
+                </Button>
+                <span className="text-xs text-[var(--muted-foreground)]">12,847 sounds</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Navigation */}
+          <div className="p-4 border-b border-[var(--border)]">
+            <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Categories</h4>
+            <div className="space-y-1">
+              {[
+                { name: 'Nature & Weather', count: 2156, icon: '🌿' },
+                { name: 'Urban & City', count: 1843, icon: '🏙️' },
+                { name: 'Mechanical & Tech', count: 2934, icon: '⚙️' },
+                { name: 'Human Activities', count: 1567, icon: '👥' },
+                { name: 'Musical Elements', count: 987, icon: '🎵' },
+                { name: 'Abstract & Designed', count: 756, icon: '✨' },
+                { name: 'Animals & Creatures', count: 634, icon: '🦅' },
+                { name: 'Vehicles & Transport', count: 1245, icon: '🚗' }
+              ].map((category) => (
+                <div
+                  key={category.name}
+                  className="flex items-center justify-between p-2 rounded hover:bg-[var(--accent)] cursor-pointer group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">{category.icon}</span>
+                    <span className="text-sm">{category.name}</span>
+                  </div>
+                  <span className="text-xs text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
+                    {category.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sound Results */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium">Recent & Trending</h4>
+                <div className="flex space-x-1">
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Square className="w-3 h-3" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Layers className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  {
+                    name: 'Rain on Leaves Heavy.wav',
+                    category: 'Nature',
+                    duration: '2:34',
+                    tags: ['rain', 'nature', 'ambient'],
+                    popular: true
+                  },
+                  {
+                    name: 'City Traffic Morning.wav',
+                    category: 'Urban',
+                    duration: '1:47',
+                    tags: ['traffic', 'urban', 'morning'],
+                    popular: false
+                  },
+                  {
+                    name: 'Footsteps Gravel Slow.wav',
+                    category: 'Foley',
+                    duration: '0:15',
+                    tags: ['footsteps', 'gravel', 'walking'],
+                    popular: true
+                  },
+                  {
+                    name: 'Mechanical Hum Industrial.wav',
+                    category: 'Tech',
+                    duration: '4:12',
+                    tags: ['mechanical', 'industrial', 'loop'],
+                    popular: false
+                  },
+                  {
+                    name: 'Ocean Waves Gentle.wav',
+                    category: 'Nature',
+                    duration: '3:56',
+                    tags: ['ocean', 'waves', 'peaceful'],
+                    popular: true
+                  }
+                ].map((sound, index) => (
+                  <div
+                    key={sound.name}
+                    className="p-3 border border-[var(--border)] rounded-md hover:bg-[var(--accent)] group cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        {sound.popular && <Star className="w-3 h-3 text-[var(--yellow)] flex-shrink-0" />}
+                        <span className="text-sm font-medium truncate">{sound.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                        >
+                          <Play className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                        >
+                          <Download className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                        >
+                          <Heart className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                      <div className="flex items-center space-x-2">
+                        <span className="px-2 py-1 bg-[var(--secondary)] rounded text-xs">
+                          {sound.category}
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{sound.duration}</span>
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {sound.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-1.5 py-0.5 bg-[var(--muted)] text-xs rounded"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Load More */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-4 text-xs"
+              >
+                Load More Sounds
+              </Button>
+            </div>
+          </div>
+
+          {/* Now Playing Mini Player */}
+          <div className="border-t border-[var(--border)] p-3 bg-[var(--muted)]">
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Pause className="w-3 h-3" />
+              </Button>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium truncate">Rain on Leaves Heavy.wav</div>
+                <div className="text-xs text-[var(--muted-foreground)]">0:45 / 2:34</div>
+              </div>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Volume2 className="w-3 h-3" />
+              </Button>
+            </div>
+            <div className="mt-2">
+              <div className="h-1 bg-[var(--background)] rounded-full">
+                <div className="h-full w-1/3 bg-[var(--primary)] rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
     }
   ];
 

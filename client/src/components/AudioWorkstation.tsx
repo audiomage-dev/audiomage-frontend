@@ -112,19 +112,7 @@ export function AudioWorkstation() {
               />
             </div>
           )}
-          
-          {/* Mixing Console at bottom */}
-          <div className="flex-none h-48 border-t border-[var(--border)]">
-            <MixingConsole
-              channels={mixerChannels}
-              aiAnalysis={aiAnalysis}
-              masterVolume={currentProject.masterVolume}
-              onChannelVolumeChange={handleChannelVolumeChange}
-              onChannelMute={handleChannelMute}
-              onChannelSolo={handleChannelSolo}
-              onMasterVolumeChange={handleMasterVolumeChange}
-            />
-          </div>
+
         </div>
       </div>
       
