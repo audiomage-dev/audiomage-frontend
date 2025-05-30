@@ -24,6 +24,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.add(theme);
   }, [theme]);
 
+  // Set initial theme on mount
+  useEffect(() => {
+    document.documentElement.classList.add(theme);
+  }, []);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'nord-light' ? 'nord-dark' : 'nord-light');
   };
