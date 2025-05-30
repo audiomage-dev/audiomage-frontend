@@ -195,8 +195,6 @@ export function ProjectBrowser() {
     <div className="h-full flex flex-col bg-[var(--background)]">
       {/* Header */}
       <div className="flex-none p-3 border-b border-[var(--border)] bg-gradient-to-r from-[var(--muted)] to-[var(--secondary)]">
-        <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider mb-3">Explorer</h3>
-        
         {/* Search */}
         <div className="relative">
           <i className="fas fa-search absolute left-2 top-2 text-xs text-[var(--muted-foreground)]"></i>
