@@ -31,9 +31,10 @@ interface CompactTimelineEditorProps {
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
+  onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect, onClipMove }: CompactTimelineEditorProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [scrollX, setScrollX] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
@@ -365,9 +366,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       
       console.log(`Clip ${draggingClip.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
       
-      // Here you would update the actual clip position in your data
-      // This would involve moving the clip from originalTrack to newTrack
-      // and updating its startTime to newStartTime
+      // Persist the clip movement to actual data
+      if (onClipMove && newTrackId) {
+        onClipMove(draggingClip.clipId, draggingClip.trackId, newTrackId, newStartTime);
+      }
       
       setDraggingClip(null);
     }
