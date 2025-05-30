@@ -197,8 +197,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     
     // Finalize audio selection if it exists and has a meaningful duration
     if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.01) {
-      // Keep the selection active for context menu operations
-      console.log('Audio selection completed:', {
+      // Keep the selection active and mark it as completed
+      setAudioSelection(prev => prev ? { ...prev, isActive: true } : null);
+      console.log('Audio selection stored:', {
         trackId: audioSelection.trackId,
         startTime: Math.min(audioSelection.startTime, audioSelection.endTime),
         endTime: Math.max(audioSelection.startTime, audioSelection.endTime),
