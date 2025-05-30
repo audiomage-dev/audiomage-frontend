@@ -635,23 +635,21 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           }}
           style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}
         >
-          {/* Canvas grid background */}
-          <canvas
-            ref={canvasRef}
-            className="absolute top-0 left-0 pointer-events-none z-0"
-            width={getTimelineWidth()}
-            height={tracks.length * 96}
-            style={{ transform: `translateX(-${scrollX}px)` }}
-          />
-          
           <div 
-            className="relative z-10" 
+            className="relative" 
             style={{ 
               width: `${getTimelineWidth()}px`, 
               height: `${tracks.length * 96}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
+            {/* Grid lines inside timeline content */}
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 pointer-events-none z-0"
+              width={getTimelineWidth()}
+              height={tracks.length * 96}
+            />
             {tracks.map((track, index) => (
               <div
                 key={track.id}
