@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
@@ -9,7 +10,163 @@ interface TimelineEditorProps {
   onTrackSolo: (trackId: string) => void;
 }
 
+interface ContextMenuProps {
+  x: number;
+  y: number;
+  trackId: string;
+  onClose: () => void;
+  onAction: (action: string, trackId: string) => void;
+}
+
+function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleAction = (action: string) => {
+    onAction(action, trackId);
+    onClose();
+  };
+
+  return (
+    <div
+      ref={menuRef}
+      className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-2 z-50 min-w-48"
+      style={{ left: x, top: y }}
+    >
+      <div className="px-3 py-2 border-b border-[var(--border)]">
+        <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Track Actions</span>
+      </div>
+      
+      <div className="py-1">
+        <button
+          onClick={() => handleAction('duplicate')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-copy text-[var(--primary)]"></i>
+          <span>Duplicate Track</span>
+        </button>
+        
+        <button
+          onClick={() => handleAction('rename')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-edit text-[var(--frost2)]"></i>
+          <span>Rename Track</span>
+        </button>
+        
+        <button
+          onClick={() => handleAction('color')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-palette text-[var(--purple)]"></i>
+          <span>Change Color</span>
+        </button>
+        
+        <div className="border-t border-[var(--border)] my-1"></div>
+        
+        <button
+          onClick={() => handleAction('freeze')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-snowflake text-[var(--frost1)]"></i>
+          <span>Freeze Track</span>
+        </button>
+        
+        <button
+          onClick={() => handleAction('bounce')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-download text-[var(--green)]"></i>
+          <span>Bounce to Audio</span>
+        </button>
+        
+        <div className="border-t border-[var(--border)] my-1"></div>
+        
+        <button
+          onClick={() => handleAction('effects')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-sliders-h text-[var(--frost3)]"></i>
+          <span>Add Effect...</span>
+        </button>
+        
+        <button
+          onClick={() => handleAction('send')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+        >
+          <i className="fas fa-share text-[var(--orange)]"></i>
+          <span>Add Send...</span>
+        </button>
+        
+        <div className="border-t border-[var(--border)] my-1"></div>
+        
+        <button
+          onClick={() => handleAction('delete')}
+          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] hover:text-[var(--red)] flex items-center space-x-2"
+        >
+          <i className="fas fa-trash text-[var(--red)]"></i>
+          <span>Delete Track</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: TimelineEditorProps) {
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackId: string } | null>(null);
+  
+  const handleTrackSelect = (trackId: string) => {
+    setSelectedTrackId(trackId);
+  };
+
+  const handleTrackRightClick = (e: React.MouseEvent, trackId: string) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, trackId });
+    setSelectedTrackId(trackId);
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenu(null);
+  };
+
+  const handleContextMenuAction = (action: string, trackId: string) => {
+    console.log(`Action: ${action} on track: ${trackId}`);
+    // Handle different actions
+    switch (action) {
+      case 'duplicate':
+        console.log('Duplicating track', trackId);
+        break;
+      case 'rename':
+        console.log('Renaming track', trackId);
+        break;
+      case 'color':
+        console.log('Changing color of track', trackId);
+        break;
+      case 'freeze':
+        console.log('Freezing track', trackId);
+        break;
+      case 'bounce':
+        console.log('Bouncing track', trackId);
+        break;
+      case 'effects':
+        console.log('Adding effects to track', trackId);
+        break;
+      case 'send':
+        console.log('Adding send to track', trackId);
+        break;
+      case 'delete':
+        console.log('Deleting track', trackId);
+        break;
+    }
+  };
+
+  // Close context menu when clicking outside
+  const handleGlobalClick = () => {
+    if (contextMenu) {
+      setContextMenu(null);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -18,28 +175,28 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col" onClick={handleGlobalClick}>
       {/* Toolbar */}
-      <div className="bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] p-2 flex items-center justify-between">
+      <div className="bg-[var(--muted)] border-b border-[var(--border)] p-2 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="p-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded h-auto">
+            <Button variant="ghost" size="sm" className="p-1 bg-[var(--primary)] text-white rounded h-auto">
               <i className="fas fa-mouse-pointer text-xs"></i>
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[hsl(var(--accent))] rounded h-auto">
+            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
               <i className="fas fa-cut text-xs"></i>
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[hsl(var(--accent))] rounded h-auto">
+            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
               <i className="fas fa-expand-arrows-alt text-xs"></i>
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[hsl(var(--accent))] rounded h-auto">
+            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
               <i className="fas fa-hand-paper text-xs"></i>
             </Button>
           </div>
-          <div className="h-4 border-l border-[hsl(var(--muted-foreground))]"></div>
+          <div className="h-4 border-l border-[var(--muted-foreground)]"></div>
           <div className="flex items-center space-x-1 text-xs">
             <span>Snap:</span>
-            <select className="bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded px-1 text-xs text-[hsl(var(--foreground))]">
+            <select className="bg-[var(--input)] border border-[var(--border)] rounded px-1 text-xs text-[var(--foreground)]">
               <option>1/16</option>
               <option>1/8</option>
               <option>1/4</option>
@@ -50,14 +207,14 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
           <span className="font-mono">Sample Rate: 48kHz</span>
           <span className="font-mono">Buffer: 256</span>
           <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-[hsl(var(--aurora-green))] rounded-full"></div>
+            <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
             <span>CPU: 23%</span>
           </div>
         </div>
       </div>
 
       {/* Timeline Header */}
-      <div className="bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] p-2">
+      <div className="bg-[var(--muted)] border-b border-[var(--border)] p-2">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-semibold">Timeline Editor</span>
@@ -96,47 +253,61 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
       <div className="flex-1 bg-[hsl(var(--background))] timeline-grid overflow-auto scrollbar-thin">
         <div className="min-w-full">
           {tracks.map((track) => (
-            <div key={track.id} className="flex border-b border-[hsl(var(--border))]">
+            <div 
+              key={track.id} 
+              className={`flex border-b border-[var(--border)] ${
+                selectedTrackId === track.id ? 'bg-[var(--accent)]' : 'hover:bg-[var(--muted)]/50'
+              } transition-colors cursor-pointer`}
+              onClick={() => handleTrackSelect(track.id)}
+              onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+            >
               {/* Track Header */}
-              <div className="w-48 bg-[hsl(var(--muted))] border-r border-[hsl(var(--border))] p-2 flex flex-col justify-center">
+              <div className="w-48 bg-[var(--muted)] border-r border-[var(--border)] p-2 flex flex-col justify-center">
                 <div className="flex items-center space-x-2 mb-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      !track.muted ? 'bg-[hsl(var(--aurora-green))]' : 'bg-[hsl(var(--secondary))]'
+                      !track.muted ? 'bg-[var(--green)]' : 'bg-[var(--secondary)]'
                     }`}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     ●
                   </Button>
                   <Button
-                    onClick={() => onTrackMute(track.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTrackMute(track.id);
+                    }}
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      track.muted ? 'bg-[hsl(var(--aurora-orange))]' : 'bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--aurora-orange))]'
+                      track.muted ? 'bg-[var(--orange)]' : 'bg-[var(--secondary)] hover:bg-[var(--orange)]'
                     }`}
                   >
                     M
                   </Button>
                   <Button
-                    onClick={() => onTrackSolo(track.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTrackSolo(track.id);
+                    }}
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      track.soloed ? 'bg-[hsl(var(--aurora-yellow))]' : 'bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--aurora-yellow))]'
+                      track.soloed ? 'bg-[var(--yellow)]' : 'bg-[var(--secondary)] hover:bg-[var(--yellow)]'
                     }`}
                   >
                     S
                   </Button>
                   {track.type === 'ai-generated' && (
-                    <i className="fas fa-robot text-[hsl(var(--frost-1))] text-xs"></i>
+                    <i className="fas fa-robot text-[var(--frost1)] text-xs"></i>
                   )}
                 </div>
                 <div className={`text-xs font-semibold`} style={{ color: track.color }}>
                   {track.name}
                 </div>
-                <div className="text-xs text-[hsl(var(--muted-foreground))]">
+                <div className="text-xs text-[var(--muted-foreground)]">
                   {track.type === 'ai-generated' ? 'Generated' : 'Input: 1-2'}
                 </div>
               </div>
@@ -156,6 +327,17 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
           ))}
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <TrackContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          trackId={contextMenu.trackId}
+          onClose={handleContextMenuClose}
+          onAction={handleContextMenuAction}
+        />
+      )}
     </div>
   );
 }
