@@ -8,7 +8,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function AudioWorkstation() {
   const {
@@ -33,6 +33,8 @@ export function AudioWorkstation() {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(280); // Default width for left sidebar
+  const [isResizingLeftSidebar, setIsResizingLeftSidebar] = useState(false);
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -56,6 +58,38 @@ export function AudioWorkstation() {
     console.log(`Toggle solo for channel: ${channelId}`);
   };
 
+  const handleLeftSidebarResize = (e: MouseEvent) => {
+    if (!isResizingLeftSidebar) return;
+    
+    const newWidth = e.clientX;
+    const minWidth = 200;
+    const maxWidth = 500;
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setLeftSidebarWidth(newWidth);
+    }
+  };
+
+  const handleLeftSidebarMouseDown = () => {
+    setIsResizingLeftSidebar(true);
+  };
+
+  const handleLeftSidebarMouseUp = () => {
+    setIsResizingLeftSidebar(false);
+  };
+
+  useEffect(() => {
+    if (isResizingLeftSidebar) {
+      document.addEventListener('mousemove', handleLeftSidebarResize);
+      document.addEventListener('mouseup', handleLeftSidebarMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleLeftSidebarResize);
+        document.removeEventListener('mouseup', handleLeftSidebarMouseUp);
+      };
+    }
+  }, [isResizingLeftSidebar]);
+
   return (
     <div className="h-screen flex flex-col select-none bg-[var(--background)]">
       {/* Top Menu Bar */}
@@ -74,8 +108,20 @@ export function AudioWorkstation() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Vertical Sidebar */}
-        <div className="flex-none">
+        <div 
+          className="flex-none border-r border-[var(--border)] relative"
+          style={{ width: `${leftSidebarWidth}px` }}
+        >
           <VerticalSidebar />
+          
+          {/* Resize Handle */}
+          <div
+            className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[var(--primary)] transition-colors group"
+            onMouseDown={handleLeftSidebarMouseDown}
+            style={{ cursor: isResizingLeftSidebar ? 'col-resize' : 'col-resize' }}
+          >
+            <div className="w-0.5 h-full bg-transparent group-hover:bg-[var(--primary)] transition-colors" />
+          </div>
         </div>
         
         {/* Center Panel - Timeline */}
