@@ -28,12 +28,12 @@ export function TransportControls({
   };
 
   return (
-    <div className="p-3 border-b border-[hsl(var(--nord-2))]">
+    <div className="p-3 border-b border-[hsl(var(--border))]">
       <div className="flex items-center justify-center space-x-2 mb-3">
         <Button
           variant="ghost"
           size="sm"
-          className="transport-btn w-8 h-8 bg-[hsl(var(--nord-2))] hover:bg-[hsl(var(--frost-4))] rounded-full flex items-center justify-center"
+          className="transport-btn w-8 h-8 bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--primary))] rounded-full flex items-center justify-center"
         >
           <i className="fas fa-backward text-xs"></i>
         </Button>
@@ -45,7 +45,7 @@ export function TransportControls({
             size="sm"
             className="transport-btn w-10 h-10 bg-[hsl(var(--aurora-yellow))] hover:bg-opacity-80 rounded-full flex items-center justify-center"
           >
-            <i className="fas fa-pause text-[hsl(var(--nord-0))] text-xs"></i>
+            <i className="fas fa-pause text-[hsl(var(--background))] text-xs"></i>
           </Button>
         ) : (
           <Button
@@ -54,14 +54,14 @@ export function TransportControls({
             size="sm"
             className="transport-btn w-10 h-10 bg-[hsl(var(--aurora-green))] hover:bg-opacity-80 rounded-full flex items-center justify-center"
           >
-            <i className="fas fa-play text-[hsl(var(--nord-0))] ml-1"></i>
+            <i className="fas fa-play text-[hsl(var(--background))] ml-1"></i>
           </Button>
         )}
         
         <Button
           variant="ghost"
           size="sm"
-          className="transport-btn w-8 h-8 bg-[hsl(var(--nord-2))] hover:bg-[hsl(var(--frost-4))] rounded-full flex items-center justify-center"
+          className="transport-btn w-8 h-8 bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--primary))] rounded-full flex items-center justify-center"
         >
           <i className="fas fa-forward text-xs"></i>
         </Button>
@@ -82,7 +82,7 @@ export function TransportControls({
           className={`transport-btn w-8 h-8 rounded-full flex items-center justify-center ${
             transport.isRecording 
               ? 'bg-[hsl(var(--aurora-red))] text-white animate-pulse' 
-              : 'bg-[hsl(var(--nord-2))] hover:bg-[hsl(var(--aurora-red))]'
+              : 'bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--aurora-red))]'
           }`}
         >
           <i className="fas fa-circle text-xs"></i>
@@ -91,7 +91,7 @@ export function TransportControls({
       
       <div className="text-center font-mono text-sm">
         <div className="text-[hsl(var(--frost-2))]">{formatTime(transport.currentTime)}</div>
-        <div className="text-xs text-[hsl(var(--nord-3))] mt-1">
+        <div className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
           {bpm} BPM | {timeSignature[0]}/{timeSignature[1]}
         </div>
       </div>

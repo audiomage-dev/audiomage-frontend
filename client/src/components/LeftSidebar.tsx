@@ -27,7 +27,7 @@ export function LeftSidebar({
   onRecord,
 }: LeftSidebarProps) {
   return (
-    <div className="w-64 bg-[hsl(var(--nord-1))] border-r border-[hsl(var(--nord-2))] flex flex-col">
+    <div className="w-64 bg-[hsl(var(--muted))] border-r border-[hsl(var(--border))] flex flex-col">
       <TransportControls
         transport={transport}
         bpm={bpm}
