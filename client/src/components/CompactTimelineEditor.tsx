@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
@@ -69,7 +69,177 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     selection: { trackId: string; startTime: number; endTime: number; trackName: string } 
   } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+
+  // Canvas drawing function
+  const drawTimeline = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+    const trackHeight = 96;
+
+    // Clear canvas
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw grid lines
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e5e7eb';
+    ctx.globalAlpha = 0.2;
+    ctx.lineWidth = 1;
+
+    // Vertical grid lines (time markers)
+    const gridInterval = 30 * zoomLevel;
+    for (let i = 0; i < width; i += gridInterval) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, height);
+      ctx.stroke();
+    }
+
+    // Horizontal track lines
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < tracks.length; i++) {
+      const y = (i + 1) * trackHeight;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Draw track backgrounds
+    tracks.forEach((track, index) => {
+      const y = index * trackHeight;
+      
+      // Track background
+      if (selectedTrackIds.includes(track.id)) {
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() + '33' || '#3b82f633';
+        ctx.fillRect(0, y, width, trackHeight);
+      }
+    });
+
+    // Draw audio clips
+    tracks.forEach((track, trackIndex) => {
+      const trackY = trackIndex * trackHeight;
+      
+      track.clips?.forEach((clip) => {
+        const clipStartX = (clip.startTime / 1200) * timelineWidth - scrollX;
+        const clipWidth = (clip.duration / 1200) * timelineWidth;
+        const clipHeight = 80; // 20px margin from 96px track height
+        const clipY = trackY + 8; // 8px top margin
+
+        // Skip clips outside visible area
+        if (clipStartX + clipWidth < 0 || clipStartX > width) return;
+
+        // Clip background
+        ctx.fillStyle = clip.color;
+        ctx.fillRect(clipStartX, clipY, clipWidth, clipHeight);
+
+        // Clip border
+        ctx.strokeStyle = clip.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(clipStartX, clipY, clipWidth, clipHeight);
+
+        // Clip header
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(clipStartX, clipY, clipWidth, 20);
+
+        // Clip name
+        ctx.fillStyle = 'white';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(clip.name, clipStartX + 8, clipY + 14);
+
+        // Duration
+        ctx.textAlign = 'right';
+        ctx.fillText(`${clip.duration.toFixed(1)}s`, clipStartX + clipWidth - 8, clipY + 14);
+
+        // Draw waveform
+        if (clip.waveformData && clipWidth > 20) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          
+          const waveformY = clipY + 20;
+          const waveformHeight = clipHeight - 20;
+          const centerY = waveformY + waveformHeight / 2;
+          
+          clip.waveformData.forEach((amplitude, i) => {
+            const x = clipStartX + (i / (clip.waveformData!.length - 1)) * clipWidth;
+            const y = centerY - ((amplitude - 50) / 50) * (waveformHeight / 2);
+            
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          });
+          
+          ctx.stroke();
+
+          // Center line
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(clipStartX, centerY);
+          ctx.lineTo(clipStartX + clipWidth, centerY);
+          ctx.stroke();
+        }
+      });
+    });
+
+    // Draw playhead
+    const playheadX = (transport.currentTime / 1200) * timelineWidth - scrollX;
+    if (playheadX >= 0 && playheadX <= width) {
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(playheadX, 0);
+      ctx.lineTo(playheadX, height);
+      ctx.stroke();
+    }
+
+    // Draw selection box
+    if (selectionBox) {
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6';
+      ctx.fillStyle = (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6') + '33';
+      ctx.lineWidth = 2;
+      
+      const boxWidth = selectionBox.endX - selectionBox.startX;
+      const boxHeight = selectionBox.endY - selectionBox.startY;
+      
+      ctx.fillRect(selectionBox.startX, selectionBox.startY, boxWidth, boxHeight);
+      ctx.strokeRect(selectionBox.startX, selectionBox.startY, boxWidth, boxHeight);
+    }
+
+    // Draw audio selection
+    if (audioSelection) {
+      const selectionTrackIndex = tracks.findIndex(t => t.id === audioSelection.trackId);
+      if (selectionTrackIndex >= 0) {
+        const selectionY = selectionTrackIndex * trackHeight;
+        const selectionStartX = audioSelection.startX - scrollX;
+        const selectionWidth = audioSelection.endX - audioSelection.startX;
+        
+        ctx.fillStyle = (getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6') + '40';
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6';
+        ctx.lineWidth = 2;
+        
+        ctx.fillRect(selectionStartX, selectionY, selectionWidth, trackHeight);
+        ctx.strokeRect(selectionStartX, selectionY, selectionWidth, trackHeight);
+      }
+    }
+  }, [tracks, zoomLevel, scrollX, selectedTrackIds, transport.currentTime, selectionBox, audioSelection]);
+
+  // Redraw canvas when dependencies change
+  useEffect(() => {
+    drawTimeline();
+  }, [drawTimeline]);
 
   const handleTrackSelect = useCallback((trackId: string, e?: React.MouseEvent) => {
     if (e?.ctrlKey || e?.metaKey) {
@@ -548,39 +718,43 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           </div>
         </div>
 
-        {/* Connected Timeline Content */}
+        {/* Canvas-based Timeline Content */}
         <div 
           className="flex-1 overflow-auto scrollbar-thin select-none mt-8" 
           ref={timelineRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
           onWheel={handleScroll}
           style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}
         >
-          <div 
-            className="relative bg-[var(--background)]" 
-            style={{ 
-              width: `${Math.max(1200, 1200 * zoomLevel)}px`, 
-              height: `${tracks.length * 96}px`
+          <canvas
+            ref={canvasRef}
+            className="block"
+            width={Math.max(1200, 1200 * zoomLevel)}
+            height={tracks.length * 96}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={() => {
+              setIsDragging(false);
+              setIsSelecting(false);
+              setSelectionBox(null);
+              setDraggingClip(null);
             }}
-          >
-            {tracks.map((track, index) => (
-              <div
-                key={track.id}
-                className={`absolute left-0 right-0 h-24 border-b border-[var(--border)] transition-colors ${
-                  selectedTrackIds.includes(track.id) ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
-                }`}
-                style={{ top: `${index * 96}px` }}
-                onClick={(e) => handleTrackSelect(track.id, e)}
-                onContextMenu={(e) => handleTrackRightClick(e, track.id)}
-              >
-                {/* Audio Clips */}
-                <div 
-                  className="h-full relative cursor-crosshair"
-                  onMouseDown={(e) => handleAudioSelectionStart(e, track.id, index)}
-                  onContextMenu={(e) => handleAudioRightClick(e, track.id)}
-                >
+            onContextMenu={(e) => {
+              e.preventDefault();
+              const rect = canvasRef.current?.getBoundingClientRect();
+              if (!rect) return;
+              
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              const trackIndex = Math.floor(y / 96);
+              
+              if (trackIndex >= 0 && trackIndex < tracks.length) {
+                handleTrackRightClick(e, tracks[trackIndex].id);
+              }
+            }}
+          />
+        </div>
+      </div>
                   {track.clips?.map((clip) => {
                     const timelineWidth = Math.max(1200, 1200 * zoomLevel);
                     const clipStartX = (clip.startTime / 1200) * timelineWidth; // 20 minutes total
