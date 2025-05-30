@@ -96,21 +96,119 @@ export function VerticalSidebar() {
       icon: <Sliders className="w-5 h-5" />,
       label: 'Quick Mix',
       component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Master Controls</h3>
-          <div className="space-y-3">
-            <div>
-              <div className="text-xs text-[var(--muted-foreground)] mb-1">Master Volume</div>
-              <div className="flex items-center space-x-2">
-                <div className="flex-1 h-2 bg-[var(--muted)] rounded-full">
-                  <div className="h-full w-3/4 bg-[var(--primary)] rounded-full"></div>
+        <div className="p-4 space-y-4">
+          {/* Master Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Master Controls</h3>
+            
+            {/* Master Volume */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--muted-foreground)]">Master Volume</span>
+                <span className="text-xs font-mono text-[var(--foreground)]">-6.2dB</span>
+              </div>
+              <div className="relative">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  defaultValue="75"
+                  className="w-full h-2 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1">
+                  <span>-∞</span>
+                  <span>0dB</span>
+                  <span>+6</span>
                 </div>
-                <span className="text-xs font-mono text-[var(--foreground)]">-6dB</span>
               </div>
             </div>
-            <div>
-              <div className="text-xs text-[var(--muted-foreground)] mb-1">AI Analysis</div>
-              <div className="text-xs text-[var(--green)]">✓ Mix balanced</div>
+
+            {/* Level Meters */}
+            <div className="space-y-2 mb-4">
+              <div className="text-xs text-[var(--muted-foreground)]">Output Levels</div>
+              <div className="flex space-x-1">
+                {/* Left Channel */}
+                <div className="flex-1">
+                  <div className="text-xs text-center mb-1">L</div>
+                  <div className="h-20 w-4 bg-[var(--muted)] rounded-sm relative overflow-hidden">
+                    <div className="absolute bottom-0 w-full bg-gradient-to-t from-[var(--green)] via-[var(--yellow)] to-[var(--red)] h-3/4 rounded-sm"></div>
+                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[var(--red)] opacity-50"></div>
+                  </div>
+                  <div className="text-xs text-center mt-1 font-mono">-3.2</div>
+                </div>
+                {/* Right Channel */}
+                <div className="flex-1">
+                  <div className="text-xs text-center mb-1">R</div>
+                  <div className="h-20 w-4 bg-[var(--muted)] rounded-sm relative overflow-hidden">
+                    <div className="absolute bottom-0 w-full bg-gradient-to-t from-[var(--green)] via-[var(--yellow)] to-[var(--red)] h-2/3 rounded-sm"></div>
+                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[var(--red)] opacity-50"></div>
+                  </div>
+                  <div className="text-xs text-center mt-1 font-mono">-4.1</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick EQ */}
+            <div className="space-y-2 mb-4">
+              <div className="text-xs text-[var(--muted-foreground)]">Master EQ</div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center">
+                  <div className="text-xs mb-1">High</div>
+                  <input type="range" min="0" max="100" defaultValue="50" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" orient="vertical" />
+                  <div className="text-xs font-mono mt-1">+0.0</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs mb-1">Mid</div>
+                  <input type="range" min="0" max="100" defaultValue="45" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" />
+                  <div className="text-xs font-mono mt-1">-1.2</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs mb-1">Low</div>
+                  <input type="range" min="0" max="100" defaultValue="55" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" />
+                  <div className="text-xs font-mono mt-1">+2.1</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Master Effects */}
+            <div className="space-y-2 mb-4">
+              <div className="text-xs text-[var(--muted-foreground)]">Master Chain</div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded text-xs">
+                  <span>Compressor</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
+                    <span className="font-mono">3:1</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded text-xs">
+                  <span>Limiter</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-[var(--blue)] rounded-full"></div>
+                    <span className="font-mono">-0.1dB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Analysis */}
+            <div className="p-3 bg-[var(--secondary)] rounded-md">
+              <div className="text-xs text-[var(--muted-foreground)] mb-2">AI Analysis</div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span>LUFS</span>
+                  <span className="font-mono text-[var(--green)]">-14.2</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span>Dynamic Range</span>
+                  <span className="font-mono text-[var(--blue)]">8.3 LU</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span>Peak</span>
+                  <span className="font-mono text-[var(--yellow)]">-1.2dBFS</span>
+                </div>
+                <div className="text-xs text-[var(--green)] mt-2">✓ Broadcast ready</div>
+              </div>
             </div>
           </div>
         </div>
