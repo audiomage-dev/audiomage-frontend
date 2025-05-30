@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProjectBrowser } from './ProjectBrowser';
+import { AISuggestionsPanel } from './AISuggestionsPanel';
 import { 
   FolderOpen, 
   Search, 
@@ -13,7 +14,11 @@ import {
   Zap,
   Users,
   HelpCircle,
-  Lightbulb
+  Lightbulb,
+  Check,
+  X,
+  Square,
+  CheckSquare
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -184,43 +189,7 @@ export function VerticalSidebar() {
       id: 'suggestions',
       icon: <Lightbulb className="w-5 h-5" />,
       label: 'AI Suggestions',
-      component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">AI Suggestions</h3>
-          <div className="space-y-3">
-            <div className="bg-[var(--muted)] rounded-md p-3 border-l-2 border-l-[var(--blue)]">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-1">Mix Enhancement</div>
-              <div className="text-xs text-[var(--muted-foreground)]">
-                Consider adding high-shelf EQ to vocals around 8kHz for more presence
-              </div>
-            </div>
-            <div className="bg-[var(--muted)] rounded-md p-3 border-l-2 border-l-[var(--green)]">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-1">Arrangement</div>
-              <div className="text-xs text-[var(--muted-foreground)]">
-                Bass and kick drum could benefit from sidechain compression
-              </div>
-            </div>
-            <div className="bg-[var(--muted)] rounded-md p-3 border-l-2 border-l-[var(--yellow)]">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-1">Creative Idea</div>
-              <div className="text-xs text-[var(--muted-foreground)]">
-                Try a subtle tape saturation on the drum bus for vintage warmth
-              </div>
-            </div>
-            <div className="bg-[var(--muted)] rounded-md p-3 border-l-2 border-l-[var(--purple)]">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-1">Mastering</div>
-              <div className="text-xs text-[var(--muted-foreground)]">
-                Current LUFS: -14.2. Target: -14.0 for streaming platforms
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[var(--border)]">
-            <Button size="sm" variant="outline" className="w-full text-xs">
-              <Zap className="w-3 h-3 mr-2" />
-              Generate New Suggestions
-            </Button>
-          </div>
-        </div>
-      )
+      component: <AISuggestionsPanel />
     }
   ];
 
