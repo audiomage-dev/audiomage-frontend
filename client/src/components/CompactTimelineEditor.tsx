@@ -213,14 +213,26 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         document.removeEventListener('mousemove', handleDocumentMouseMove);
         document.removeEventListener('mouseup', handleDocumentMouseUp);
         
+        console.log('Mouse up - finalizing clip drag for:', dragState.clipId);
+        
         // Finalize clip dragging and persist position
         const deltaX = e.clientX - dragState.startX;
         const deltaY = e.clientY - dragState.startY;
+        
+        console.log('Delta movement:', { deltaX, deltaY });
         
         const timelineWidth = getTimelineWidth();
         const totalTime = timelineWidth / zoomLevel;
         const deltaTime = (deltaX / timelineWidth) * totalTime;
         const newStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
+        
+        console.log('Time calculation:', { 
+          timelineWidth, 
+          totalTime, 
+          deltaTime, 
+          originalStartTime: dragState.originalStartTime, 
+          newStartTime 
+        });
         
         const trackHeight = 96;
         const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
@@ -229,13 +241,29 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         
         const newTrackId = tracks[newTrackIndex]?.id;
         
+        console.log('Track calculation:', { 
+          originalTrackIndex: dragState.originalTrackIndex, 
+          newTrackIndex, 
+          originalTrackId: dragState.trackId, 
+          newTrackId 
+        });
+        
         console.log(`Clip ${dragState.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
         
         // Persist the clip movement to actual data
         if (onClipMove && newTrackId) {
+          console.log('Calling onClipMove with:', { 
+            clipId: dragState.clipId, 
+            fromTrackId: dragState.trackId, 
+            toTrackId: newTrackId, 
+            newStartTime 
+          });
           onClipMove(dragState.clipId, dragState.trackId, newTrackId, newStartTime);
+        } else {
+          console.error('onClipMove not called:', { onClipMove: !!onClipMove, newTrackId });
         }
         
+        console.log('Setting dragging clip to null');
         setDraggingClip(null);
       };
       
