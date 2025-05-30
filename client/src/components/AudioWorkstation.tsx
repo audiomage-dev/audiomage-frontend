@@ -132,6 +132,7 @@ export function AudioWorkstation() {
       <AIChatSidebar
         isOpen={isChatSidebarOpen}
         onToggle={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
+        currentSession={sessions.find(s => s.isActive)?.name}
       />
     </div>
   );

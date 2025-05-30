@@ -23,17 +23,22 @@ interface ChatMessage {
 interface AIChatSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  currentSession?: string;
 }
 
-export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSidebarProps) {
+  // Store messages per session
+  const [sessionMessages, setSessionMessages] = useState<Record<string, ChatMessage[]>>({});
+  
+  // Get messages for current session
+  const messages = sessionMessages[currentSession || 'default'] || [
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m your AI audio production assistant. I can help with mixing techniques, creative suggestions, technical questions, and workflow optimization. What would you like to work on today?',
+      content: `Hello! I'm your AI audio production assistant for ${currentSession || 'this session'}. I can help with mixing techniques, creative suggestions, technical questions, and workflow optimization. What would you like to work on today?`,
       timestamp: new Date()
     }
-  ]);
+  ];
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -57,7 +62,12 @@ export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Update messages for current session
+    const sessionKey = currentSession || 'default';
+    setSessionMessages(prev => ({
+      ...prev,
+      [sessionKey]: [...(prev[sessionKey] || []), userMessage]
+    }));
     setInputValue('');
     setIsTyping(true);
 
@@ -66,10 +76,13 @@ export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'I understand you\'re working on your audio project. While I don\'t have access to external AI services right now, I can still provide guidance based on audio production best practices. What specific aspect would you like help with?',
+        content: `I understand you're working on your ${currentSession || 'audio project'}. While I don't have access to external AI services right now, I can still provide guidance based on audio production best practices. What specific aspect would you like help with?`,
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, aiResponse]);
+      setSessionMessages(prev => ({
+        ...prev,
+        [sessionKey]: [...(prev[sessionKey] || []), aiResponse]
+      }));
       setIsTyping(false);
     }, 1500);
   };
@@ -82,12 +95,16 @@ export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
   };
 
   const clearChat = () => {
-    setMessages([{
-      id: '1',
-      role: 'assistant',
-      content: 'Chat cleared. How can I assist you with your audio production today?',
-      timestamp: new Date()
-    }]);
+    const sessionKey = currentSession || 'default';
+    setSessionMessages(prev => ({
+      ...prev,
+      [sessionKey]: [{
+        id: '1',
+        role: 'assistant',
+        content: `Chat cleared for ${currentSession || 'this session'}. How can I assist you with your audio production today?`,
+        timestamp: new Date()
+      }]
+    }));
   };
 
   const formatTime = (date: Date) => {
@@ -96,7 +113,7 @@ export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
 
   if (!isOpen) {
     return (
-      <div className="fixed right-0 top-0 h-full z-30">
+      <div className="fixed right-0 top-14 h-[calc(100vh-56px)] z-20">
         <div className="h-full flex items-center">
           <Button
             variant="ghost"
@@ -113,14 +130,14 @@ export function AIChatSidebar({ isOpen, onToggle }: AIChatSidebarProps) {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-30 shadow-lg">
+    <div className="fixed right-0 top-14 h-[calc(100vh-80px)] w-80 bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg">
       {/* Header */}
       <div className="h-14 px-4 py-3 border-b border-[var(--border)] bg-[var(--muted)] flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Bot className="w-5 h-5 text-[var(--primary)]" />
           <div>
             <h3 className="text-sm font-medium">AI Assistant</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">Audio Production Helper</p>
+            <p className="text-xs text-[var(--muted-foreground)]">{currentSession || 'Current Session'}</p>
           </div>
         </div>
         <div className="flex items-center space-x-1">
