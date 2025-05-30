@@ -1,6 +1,7 @@
 import { MenuBar } from './MenuBar';
 import { SessionTabs } from './SessionTabs';
 import { VerticalSidebar } from './VerticalSidebar';
+import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MixingConsole } from './MixingConsole';
@@ -30,6 +31,7 @@ export function AudioWorkstation() {
   } = useAudioWorkstation();
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+  const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -125,6 +127,12 @@ export function AudioWorkstation() {
           lastAIAnalysis={new Date(Date.now() - 120000)}
         />
       </div>
+
+      {/* Right AI Chat Sidebar */}
+      <AIChatSidebar
+        isOpen={isChatSidebarOpen}
+        onToggle={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
+      />
     </div>
   );
 }

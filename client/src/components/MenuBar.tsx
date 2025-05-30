@@ -221,14 +221,7 @@ export function MenuBar() {
           >
             {theme === 'nord-light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 rounded-lg hover:bg-[var(--accent)] transition-all duration-200"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+
         </div>
       </div>
 
