@@ -64,6 +64,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     originalStartTime: number;
     originalTrackIndex: number;
     currentTrackIndex: number;
+    currentOffsetX: number;
+    currentOffsetY: number;
   } | null>(null);
 
   // Context menu states
@@ -176,7 +178,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         startY: e.clientY,
         originalStartTime: clip.startTime,
         originalTrackIndex: trackIndex,
-        currentTrackIndex: trackIndex
+        currentTrackIndex: trackIndex,
+        currentOffsetX: 0,
+        currentOffsetY: 0
       });
     }
   }, [tracks]);
@@ -270,10 +274,12 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
       ));
       
-      // Update dragging state with new track
+      // Update dragging state with new track and current offsets
       setDraggingClip(prev => prev ? {
         ...prev,
-        currentTrackIndex: newTrackIndex
+        currentTrackIndex: newTrackIndex,
+        currentOffsetX: deltaX,
+        currentOffsetY: deltaY
       } : null);
       
       console.log('Dragging clip to time:', newTime, 'track:', newTrackIndex);
@@ -643,9 +649,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                           width: `${clipWidth}px`,
                           backgroundColor: clip.color,
                           borderColor: clip.color,
-                          transform: draggingClip?.clipId === clip.id && draggingClip.currentTrackIndex !== index 
-                            ? `translateY(${(draggingClip.currentTrackIndex - index) * 96}px)` 
-                            : 'none'
+                          transform: draggingClip?.clipId === clip.id 
+                            ? `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)` 
+                            : 'none',
+                          zIndex: draggingClip?.clipId === clip.id ? 50 : 5
                         }}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
