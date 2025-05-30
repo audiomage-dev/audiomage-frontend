@@ -5,7 +5,9 @@ import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
+import { TrackInspector } from './TrackInspector';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
+import { useState } from 'react';
 
 export function AudioWorkstation() {
   const {
@@ -26,6 +28,8 @@ export function AudioWorkstation() {
     switchSession,
     setCurrentProject,
   } = useAudioWorkstation();
+
+  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({

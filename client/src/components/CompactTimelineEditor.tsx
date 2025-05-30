@@ -29,6 +29,7 @@ interface CompactTimelineEditorProps {
   transport: TransportState;
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
+  onTrackSelect?: (trackId: string) => void;
 }
 
 export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: CompactTimelineEditorProps) {
