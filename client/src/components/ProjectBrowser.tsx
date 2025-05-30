@@ -53,27 +53,81 @@ export function ProjectBrowser() {
     { id: '16', name: 'Project.amg', type: 'project', level: 0 },
   ];
 
-  const getFileIcon = (type: string) => {
+  const getFileIcon = (type: string, name: string = '') => {
+    const fileName = name.toLowerCase();
+    
+    // Check file extensions for more specific icons
+    if (fileName.endsWith('.wav') || fileName.endsWith('.aiff') || fileName.endsWith('.flac')) {
+      return 'volume-up';
+    }
+    if (fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.ogg')) {
+      return 'music';
+    }
+    if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
+      return 'piano';
+    }
+    if (fileName.endsWith('.fxp') || fileName.endsWith('.vstpreset')) {
+      return 'sliders-h';
+    }
+    if (fileName.endsWith('.json') || fileName.endsWith('.xml')) {
+      return 'code';
+    }
+    if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
+      return 'file-alt';
+    }
+    if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      return 'image';
+    }
+    
+    // Check by type
     switch (type) {
       case 'folder': return 'folder';
-      case 'audio': return 'file-audio';
-      case 'midi': return 'file-code';
+      case 'audio': return 'volume-up';
+      case 'midi': return 'piano';
       case 'fx': return 'sliders-h';
       case 'project': return 'project-diagram';
       case 'samples': return 'drum';
+      case 'ai-generated': return 'robot';
       default: return 'file';
     }
   };
 
-  const getFileColor = (type: string) => {
+  const getFileColor = (type: string, name: string = '') => {
+    const fileName = name.toLowerCase();
+    
+    // Color by file extension with Nord theme colors
+    if (fileName.endsWith('.wav') || fileName.endsWith('.aiff') || fileName.endsWith('.flac')) {
+      return '#5E81AC'; // Nord blue
+    }
+    if (fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.ogg')) {
+      return '#A3BE8C'; // Nord green
+    }
+    if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
+      return '#EBCB8B'; // Nord yellow
+    }
+    if (fileName.endsWith('.fxp') || fileName.endsWith('.vstpreset')) {
+      return '#B48EAD'; // Nord purple
+    }
+    if (fileName.endsWith('.json') || fileName.endsWith('.xml')) {
+      return '#D08770'; // Nord orange
+    }
+    if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
+      return '#4C566A'; // Nord gray
+    }
+    if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      return '#88C0D0'; // Nord frost
+    }
+    
+    // Color by type
     switch (type) {
-      case 'folder': return 'var(--frost2)';
-      case 'audio': return 'var(--green)';
-      case 'midi': return 'var(--frost3)';
-      case 'fx': return 'var(--purple)';
-      case 'project': return 'var(--primary)';
-      case 'samples': return 'var(--orange)';
-      default: return 'var(--muted-foreground)';
+      case 'folder': return '#81A1C1';
+      case 'audio': return '#5E81AC';
+      case 'midi': return '#EBCB8B';
+      case 'fx': return '#B48EAD';
+      case 'project': return '#8FBCBB';
+      case 'samples': return '#D08770';
+      case 'ai-generated': return '#BF616A';
+      default: return '#4C566A';
     }
   };
 
@@ -124,8 +178,8 @@ export function ProjectBrowser() {
           {!hasChildren && <div className="w-3 mr-1" />}
           
           <i 
-            className={`fas fa-${getFileIcon(item.type)} text-xs mr-2`} 
-            style={{ color: getFileColor(item.type) }}
+            className={`fas fa-${getFileIcon(item.type, item.name)} text-xs mr-2`} 
+            style={{ color: getFileColor(item.type, item.name) }}
           />
           
           <span 
