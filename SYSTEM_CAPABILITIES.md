@@ -148,19 +148,15 @@ Multi-session AI audio workstation with comprehensive production tools.
 | Revert Change | `/api/changemaps/:id/revert` | POST | `RevertResult` | Undo specific modification |
 | Change Statistics | `/api/changemaps/stats` | GET | `ChangeStats` | Aggregated change analytics |
 
-**AudioChange Object:**
-```typescript
-interface AudioChange {
-  id: string;
-  timestamp: Date;
-  action: string;       // 'effect_added', 'volume_adjusted', etc.
-  property: string;     // 'reverb', 'gain', 'eq', etc.
-  oldValue: string;
-  newValue: string;
-  applied: boolean;
-  description: string;
-}
-```
+**AudioChange Schema:**
+- id: Change identifier
+- timestamp: When change occurred
+- action: Type of modification (effect_added, volume_adjusted, etc.)
+- property: Modified property (reverb, gain, eq, etc.)
+- oldValue: Previous value
+- newValue: New value
+- applied: Change status
+- description: Human-readable description
 
 ---
 
@@ -175,22 +171,18 @@ interface AudioChange {
 | Preview Sound | `/api/library/sounds/:id/preview` | GET | `File` | Low-quality preview |
 | Favorite Sound | `/api/library/sounds/:id/favorite` | POST | `FavoriteResult` | Add to favorites |
 
-**Sound Object:**
-```typescript
-interface Sound {
-  id: string;
-  name: string;         // e.g., "Rain on Leaves Heavy.wav"
-  category: string;     // "Nature & Weather"
-  duration: number;     // Seconds
-  tags: string[];       // ["rain", "nature", "ambient"]
-  popular: boolean;
-  sampleRate: number;
-  bitDepth: number;
-  fileSize: number;     // Bytes
-  downloadUrl: string;
-  previewUrl: string;
-}
-```
+**Sound Schema:**
+- id: Sound identifier
+- name: Sound filename (Rain on Leaves Heavy.wav)
+- category: Sound category (Nature & Weather)
+- duration: Length in seconds
+- tags: Descriptive tags array (rain, nature, ambient)
+- popular: Trending/popular status
+- sampleRate: Audio sample rate
+- bitDepth: Audio bit depth
+- fileSize: File size in bytes
+- downloadUrl: Download endpoint
+- previewUrl: Preview endpoint
 
 **Sound Categories:**
 - Nature & Weather (2,156 sounds)
