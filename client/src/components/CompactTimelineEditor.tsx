@@ -9,7 +9,6 @@ import {
   Circle, 
   Edit3, 
   Trash2, 
-  Copy, 
   Plus, 
   ZoomIn, 
   ZoomOut, 
@@ -22,7 +21,14 @@ import {
   SkipBack,
   SkipForward,
   Scissors,
-  RotateCcw
+  RotateCcw,
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  Sparkles,
+  X,
+  Files,
+  Copy
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -76,6 +82,16 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     y: number; 
     selection: { trackId: string; startTime: number; endTime: number; trackName: string } 
   } | null>(null);
+  const [clipContextMenu, setClipContextMenu] = useState<{ 
+    x: number; 
+    y: number; 
+    clip: { id: string; name: string; trackId: string; trackName: string } 
+  } | null>(null);
+  
+  // LLM prompt state
+  const [showLLMPrompt, setShowLLMPrompt] = useState(false);
+  const [llmPrompt, setLLMPrompt] = useState('');
+  const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string } | null>(null);
   
   const timelineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -477,11 +493,50 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     }
   }, [audioSelection, tracks]);
 
+  const handleClipRightClick = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const track = tracks.find(t => t.id === trackId);
+    const clip = track?.clips?.find(c => c.id === clipId);
+    
+    if (clip && track) {
+      setClipContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        clip: {
+          id: clipId,
+          name: clip.name,
+          trackId: trackId,
+          trackName: track.name
+        }
+      });
+    }
+  }, [tracks]);
+
+  const handleLLMPromptSubmit = useCallback(async () => {
+    if (!llmPrompt.trim() || !selectedClipForLLM) return;
+    
+    try {
+      console.log(`LLM Prompt for ${selectedClipForLLM.name}: ${llmPrompt}`);
+      // Here we would integrate with Perplexity API
+      // For now, just log the prompt
+      
+      // Reset prompt state
+      setLLMPrompt('');
+      setShowLLMPrompt(false);
+      setSelectedClipForLLM(null);
+    } catch (error) {
+      console.error('Error processing LLM prompt:', error);
+    }
+  }, [llmPrompt, selectedClipForLLM]);
+
   // Close context menus when clicking elsewhere
   useEffect(() => {
     const handleClick = () => {
       setContextMenu(null);
       setAudioContextMenu(null);
+      setClipContextMenu(null);
     };
     
     document.addEventListener('click', handleClick);
@@ -720,6 +775,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                           zIndex: draggingClip?.clipId === clip.id ? 50 : 5
                         }}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
+                        onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
                         {/* Clip Header */}
@@ -920,6 +976,132 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Clip Context Menu */}
+      {clipContextMenu && (
+        <div
+          className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-1 z-50 min-w-48"
+          style={{ left: clipContextMenu.x, top: clipContextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3 py-2 text-xs text-[var(--muted-foreground)] border-b border-[var(--border)]">
+            <div className="font-medium">{clipContextMenu.clip.name}</div>
+            <div className="text-[var(--muted-foreground)]">Track: {clipContextMenu.clip.trackName}</div>
+          </div>
+          
+          {[
+            { label: 'Cut', icon: Scissors, action: 'cut', shortcut: 'Ctrl+X' },
+            { label: 'Copy', icon: Copy, action: 'copy', shortcut: 'Ctrl+C' },
+            { label: 'Duplicate', icon: Files, action: 'duplicate', shortcut: 'Ctrl+D' },
+            { type: 'separator' },
+            { label: 'Fade In', icon: TrendingUp, action: 'fade-in' },
+            { label: 'Fade Out', icon: TrendingDown, action: 'fade-out' },
+            { label: 'Normalize', icon: BarChart3, action: 'normalize' },
+            { type: 'separator' },
+            { label: 'AI Prompt', icon: Sparkles, action: 'ai-prompt', ai: true },
+            { type: 'separator' },
+            { label: 'Delete', icon: Trash2, action: 'delete', destructive: true, shortcut: 'Del' },
+          ].map((item, index) => {
+            if (item.type === 'separator') {
+              return <div key={index} className="h-px bg-[var(--border)] my-1" />;
+            }
+            
+            const { label, icon: Icon, action, shortcut, destructive, ai } = item;
+            return (
+              <button
+                key={label}
+                onClick={() => {
+                  if (action === 'ai-prompt') {
+                    setSelectedClipForLLM({
+                      id: clipContextMenu.clip.id,
+                      name: clipContextMenu.clip.name,
+                      trackName: clipContextMenu.clip.trackName
+                    });
+                    setShowLLMPrompt(true);
+                  } else {
+                    console.log(`${action} clip:`, clipContextMenu.clip);
+                  }
+                  setClipContextMenu(null);
+                }}
+                className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition-colors ${
+                  destructive 
+                    ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]' 
+                    : ai
+                      ? 'hover:bg-[var(--purple)]/10 hover:text-[var(--purple)]'
+                      : 'hover:bg-[var(--accent)]'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Icon className="w-3 h-3" />
+                  <span>{label}</span>
+                </div>
+                {shortcut && <span className="text-[var(--muted-foreground)] text-xs">{shortcut}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* LLM Prompt Dialog */}
+      {showLLMPrompt && selectedClipForLLM && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl p-4 w-96 max-w-[90vw]">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-medium">AI Prompt</h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {selectedClipForLLM.name} • {selectedClipForLLM.trackName}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowLLMPrompt(false);
+                  setSelectedClipForLLM(null);
+                  setLLMPrompt('');
+                }}
+                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-[var(--muted-foreground)] mb-1 block">
+                  Enter your prompt:
+                </label>
+                <textarea
+                  value={llmPrompt}
+                  onChange={(e) => setLLMPrompt(e.target.value)}
+                  placeholder="e.g. 'Enhance the vocal clarity' or 'Add reverb to this clip'"
+                  className="w-full h-20 px-3 py-2 text-xs bg-[var(--muted)]/20 border border-[var(--border)] rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => {
+                    setShowLLMPrompt(false);
+                    setSelectedClipForLLM(null);
+                    setLLMPrompt('');
+                  }}
+                  className="px-3 py-1.5 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLLMPromptSubmit}
+                  disabled={!llmPrompt.trim()}
+                  className="px-3 py-1.5 text-xs bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Process</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
