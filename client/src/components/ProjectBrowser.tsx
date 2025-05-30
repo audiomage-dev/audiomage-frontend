@@ -1,55 +1,184 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+
 interface ProjectItem {
   id: string;
   name: string;
-  type: 'audio' | 'midi' | 'folder';
-  icon: string;
-  color: string;
+  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples';
+  children?: ProjectItem[];
+  level: number;
 }
 
-const projectItems: ProjectItem[] = [
-  { id: '1', name: 'Lead_Vocal.wav', type: 'audio', icon: 'fas fa-music', color: 'text-[hsl(var(--frost-3))]' },
-  { id: '2', name: 'Drums_Kit.wav', type: 'audio', icon: 'fas fa-drum', color: 'text-[hsl(var(--aurora-orange))]' },
-  { id: '3', name: 'Bass_DI.wav', type: 'audio', icon: 'fas fa-guitar', color: 'text-[hsl(var(--aurora-yellow))]' },
-  { id: '4', name: 'Dialogue.wav', type: 'audio', icon: 'fas fa-microphone', color: 'text-[hsl(var(--aurora-green))]' },
-  { id: '5', name: 'MIDI_Keys.mid', type: 'midi', icon: 'fas fa-piano', color: 'text-[hsl(var(--aurora-purple))]' },
-  { id: '6', name: 'Samples', type: 'folder', icon: 'fas fa-folder', color: 'text-[hsl(var(--nord-4))]' },
-];
-
 export function ProjectBrowser() {
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8']));
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const projectItems: ProjectItem[] = [
+    {
+      id: '1',
+      name: 'Audio',
+      type: 'folder',
+      level: 0,
+      children: [
+        { id: '2', name: 'Lead_Vocal_take3.wav', type: 'audio', level: 1 },
+        { id: '3', name: 'Drums_Master.wav', type: 'audio', level: 1 },
+        { id: '4', name: 'Bass_DI_compressed.wav', type: 'audio', level: 1 },
+        { id: '11', name: 'Guitar_Clean.wav', type: 'audio', level: 1 },
+        { id: '12', name: 'Synth_Pad.wav', type: 'audio', level: 1 },
+      ]
+    },
+    {
+      id: '5',
+      name: 'MIDI',
+      type: 'folder',
+      level: 0,
+      children: [
+        { id: '6', name: 'Piano_Chords.mid', type: 'midi', level: 1 },
+        { id: '7', name: 'Synth_Lead.mid', type: 'midi', level: 1 },
+        { id: '13', name: 'Drum_Pattern.mid', type: 'midi', level: 1 },
+      ]
+    },
+    {
+      id: '8',
+      name: 'Effects',
+      type: 'folder',
+      level: 0,
+      children: [
+        { id: '9', name: 'Reverb_Hall.fxp', type: 'fx', level: 1 },
+        { id: '10', name: 'Compressor_Vintage.fxp', type: 'fx', level: 1 },
+        { id: '14', name: 'EQ_Master.fxp', type: 'fx', level: 1 },
+      ]
+    },
+    { id: '15', name: 'Samples', type: 'folder', level: 0, children: [] },
+    { id: '16', name: 'Project.amg', type: 'project', level: 0 },
+  ];
+
+  const getFileIcon = (type: string) => {
+    switch (type) {
+      case 'folder': return 'folder';
+      case 'audio': return 'file-audio';
+      case 'midi': return 'file-code';
+      case 'fx': return 'sliders-h';
+      case 'project': return 'project-diagram';
+      case 'samples': return 'drum';
+      default: return 'file';
+    }
+  };
+
+  const getFileColor = (type: string) => {
+    switch (type) {
+      case 'folder': return 'var(--frost2)';
+      case 'audio': return 'var(--green)';
+      case 'midi': return 'var(--frost3)';
+      case 'fx': return 'var(--purple)';
+      case 'project': return 'var(--primary)';
+      case 'samples': return 'var(--orange)';
+      default: return 'var(--muted-foreground)';
+    }
+  };
+
+  const toggleFolder = (folderId: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folderId)) {
+      newExpanded.delete(folderId);
+    } else {
+      newExpanded.add(folderId);
+    }
+    setExpandedFolders(newExpanded);
+  };
+
+  const renderItem = (item: ProjectItem) => {
+    const isExpanded = expandedFolders.has(item.id);
+    const hasChildren = item.children && item.children.length > 0;
+    const paddingLeft = item.level * 16 + 8;
+
+    return (
+      <div key={item.id}>
+        <div
+          className="flex items-center h-6 px-1 hover:bg-[var(--accent)] cursor-pointer transition-colors group text-sm select-none"
+          style={{ paddingLeft: `${paddingLeft}px` }}
+          onClick={() => hasChildren && toggleFolder(item.id)}
+        >
+          {hasChildren && (
+            <i 
+              className={`fas fa-chevron-${isExpanded ? 'down' : 'right'} text-xs text-[var(--muted-foreground)] mr-1 w-2`}
+            />
+          )}
+          {!hasChildren && <div className="w-3 mr-1" />}
+          
+          <i 
+            className={`fas fa-${getFileIcon(item.type)} text-xs mr-2`} 
+            style={{ color: getFileColor(item.type) }}
+          />
+          
+          <span className="text-[var(--foreground)] flex-1 truncate leading-none">
+            {item.name}
+          </span>
+          
+          {item.type === 'audio' && (
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">WAV</span>
+          )}
+          {item.type === 'midi' && (
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">MIDI</span>
+          )}
+        </div>
+        
+        {hasChildren && isExpanded && item.children?.map(child => renderItem(child))}
+      </div>
+    );
+  };
+
+  const filteredItems = searchTerm 
+    ? projectItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.children?.some(child => child.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : projectItems;
+
   return (
-    <div className="flex-1 p-3 overflow-y-auto scrollbar-thin">
-      <div className="text-sm font-semibold mb-2 flex items-center">
-        <i className="fas fa-folder-open text-[hsl(var(--frost-2))] mr-2"></i>
-        Project Browser
+    <div className="h-full flex flex-col bg-[var(--background)]">
+      {/* Header */}
+      <div className="flex-none p-3 border-b border-[var(--border)] bg-gradient-to-r from-[var(--muted)] to-[var(--secondary)]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">Explorer</h3>
+          <div className="flex space-x-1">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
+              <i className="fas fa-file-plus text-xs"></i>
+            </Button>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
+              <i className="fas fa-folder-plus text-xs"></i>
+            </Button>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)] rounded">
+              <i className="fas fa-sync text-xs"></i>
+            </Button>
+          </div>
+        </div>
+        
+        {/* Search */}
+        <div className="relative">
+          <i className="fas fa-search absolute left-2 top-2 text-xs text-[var(--muted-foreground)]"></i>
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-7 pr-2 py-1 text-xs bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+          />
+        </div>
       </div>
       
-      <div className="space-y-1">
-        {projectItems.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center space-x-2 p-1 hover:bg-[hsl(var(--nord-2))] rounded cursor-pointer"
-          >
-            <i className={`${item.icon} ${item.color} text-xs`}></i>
-            <span className="text-xs font-mono">{item.name}</span>
-          </div>
-        ))}
+      {/* File Tree */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        <div className="py-1">
+          {filteredItems.map(item => renderItem(item))}
+        </div>
       </div>
       
-      <div className="mt-4 text-xs text-[hsl(var(--nord-3))]">
-        <div className="mb-2 font-semibold">Quick Actions:</div>
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2 p-1 hover:bg-[hsl(var(--nord-2))] rounded cursor-pointer">
-            <i className="fas fa-plus text-[hsl(var(--frost-1))]"></i>
-            <span>Import Audio</span>
-          </div>
-          <div className="flex items-center space-x-2 p-1 hover:bg-[hsl(var(--nord-2))] rounded cursor-pointer">
-            <i className="fas fa-robot text-[hsl(var(--frost-1))]"></i>
-            <span>Generate AI Audio</span>
-          </div>
-          <div className="flex items-center space-x-2 p-1 hover:bg-[hsl(var(--nord-2))] rounded cursor-pointer">
-            <i className="fas fa-microphone text-[hsl(var(--aurora-red))]"></i>
-            <span>Record New</span>
-          </div>
+      {/* Footer Info */}
+      <div className="flex-none p-2 border-t border-[var(--border)] bg-[var(--muted)]">
+        <div className="text-xs text-[var(--muted-foreground)] flex items-center justify-between">
+          <span>12 files</span>
+          <span>2.4 GB</span>
         </div>
       </div>
     </div>
