@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button';
 interface ProjectItem {
   id: string;
   name: string;
-  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples';
+  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples' | 'file';
   children?: ProjectItem[];
   level: number;
 }
 
 export function ProjectBrowser() {
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8', '21']));
   const [searchTerm, setSearchTerm] = useState('');
 
   const projectItems: ProjectItem[] = [
@@ -25,6 +25,8 @@ export function ProjectBrowser() {
         { id: '4', name: 'Bass_DI_compressed.wav', type: 'audio', level: 1 },
         { id: '11', name: 'Guitar_Clean.wav', type: 'audio', level: 1 },
         { id: '12', name: 'Synth_Pad.wav', type: 'audio', level: 1 },
+        { id: '17', name: 'Vocal_Harmony.mp3', type: 'audio', level: 1 },
+        { id: '18', name: 'Background_Music.flac', type: 'audio', level: 1 },
       ]
     },
     {
@@ -36,6 +38,7 @@ export function ProjectBrowser() {
         { id: '6', name: 'Piano_Chords.mid', type: 'midi', level: 1 },
         { id: '7', name: 'Synth_Lead.mid', type: 'midi', level: 1 },
         { id: '13', name: 'Drum_Pattern.mid', type: 'midi', level: 1 },
+        { id: '19', name: 'Bass_Line.midi', type: 'midi', level: 1 },
       ]
     },
     {
@@ -47,6 +50,19 @@ export function ProjectBrowser() {
         { id: '9', name: 'Reverb_Hall.fxp', type: 'fx', level: 1 },
         { id: '10', name: 'Compressor_Vintage.fxp', type: 'fx', level: 1 },
         { id: '14', name: 'EQ_Master.fxp', type: 'fx', level: 1 },
+        { id: '20', name: 'Delay_Stereo.vstpreset', type: 'fx', level: 1 },
+      ]
+    },
+    {
+      id: '21',
+      name: 'Resources',
+      type: 'folder',
+      level: 0,
+      children: [
+        { id: '22', name: 'project_notes.txt', type: 'file', level: 1 },
+        { id: '23', name: 'session_info.json', type: 'file', level: 1 },
+        { id: '24', name: 'album_cover.png', type: 'file', level: 1 },
+        { id: '25', name: 'README.md', type: 'file', level: 1 },
       ]
     },
     { id: '15', name: 'Samples', type: 'folder', level: 0, children: [] },
