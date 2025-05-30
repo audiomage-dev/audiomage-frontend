@@ -184,54 +184,53 @@ export function ProjectVersionsPanel() {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="p-3">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-medium text-[var(--foreground)]">Project Versions</h3>
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
-          <span className="text-xs text-[var(--muted-foreground)]">Auto-save: ON</span>
+        <div className="flex items-center space-x-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-[var(--green)] animate-pulse"></div>
+          <span className="text-xs text-[var(--muted-foreground)]">Auto-save</span>
         </div>
       </div>
 
       {/* Branch legend */}
-      <div className="mb-4 p-2 bg-[var(--secondary)] rounded-md">
-        <div className="text-xs font-medium text-[var(--foreground)] mb-2">Active Branches</div>
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-2 p-1.5 bg-[var(--secondary)] rounded text-xs">
+        <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getBranchColor('main') }}></div>
-            <span className="text-xs text-[var(--foreground)]">main</span>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getBranchColor('main') }}></div>
+            <span className="text-[var(--foreground)]">main</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getBranchColor('feature/piano') }}></div>
-            <span className="text-xs text-[var(--muted-foreground)]">feature/piano</span>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getBranchColor('feature/piano') }}></div>
+            <span className="text-[var(--muted-foreground)]">feature/piano</span>
           </div>
         </div>
       </div>
 
       {/* Version tree */}
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {versions.reverse().map((version, index) => (
           <div key={version.id} className="relative">
             {/* Connection lines */}
             {index < versions.length - 1 && (
               <div 
-                className="absolute left-3 top-8 w-px h-4 opacity-30"
+                className="absolute left-2 top-5 w-px h-3 opacity-30"
                 style={{ backgroundColor: getBranchColor(version.branch) }}
               ></div>
             )}
             
             {/* Merge lines for merge commits */}
             {version.type === 'merge' && version.parents.length > 1 && (
-              <div className="absolute left-6 top-3">
+              <div className="absolute left-4 top-2">
                 <div 
-                  className="w-4 h-px opacity-30"
+                  className="w-3 h-px opacity-30"
                   style={{ backgroundColor: getBranchColor('feature/piano') }}
                 ></div>
               </div>
             )}
 
             <div 
-              className={`flex items-start space-x-3 p-2 rounded-md hover:bg-[var(--accent)] cursor-pointer transition-colors ${
+              className={`flex items-start space-x-2 p-1.5 rounded hover:bg-[var(--accent)] cursor-pointer transition-colors ${
                 selectedVersion === version.id ? 'bg-[var(--accent)] ring-1 ring-[var(--primary)]' : ''
               }`}
               onClick={() => setSelectedVersion(selectedVersion === version.id ? null : version.id)}
@@ -239,93 +238,91 @@ export function ProjectVersionsPanel() {
               {/* Commit dot and icon */}
               <div className="relative flex-shrink-0">
                 <div 
-                  className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                  className="w-4 h-4 rounded-full border flex items-center justify-center"
                   style={{ 
                     borderColor: getBranchColor(version.branch),
                     backgroundColor: version.isCurrent ? getBranchColor(version.branch) : 'var(--background)'
                   }}
                 >
-                  {getVersionIcon(version)}
+                  {version.type === 'merge' ? (
+                    <GitMerge className="w-2 h-2" />
+                  ) : version.type === 'tag' ? (
+                    <Tag className="w-2 h-2" />
+                  ) : (
+                    <div className="w-1 h-1 rounded-full bg-current" />
+                  )}
                 </div>
                 {version.isHead && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-[var(--primary)] rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-2 h-2 text-white" />
-                  </div>
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[var(--primary)] rounded-full"></div>
                 )}
               </div>
 
               {/* Commit info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                      {version.message}
-                    </span>
-                    {version.type === 'tag' && (
-                      <span className="px-1 py-0.5 bg-[var(--primary)] text-[var(--primary-foreground)] text-xs rounded">
-                        TAG
-                      </span>
-                    )}
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-[var(--foreground)] truncate pr-2">
+                    {version.message}
+                  </span>
                   <span className="text-xs text-[var(--muted-foreground)] font-mono">
                     {version.hash}
                   </span>
                 </div>
                 
-                <div className="flex items-center space-x-3 text-xs text-[var(--muted-foreground)]">
-                  <div className="flex items-center space-x-1">
-                    <User className="w-3 h-3" />
-                    <span>{version.author}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{formatTimestamp(version.timestamp)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <GitBranch className="w-3 h-3" />
-                    <span style={{ color: getBranchColor(version.branch) }}>
-                      {version.branch}
-                    </span>
-                  </div>
+                <div className="flex items-center space-x-2 text-xs text-[var(--muted-foreground)] mt-0.5">
+                  <span>{version.author}</span>
+                  <span>•</span>
+                  <span>{formatTimestamp(version.timestamp)}</span>
+                  <span>•</span>
+                  <span style={{ color: getBranchColor(version.branch) }}>
+                    {version.branch}
+                  </span>
+                  {version.type === 'tag' && (
+                    <>
+                      <span>•</span>
+                      <span className="px-1 bg-[var(--primary)] text-[var(--primary-foreground)] rounded">
+                        TAG
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Expanded details */}
             {selectedVersion === version.id && (
-              <div className="ml-9 mt-2 p-3 bg-[var(--muted)] rounded-md border-l-2" 
+              <div className="ml-6 mt-1 p-2 bg-[var(--muted)] rounded border-l-2" 
                    style={{ borderLeftColor: getBranchColor(version.branch) }}>
                 {/* File changes */}
-                <div className="mb-3">
-                  <div className="text-xs font-medium text-[var(--foreground)] mb-2">Changes</div>
-                  <div className="space-y-1">
+                <div className="mb-2">
+                  <div className="text-xs font-medium text-[var(--foreground)] mb-1">Changes</div>
+                  <div className="space-y-0.5">
                     {version.changes.added.map((file) => (
-                      <div key={file} className="flex items-center space-x-2 text-xs">
-                        <span className="text-[var(--green)]">+</span>
-                        <span className="text-[var(--foreground)]">{file}</span>
+                      <div key={file} className="flex items-center space-x-1 text-xs">
+                        <span className="text-[var(--green)] w-2">+</span>
+                        <span className="text-[var(--foreground)] truncate">{file}</span>
                       </div>
                     ))}
                     {version.changes.modified.map((file) => (
-                      <div key={file} className="flex items-center space-x-2 text-xs">
-                        <span className="text-[var(--yellow)]">~</span>
-                        <span className="text-[var(--foreground)]">{file}</span>
+                      <div key={file} className="flex items-center space-x-1 text-xs">
+                        <span className="text-[var(--yellow)] w-2">~</span>
+                        <span className="text-[var(--foreground)] truncate">{file}</span>
                       </div>
                     ))}
                     {version.changes.deleted.map((file) => (
-                      <div key={file} className="flex items-center space-x-2 text-xs">
-                        <span className="text-[var(--red)]">-</span>
-                        <span className="text-[var(--foreground)]">{file}</span>
+                      <div key={file} className="flex items-center space-x-1 text-xs">
+                        <span className="text-[var(--red)] w-2">-</span>
+                        <span className="text-[var(--foreground)] truncate">{file}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex space-x-2">
+                <div className="flex space-x-1">
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-xs"
+                    className="text-xs h-6 px-2"
                     onClick={() => checkoutVersion(version.id)}
                     disabled={version.isCurrent}
                   >
@@ -334,18 +331,17 @@ export function ProjectVersionsPanel() {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-xs"
+                    className="text-xs h-6 px-2"
                     onClick={() => createBranch(version.id)}
                   >
-                    New Branch
+                    Branch
                   </Button>
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-xs"
+                    className="text-xs h-6 px-2"
                   >
-                    <Archive className="w-3 h-3 mr-1" />
-                    Export
+                    <Archive className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
@@ -355,14 +351,14 @@ export function ProjectVersionsPanel() {
       </div>
 
       {/* Actions */}
-      <div className="mt-4 pt-3 border-t border-[var(--border)] space-y-2">
-        <Button size="sm" variant="outline" className="w-full text-xs">
-          <GitCommit className="w-3 h-3 mr-2" />
-          Create Snapshot
+      <div className="mt-2 pt-2 border-t border-[var(--border)] flex space-x-1">
+        <Button size="sm" variant="outline" className="flex-1 text-xs h-6">
+          <GitCommit className="w-3 h-3 mr-1" />
+          Snapshot
         </Button>
-        <Button size="sm" variant="outline" className="w-full text-xs">
-          <GitBranch className="w-3 h-3 mr-2" />
-          New Branch from Current
+        <Button size="sm" variant="outline" className="flex-1 text-xs h-6">
+          <GitBranch className="w-3 h-3 mr-1" />
+          Branch
         </Button>
       </div>
     </div>
