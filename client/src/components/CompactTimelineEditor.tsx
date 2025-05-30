@@ -60,7 +60,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     clipId: string;
     trackId: string;
     startX: number;
+    startY: number;
     originalStartTime: number;
+    originalTrackIndex: number;
+    currentTrackIndex: number;
   } | null>(null);
 
   // Context menu states
@@ -74,6 +77,26 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   const timelineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate dynamic timeline width based on clips
+  const getTimelineWidth = useCallback(() => {
+    let maxTime = 1200; // Default 20 minutes
+    
+    tracks.forEach(track => {
+      track.clips?.forEach(clip => {
+        const clipEndTime = clip.startTime + clip.duration;
+        if (clipEndTime > maxTime) {
+          maxTime = clipEndTime;
+        }
+      });
+    });
+    
+    // Add 10% buffer and ensure minimum width
+    const bufferedTime = maxTime * 1.1;
+    const scaledWidth = bufferedTime * zoomLevel;
+    
+    return Math.max(1200, scaledWidth);
+  }, [tracks, zoomLevel]);
 
   // Canvas drawing function for grid background
   const drawCanvasGrid = useCallback(() => {
@@ -95,8 +118,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     ctx.lineWidth = 1;
 
     // Vertical grid lines (time markers every 30 seconds)
-    const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-    const gridInterval = (30 / 1200) * timelineWidth; // 30 seconds
+    const timelineWidth = getTimelineWidth();
+    const totalTime = timelineWidth / zoomLevel;
+    const gridInterval = (30 / totalTime) * timelineWidth; // 30 seconds
+    
     for (let i = 0; i < width; i += gridInterval) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
@@ -114,7 +139,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks.length, zoomLevel]);
+  }, [tracks, zoomLevel, getTimelineWidth]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
@@ -141,13 +166,17 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     
     const track = tracks.find(t => t.id === trackId);
     const clip = track?.clips?.find(c => c.id === clipId);
+    const trackIndex = tracks.findIndex(t => t.id === trackId);
     
-    if (clip) {
+    if (clip && trackIndex >= 0) {
       setDraggingClip({
         clipId,
         trackId,
         startX: e.clientX,
-        originalStartTime: clip.startTime
+        startY: e.clientY,
+        originalStartTime: clip.startTime,
+        originalTrackIndex: trackIndex,
+        currentTrackIndex: trackIndex
       });
     }
   }, [tracks]);
@@ -157,8 +186,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     
     const rect = e.currentTarget.getBoundingClientRect();
     const startX = e.clientX - rect.left + scrollX;
-    const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-    const startTime = (startX / timelineWidth) * 1200;
+    const timelineWidth = getTimelineWidth();
+    const totalTime = timelineWidth / zoomLevel;
+    const startTime = (startX / timelineWidth) * totalTime;
     
     console.log('Starting audio selection:', { startX, startTime, trackId });
     
@@ -224,13 +254,29 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         setSelectedTrackIds(selectedIds);
       }
     } else if (draggingClip) {
-      // Clip dragging
+      // Clip dragging - both horizontal and vertical
       const deltaX = e.clientX - draggingClip.startX;
-      const timelineWidth = Math.max(1200, 1200 * zoomLevel);
-      const deltaTime = (deltaX / timelineWidth) * 1200;
+      const deltaY = e.clientY - draggingClip.startY;
+      
+      // Calculate new time position
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const deltaTime = (deltaX / timelineWidth) * totalTime;
       const newTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
       
-      console.log('Dragging clip to time:', newTime);
+      // Calculate new track position
+      const trackHeight = 96;
+      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+        draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
+      ));
+      
+      // Update dragging state with new track
+      setDraggingClip(prev => prev ? {
+        ...prev,
+        currentTrackIndex: newTrackIndex
+      } : null);
+      
+      console.log('Dragging clip to time:', newTime, 'track:', newTrackIndex);
     }
 
     // Update audio selection if active
@@ -258,14 +304,25 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     // Finalize clip dragging if in progress
     if (draggingClip) {
       const deltaX = e.clientX - draggingClip.startX;
+      const deltaY = e.clientY - draggingClip.startY;
+      
       const timelineWidth = Math.max(1200, 1200 * zoomLevel);
       const deltaTime = (deltaX / timelineWidth) * 1200;
       const newStartTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
       
-      console.log(`Clip ${draggingClip.clipId} moved to ${newStartTime}s`);
+      const trackHeight = 96;
+      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+        draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
+      ));
+      
+      const newTrackId = tracks[newTrackIndex]?.id;
+      
+      console.log(`Clip ${draggingClip.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
       
       // Here you would update the actual clip position in your data
-      // For now, just log the final position
+      // This would involve moving the clip from originalTrack to newTrack
+      // and updating its startTime to newStartTime
+      
       setDraggingClip(null);
     }
     
@@ -551,7 +608,11 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               <div
                 key={track.id}
                 className={`absolute left-0 right-0 h-24 transition-colors ${
-                  selectedTrackIds.includes(track.id) ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
+                  selectedTrackIds.includes(track.id) 
+                    ? 'bg-[var(--accent)]/20' 
+                    : draggingClip && draggingClip.currentTrackIndex === index
+                      ? 'bg-[var(--primary)]/20 border-2 border-[var(--primary)] border-dashed'
+                      : 'hover:bg-[var(--muted)]/20'
                 }`}
                 style={{ top: `${index * 96}px` }}
                 onClick={(e) => handleTrackSelect(track.id, e)}
@@ -571,13 +632,17 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                     return (
                       <div
                         key={clip.id}
-                        className="absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200"
+                        className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                          draggingClip?.clipId === clip.id ? 'opacity-60 scale-105 z-50' : 'z-5'
+                        }`}
                         style={{
                           left: `${clipStartX}px`,
                           width: `${clipWidth}px`,
                           backgroundColor: clip.color,
                           borderColor: clip.color,
-                          zIndex: 5
+                          transform: draggingClip?.clipId === clip.id && draggingClip.currentTrackIndex !== index 
+                            ? `translateY(${(draggingClip.currentTrackIndex - index) * 96}px)` 
+                            : 'none'
                         }}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
