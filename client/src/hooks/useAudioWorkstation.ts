@@ -57,14 +57,37 @@ export function useAudioWorkstation() {
       id: '1',
       name: 'Lead Vocal',
       type: 'audio',
-      filePath: 'Lead_Vocal_take3.wav',
-      position: 0,
       volume: 85,
       pan: 50,
       muted: false,
       soloed: false,
-      color: 'hsl(129 161 193)', // frost-3
-      waveformData: [45, 60, 30, 85, 70, 40, 90, 35, 75, 55, 80, 25, 95, 60, 50, 85, 40, 70, 90, 30, 65, 85, 45, 75, 60, 90, 35, 80, 55, 70, 85, 40, 60, 75, 50, 90, 45, 65, 80, 35],
+      color: '#88C0D0',
+      clips: [
+        {
+          id: 'clip-1',
+          name: 'Lead_Vocal_take3.wav',
+          filePath: 'Lead_Vocal_take3.wav',
+          startTime: 15.2,
+          duration: 45.8,
+          offset: 0,
+          volume: 85,
+          color: '#88C0D0',
+          waveformData: [45, 60, 30, 85, 70, 40, 90, 35, 75, 55, 80, 25, 95, 60, 50, 85, 40, 70, 90, 30, 65, 85, 45, 75, 60, 90, 35, 80, 55, 70, 85, 40, 60, 75, 50, 90, 45, 65, 80, 35],
+          fadeIn: 0.1,
+          fadeOut: 0.2
+        },
+        {
+          id: 'clip-2',
+          name: 'Lead_Vocal_chorus.wav',
+          filePath: 'Lead_Vocal_chorus.wav',
+          startTime: 120.5,
+          duration: 32.1,
+          offset: 0,
+          volume: 90,
+          color: '#88C0D0',
+          waveformData: [55, 70, 40, 95, 80, 50, 85, 45, 90, 65, 75, 35, 88, 70, 60, 95, 50, 80, 85, 40, 75, 95, 55, 85, 70, 80, 45, 90, 65, 80, 95, 50, 70, 85, 60, 88, 55, 75, 90, 45]
+        }
+      ],
       effects: [
         { id: '1', name: 'AI DeNoise Pro', type: 'noise-reduction', enabled: true, parameters: {} },
         { id: '2', name: 'EQ - Vintage', type: 'equalizer', enabled: true, parameters: {} },
@@ -75,14 +98,24 @@ export function useAudioWorkstation() {
       id: '2',
       name: 'Drums',
       type: 'audio',
-      filePath: 'Drums_Master.wav',
-      position: 0,
       volume: 80,
       pan: 50,
       muted: false,
       soloed: false,
-      color: 'hsl(191 97 106)', // aurora-red
-      waveformData: [95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70, 50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35, 90, 25, 80, 45, 95, 30],
+      color: '#BF616A',
+      clips: [
+        {
+          id: 'clip-3',
+          name: 'Drums_Master.wav',
+          filePath: 'Drums_Master.wav',
+          startTime: 0,
+          duration: 180.5,
+          offset: 0,
+          volume: 80,
+          color: '#BF616A',
+          waveformData: [95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70, 50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35, 90, 25, 80, 45, 95, 30]
+        }
+      ],
       effects: [
         { id: '4', name: 'Gate - Precision', type: 'gate', enabled: true, parameters: {} },
         { id: '5', name: 'AI Drum Enhance', type: 'ai-enhancement', enabled: true, parameters: {} },

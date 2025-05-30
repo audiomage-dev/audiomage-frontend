@@ -55,6 +55,14 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     isActive: boolean;
     isLocked: boolean;
   } | null>(null);
+  
+  const [draggingClip, setDraggingClip] = useState<{
+    clipId: string;
+    trackId: string;
+    startX: number;
+    startY: number;
+    originalStartTime: number;
+  } | null>(null);
   const [audioContextMenu, setAudioContextMenu] = useState<{ 
     x: number; 
     y: number; 
@@ -150,6 +158,24 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       }
     }
   }, [currentTool, scrollX, zoomLevel]);
+
+  const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
+    e.stopPropagation();
+    const rect = timelineRef.current?.getBoundingClientRect();
+    if (rect) {
+      const track = tracks.find(t => t.id === trackId);
+      const clip = track?.clips?.find(c => c.id === clipId);
+      if (clip) {
+        setDraggingClip({
+          clipId,
+          trackId,
+          startX: e.clientX,
+          startY: e.clientY,
+          originalStartTime: clip.startTime
+        });
+      }
+    }
+  }, [tracks]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDragging) {
@@ -526,31 +552,72 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 onClick={(e) => handleTrackSelect(track.id, e)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
-                {/* Audio Waveform */}
+                {/* Audio Clips */}
                 <div 
-                  className="h-full flex items-center px-2 py-1 relative cursor-crosshair"
+                  className="h-full relative cursor-crosshair"
                   onMouseDown={(e) => handleAudioSelectionStart(e, track.id, index)}
                   onContextMenu={(e) => handleAudioRightClick(e, track.id)}
                 >
-                  {track.waveformData && (
-                    <div className="w-full h-8">
-                      <WaveformVisualization
-                        data={track.waveformData}
-                        color={track.color}
-                        fileName={track.name}
-                        isPlaying={transport.isPlaying && !track.muted}
-                      />
-                    </div>
-                  )}
-                  {!track.waveformData && (
-                    <div 
-                      className="h-6 rounded opacity-70 shadow-sm"
-                      style={{ 
-                        backgroundColor: track.color,
-                        width: `${(Math.random() * 40 + 30)}%`
-                      }}
-                    />
-                  )}
+                  {track.clips?.map((clip) => {
+                    const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+                    const clipStartX = (clip.startTime / 1200) * timelineWidth; // 20 minutes total
+                    const clipWidth = (clip.duration / 1200) * timelineWidth;
+                    
+                    return (
+                      <div
+                        key={clip.id}
+                        className="absolute top-1 h-10 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200"
+                        style={{
+                          left: `${clipStartX - scrollX}px`,
+                          width: `${clipWidth}px`,
+                          backgroundColor: clip.color,
+                          borderColor: clip.color,
+                          zIndex: 5
+                        }}
+                        onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
+                        onDoubleClick={() => console.log('Edit clip:', clip.name)}
+                      >
+                        {/* Clip Header */}
+                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
+                          <span className="truncate flex-1">{clip.name}</span>
+                          <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
+                        </div>
+                        
+                        {/* Waveform */}
+                        <div className="h-5 px-1 py-0.5">
+                          {clip.waveformData && (
+                            <div className="h-full flex items-end justify-center">
+                              {clip.waveformData.slice(0, Math.floor(clipWidth / 3)).map((amplitude, i) => (
+                                <div
+                                  key={i}
+                                  className="w-0.5 bg-white bg-opacity-60 mx-px rounded-sm"
+                                  style={{ height: `${(amplitude / 100) * 100}%` }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Fade In/Out Indicators */}
+                        {clip.fadeIn && clip.fadeIn > 0 && (
+                          <div 
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
+                            style={{ width: `${(clip.fadeIn / clip.duration) * 100}%` }}
+                          />
+                        )}
+                        {clip.fadeOut && clip.fadeOut > 0 && (
+                          <div 
+                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
+                            style={{ width: `${(clip.fadeOut / clip.duration) * 100}%` }}
+                          />
+                        )}
+                        
+                        {/* Resize Handles */}
+                        <div className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors" />
+                        <div className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors" />
+                      </div>
+                    );
+                  })}
                   
                   {/* Audio Selection Overlay */}
                   {audioSelection && audioSelection.trackId === track.id && (

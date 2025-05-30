@@ -1,15 +1,27 @@
+export interface AudioClip {
+  id: string;
+  name: string;
+  filePath?: string;
+  startTime: number; // Position on timeline in seconds
+  duration: number; // Duration in seconds
+  offset: number; // Offset within the source file
+  volume: number; // 0-100
+  color: string;
+  waveformData?: number[];
+  fadeIn?: number;
+  fadeOut?: number;
+}
+
 export interface AudioTrack {
   id: string;
   name: string;
   type: 'audio' | 'midi' | 'ai-generated';
-  filePath?: string;
-  position: number;
   volume: number; // 0-100
   pan: number; // 0-100, 50 is center
   muted: boolean;
   soloed: boolean;
   color: string;
-  waveformData?: number[];
+  clips: AudioClip[];
   effects: AudioEffect[];
 }
 
