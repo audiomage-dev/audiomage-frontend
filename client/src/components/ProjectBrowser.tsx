@@ -1,5 +1,19 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { 
+  Folder, 
+  FolderOpen, 
+  Volume2, 
+  Music, 
+  Piano, 
+  Sliders, 
+  FileText, 
+  Code, 
+  Image, 
+  File,
+  Drum,
+  Bot
+} from 'lucide-react';
 
 interface ProjectItem {
   id: string;
@@ -74,37 +88,37 @@ export function ProjectBrowser() {
     
     // Check file extensions for more specific icons
     if (fileName.endsWith('.wav') || fileName.endsWith('.aiff') || fileName.endsWith('.flac')) {
-      return 'volume-up';
+      return <Volume2 className="w-3 h-3" />;
     }
     if (fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.ogg')) {
-      return 'music';
+      return <Music className="w-3 h-3" />;
     }
     if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
-      return 'piano';
+      return <Piano className="w-3 h-3" />;
     }
     if (fileName.endsWith('.fxp') || fileName.endsWith('.vstpreset')) {
-      return 'sliders-h';
+      return <Sliders className="w-3 h-3" />;
     }
     if (fileName.endsWith('.json') || fileName.endsWith('.xml')) {
-      return 'code';
+      return <Code className="w-3 h-3" />;
     }
     if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
-      return 'file-alt';
+      return <FileText className="w-3 h-3" />;
     }
     if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
-      return 'image';
+      return <Image className="w-3 h-3" />;
     }
     
     // Check by type
     switch (type) {
-      case 'folder': return 'folder';
-      case 'audio': return 'volume-up';
-      case 'midi': return 'piano';
-      case 'fx': return 'sliders-h';
-      case 'project': return 'project-diagram';
-      case 'samples': return 'drum';
-      case 'ai-generated': return 'robot';
-      default: return 'file';
+      case 'folder': return <Folder className="w-3 h-3" />;
+      case 'audio': return <Volume2 className="w-3 h-3" />;
+      case 'midi': return <Piano className="w-3 h-3" />;
+      case 'fx': return <Sliders className="w-3 h-3" />;
+      case 'project': return <FolderOpen className="w-3 h-3" />;
+      case 'samples': return <Drum className="w-3 h-3" />;
+      case 'ai-generated': return <Bot className="w-3 h-3" />;
+      default: return <File className="w-3 h-3" />;
     }
   };
 
@@ -193,10 +207,12 @@ export function ProjectBrowser() {
           )}
           {!hasChildren && <div className="w-3 mr-1" />}
           
-          <i 
-            className={`fas fa-${getFileIcon(item.type, item.name)} text-xs mr-2`} 
+          <div 
+            className="mr-2 flex items-center" 
             style={{ color: getFileColor(item.type, item.name) }}
-          />
+          >
+            {getFileIcon(item.type, item.name)}
+          </div>
           
           <span 
             className="text-[var(--foreground)] flex-1 truncate leading-none"
