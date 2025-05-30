@@ -165,13 +165,16 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     e.stopPropagation();
+    e.preventDefault();
     
     const track = tracks.find(t => t.id === trackId);
     const clip = track?.clips?.find(c => c.id === clipId);
     const trackIndex = tracks.findIndex(t => t.id === trackId);
     
     if (clip && trackIndex >= 0) {
-      setDraggingClip({
+      console.log('Starting clip drag:', clipId);
+      
+      const dragState = {
         clipId,
         trackId,
         startX: e.clientX,
@@ -181,7 +184,39 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         currentTrackIndex: trackIndex,
         currentOffsetX: 0,
         currentOffsetY: 0
-      });
+      };
+      
+      setDraggingClip(dragState);
+      setIsDragging(true);
+      
+      // Add document-level mouse event listeners for smooth dragging
+      const handleDocumentMouseMove = (e: MouseEvent) => {
+        const deltaX = e.clientX - dragState.startX;
+        const deltaY = e.clientY - dragState.startY;
+        
+        // Calculate new track position
+        const trackHeight = 96;
+        const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+          dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
+        ));
+        
+        setDraggingClip(prev => prev ? {
+          ...prev,
+          currentTrackIndex: newTrackIndex,
+          currentOffsetX: deltaX,
+          currentOffsetY: deltaY
+        } : null);
+      };
+      
+      const handleDocumentMouseUp = () => {
+        document.removeEventListener('mousemove', handleDocumentMouseMove);
+        document.removeEventListener('mouseup', handleDocumentMouseUp);
+        
+        // Will be handled by the existing handleMouseUp
+      };
+      
+      document.addEventListener('mousemove', handleDocumentMouseMove);
+      document.addEventListener('mouseup', handleDocumentMouseUp);
     }
   }, [tracks]);
 
@@ -227,6 +262,35 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   }, [currentTool]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    // Handle clip dragging first - this is the priority
+    if (draggingClip) {
+      const deltaX = e.clientX - draggingClip.startX;
+      const deltaY = e.clientY - draggingClip.startY;
+      
+      // Calculate new time position
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const deltaTime = (deltaX / timelineWidth) * totalTime;
+      const newTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
+      
+      // Calculate new track position
+      const trackHeight = 96;
+      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+        draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
+      ));
+      
+      // Update dragging state with new track and current offsets
+      setDraggingClip(prev => prev ? {
+        ...prev,
+        currentTrackIndex: newTrackIndex,
+        currentOffsetX: deltaX,
+        currentOffsetY: deltaY
+      } : null);
+      
+      console.log('Dragging clip to time:', newTime, 'track:', newTrackIndex, 'offsets:', deltaX, deltaY);
+      return; // Exit early when dragging clip
+    }
+    
     if (!isDragging) return;
 
     if (currentTool === 'hand') {
@@ -257,32 +321,6 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         
         setSelectedTrackIds(selectedIds);
       }
-    } else if (draggingClip) {
-      // Clip dragging - both horizontal and vertical
-      const deltaX = e.clientX - draggingClip.startX;
-      const deltaY = e.clientY - draggingClip.startY;
-      
-      // Calculate new time position
-      const timelineWidth = getTimelineWidth();
-      const totalTime = timelineWidth / zoomLevel;
-      const deltaTime = (deltaX / timelineWidth) * totalTime;
-      const newTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
-      
-      // Calculate new track position
-      const trackHeight = 96;
-      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
-        draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
-      ));
-      
-      // Update dragging state with new track and current offsets
-      setDraggingClip(prev => prev ? {
-        ...prev,
-        currentTrackIndex: newTrackIndex,
-        currentOffsetX: deltaX,
-        currentOffsetY: deltaY
-      } : null);
-      
-      console.log('Dragging clip to time:', newTime, 'track:', newTrackIndex);
     }
 
     // Update audio selection if active
@@ -301,7 +339,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         } : null);
       }
     }
-  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX, draggingClip]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX, draggingClip, getTimelineWidth]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     setIsDragging(false);
