@@ -111,6 +111,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     } else if (currentTool === 'select' && e.button === 0) { // Left click for selection
       const rect = timelineRef.current?.getBoundingClientRect();
       if (rect) {
+        // Clear existing audio selection when clicking elsewhere
+        setAudioSelection(null);
         setIsSelecting(true);
         const startX = e.clientX - rect.left;
         const startY = e.clientY - rect.top;
@@ -196,17 +198,27 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     setSelectionBox(null);
     
     // Finalize audio selection if it exists and has a meaningful duration
-    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.01) {
-      // Keep the selection active and mark it as completed
-      setAudioSelection(prev => prev ? { ...prev, isActive: true } : null);
-      console.log('Audio selection stored:', {
-        trackId: audioSelection.trackId,
+    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.5) { // Minimum 0.5 second selection
+      // Normalize the selection coordinates and keep it locked
+      const normalizedSelection = {
+        ...audioSelection,
         startTime: Math.min(audioSelection.startTime, audioSelection.endTime),
         endTime: Math.max(audioSelection.startTime, audioSelection.endTime),
-        duration: Math.abs(audioSelection.endTime - audioSelection.startTime)
+        startX: Math.min(audioSelection.startX, audioSelection.endX),
+        endX: Math.max(audioSelection.startX, audioSelection.endX),
+        isActive: true,
+        isLocked: true // Mark as locked to persist after mouse release
+      };
+      
+      setAudioSelection(normalizedSelection);
+      console.log('Audio selection locked:', {
+        trackId: normalizedSelection.trackId,
+        startTime: normalizedSelection.startTime,
+        endTime: normalizedSelection.endTime,
+        duration: normalizedSelection.endTime - normalizedSelection.startTime
       });
-    } else if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) <= 0.01) {
-      // Clear selection if it's too small (just a click)
+    } else if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) <= 0.5) {
+      // Clear selection if it's too small (less than 0.5 seconds)
       setAudioSelection(null);
     }
   }, [audioSelection]);
@@ -540,17 +552,22 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                   {/* Audio Selection Overlay */}
                   {audioSelection && audioSelection.trackId === track.id && (
                     <div
-                      className="absolute top-0 bottom-0 bg-[var(--primary)]/20 border-2 border-[var(--primary)] pointer-events-none"
+                      className="absolute top-0 bottom-0 bg-[var(--primary)]/25 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
                       style={{
-                        left: `${Math.min(audioSelection.startX, audioSelection.endX) - scrollX}px`,
-                        width: `${Math.abs(audioSelection.endX - audioSelection.startX)}px`
+                        left: `${audioSelection.startX - scrollX}px`,
+                        width: `${audioSelection.endX - audioSelection.startX}px`,
+                        zIndex: 10
                       }}
                     >
-                      <div className="absolute top-0 left-0 right-0 h-4 bg-[var(--primary)]/40 flex items-center justify-center">
-                        <span className="text-xs text-white font-mono">
-                          {Math.abs(audioSelection.endTime - audioSelection.startTime).toFixed(2)}s
+                      <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/60 flex items-center justify-center border-b border-[var(--primary)]">
+                        <span className="text-xs text-white font-mono font-semibold">
+                          {(audioSelection.endTime - audioSelection.startTime).toFixed(2)}s
                         </span>
                       </div>
+                      
+                      {/* Selection handles */}
+                      <div className="absolute left-0 top-0 w-1 h-full bg-[var(--primary)] cursor-ew-resize" />
+                      <div className="absolute right-0 top-0 w-1 h-full bg-[var(--primary)] cursor-ew-resize" />
                     </div>
                   )}
                 </div>
