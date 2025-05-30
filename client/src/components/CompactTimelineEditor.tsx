@@ -53,6 +53,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     endX: number; 
     trackIndex: number;
     isActive: boolean;
+    isLocked: boolean;
   } | null>(null);
   const [audioContextMenu, setAudioContextMenu] = useState<{ 
     x: number; 
@@ -132,6 +133,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         const timelineWidth = Math.max(1200, 1200 * zoomLevel);
         const startTime = (startX / timelineWidth) * 1200; // 20 minutes total
         
+        console.log('Starting audio selection:', { startX, startTime, trackId });
+        
         setAudioSelection({
           trackId,
           startTime,
@@ -139,7 +142,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           startX,
           endX: startX,
           trackIndex,
-          isActive: true
+          isActive: true,
+          isLocked: false
         });
         setContextMenu(null);
         setAudioContextMenu(null);
@@ -175,18 +179,21 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         
         setSelectedTrackIds(selectedIds);
       }
-    } else if (audioSelection) {
+    } else if (audioSelection && !audioSelection.isLocked) {
       const rect = timelineRef.current?.getBoundingClientRect();
       if (rect) {
         const currentX = e.clientX - rect.left + scrollX;
         const timelineWidth = Math.max(1200, 1200 * zoomLevel);
         const currentTime = (currentX / timelineWidth) * 1200;
         
+        console.log('Updating audio selection:', { currentX, currentTime });
+        
         setAudioSelection(prev => prev ? {
           ...prev,
           endTime: currentTime,
           endX: currentX,
-          isActive: true
+          isActive: true,
+          isLocked: false
         } : null);
       }
     }
@@ -198,7 +205,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     setSelectionBox(null);
     
     // Finalize audio selection if it exists and has a meaningful duration
-    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.5) { // Minimum 0.5 second selection
+    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.1) { // Minimum 0.1 second selection
       // Normalize the selection coordinates and keep it locked
       const normalizedSelection = {
         ...audioSelection,
@@ -211,14 +218,10 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       };
       
       setAudioSelection(normalizedSelection);
-      console.log('Audio selection locked:', {
-        trackId: normalizedSelection.trackId,
-        startTime: normalizedSelection.startTime,
-        endTime: normalizedSelection.endTime,
-        duration: normalizedSelection.endTime - normalizedSelection.startTime
-      });
-    } else if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) <= 0.5) {
-      // Clear selection if it's too small (less than 0.5 seconds)
+      console.log('Audio selection locked:', normalizedSelection);
+    } else if (audioSelection) {
+      // Clear selection if it's too small
+      console.log('Selection too small, clearing:', audioSelection);
       setAudioSelection(null);
     }
   }, [audioSelection]);
