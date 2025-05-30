@@ -205,6 +205,15 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         
         setSelectedTrackIds(selectedIds);
       }
+    } else if (draggingClip) {
+      // Handle clip dragging
+      const deltaX = e.clientX - draggingClip.startX;
+      const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+      const deltaTime = (deltaX / timelineWidth) * 1200;
+      const newStartTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
+      
+      console.log('Dragging clip to time:', newStartTime);
+      
     } else if (audioSelection && !audioSelection.isLocked) {
       const rect = timelineRef.current?.getBoundingClientRect();
       if (rect) {
@@ -223,12 +232,26 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         } : null);
       }
     }
-  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX, draggingClip]);
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
     setIsDragging(false);
     setIsSelecting(false);
     setSelectionBox(null);
+    
+    // Finalize clip dragging if in progress
+    if (draggingClip) {
+      const deltaX = e.clientX - draggingClip.startX;
+      const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+      const deltaTime = (deltaX / timelineWidth) * 1200;
+      const newStartTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
+      
+      console.log(`Clip ${draggingClip.clipId} moved to ${newStartTime}s`);
+      
+      // Here you would update the actual clip position in your data
+      // For now, just log the final position
+      setDraggingClip(null);
+    }
     
     // Finalize audio selection if it exists and has a meaningful duration
     if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.1) { // Minimum 0.1 second selection
@@ -250,7 +273,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       console.log('Selection too small, clearing:', audioSelection);
       setAudioSelection(null);
     }
-  }, [audioSelection]);
+  }, [audioSelection, draggingClip, zoomLevel]);
 
   const handleAudioRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
@@ -566,7 +589,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                     return (
                       <div
                         key={clip.id}
-                        className="absolute top-1 h-10 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200"
+                        className="absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200"
                         style={{
                           left: `${clipStartX - scrollX}px`,
                           width: `${clipWidth}px`,
@@ -574,10 +597,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                           borderColor: clip.color,
                           zIndex: 5
                         }}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                          console.log('Clip drag started:', clip.name);
-                        }}
+                        onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
                         {/* Clip Header */}
@@ -586,18 +606,32 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                           <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
                         </div>
                         
-                        {/* Waveform */}
-                        <div className="h-5 px-1 py-0.5">
+                        {/* Line Waveform */}
+                        <div className="h-14 px-2 py-1 relative">
                           {clip.waveformData && (
-                            <div className="h-full flex items-end justify-center">
-                              {clip.waveformData.slice(0, Math.floor(clipWidth / 3)).map((amplitude, i) => (
-                                <div
-                                  key={i}
-                                  className="w-0.5 bg-white bg-opacity-60 mx-px rounded-sm"
-                                  style={{ height: `${(amplitude / 100) * 100}%` }}
-                                />
-                              ))}
-                            </div>
+                            <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} 52`} preserveAspectRatio="none">
+                              <path
+                                d={`M 0,26 ${clip.waveformData.map((amplitude, i) => {
+                                  const x = (i / (clip.waveformData!.length - 1)) * clipWidth;
+                                  const y = 26 - ((amplitude - 50) / 50) * 25; // Center at 26, normalize amplitude
+                                  return `L ${x},${y}`;
+                                }).join(' ')}`}
+                                stroke="rgba(255,255,255,0.8)"
+                                strokeWidth="1"
+                                fill="none"
+                                vectorEffect="non-scaling-stroke"
+                              />
+                              {/* Center line */}
+                              <line
+                                x1="0"
+                                y1="26"
+                                x2={clipWidth}
+                                y2="26"
+                                stroke="rgba(255,255,255,0.2)"
+                                strokeWidth="0.5"
+                                vectorEffect="non-scaling-stroke"
+                              />
+                            </svg>
                           )}
                         </div>
                         
