@@ -398,32 +398,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     setIsSelecting(false);
     setSelectionBox(null);
     
-    // Finalize clip dragging if in progress
-    if (draggingClip) {
-      const deltaX = e.clientX - draggingClip.startX;
-      const deltaY = e.clientY - draggingClip.startY;
-      
-      const timelineWidth = getTimelineWidth();
-      const totalTime = timelineWidth / zoomLevel;
-      const deltaTime = (deltaX / timelineWidth) * totalTime;
-      const newStartTime = Math.max(0, draggingClip.originalStartTime + deltaTime);
-      
-      const trackHeight = 96;
-      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
-        draggingClip.originalTrackIndex + Math.round(deltaY / trackHeight)
-      ));
-      
-      const newTrackId = tracks[newTrackIndex]?.id;
-      
-      console.log(`Clip ${draggingClip.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
-      
-      // Persist the clip movement to actual data
-      if (onClipMove && newTrackId) {
-        onClipMove(draggingClip.clipId, draggingClip.trackId, newTrackId, newStartTime);
-      }
-      
-      setDraggingClip(null);
-    }
+    // Note: Clip dragging finalization is handled by the document mouse up handler
+    // to avoid duplicate calls to onClipMove
     
     // Finalize audio selection if it exists and has a meaningful duration
     if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.1) { // Minimum 0.1 second selection
