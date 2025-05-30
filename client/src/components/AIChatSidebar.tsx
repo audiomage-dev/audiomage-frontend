@@ -41,12 +41,50 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
   ];
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Handle horizontal resizing
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      const newWidth = window.innerWidth - e.clientX;
+      // Constrain width between 300px and 800px
+      const constrainedWidth = Math.max(300, Math.min(800, newWidth));
+      setSidebarWidth(constrainedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
 
   useEffect(() => {
     scrollToBottom();
@@ -130,7 +168,19 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
   }
 
   return (
-    <div className="fixed right-0 top-14 h-[calc(100vh-80px)] w-80 bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg">
+    <div 
+      ref={sidebarRef}
+      className="fixed right-0 top-14 h-[calc(100vh-80px)] bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg"
+      style={{ width: `${sidebarWidth}px` }}
+    >
+      {/* Resize Handle */}
+      <div
+        className="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-[var(--primary)] transition-colors group"
+        onMouseDown={handleMouseDown}
+        style={{ background: isResizing ? 'var(--primary)' : 'transparent' }}
+      >
+        <div className="absolute left-[-2px] top-0 w-1 h-full group-hover:bg-[var(--primary)] transition-colors" />
+      </div>
       {/* Header */}
       <div className="h-14 px-4 py-3 border-b border-[var(--border)] bg-[var(--muted)] flex items-center justify-between">
         <div className="flex items-center space-x-2">
