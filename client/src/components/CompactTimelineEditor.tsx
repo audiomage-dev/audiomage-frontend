@@ -44,6 +44,19 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
+  const [audioSelection, setAudioSelection] = useState<{ 
+    trackId: string; 
+    startTime: number; 
+    endTime: number; 
+    startX: number; 
+    endX: number; 
+    trackIndex: number 
+  } | null>(null);
+  const [audioContextMenu, setAudioContextMenu] = useState<{ 
+    x: number; 
+    y: number; 
+    selection: { trackId: string; startTime: number; endTime: number; trackName: string } 
+  } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -99,9 +112,33 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         const startY = e.clientY - rect.top;
         setSelectionBox({ startX, startY, endX: startX, endY: startY });
         setContextMenu(null);
+        setAudioContextMenu(null);
       }
     }
   }, [currentTool, scrollX, scrollY]);
+
+  const handleAudioSelectionStart = useCallback((e: React.MouseEvent, trackId: string, trackIndex: number) => {
+    if (currentTool === 'select') {
+      e.stopPropagation();
+      const rect = timelineRef.current?.getBoundingClientRect();
+      if (rect) {
+        const startX = e.clientX - rect.left + scrollX;
+        const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+        const startTime = (startX / timelineWidth) * 1200; // 20 minutes total
+        
+        setAudioSelection({
+          trackId,
+          startTime,
+          endTime: startTime,
+          startX,
+          endX: startX,
+          trackIndex
+        });
+        setContextMenu(null);
+        setAudioContextMenu(null);
+      }
+    }
+  }, [currentTool, scrollX, zoomLevel]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDragging) {
@@ -131,14 +168,49 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         
         setSelectedTrackIds(selectedIds);
       }
+    } else if (audioSelection) {
+      const rect = timelineRef.current?.getBoundingClientRect();
+      if (rect) {
+        const currentX = e.clientX - rect.left + scrollX;
+        const timelineWidth = Math.max(1200, 1200 * zoomLevel);
+        const currentTime = (currentX / timelineWidth) * 1200;
+        
+        setAudioSelection(prev => prev ? {
+          ...prev,
+          endTime: currentTime,
+          endX: currentX
+        } : null);
+      }
     }
-  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     setIsSelecting(false);
     setSelectionBox(null);
+    // Keep audio selection active for context menu
   }, []);
+
+  const handleAudioRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (audioSelection && audioSelection.trackId === trackId) {
+      const track = tracks.find(t => t.id === trackId);
+      if (track) {
+        setAudioContextMenu({
+          x: e.clientX,
+          y: e.clientY,
+          selection: {
+            trackId,
+            startTime: Math.min(audioSelection.startTime, audioSelection.endTime),
+            endTime: Math.max(audioSelection.startTime, audioSelection.endTime),
+            trackName: track.name
+          }
+        });
+      }
+    }
+  }, [audioSelection, tracks]);
 
   const handleScroll = useCallback((e: React.WheelEvent) => {
     if (e.ctrlKey) {
@@ -420,7 +492,11 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
                 {/* Audio Waveform */}
-                <div className="h-full flex items-center px-2 py-1">
+                <div 
+                  className="h-full flex items-center px-2 py-1 relative cursor-crosshair"
+                  onMouseDown={(e) => handleAudioSelectionStart(e, track.id, index)}
+                  onContextMenu={(e) => handleAudioRightClick(e, track.id)}
+                >
                   {track.waveformData && (
                     <div className="w-full h-8">
                       <WaveformVisualization
@@ -439,6 +515,23 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                         width: `${(Math.random() * 40 + 30)}%`
                       }}
                     />
+                  )}
+                  
+                  {/* Audio Selection Overlay */}
+                  {audioSelection && audioSelection.trackId === track.id && (
+                    <div
+                      className="absolute top-0 bottom-0 bg-[var(--primary)]/20 border-2 border-[var(--primary)] pointer-events-none"
+                      style={{
+                        left: `${Math.min(audioSelection.startX, audioSelection.endX) - scrollX}px`,
+                        width: `${Math.abs(audioSelection.endX - audioSelection.startX)}px`
+                      }}
+                    >
+                      <div className="absolute top-0 left-0 right-0 h-4 bg-[var(--primary)]/40 flex items-center justify-center">
+                        <span className="text-xs text-white font-mono">
+                          {Math.abs(audioSelection.endTime - audioSelection.startTime).toFixed(2)}s
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
                 
@@ -524,6 +617,71 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               <span>{label}</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Audio Selection Context Menu */}
+      {audioContextMenu && (
+        <div
+          className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-1 z-50 min-w-48"
+          style={{ left: audioContextMenu.x, top: audioContextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3 py-2 text-xs text-[var(--muted-foreground)] border-b border-[var(--border)]">
+            <div className="font-medium">{audioContextMenu.selection.trackName}</div>
+            <div className="font-mono">
+              {audioContextMenu.selection.startTime.toFixed(2)}s - {audioContextMenu.selection.endTime.toFixed(2)}s
+            </div>
+            <div className="text-[var(--primary)]">
+              Duration: {(audioContextMenu.selection.endTime - audioContextMenu.selection.startTime).toFixed(2)}s
+            </div>
+          </div>
+          
+          {[
+            { label: 'Cut', icon: Scissors, action: 'cut', shortcut: 'Ctrl+X' },
+            { label: 'Copy', icon: Copy, action: 'copy', shortcut: 'Ctrl+C' },
+            { label: 'Delete', icon: Trash2, action: 'delete', destructive: true },
+            { separator: true },
+            { label: 'Fade In', icon: SkipForward, action: 'fade-in' },
+            { label: 'Fade Out', icon: SkipBack, action: 'fade-out' },
+            { label: 'Normalize', icon: ZoomIn, action: 'normalize' },
+            { separator: true },
+            { label: 'Reverse', icon: RotateCcw, action: 'reverse' },
+            { label: 'Speed Change', icon: Move, action: 'speed' },
+            { separator: true },
+            { label: 'AI Enhance', icon: Plus, action: 'ai-enhance', ai: true },
+            { label: 'AI Remove Noise', icon: VolumeX, action: 'ai-denoise', ai: true },
+            { label: 'AI Separate Stems', icon: Radio, action: 'ai-stems', ai: true },
+          ].map((item, index) => {
+            if (item.separator) {
+              return <div key={index} className="border-t border-[var(--border)] my-1" />;
+            }
+            
+            const { label, icon: Icon, action, shortcut, destructive, ai } = item;
+            return (
+              <button
+                key={label}
+                onClick={() => {
+                  console.log(`${action} audio selection:`, audioContextMenu.selection);
+                  setAudioContextMenu(null);
+                  setAudioSelection(null);
+                }}
+                className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition-colors ${
+                  destructive 
+                    ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]' 
+                    : ai
+                      ? 'hover:bg-[var(--purple)]/10 hover:text-[var(--purple)]'
+                      : 'hover:bg-[var(--accent)]'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Icon className="w-3 h-3" />
+                  <span>{label}</span>
+                </div>
+                {shortcut && <span className="text-[var(--muted-foreground)] text-xs">{shortcut}</span>}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
