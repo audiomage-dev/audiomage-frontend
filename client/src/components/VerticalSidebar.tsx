@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProjectBrowser } from './ProjectBrowser';
 import { AISuggestionsPanel } from './AISuggestionsPanel';
+import { AudioChangemapsPanel } from './AudioChangemapsPanel';
 import { 
   FolderOpen, 
   Search, 
@@ -18,7 +19,8 @@ import {
   Check,
   X,
   Square,
-  CheckSquare
+  CheckSquare,
+  History
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -190,6 +192,12 @@ export function VerticalSidebar() {
       icon: <Lightbulb className="w-5 h-5" />,
       label: 'AI Suggestions',
       component: <AISuggestionsPanel />
+    },
+    {
+      id: 'changemaps',
+      icon: <History className="w-5 h-5" />,
+      label: 'Audio Changemaps',
+      component: <AudioChangemapsPanel />
     }
   ];
 
