@@ -704,6 +704,8 @@ export function useAudioWorkstation() {
 
   // Update clip position function
   const updateClipPosition = useCallback((clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
+    console.log(`updateClipPosition called: ${clipId} from ${fromTrackId} to ${toTrackId} at ${newStartTime}s`);
+    
     setTracks(prevTracks => {
       // Find the clip in the source track
       const sourceTrack = prevTracks.find(t => t.id === fromTrackId);
@@ -714,27 +716,36 @@ export function useAudioWorkstation() {
         return prevTracks;
       }
 
+      console.log(`Moving clip "${clipToMove.name}" from ${clipToMove.startTime}s to ${newStartTime}s`);
+
       // Update tracks with moved clip
-      return prevTracks.map(track => {
+      const updatedTracks = prevTracks.map(track => {
         if (track.id === fromTrackId) {
           // Remove clip from source track
-          return {
+          const updatedTrack = {
             ...track,
             clips: track.clips?.filter(c => c.id !== clipId) || []
           };
+          console.log(`Removed clip from track ${track.name}, remaining clips:`, updatedTrack.clips?.length);
+          return updatedTrack;
         } else if (track.id === toTrackId) {
           // Add clip to target track with new position
           const updatedClip = {
             ...clipToMove,
             startTime: newStartTime
           };
-          return {
+          const updatedTrack = {
             ...track,
             clips: [...(track.clips || []), updatedClip]
           };
+          console.log(`Added clip to track ${track.name}, total clips:`, updatedTrack.clips?.length);
+          return updatedTrack;
         }
         return track;
       });
+      
+      console.log('Updated tracks state:', updatedTracks.map(t => ({ name: t.name, clips: t.clips?.length })));
+      return updatedTracks;
     });
   }, []);
 
