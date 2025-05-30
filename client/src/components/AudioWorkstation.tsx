@@ -28,6 +28,7 @@ export function AudioWorkstation() {
     toggleTrackSolo,
     switchSession,
     setCurrentProject,
+    updateClipPosition,
   } = useAudioWorkstation();
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
@@ -56,44 +57,7 @@ export function AudioWorkstation() {
     console.log(`Toggle solo for channel: ${channelId}`);
   };
 
-  const handleClipMove = (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
-    // Find the clip in the source track
-    const sourceTrack = tracks.find(t => t.id === fromTrackId);
-    const clipToMove = sourceTrack?.clips?.find(c => c.id === clipId);
-    
-    if (!clipToMove) {
-      console.error('Clip not found for movement');
-      return;
-    }
 
-    // Update the current project with moved clip
-    const updatedProject = {
-      ...currentProject,
-      tracks: tracks.map(track => {
-        if (track.id === fromTrackId) {
-          // Remove clip from source track
-          return {
-            ...track,
-            clips: track.clips?.filter(c => c.id !== clipId) || []
-          };
-        } else if (track.id === toTrackId) {
-          // Add clip to target track with new position
-          const updatedClip = {
-            ...clipToMove,
-            startTime: newStartTime
-          };
-          return {
-            ...track,
-            clips: [...(track.clips || []), updatedClip]
-          };
-        }
-        return track;
-      })
-    };
-
-    setCurrentProject(updatedProject);
-    console.log(`Moved clip ${clipId} from track ${fromTrackId} to ${toTrackId} at ${newStartTime}s`);
-  };
 
   return (
     <div className="h-screen flex flex-col select-none bg-[var(--background)]">
@@ -140,7 +104,7 @@ export function AudioWorkstation() {
               onTrackMute={toggleTrackMute}
               onTrackSolo={toggleTrackSolo}
               onTrackSelect={setSelectedTrack}
-              onClipMove={handleClipMove}
+              onClipMove={updateClipPosition}
             />
           </div>
 
