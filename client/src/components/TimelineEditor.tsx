@@ -1,7 +1,24 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
+import { 
+  Volume2, 
+  VolumeX, 
+  Radio, 
+  Circle, 
+  Edit3, 
+  Copy, 
+  Trash2, 
+  MoreHorizontal,
+  Play,
+  Pause,
+  RotateCcw,
+  Scissors,
+  Move,
+  ZoomIn,
+  ZoomOut
+} from 'lucide-react';
 
 interface TimelineEditorProps {
   tracks: AudioTrack[];
@@ -287,58 +304,52 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
 
   return (
     <div className="flex-1 flex flex-col" onClick={handleGlobalClick}>
-      {/* Toolbar */}
-      <div className="bg-[var(--muted)] border-b border-[var(--border)] p-2 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="p-1 bg-[var(--primary)] text-white rounded h-auto">
-              <i className="fas fa-mouse-pointer text-xs"></i>
+      {/* Compact Toolbar */}
+      <div className="bg-[var(--muted)] border-b border-[var(--border)] px-3 py-1 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="flex space-x-0.5">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-[var(--primary)] text-white">
+              <Move className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
-              <i className="fas fa-cut text-xs"></i>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+              <Scissors className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
-              <i className="fas fa-expand-arrows-alt text-xs"></i>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+              <ZoomIn className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 hover:bg-[var(--accent)] rounded h-auto">
-              <i className="fas fa-hand-paper text-xs"></i>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+              <ZoomOut className="w-3 h-3" />
             </Button>
           </div>
-          <div className="h-4 border-l border-[var(--muted-foreground)]"></div>
+          <div className="h-3 border-l border-[var(--border)]"></div>
           <div className="flex items-center space-x-1 text-xs">
             <span>Snap:</span>
-            <select className="bg-[var(--input)] border border-[var(--border)] rounded px-1 text-xs text-[var(--foreground)]">
+            <select className="bg-[var(--input)] border border-[var(--border)] rounded px-1 py-0 text-xs h-5">
               <option>1/16</option>
               <option>1/8</option>
               <option>1/4</option>
             </select>
           </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-xs">
-            <span className="font-mono">Sample Rate: 48kHz</span>
-            <span className="font-mono">Buffer: 256</span>
+          <div className="flex items-center space-x-2 text-xs text-[var(--muted-foreground)]">
+            <span>48kHz</span>
+            <span>•</span>
+            <span>256</span>
+            <span>•</span>
             <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
-              <span>CPU: 23%</span>
+              <div className="w-1.5 h-1.5 bg-[var(--green)] rounded-full"></div>
+              <span>23%</span>
             </div>
           </div>
-          
-          {/* AI Chat Toggle */}
-          <Button
-            onClick={() => setShowChatBox(!showChatBox)}
-            variant={showChatBox ? "default" : "outline"}
-            size="sm"
-            className={`px-3 py-1 h-7 transition-all duration-200 ${
-              showChatBox 
-                ? 'bg-[var(--primary)] text-white' 
-                : 'border-[var(--border)] hover:bg-[var(--accent)]'
-            }`}
-          >
-            <i className="fas fa-robot mr-2"></i>
-            <span className="text-xs">AI Chat</span>
-          </Button>
         </div>
+        
+        <Button
+          onClick={() => setShowChatBox(!showChatBox)}
+          variant={showChatBox ? "default" : "outline"}
+          size="sm"
+          className="h-6 px-2 text-xs"
+        >
+          <span>AI</span>
+        </Button>
       </div>
 
       {/* AI Chat Box */}

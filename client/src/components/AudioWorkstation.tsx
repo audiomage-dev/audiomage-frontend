@@ -2,7 +2,7 @@ import { MenuBar } from './MenuBar';
 import { SessionTabs } from './SessionTabs';
 import { VerticalSidebar } from './VerticalSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
-import { TimelineEditor } from './TimelineEditor';
+import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
@@ -88,7 +88,7 @@ export function AudioWorkstation() {
           
           {/* Timeline Editor */}
           <div className="flex-1 overflow-hidden">
-            <TimelineEditor
+            <CompactTimelineEditor
               tracks={tracks}
               transport={transport}
               onTrackMute={toggleTrackMute}
