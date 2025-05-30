@@ -198,8 +198,8 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
         const minY = Math.min(selectionBox.startY, endY);
         const maxY = Math.max(selectionBox.startY, endY);
         const selectedIds = tracks.filter((_, index) => {
-          const trackTop = index * 48;
-          const trackBottom = trackTop + 48;
+          const trackTop = index * 96;
+          const trackBottom = trackTop + 96;
           return trackTop < maxY && trackBottom > minY;
         }).map(t => t.id);
         
@@ -485,7 +485,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`h-12 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
+                className={`h-24 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
                   selectedTrackIds.includes(track.id) 
                     ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
                     : 'hover:bg-[var(--accent)]/50'
@@ -562,16 +562,16 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
             className="relative bg-[var(--background)]" 
             style={{ 
               width: `${Math.max(1200, 1200 * zoomLevel)}px`, 
-              height: `${tracks.length * 48}px`
+              height: `${tracks.length * 96}px`
             }}
           >
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`absolute left-0 right-0 h-12 border-b border-[var(--border)] transition-colors ${
+                className={`absolute left-0 right-0 h-24 border-b border-[var(--border)] transition-colors ${
                   selectedTrackIds.includes(track.id) ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
                 }`}
-                style={{ top: `${index * 48}px` }}
+                style={{ top: `${index * 96}px` }}
                 onClick={(e) => handleTrackSelect(track.id, e)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
