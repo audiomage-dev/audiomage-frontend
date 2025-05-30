@@ -1,0 +1,222 @@
+# **Audiomage Interface Versions: Tailored User Experiences**
+
+To cater to a broad user base, Audiomage will offer two distinct interface versions: a streamlined experience for less technical users focused on quick results, and a comprehensive "Studio" version for professionals seeking granular control, akin to a Digital Audio Workstation (DAW).
+
+#### **1\. Simplified Interface (For Less Technical Users)**
+
+This version prioritizes ease of use, automation, and quick results, ideal for content creators who need professional audio without extensive technical knowledge.
+
+* **Project Creation & Upload:**
+
+  * Intuitive drag-and-drop video upload (MP4, MOV, AVI).
+
+  * Clear progress indicator for upload and initial AI processing.
+
+  * Simple project naming.
+
+* **AI Audio Generation & Basic Customization:**
+
+  * Automated AI audio track generation upon video upload.
+
+  * Integrated video player for immediate preview of generated audio.
+
+  * **Text Prompt Input:** A simple text field where users can describe desired audio elements or overall mood (e.g., "add a spooky atmosphere," "make the footsteps louder," "background music for a joyful scene").
+
+  * **Sound Category Selection:** Checkboxes or a multi-select dropdown to specify which categories of sound Audiomage should prioritize generating (e.g., Music, SFX, Foley, Ambience, Dialogue Enhancement).
+
+  * **Simplified Timeline Editor:** A visual overview of audio layers (Music, SFX, Foley, Dialogue) without individual clip manipulation.
+
+  * **Global Layer Controls:** Master volume sliders for Music, SFX, Foley, and Dialogue layers to adjust overall mix balance.
+
+  * **Dialogue Enhancement Toggle:** A one-click button to apply/remove AI-driven clarity improvements.
+
+  * **Mood/Genre Presets:** Simple selectors or toggles to adjust the overall mood or genre of the generated music (e.g., "Energetic," "Calm").
+
+  * **Clip Enhancement/Replacement Options:** Simple contextual options to enhance or replace specific problematic or desired audio clips (e.g., "Enhance Dialogue," "Replace Background Noise," "Suggest New Music for this Scene").
+
+* **Export & Integration:**
+
+  * Multiple export formats for final audio (WAV, MP3, AAC) or video (various formats) with integrated audio. **“NEEDS REVIEW REGARDING GDPR LAWS”**
+
+* **Dashboard & Project Overview:**
+
+  * Clean dashboard displaying active and completed projects with status indicators.
+
+  * Quick access to recent projects.
+
+* **Account & Settings:**
+
+  * Basic profile management.
+
+  * Subscription overview.
+
+* **Help & Support:**
+
+  * Access to integrated knowledge base/FAQ.
+
+  * Feedback mechanism.
+
+#### **2\. Full Studio Interface (For Professional Users & Sound Engineers)**
+
+This version is designed to meet the highest standards, offering comprehensive control and features comparable to a professional DAW, empowering sound engineers and advanced content creators. It includes *all* features from the simplified interface, plus the following in-depth capabilities:
+
+* **Centralized Media Viewer & Advanced Playback Controls:**
+
+  * Integrated video player with high-fidelity audio playback.
+
+  * Standard playback controls (Play, Pause, Stop, Seek, Volume, Fullscreen).
+
+  * **Loop Playback:** Option to loop selected timeline sections for detailed review.
+
+* **Interactive Timeline Editor (Comprehensive):**
+
+  * **Multi-Track Display:** Detailed horizontal timeline showing distinct visual representations and waveforms for Music, SFX, Foley, and Dialogue tracks.
+
+  * **Zoom In/Out:** Granular control for precise editing.
+
+  * **Time Ruler & Playhead:** Accurate positioning and navigation.
+
+* **Granular Layer-Specific Controls & Customization:**
+
+  * **Individual Volume Sliders:** Per-track volume sliders for precise mixing.
+
+  * **Mute/Solo Buttons:** For isolated listening and editing of individual tracks.
+
+  * **Master Solo Feature:** A dedicated button that, when activated on a track, designates it as 'master soloed'. This 'master soloed' track will remain audible and active even when other individual tracks are subsequently soloed, effectively allowing it to play concurrently with any newly soloed tracks, rather than being muted by them.
+
+  * **Track Toggles:** On/off toggles for AI-generated layers.
+
+  * **Dialogue Enhancement Toggle:** One-click application/removal of AI-driven clarity, noise reduction, and balance improvements.
+
+* **Intelligent Sound Replacement & Advanced Adjustment:**
+
+  * **Text Prompt Input (Advanced):** A robust text field allowing for detailed natural language prompts to guide AI generation or modification of specific audio segments or the entire track.
+
+  * **Sound Category Selection (Granular):** Detailed controls to enable/disable or prioritize specific sound categories (e.g., Music, SFX, Foley, Ambience, Dialogue) for generation, with sub-categories or intensity levels.
+
+  * **Contextual Suggestions (Smart Replace):** AI offers intelligent, contextually relevant alternative sounds when a segment is selected.
+
+  * **Integrated Sound Library Browser:** Searchable, categorized library of royalty-free music and SFX with audition and drag-and-drop functionality.
+
+  * **Fine-Tuning Parameters:**
+
+    * **Mood/Genre Sliders:** Global or per-track sliders for subtle adjustments.
+
+    * **Reverb/Ambience Control:** Simple controls to add or reduce environmental reverb/background ambience.
+
+* **Extensive Clip Manipulation:**
+
+  * **Clip Selection:** Ability to select individual sound clips.
+
+  * **Trim/Crop:** Tools to shorten or lengthen clips directly on the timeline.
+
+  * **Split Clip:** Option to cut clips into two separate segments.
+
+  * **Move Clip:** Drag-and-drop functionality to reposition clips within tracks or between compatible tracks.
+
+  * **Fade In/Out:** Simple handles on clips for gradual volume changes.
+
+  * **Mute Selection:** Ability to mute a specific selected portion of a clip or multiple selected clips, independent of the entire track's mute status.
+
+* **Comprehensive Workflow & Control:**
+
+  * **Undo/Redo Functionality:** Standard undo and redo buttons for all editing actions, available for up to 5 actions either way. **“NEEDS REVIEW WITH YANAL REGARDING DELETION AND STORAGE OF DATA”**
+
+  * **Backup & Restore Checkpoints:** Users can manually create named backup checkpoints of their project at any point. These backups can then be browsed and restored, allowing users to roll back to previous versions of their work.
+
+  * **"Generate Audio" / "Apply Changes" Button:** A prominent button to trigger the AI processing or re-processing after adjustments.
+
+  * **AI-Powered Automation (Text Prompt Driven):** Advanced automation capabilities for audio levels, equalization (EQ), panning, and integrated plug-in parameters. Users can use natural language text prompts to instruct the AI to automate these aspects across the timeline (e.g., "Automate dialogue levels to be consistent," "Apply a warm EQ curve to the music from 0:30 to 1:00," "Pan the SFX from left to right during the explosion scene," "Automate the reverb wetness on the vocal track based on its intensity").
+
+  * **Save Project:** Explicit save button (with background auto-save).
+
+  * **Direct Export Options:** Quick access to download current audio mix or video with new audio.
+
+* **Advanced Export & Integration:**
+
+  * **Bitrate and Sample Rate Selection:** Options for professional users to choose desired audio bitrate (e.g., 128 kbps, 256 kbps, 320 kbps) and sample rate (e.g., 44.1 kHz, 48 kHz, 96 kHz) for project output.
+
+  * **API Key Management:** Dedicated section for generating, managing, and revoking API keys for programmatic access.
+
+* **Full Account & Settings:**
+
+  * Comprehensive profile management.
+
+  * Detailed subscription management, usage history, and billing.
+
+  * Customizable notification preferences.
+
+  * Advanced security settings (e.g., 2FA).
+
+* **Full Help & Support:**
+
+  * Integrated knowledge base/FAQ.
+
+  * In-app chat support.
+
+  * Tutorials & walkthroughs.
+
+  * Feedback mechanism.
+
+* **Fully Responsive Design:** Adapting seamlessly across all devices.
+
+### **Features for Later Product Versions**
+
+These features are identified for future development, enhancing the product's capabilities and user experience beyond the initial launch.
+
+* **Plugin Integration Prompts:** Clear instructions/links for downloading and using Audiomage's own open-source plugins with DAWs/video editing software.
+
+* **Advanced AI Fine-Tuning:** Granular control over generated audio characteristics that goes beyond simple mood or genre sliders. This includes influencing:
+
+  * **Timbre Control:** Ability to specify the desired "color" or quality of instruments or sound effects (e.g., "make the piano sound brighter and more resonant," "give the explosion a heavier, more sustained rumble").
+
+  * **Rhythmic Density/Complexity:** Control over the intricacy of musical patterns or frequency of sound events (e.g., "generate a sparse, minimalist drum beat," "create a dense, chaotic soundscape with overlapping effects").
+
+  * **Harmonic Richness/Dissonance:** For music generation, influence how "full" or "tense" harmonies are (e.g., "compose a rich, orchestral piece with lush chords," "introduce subtle dissonance to create unease").
+
+  * **Spatialization Nuance:** Ability to control complex spatial movements or room acoustics (e.g., "make footsteps sound like they're walking from an open space into a small, tiled room," "have dialogue echo slightly as if in a large hall").
+
+  * **Dynamic Range Control:** Instruct the AI to generate audio with specific dynamic range (e.g., "generate a track with very little dynamic range for broadcast," "create a highly dynamic soundscape with sharp contrasts").
+
+  * Emotional Arc Mapping: Define an emotional curve for a scene, with the AI generating audio that follows that arc (e.g., "start with calm, build to tension, resolve with relief").  
+    These parameters would be exposed through advanced sliders, numerical inputs, and detailed text prompts for precise command.
+
+* **Collaboration Features:**
+
+  * Multi-user project collaboration within the Studio interface.
+
+  * Version history and commenting on project changes.
+
+* **Expanded Integration Ecosystem:**
+
+  * Direct, deeper integrations with a wider range of popular professional video editing software (e.g., Adobe Premiere Pro, DaVinci Resolve) and DAWs (e.g., Pro Tools, Logic Pro).
+
+  * Customizable export presets for specific platforms (e.g., YouTube, TikTok, broadcast standards).
+
+* **Advanced Audio Processing & Mixing:**
+
+  * EQ (Equalization) controls for individual tracks or master output.
+
+  * Compression/Limiting tools.
+
+  * Support for spatial audio/3D soundscapes (beyond basic latent-aware audio).
+
+  * Customizable effects chains.
+
+* **User-Generated Content (UGC) Integration:**
+
+  * Ability for users to upload and manage their own custom sound effect libraries or music loops for use within projects. (TO BE DISCUSSED)
+
+  * Potential for a community marketplace for user-contributed sounds.
+
+* **AI-Powered Content Generation Expansion:**
+
+  * AI-driven voice-over generation or voice cloning.
+
+  * Automated script-to-audio synchronization.
+
+* **Enhanced Analytics & Reporting:**
+
+  * More detailed usage analytics for professional and enterprise tiers.
+
+  * Performance metrics for AI generation (e.g., processing time, quality scores).
