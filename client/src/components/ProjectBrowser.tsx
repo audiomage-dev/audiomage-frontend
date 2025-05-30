@@ -169,12 +169,6 @@ export function ProjectBrowser() {
       const filteredChildren = item.children ? filterItems(item.children, term) : [];
       
       if (matchesName || matchesType || matchesExtension || filteredChildren.length > 0) {
-        // Auto-expand folders that contain search results
-        if (filteredChildren.length > 0) {
-          const currentExpanded = Array.from(expandedFolders);
-          setExpandedFolders(new Set([...currentExpanded, item.id]));
-        }
-        
         filtered.push({
           ...item,
           children: filteredChildren.length > 0 ? filteredChildren : item.children
