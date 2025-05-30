@@ -87,15 +87,32 @@ export function ProjectBrowser() {
     setExpandedFolders(newExpanded);
   };
 
+  const highlightSearchTerm = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+    
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => {
+      if (part.toLowerCase() === searchTerm.toLowerCase()) {
+        return `<mark class="bg-[var(--yellow)] text-[var(--background)] px-1 rounded">${part}</mark>`;
+      }
+      return part;
+    }).join('');
+  };
+
   const renderItem = (item: ProjectItem) => {
     const isExpanded = expandedFolders.has(item.id);
     const hasChildren = item.children && item.children.length > 0;
     const paddingLeft = item.level * 16 + 8;
+    const matchesSearch = searchTerm && item.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     return (
       <div key={item.id}>
         <div
-          className="flex items-center h-6 px-1 hover:bg-[var(--accent)] cursor-pointer transition-colors group text-sm select-none"
+          className={`flex items-center h-6 px-1 hover:bg-[var(--accent)] cursor-pointer transition-colors group text-sm select-none ${
+            matchesSearch ? 'bg-[var(--accent)]/50' : ''
+          }`}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={() => hasChildren && toggleFolder(item.id)}
         >
@@ -111,15 +128,21 @@ export function ProjectBrowser() {
             style={{ color: getFileColor(item.type) }}
           />
           
-          <span className="text-[var(--foreground)] flex-1 truncate leading-none">
-            {item.name}
-          </span>
+          <span 
+            className="text-[var(--foreground)] flex-1 truncate leading-none"
+            dangerouslySetInnerHTML={{ 
+              __html: highlightSearchTerm(item.name, searchTerm) 
+            }}
+          />
           
           {item.type === 'audio' && (
             <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">WAV</span>
           )}
           {item.type === 'midi' && (
             <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">MIDI</span>
+          )}
+          {item.type === 'fx' && (
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">FX</span>
           )}
         </div>
         
@@ -128,12 +151,51 @@ export function ProjectBrowser() {
     );
   };
 
-  const filteredItems = searchTerm 
-    ? projectItems.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.children?.some(child => child.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    : projectItems;
+  const filterItems = (items: ProjectItem[], term: string): ProjectItem[] => {
+    if (!term) return items;
+    
+    return items.reduce((filtered: ProjectItem[], item) => {
+      const searchTerm = term.toLowerCase();
+      const itemName = item.name.toLowerCase();
+      const itemType = item.type.toLowerCase();
+      
+      // Search in name, type, and file extensions
+      const matchesName = itemName.includes(searchTerm);
+      const matchesType = itemType.includes(searchTerm);
+      const matchesExtension = itemName.endsWith('.wav') && searchTerm.includes('wav') ||
+                              itemName.endsWith('.mid') && searchTerm.includes('mid') ||
+                              itemName.endsWith('.fxp') && searchTerm.includes('fx');
+      
+      const filteredChildren = item.children ? filterItems(item.children, term) : [];
+      
+      if (matchesName || matchesType || matchesExtension || filteredChildren.length > 0) {
+        // Auto-expand folders that contain search results
+        if (filteredChildren.length > 0) {
+          const currentExpanded = Array.from(expandedFolders);
+          setExpandedFolders(new Set([...currentExpanded, item.id]));
+        }
+        
+        filtered.push({
+          ...item,
+          children: filteredChildren.length > 0 ? filteredChildren : item.children
+        });
+      }
+      
+      return filtered;
+    }, []);
+  };
+
+  const filteredItems = filterItems(projectItems, searchTerm);
+  
+  // Count total items and search results
+  const countItems = (items: ProjectItem[]): number => {
+    return items.reduce((count, item) => {
+      return count + 1 + (item.children ? countItems(item.children) : 0);
+    }, 0);
+  };
+  
+  const totalItems = countItems(projectItems);
+  const searchResults = searchTerm ? countItems(filteredItems) : totalItems;
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
@@ -159,11 +221,24 @@ export function ProjectBrowser() {
           <i className="fas fa-search absolute left-2 top-2 text-xs text-[var(--muted-foreground)]"></i>
           <input
             type="text"
-            placeholder="Search files..."
+            placeholder="Search files, types, extensions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-7 pr-2 py-1 text-xs bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setSearchTerm('');
+              }
+            }}
+            className="w-full pl-7 pr-8 py-1 text-xs bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2 top-2 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          )}
         </div>
       </div>
       
@@ -177,9 +252,24 @@ export function ProjectBrowser() {
       {/* Footer Info */}
       <div className="flex-none p-2 border-t border-[var(--border)] bg-[var(--muted)]">
         <div className="text-xs text-[var(--muted-foreground)] flex items-center justify-between">
-          <span>12 files</span>
+          <span>
+            {searchTerm ? (
+              <>
+                <i className="fas fa-search mr-1"></i>
+                {searchResults} of {totalItems} files
+              </>
+            ) : (
+              `${totalItems} files`
+            )}
+          </span>
           <span>2.4 GB</span>
         </div>
+        {searchTerm && (
+          <div className="text-xs text-[var(--muted-foreground)] mt-1">
+            <kbd className="px-1 py-0.5 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">Esc</kbd>
+            <span className="ml-1">to clear search</span>
+          </div>
+        )}
       </div>
     </div>
   );
