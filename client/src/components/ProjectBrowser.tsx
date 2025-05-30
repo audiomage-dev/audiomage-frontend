@@ -479,10 +479,13 @@ export function ProjectBrowser() {
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-50 bg-[var(--popover)] border border-[var(--border)] rounded-md shadow-lg py-1 min-w-48"
+            className="fixed z-50 bg-[var(--background)] border border-[var(--border)] rounded-md shadow-2xl py-1 min-w-48 backdrop-blur-sm"
             style={{
               left: contextMenu.x,
               top: contextMenu.y,
+              backgroundColor: 'var(--background)',
+              borderColor: 'var(--border)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
             }}
           >
             {getContextMenuItems(contextMenu.item).map((item, index) => {
