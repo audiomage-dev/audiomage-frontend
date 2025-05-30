@@ -81,7 +81,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: false,
-      color: 'hsl(208 135 112)', // aurora-orange
+      color: 'hsl(191 97 106)', // aurora-red
       waveformData: [95, 30, 85, 25, 90, 35, 80, 40],
       effects: [
         { id: '4', name: 'Gate - Precision', type: 'gate', enabled: true, parameters: {} },
@@ -98,7 +98,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: true,
-      color: 'hsl(235 203 139)', // aurora-yellow
+      color: 'hsl(180 142 173)', // aurora-purple
       waveformData: [75, 75, 70, 80, 65, 85, 70, 75],
       effects: [],
     },
