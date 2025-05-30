@@ -75,10 +75,14 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     if (isDragging) {
       const deltaX = dragStart.x - e.clientX;
       const deltaY = dragStart.y - e.clientY;
-      setScrollX(Math.max(0, deltaX));
-      setScrollY(Math.max(0, deltaY));
+      
+      const maxScrollX = Math.max(0, (100 * zoomLevel - 100) * (timelineRef.current?.clientWidth || 800) / 100);
+      const maxScrollY = Math.max(0, tracks.length * 48 - (timelineRef.current?.clientHeight || 400));
+      
+      setScrollX(Math.max(0, Math.min(maxScrollX, deltaX)));
+      setScrollY(Math.max(0, Math.min(maxScrollY, deltaY)));
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -96,12 +100,15 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
     } else if (e.shiftKey) {
       // Horizontal scroll with Shift+Wheel
       e.preventDefault();
-      setScrollX(prev => Math.max(0, prev + e.deltaY));
+      const maxScrollX = Math.max(0, (100 * zoomLevel - 100) * (timelineRef.current?.clientWidth || 800) / 100);
+      setScrollX(prev => Math.max(0, Math.min(maxScrollX, prev + e.deltaY)));
     } else {
       // Vertical scroll
-      setScrollY(prev => Math.max(0, prev + e.deltaY));
+      e.preventDefault();
+      const maxScrollY = Math.max(0, tracks.length * 48 - (timelineRef.current?.clientHeight || 400));
+      setScrollY(prev => Math.max(0, Math.min(maxScrollY, prev + e.deltaY)));
     }
-  }, [handleZoomIn, handleZoomOut]);
+  }, [handleZoomIn, handleZoomOut, zoomLevel, tracks.length]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -336,31 +343,30 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           </div>
         </div>
 
-        {/* Timeline Content */}
-        <div 
-          className="flex-1 overflow-hidden scrollbar-thin select-none" 
-          ref={timelineRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onWheel={handleScroll}
-          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}
-        >
+        {/* Timeline Content with native scrolling */}
+        <div className="flex-1 overflow-auto scrollbar-thin" 
+             ref={timelineRef}
+             onMouseDown={handleMouseDown}
+             onMouseMove={handleMouseMove}
+             onMouseUp={handleMouseUp}
+             onWheel={handleScroll}
+             style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}>
           <div 
-            className="relative" 
+            className="relative bg-[var(--background)]" 
             style={{ 
-              width: `${100 * zoomLevel}%`, 
-              minHeight: `${tracks.length * 48}px`,
-              transform: `translate(-${scrollX}px, -${scrollY}px)`
-            }}
-          >
+              width: `${Math.max(800, 800 * zoomLevel)}px`, 
+              minHeight: `${Math.max(400, tracks.length * 48)}px`
+            }}>
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`absolute left-0 right-0 h-12 border-b border-[var(--border)] transition-colors ${
+                className={`absolute left-0 h-12 border-b border-[var(--border)] transition-colors ${
                   selectedTrackId === track.id ? 'bg-[var(--accent)]/20' : 'hover:bg-[var(--muted)]/20'
                 }`}
-                style={{ top: `${index * 48}px` }}
+                style={{ 
+                  top: `${index * 48}px`,
+                  width: `${Math.max(800, 800 * zoomLevel)}px`
+                }}
                 onClick={() => handleTrackSelect(track.id)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
