@@ -4,6 +4,7 @@ import { ProjectBrowser } from './ProjectBrowser';
 import { AISuggestionsPanel } from './AISuggestionsPanel';
 import { AudioChangemapsPanel } from './AudioChangemapsPanel';
 import { ProjectVersionsPanel } from './ProjectVersionsPanel';
+import { QuickActionsPanel } from './QuickActionsPanel';
 import { 
   FolderOpen, 
   Search, 
@@ -36,7 +37,7 @@ import {
   Sparkles,
   Mic,
   Headphones,
-  Sliders3,
+
   Radio,
   TrendingUp,
   Scissors,
@@ -58,6 +59,12 @@ export function VerticalSidebar() {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const sidebarItems: SidebarItem[] = [
+    {
+      id: 'quick-actions',
+      icon: <Wand2 className="w-5 h-5" />,
+      label: 'Quick Actions',
+      component: <QuickActionsPanel />
+    },
     {
       id: 'files',
       icon: <FolderOpen className="w-5 h-5" />,

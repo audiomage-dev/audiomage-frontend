@@ -5,7 +5,6 @@ import {
   Sparkles, 
   Mic, 
   Headphones, 
-  Sliders, 
   Radio, 
   TrendingUp, 
   Scissors, 
