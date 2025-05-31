@@ -233,11 +233,11 @@ export function QuickActionsPanel() {
   ];
 
   const categories = [
-    { id: 'mixing', name: 'Mixing', icon: <Sliders className="w-4 h-4" /> },
-    { id: 'ai', name: 'AI Tools', icon: <Sparkles className="w-4 h-4" /> },
-    { id: 'editing', name: 'Editing', icon: <Scissors className="w-4 h-4" /> },
-    { id: 'effects', name: 'Effects', icon: <Wand2 className="w-4 h-4" /> },
-    { id: 'workflow', name: 'Workflow', icon: <Zap className="w-4 h-4" /> }
+    { id: 'mixing', name: 'Mixing', icon: <Gauge className="w-5 h-5" /> },
+    { id: 'ai', name: 'AI Tools', icon: <Sparkles className="w-5 h-5" /> },
+    { id: 'editing', name: 'Editing', icon: <Scissors className="w-5 h-5" /> },
+    { id: 'effects', name: 'Effects', icon: <Wand2 className="w-5 h-5" /> },
+    { id: 'workflow', name: 'Workflow', icon: <Zap className="w-5 h-5" /> }
   ];
 
   const filteredActions = macroActions.filter(action => action.category === selectedCategory);
@@ -249,23 +249,69 @@ export function QuickActionsPanel() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Category Tabs */}
-      <div className="border-b border-[var(--border)] bg-[var(--muted)]/30">
-        <div className="flex overflow-x-auto">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center space-x-1 px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors ${
-                selectedCategory === category.id
-                  ? 'border-[var(--primary)] text-[var(--primary)] bg-[var(--background)]'
-                  : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              {category.icon}
-              <span>{category.name}</span>
-            </button>
-          ))}
+      {/* Category Navigation */}
+      <div className="p-3 border-b border-[var(--border)] bg-gradient-to-br from-[var(--muted)]/20 via-[var(--background)] to-[var(--muted)]/10">
+        {/* Category Pills */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          {categories.map((category) => {
+            const categoryCount = macroActions.filter(a => a.category === category.id).length;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all duration-300 transform hover:scale-105 ${
+                  selectedCategory === category.id
+                    ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/80 text-[var(--primary-foreground)] shadow-lg shadow-[var(--primary)]/25'
+                    : 'bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:bg-[var(--accent)]/60 hover:border-[var(--primary)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <div className={`transition-all duration-300 ${
+                  selectedCategory === category.id ? 'text-[var(--primary-foreground)]' : ''
+                }`}>
+                  {category.icon}
+                </div>
+                <span className="text-xs font-medium">{category.name}</span>
+                <div className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                  selectedCategory === category.id
+                    ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
+                    : 'bg-[var(--muted)] text-[var(--muted-foreground)]'
+                }`}>
+                  {categoryCount}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Active Category Header */}
+        <div className="flex items-center justify-between p-2 rounded-lg bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 border border-[var(--primary)]/20">
+          <div className="flex items-center space-x-2">
+            <div className="p-1 rounded-md bg-[var(--primary)]/20">
+              <div className="text-[var(--primary)]">
+                {categories.find(c => c.id === selectedCategory)?.icon}
+              </div>
+            </div>
+            <div>
+              <span className="text-sm font-bold text-[var(--foreground)]">
+                {categories.find(c => c.id === selectedCategory)?.name}
+              </span>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                {selectedCategory === 'mixing' && 'Balance and enhance your mix'}
+                {selectedCategory === 'ai' && 'AI-powered audio processing'}
+                {selectedCategory === 'editing' && 'Precision audio editing tools'}
+                {selectedCategory === 'effects' && 'Creative audio effects'}
+                {selectedCategory === 'workflow' && 'Streamline your workflow'}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold text-[var(--primary)]">
+              {filteredActions.length}
+            </div>
+            <div className="text-xs text-[var(--muted-foreground)]">
+              {filteredActions.length === 1 ? 'action' : 'actions'}
+            </div>
+          </div>
         </div>
       </div>
 
