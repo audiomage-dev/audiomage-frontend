@@ -22,7 +22,28 @@ import {
   Heart,
   Star,
   Layers,
-  Clock
+  Clock,
+  Gauge,
+  Palette,
+  Wind,
+  Blend,
+  Target,
+  Waves,
+  Flame,
+  Snowflake,
+  Mountain,
+  Sun,
+  Moon,
+  Bolt,
+  Shield,
+  Gem,
+  Crown,
+  Rocket,
+  Puzzle,
+  Shuffle,
+  Archive,
+  GitBranch,
+  Package
 } from 'lucide-react';
 
 interface MacroAction {
@@ -42,86 +63,86 @@ export function QuickActionsPanel() {
     // Mixing Macros
     {
       id: 'normalize-levels',
-      name: 'Normalize Levels',
+      name: 'Level Balancer',
       description: 'Auto-balance volume levels across selected tracks',
-      icon: <Sliders className="w-4 h-4" />,
+      icon: <Gauge className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+N',
       category: 'mixing'
     },
     {
       id: 'auto-pan',
-      name: 'Auto Pan',
+      name: 'Stereo Magic',
       description: 'Intelligently pan tracks for optimal stereo image',
-      icon: <Radio className="w-4 h-4" />,
+      icon: <Target className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+P',
       category: 'mixing'
     },
     {
       id: 'ducking',
-      name: 'Sidechain Ducking',
+      name: 'Pump & Duck',
       description: 'Apply ducking compression to selected tracks',
-      icon: <Volume className="w-4 h-4" />,
+      icon: <Waves className="w-4 h-4" />,
       category: 'mixing'
     },
     {
       id: 'vocal-enhance',
-      name: 'Vocal Enhancement',
+      name: 'Vocal Sparkle',
       description: 'Apply vocal clarity and presence enhancement',
-      icon: <Mic className="w-4 h-4" />,
+      icon: <Crown className="w-4 h-4" />,
       category: 'mixing'
     },
 
     // AI Macros
     {
       id: 'ai-master',
-      name: 'AI Mastering',
+      name: 'AI Master Chef',
       description: 'Intelligent mastering chain for professional sound',
-      icon: <Sparkles className="w-4 h-4" />,
+      icon: <Gem className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+M',
       category: 'ai'
     },
     {
       id: 'ai-stem-separate',
-      name: 'Stem Separation',
+      name: 'Stem Surgeon',
       description: 'AI-powered vocal and instrument separation',
-      icon: <Layers className="w-4 h-4" />,
+      icon: <Puzzle className="w-4 h-4" />,
       category: 'ai'
     },
     {
       id: 'ai-noise-reduce',
-      name: 'Noise Reduction',
+      name: 'Noise Ninja',
       description: 'Remove background noise using AI analysis',
-      icon: <Filter className="w-4 h-4" />,
+      icon: <Shield className="w-4 h-4" />,
       category: 'ai'
     },
     {
       id: 'ai-pitch-correct',
-      name: 'Pitch Correction',
+      name: 'Pitch Perfect',
       description: 'Automatic pitch correction and tuning',
-      icon: <TrendingUp className="w-4 h-4" />,
+      icon: <Bolt className="w-4 h-4" />,
       category: 'ai'
     },
 
     // Editing Macros
     {
       id: 'auto-crossfade',
-      name: 'Auto Crossfade',
+      name: 'Smooth Operator',
       description: 'Add smooth crossfades between selected clips',
-      icon: <Scissors className="w-4 h-4" />,
+      icon: <Blend className="w-4 h-4" />,
       shortcut: 'Cmd+X',
       category: 'editing'
     },
     {
       id: 'duplicate-pattern',
-      name: 'Duplicate Pattern',
+      name: 'Copy Cat',
       description: 'Duplicate selected clips with spacing',
-      icon: <Copy className="w-4 h-4" />,
+      icon: <GitBranch className="w-4 h-4" />,
       shortcut: 'Cmd+D',
       category: 'editing'
     },
     {
       id: 'quantize-timing',
-      name: 'Quantize Timing',
+      name: 'Time Keeper',
       description: 'Snap selected audio to grid timing',
       icon: <Clock className="w-4 h-4" />,
       shortcut: 'Cmd+Q',
@@ -129,70 +150,84 @@ export function QuickActionsPanel() {
     },
     {
       id: 'reverse-audio',
-      name: 'Reverse Audio',
+      name: 'Backwards Magic',
       description: 'Reverse selected audio clips',
-      icon: <RotateCcw className="w-4 h-4" />,
+      icon: <Shuffle className="w-4 h-4" />,
       category: 'editing'
     },
 
     // Effects Macros
     {
       id: 'vintage-warmth',
-      name: 'Vintage Warmth',
+      name: 'Golden Age',
       description: 'Add analog tape saturation and warmth',
-      icon: <Heart className="w-4 h-4" />,
+      icon: <Sun className="w-4 h-4" />,
       category: 'effects'
     },
     {
       id: 'space-verb',
-      name: 'Space Reverb',
+      name: 'Hall of Fame',
       description: 'Add dimensional reverb to selected tracks',
-      icon: <Headphones className="w-4 h-4" />,
+      icon: <Mountain className="w-4 h-4" />,
       category: 'effects'
     },
     {
       id: 'lo-fi-texture',
-      name: 'Lo-Fi Texture',
+      name: 'Retro Vibe',
       description: 'Apply lo-fi character and texture',
-      icon: <Star className="w-4 h-4" />,
+      icon: <Moon className="w-4 h-4" />,
       category: 'effects'
     },
     {
       id: 'stereo-widener',
-      name: 'Stereo Widener',
+      name: 'Wide & Wild',
       description: 'Enhance stereo width and presence',
-      icon: <Sliders className="w-4 h-4" />,
+      icon: <Wind className="w-4 h-4" />,
+      category: 'effects'
+    },
+    {
+      id: 'frost-effect',
+      name: 'Frosty Touch',
+      description: 'Add crystalline high-frequency shimmer',
+      icon: <Snowflake className="w-4 h-4" />,
+      category: 'effects'
+    },
+    {
+      id: 'fire-drive',
+      name: 'Fire Drive',
+      description: 'Add aggressive harmonic distortion',
+      icon: <Flame className="w-4 h-4" />,
       category: 'effects'
     },
 
     // Workflow Macros
     {
       id: 'bounce-stems',
-      name: 'Bounce Stems',
+      name: 'Export Express',
       description: 'Export individual track stems',
-      icon: <Download className="w-4 h-4" />,
+      icon: <Rocket className="w-4 h-4" />,
       shortcut: 'Cmd+E',
       category: 'workflow'
     },
     {
       id: 'create-bus',
-      name: 'Create Bus',
+      name: 'Bus Builder',
       description: 'Route selected tracks to new bus',
-      icon: <Zap className="w-4 h-4" />,
+      icon: <Package className="w-4 h-4" />,
       category: 'workflow'
     },
     {
       id: 'quick-comp',
-      name: 'Quick Comp',
+      name: 'Comp Wizard',
       description: 'Create comp track from selected takes',
-      icon: <Music className="w-4 h-4" />,
+      icon: <Wand2 className="w-4 h-4" />,
       category: 'workflow'
     },
     {
       id: 'backup-project',
-      name: 'Backup Project',
+      name: 'Time Machine',
       description: 'Create timestamped project backup',
-      icon: <Square className="w-4 h-4" />,
+      icon: <Archive className="w-4 h-4" />,
       category: 'workflow'
     }
   ];
@@ -244,39 +279,43 @@ export function QuickActionsPanel() {
       </div>
 
       {/* Actions List */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-2 space-y-1">
-          {filteredActions.map((action) => (
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="p-2 space-y-2">
+          {filteredActions.map((action, index) => (
             <div
               key={action.id}
-              className="group"
+              className="group relative"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <Button
                 variant="ghost"
                 onClick={() => handleActionClick(action.id)}
                 disabled={selectedItems.length === 0 && !['ai-master', 'backup-project'].includes(action.id)}
-                className="w-full h-auto p-3 text-left justify-start disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--accent)] transition-colors"
+                className="w-full h-auto p-3 text-left justify-start disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[var(--accent)] hover:to-[var(--accent)]/50 transition-all duration-300 hover:shadow-md rounded-lg border border-transparent hover:border-[var(--border)] group-hover:scale-[1.02] transform"
               >
                 <div className="flex items-start space-x-3 w-full">
-                  <div className="text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] transition-colors">
+                  <div className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-all duration-300 group-hover:scale-110 transform">
                     {action.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-[var(--foreground)]">
+                      <span className="text-xs font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
                         {action.name}
                       </span>
                       {action.shortcut && (
-                        <span className="text-xs text-[var(--muted-foreground)] font-mono">
+                        <span className="text-xs text-[var(--muted-foreground)] font-mono bg-[var(--muted)]/30 px-1.5 py-0.5 rounded group-hover:bg-[var(--primary)]/10 transition-colors">
                           {action.shortcut}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[var(--muted-foreground)] mt-0.5 leading-tight">
+                    <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed group-hover:text-[var(--foreground)]/80 transition-colors">
                       {action.description}
                     </p>
                   </div>
                 </div>
+                
+                {/* Subtle glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none"></div>
               </Button>
             </div>
           ))}
@@ -284,25 +323,38 @@ export function QuickActionsPanel() {
       </div>
 
       {/* Quick Execute Bar */}
-      <div className="border-t border-[var(--border)] p-2 bg-[var(--muted)]/20">
-        <div className="flex space-x-1">
+      <div className="border-t border-[var(--border)] p-3 bg-gradient-to-r from-[var(--muted)]/30 to-[var(--muted)]/10 backdrop-blur-sm">
+        <div className="flex space-x-2">
           <Button
             size="sm"
             variant="ghost"
-            className="flex-1 text-xs"
+            className="flex-1 text-xs font-medium bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 hover:from-[var(--primary)]/20 hover:to-[var(--primary)]/10 border border-[var(--primary)]/20 hover:border-[var(--primary)]/40 transition-all duration-300 hover:shadow-lg disabled:opacity-40"
             disabled={selectedItems.length === 0}
           >
-            <Play className="w-3 h-3 mr-1" />
-            Run Selected
+            <Rocket className="w-3 h-3 mr-1.5" />
+            Execute Magic
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="text-xs"
+            className="text-xs px-3 hover:bg-[var(--accent)] transition-colors"
             onClick={() => setSelectedItems([])}
           >
-            Clear
+            <Square className="w-3 h-3 mr-1" />
+            Reset
           </Button>
+        </div>
+        
+        {/* Fun status indicator */}
+        <div className="mt-2 flex items-center justify-center space-x-2">
+          <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            selectedItems.length > 0 
+              ? 'bg-[var(--green)] shadow-lg shadow-[var(--green)]/50' 
+              : 'bg-[var(--muted-foreground)]'
+          }`}></div>
+          <span className="text-xs text-[var(--muted-foreground)] font-medium">
+            {selectedItems.length > 0 ? 'Ready to rock!' : 'Select items to begin'}
+          </span>
         </div>
       </div>
     </div>
