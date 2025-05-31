@@ -31,7 +31,19 @@ import {
   Filter,
   Tag,
   Clock,
-  Star
+  Star,
+  Wand2,
+  Sparkles,
+  Mic,
+  Headphones,
+  Sliders3,
+  Radio,
+  TrendingUp,
+  Scissors,
+  Copy,
+  RotateCcw,
+  Volume,
+  VolumeX
 } from 'lucide-react';
 
 interface SidebarItem {
