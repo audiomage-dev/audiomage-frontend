@@ -27,6 +27,7 @@ interface MidiEditorProps {
     pauseMidiPlayback: () => void;
     stopMidiPlayback: () => void;
   }) => void;
+  isLocked?: boolean;
 }
 
 export function MidiEditor({ 
@@ -40,7 +41,8 @@ export function MidiEditor({
   onNoteEdit,
   onNoteDelete,
   onMidiPlayingChange,
-  onMidiControlsRegister
+  onMidiControlsRegister,
+  isLocked = false
 }: MidiEditorProps) {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(tracks.find(t => t.type === 'midi')?.id || null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());

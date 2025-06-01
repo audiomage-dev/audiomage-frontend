@@ -159,6 +159,7 @@ export function AudioWorkstation() {
                 onClipMove={updateClipPosition}
                 onClipResize={updateClipProperties}
                 onZoomChange={handleZoomChange}
+                isLocked={isTimelineLocked}
               />
             ) : (
               <MidiEditor
@@ -170,6 +171,7 @@ export function AudioWorkstation() {
                 onTrackSelect={setSelectedTrack}
                 onMidiPlayingChange={setIsMidiPlaying}
                 onMidiControlsRegister={setMidiPlaybackFunctions}
+                isLocked={isMidiLocked}
               />
             )}
           </div>

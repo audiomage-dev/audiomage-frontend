@@ -41,9 +41,10 @@ interface CompactTimelineEditorProps {
   onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
   onClipResize?: (clipId: string, trackId: string, newStartTime: number, newDuration: number) => void;
   onZoomChange?: (zoomLevel: number) => void;
+  isLocked?: boolean;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
   const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
