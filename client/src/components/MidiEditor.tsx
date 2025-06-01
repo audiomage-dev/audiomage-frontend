@@ -99,6 +99,7 @@ export function MidiEditor({
   const getMidiNotesFromTrack = (track: AudioTrack): MidiNote[] => {
     if (track.type !== 'midi') return [];
     
+    console.log(`Generating MIDI notes for track: "${track.name}" (type: ${track.type})`);
     const notes: MidiNote[] = [];
     
     if (track.name === 'Piano') {
@@ -156,7 +157,7 @@ export function MidiEditor({
       const bassNotes = [36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38];
       bassNotes.forEach((pitch, index) => {
         notes.push({
-          id: `bass_${index}`,
+          id: `bass_${index}_${Math.random().toString(36).substr(2, 9)}`,
           pitch,
           startTime: index * 2,
           duration: 1.75,
@@ -165,7 +166,7 @@ export function MidiEditor({
       });
     }
     
-    if (track.name === 'Strings') {
+    if (track.name === 'Strings' || track.name === 'Strings Section') {
       // String pad chords
       const stringChords = [
         [48, 52, 55, 60], // C major spread
@@ -178,7 +179,7 @@ export function MidiEditor({
         const startTime = chordIndex * 8;
         chord.forEach((pitch, noteIndex) => {
           notes.push({
-            id: `strings_${chordIndex}_${noteIndex}`,
+            id: `strings_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 9)}`,
             pitch,
             startTime,
             duration: 7.5,
@@ -188,6 +189,24 @@ export function MidiEditor({
       });
     }
     
+    // Fallback: Generate default notes for any MIDI track without specific patterns
+    if (notes.length === 0) {
+      console.log(`No specific pattern found for "${track.name}", generating default MIDI notes`);
+      
+      // Generate a simple melody pattern for any unmatched MIDI track
+      const defaultNotes = [60, 62, 64, 65, 67, 69, 71, 72]; // C major scale
+      defaultNotes.forEach((pitch, index) => {
+        notes.push({
+          id: `default_${track.name.replace(/\s+/g, '_')}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+          pitch,
+          startTime: index * 2,
+          duration: 1.5,
+          velocity: 80 + Math.random() * 20,
+        });
+      });
+    }
+    
+    console.log(`Generated ${notes.length} MIDI notes for "${track.name}"`);
     return notes;
   };
 
