@@ -34,6 +34,7 @@ import {
 interface CompactTimelineEditorProps {
   tracks: AudioTrack[];
   transport: TransportState;
+  zoomLevel?: number;
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -41,8 +42,9 @@ interface CompactTimelineEditorProps {
   onZoomChange?: (zoomLevel: number) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onZoomChange }: CompactTimelineEditorProps) {
-  const [zoomLevel, setZoomLevel] = useState(1);
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onZoomChange }: CompactTimelineEditorProps) {
+  const [internalZoomLevel, setInternalZoomLevel] = useState(1);
+  const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [currentTool, setCurrentTool] = useState<'select' | 'hand' | 'edit'>('select');
@@ -101,13 +103,11 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   // Zoom functions
   const handleZoomIn = useCallback(() => {
     const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
-    setZoomLevel(newZoomLevel);
     onZoomChange?.(newZoomLevel);
   }, [zoomLevel, onZoomChange]);
 
   const handleZoomOut = useCallback(() => {
     const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
-    setZoomLevel(newZoomLevel);
     onZoomChange?.(newZoomLevel);
   }, [zoomLevel, onZoomChange]);
 
@@ -462,12 +462,13 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       // Zoom with Ctrl+scroll
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoomLevel(prev => Math.max(0.1, Math.min(5, prev + delta)));
+      const newZoomLevel = Math.max(0.1, Math.min(5, zoomLevel + delta));
+      onZoomChange?.(newZoomLevel);
     } else {
       // Horizontal scroll
       setScrollX(prev => Math.max(0, prev + e.deltaX));
     }
-  }, []);
+  }, [zoomLevel, onZoomChange]);
 
   const handleTrackRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();

@@ -119,6 +119,7 @@ export function AudioWorkstation() {
             <CompactTimelineEditor
               tracks={tracks}
               transport={transport}
+              zoomLevel={zoomLevel}
               onTrackMute={toggleTrackMute}
               onTrackSolo={toggleTrackSolo}
               onTrackSelect={setSelectedTrack}
