@@ -498,13 +498,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       if (isExtending && virtualExtension) {
         // Keep virtual extension active for user to choose action - don't apply resize yet
         console.log('Virtual extension active - waiting for user action');
-      } else {
-        // Apply the resize if there was actual change within original bounds
+      } else if (!isExtending) {
+        // Only apply resize if not extending beyond original bounds
         if (Math.abs(newStartTime - resizingClip.originalStartTime) > 0.01 || 
             Math.abs(newDuration - resizingClip.originalDuration) > 0.01) {
           
           if (onClipResize) {
-            console.log('Applying clip resize:', { clipId: resizingClip.clipId, newStartTime, newDuration });
+            console.log('Applying clip resize within bounds:', { clipId: resizingClip.clipId, newStartTime, newDuration });
             onClipResize(resizingClip.clipId, resizingClip.trackId, newStartTime, newDuration);
           }
         }
