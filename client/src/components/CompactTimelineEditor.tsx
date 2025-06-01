@@ -392,18 +392,26 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         if (dragState.selectedClips && dragState.selectedClips.length > 0) {
           console.log(`Group moving ${dragState.selectedClips.length} clips`);
           
-          // Move all selected clips with the same relative offset
+          // Calculate the primary clip's movement (the one being dragged)
+          const primaryClipDeltaTime = (deltaX / timelineWidth) * totalTime;
+          const primaryClipTrackDelta = Math.round(deltaY / trackHeight);
+          
+          // Move all selected clips while preserving their relative positions
           dragState.selectedClips.forEach(selectedClip => {
-            const clipDeltaTime = (deltaX / timelineWidth) * totalTime;
-            const clipNewStartTime = Math.max(0, selectedClip.originalStartTime + clipDeltaTime);
+            // Apply the same time and track delta to each clip
+            let clipNewStartTime = selectedClip.originalStartTime + primaryClipDeltaTime;
+            let clipNewTrackIndex = selectedClip.originalTrackIndex + primaryClipTrackDelta;
             
-            const clipNewTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
-              selectedClip.originalTrackIndex + Math.round(deltaY / trackHeight)
-            ));
+            // Ensure clips don't go negative in time
+            clipNewStartTime = Math.max(0, clipNewStartTime);
+            
+            // Ensure clips stay within track bounds
+            clipNewTrackIndex = Math.max(0, Math.min(tracks.length - 1, clipNewTrackIndex));
+            
             const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
             
             if (onClipMove && clipNewTrackId) {
-              console.log(`Moving selected clip ${selectedClip.clipId} to ${clipNewStartTime}s on track ${clipNewTrackId}`);
+              console.log(`Moving selected clip ${selectedClip.clipId} from ${selectedClip.originalStartTime}s to ${clipNewStartTime}s, track ${selectedClip.originalTrackIndex} to ${clipNewTrackIndex}`);
               onClipMove(selectedClip.clipId, selectedClip.trackId, clipNewTrackId, clipNewStartTime);
             }
           });
