@@ -47,6 +47,7 @@ export function MidiEditor({
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const pianoKeysRef = useRef<HTMLDivElement>(null);
   const drawStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // MIDI note configuration
@@ -229,6 +230,30 @@ export function MidiEditor({
       if (audioContext) {
         audioContext.close();
       }
+    };
+  }, []);
+
+  // Synchronized scrolling between piano keys and note grid
+  useEffect(() => {
+    const pianoKeysEl = pianoKeysRef.current;
+    const pianoRollEl = pianoRollRef.current;
+    
+    if (!pianoKeysEl || !pianoRollEl) return;
+
+    const handlePianoScroll = () => {
+      pianoRollEl.scrollTop = pianoKeysEl.scrollTop;
+    };
+
+    const handleGridScroll = () => {
+      pianoKeysEl.scrollTop = pianoRollEl.scrollTop;
+    };
+
+    pianoKeysEl.addEventListener('scroll', handlePianoScroll);
+    pianoRollEl.addEventListener('scroll', handleGridScroll);
+
+    return () => {
+      pianoKeysEl.removeEventListener('scroll', handlePianoScroll);
+      pianoRollEl.removeEventListener('scroll', handleGridScroll);
     };
   }, []);
 
@@ -1062,7 +1087,10 @@ export function MidiEditor({
         {/* Main Editor Area */}
         <div className="flex-1 flex">
           {/* Piano Keys */}
-          <div className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-y-auto overflow-x-hidden">
+          <div 
+            ref={pianoKeysRef}
+            className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-y-auto overflow-x-hidden"
+          >
             <div
               className="relative"
               style={{ height: totalNotes * noteHeight }}
