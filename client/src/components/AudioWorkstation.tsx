@@ -161,6 +161,7 @@ export function AudioWorkstation() {
                 onTrackSolo={toggleTrackSolo}
                 onTrackSelect={setSelectedTrack}
                 onMidiPlayingChange={setIsMidiPlaying}
+                onMidiControlsRegister={setMidiPlaybackFunctions}
               />
             )}
           </div>

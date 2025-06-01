@@ -372,6 +372,8 @@ export function MidiEditor({
     });
   };
 
+
+
   // Transport integration - play notes when transport plays
   useEffect(() => {
     if (transport.isPlaying) {
@@ -843,6 +845,7 @@ export function MidiEditor({
     
     setIsMidiPlaying(true);
     setMidiPlaybackTime(0);
+    onMidiPlayingChange?.(true);
     
     const startTime = Date.now();
     const bpm = 120; // Default BPM for MIDI playback
@@ -883,6 +886,7 @@ export function MidiEditor({
       setMidiPlaybackInterval(null);
     }
     setIsMidiPlaying(false);
+    onMidiPlayingChange?.(false);
     console.log('MIDI playback paused');
   };
 
@@ -893,6 +897,7 @@ export function MidiEditor({
     }
     setIsMidiPlaying(false);
     setMidiPlaybackTime(0);
+    onMidiPlayingChange?.(false);
     console.log('MIDI playback stopped');
   };
 
