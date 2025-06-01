@@ -751,9 +751,9 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
       {/* Right Side - Timeline */}
       <div className="flex-1 flex flex-col">
         {/* Timeline Header with Ruler */}
-        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
+        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative">
           <div 
-            className="absolute inset-0 flex items-center"
+            className="absolute inset-0 flex items-center overflow-hidden"
             style={{ 
               width: `${Math.max(1200, 1200 * zoomLevel)}px`,
               transform: `translateX(-${scrollX}px)`
@@ -778,23 +778,23 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           </div>
           
           {/* Zoom Controls - Right Side */}
-          <div className="absolute right-2 top-0 h-full flex items-center space-x-1 bg-[var(--muted)]/50 backdrop-blur-sm rounded px-2">
+          <div className="absolute right-2 top-1 flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-0.5 z-10 shadow-sm">
             <Button
               onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.2))}
               variant="ghost"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
             >
               <ZoomOut className="w-3 h-3" />
             </Button>
-            <span className="text-xs text-[var(--muted-foreground)] min-w-[3rem] text-center font-mono">
+            <span className="text-xs text-[var(--foreground)] min-w-[2.5rem] text-center font-mono font-medium">
               {Math.round(zoomLevel * 100)}%
             </span>
             <Button
               onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.2))}
               variant="ghost"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
             >
               <ZoomIn className="w-3 h-3" />
             </Button>
