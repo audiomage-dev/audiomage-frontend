@@ -660,6 +660,680 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
           </div>
         );
       
+      case 'extract-drums':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Separation Algorithm</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>AI Deep Learning (Spleeter)</option>
+                  <option>Spectral Masking</option>
+                  <option>HPSS + Neural Net</option>
+                  <option>Drumtrack Isolation</option>
+                  <option>Transient Detection</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Output Quality</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Studio Quality (Slow)</option>
+                  <option>High Quality</option>
+                  <option>Balanced</option>
+                  <option>Real-time</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Drum Element Control</div>
+              <div className="space-y-2">
+                {['Kick Drum', 'Snare', 'Hi-hats', 'Cymbals', 'Toms', 'Percussion'].map(element => (
+                  <div key={element} className="flex items-center justify-between">
+                    <span className="text-xs w-20">{element}</span>
+                    <input type="range" min="0" max="100" defaultValue="80" className="flex-1 mx-3" />
+                    <span className="text-xs w-8 text-[var(--muted-foreground)]">80%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Isolation</span>
+                <span className="font-mono text-[var(--green)]">89.4%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Artifacts</span>
+                <span className="font-mono text-[var(--blue)]">Low</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Time</span>
+                <span className="font-mono text-[var(--orange)]">3.2s</span>
+              </div>
+            </div>
+            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Drum Separation Waveform</div>
+            </div>
+          </div>
+        );
+      
+      case 'separate-bass':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Bass Type</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Electric Bass</option>
+                  <option>Upright Bass</option>
+                  <option>Synth Bass</option>
+                  <option>Sub Bass</option>
+                  <option>All Bass Frequencies</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Frequency Range</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>20-250 Hz (Sub + Bass)</option>
+                  <option>40-200 Hz (Fundamental)</option>
+                  <option>20-500 Hz (Extended)</option>
+                  <option>Custom Range</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Low Cut (Hz)</label>
+                <input type="number" min="10" max="100" defaultValue="20" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">High Cut (Hz)</label>
+                <input type="number" min="100" max="1000" defaultValue="250" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Sensitivity</label>
+                <input type="range" min="0" max="100" defaultValue="75" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">75%</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Harmonic Preservation</label>
+                <input type="range" min="0" max="100" defaultValue="60" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">60%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Attack Preservation</label>
+                <input type="range" min="0" max="100" defaultValue="85" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">85%</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Processing Options</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Preserve Dynamics</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Mono Bass Output</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Phase Coherent</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Enhance Fundamentals</span>
+                </label>
+              </div>
+            </div>
+            <div className="h-16 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Bass Frequency Analysis</div>
+            </div>
+          </div>
+        );
+      
+      case 'four-stem-split':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Stem Configuration</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Vocals, Drums, Bass, Other</option>
+                  <option>Vocals, Drums, Music, Other</option>
+                  <option>Lead, Rhythm, Bass, Drums</option>
+                  <option>Custom Configuration</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">AI Model</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Spleeter 4-stem</option>
+                  <option>DEMUCS v3</option>
+                  <option>OpenUnmix</option>
+                  <option>Custom Neural Net</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Stem Quality Control</div>
+              {['Vocals', 'Drums', 'Bass', 'Other Instruments'].map((stem, i) => (
+                <div key={stem} className="flex items-center justify-between">
+                  <span className="text-xs w-24">{stem}</span>
+                  <input type="range" min="0" max="100" defaultValue={[85, 80, 75, 70][i]} className="flex-1 mx-3" />
+                  <span className="text-xs w-12 text-[var(--muted-foreground)]">{[85, 80, 75, 70][i]}%</span>
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 ml-2">
+                    <Play className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--purple)]">Vocals</div>
+                <div className="text-[var(--muted-foreground)]">92.1%</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--blue)]">Drums</div>
+                <div className="text-[var(--muted-foreground)]">87.5%</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--green)]">Bass</div>
+                <div className="text-[var(--muted-foreground)]">84.3%</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--orange)]">Other</div>
+                <div className="text-[var(--muted-foreground)]">78.9%</div>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Processing Status</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Overall quality:</span>
+                  <span className="font-mono text-[var(--green)]">85.7%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated time:</span>
+                  <span className="font-mono">4.2 minutes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GPU acceleration:</span>
+                  <span className="font-mono text-[var(--green)]">Enabled</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'genre-matching':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Target Genre</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Pop/Top 40</option>
+                  <option>Rock/Alternative</option>
+                  <option>Hip-Hop/Rap</option>
+                  <option>Electronic/EDM</option>
+                  <option>Classical</option>
+                  <option>Jazz</option>
+                  <option>Country</option>
+                  <option>R&B/Soul</option>
+                  <option>Metal</option>
+                  <option>Folk/Acoustic</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Era/Style</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Modern (2020s)</option>
+                  <option>2010s</option>
+                  <option>2000s</option>
+                  <option>90s</option>
+                  <option>80s</option>
+                  <option>70s</option>
+                  <option>60s</option>
+                  <option>Classic</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Mastering Characteristics</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)]">Loudness Target</label>
+                  <input type="range" min="-23" max="-8" defaultValue="-14" className="w-full mt-1" />
+                  <div className="text-xs text-[var(--muted-foreground)] text-center">-14 LUFS</div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)]">Dynamic Range</label>
+                  <input type="range" min="3" max="20" defaultValue="8" className="w-full mt-1" />
+                  <div className="text-xs text-[var(--muted-foreground)] text-center">8 LU</div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Genre-Specific Processing</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>EQ Curve Matching</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Compression Style</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Stereo Enhancement</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Harmonic Saturation</span>
+                </label>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Genre Analysis</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Detected genre:</span>
+                  <span className="font-mono">Rock/Alternative</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Confidence:</span>
+                  <span className="font-mono text-[var(--green)]">87%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Suggested LUFS:</span>
+                  <span className="font-mono">-13.5</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Typical DR:</span>
+                  <span className="font-mono">6-9 LU</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-16 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Genre Reference Curve</div>
+            </div>
+          </div>
+        );
+      
+      case 'limiting-ai':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Limiter Type</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Transparent (Clean)</option>
+                  <option>Musical (Warm)</option>
+                  <option>Aggressive (Loud)</option>
+                  <option>Vintage (Character)</option>
+                  <option>Broadcast (Safe)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Look-ahead</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>10ms (Standard)</option>
+                  <option>5ms (Fast)</option>
+                  <option>20ms (Smooth)</option>
+                  <option>Auto-adaptive</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Ceiling</label>
+                <input type="range" min="-3" max="0" step="0.1" defaultValue="-0.1" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">-0.1 dBFS</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Release</label>
+                <input type="range" min="1" max="1000" defaultValue="50" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">50ms</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Character</label>
+                <input type="range" min="0" max="100" defaultValue="25" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">25%</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Advanced Controls</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>ISP (Inter-sample Peaks)</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Multiband Processing</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Adaptive Release</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Dither to 16-bit</span>
+                </label>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--red)]">Peak</div>
+                <div className="text-[var(--muted-foreground)]">-0.1 dB</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--orange)]">GR</div>
+                <div className="text-[var(--muted-foreground)]">-2.3 dB</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--blue)]">ISP</div>
+                <div className="text-[var(--muted-foreground)]">-0.8 dB</div>
+              </div>
+              <div className="text-center p-2 bg-[var(--secondary)] rounded">
+                <div className="font-mono text-[var(--green)]">RMS</div>
+                <div className="text-[var(--muted-foreground)]">-12.1 dB</div>
+              </div>
+            </div>
+            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Real-time Gain Reduction Meter</div>
+            </div>
+          </div>
+        );
+      
+      case 'loudness-check':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Measurement Standard</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>EBU R128 (Broadcast)</option>
+                  <option>ATSC A/85 (US TV)</option>
+                  <option>ARIB TR-B32 (Japan)</option>
+                  <option>iTunes/Apple Music</option>
+                  <option>Spotify Loudness</option>
+                  <option>YouTube Normalization</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Target Platform</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Streaming (-14 LUFS)</option>
+                  <option>Broadcast (-23 LUFS)</option>
+                  <option>Cinema (-31 LUFS)</option>
+                  <option>Podcast (-16 LUFS)</option>
+                  <option>Custom Target</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Integrated</div>
+                <div className="text-xl font-mono text-[var(--green)]">-14.2</div>
+                <div className="text-xs text-[var(--green)]">LUFS</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Range</div>
+                <div className="text-xl font-mono text-[var(--blue)]">8.3</div>
+                <div className="text-xs text-[var(--blue)]">LU</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">True Peak</div>
+                <div className="text-xl font-mono text-[var(--orange)]">-1.2</div>
+                <div className="text-xs text-[var(--orange)]">dBTP</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Short-term</div>
+                <div className="text-xl font-mono text-[var(--purple)]">-13.8</div>
+                <div className="text-xs text-[var(--purple)]">LUFS</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Platform Compliance</div>
+              <div className="space-y-1">
+                {[
+                  { platform: 'Spotify', target: '-14 LUFS', status: 'Pass', current: -14.2 },
+                  { platform: 'Apple Music', target: '-16 LUFS', status: 'Loud', current: -14.2 },
+                  { platform: 'YouTube', target: '-14 LUFS', status: 'Pass', current: -14.2 },
+                  { platform: 'Tidal', target: '-14 LUFS', status: 'Pass', current: -14.2 },
+                  { platform: 'Broadcast', target: '-23 LUFS', status: 'Loud', current: -14.2 }
+                ].map((item) => (
+                  <div key={item.platform} className="flex items-center justify-between text-xs p-2 bg-[var(--background)] rounded">
+                    <span className="font-medium w-20">{item.platform}</span>
+                    <span className="text-[var(--muted-foreground)] w-16">{item.target}</span>
+                    <span className={`font-mono w-12 ${
+                      item.status === 'Pass' ? 'text-[var(--green)]' : 'text-[var(--yellow)]'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Loudness History Graph</div>
+            </div>
+          </div>
+        );
+      
+      case 'platform-optimize':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Target Platform</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Spotify</option>
+                  <option>Apple Music</option>
+                  <option>YouTube Music</option>
+                  <option>Tidal</option>
+                  <option>Amazon Music</option>
+                  <option>SoundCloud</option>
+                  <option>Bandcamp</option>
+                  <option>All Platforms</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Optimization Level</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Conservative</option>
+                  <option>Balanced</option>
+                  <option>Aggressive</option>
+                  <option>Maximum Loudness</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Platform Specifications</div>
+              <div className="bg-[var(--secondary)] p-3 rounded">
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <div className="font-medium mb-1">Loudness Target</div>
+                    <div className="text-[var(--muted-foreground)]">-14.0 LUFS (Spotify)</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">True Peak Limit</div>
+                    <div className="text-[var(--muted-foreground)]">-1.0 dBTP</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">Sample Rate</div>
+                    <div className="text-[var(--muted-foreground)]">44.1 kHz</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">Bit Depth</div>
+                    <div className="text-[var(--muted-foreground)]">16-bit</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Optimization Features</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Loudness Normalization</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>True Peak Limiting</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>EQ Matching</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Format Conversion</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Metadata Embedding</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Quality Analysis</span>
+                </label>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Loudness</span>
+                <span className="font-mono text-[var(--green)]">✓ -14.0</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>True Peak</span>
+                <span className="font-mono text-[var(--green)]">✓ -1.0</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Quality</span>
+                <span className="font-mono text-[var(--green)]">95%</span>
+              </div>
+            </div>
+            <div className="h-16 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Platform Compliance Dashboard</div>
+            </div>
+          </div>
+        );
+      
+      case 'ambient-generator':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Environment Type</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Forest/Nature</option>
+                  <option>Ocean Waves</option>
+                  <option>Rain/Thunderstorm</option>
+                  <option>City/Urban</option>
+                  <option>Space/Cosmic</option>
+                  <option>Cave/Echo</option>
+                  <option>Wind/Air</option>
+                  <option>Fire/Crackling</option>
+                  <option>Custom Mix</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Generation Style</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Realistic/Natural</option>
+                  <option>Cinematic/Dramatic</option>
+                  <option>Meditative/Calm</option>
+                  <option>Sci-Fi/Electronic</option>
+                  <option>Horror/Dark</option>
+                  <option>Fantasy/Magical</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Intensity</label>
+                <input type="range" min="0" max="100" defaultValue="60" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">60%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Variation</label>
+                <input type="range" min="0" max="100" defaultValue="40" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">40%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Length (min)</label>
+                <input type="number" min="1" max="60" defaultValue="5" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Stereo Width</label>
+                <input type="range" min="0" max="200" defaultValue="100" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">100%</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Ambient Elements</div>
+              <div className="grid grid-cols-3 gap-2">
+                {['Low Frequency Rumble', 'Mid Frequency Texture', 'High Frequency Detail', 'Periodic Events', 'Movement/Motion', 'Harmonic Content'].map(element => (
+                  <label key={element} className="flex items-center space-x-2 text-xs">
+                    <input type="checkbox" defaultChecked className="rounded" />
+                    <span>{element}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Low Freq</label>
+                <input type="range" min="0" max="100" defaultValue="70" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">70%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Mid Freq</label>
+                <input type="range" min="0" max="100" defaultValue="50" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">50%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">High Freq</label>
+                <input type="range" min="0" max="100" defaultValue="30" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">30%</div>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Generation Preview</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Estimated file size:</span>
+                  <span className="font-mono">45.2 MB</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Generation time:</span>
+                  <span className="font-mono">2-3 minutes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Seamless loop:</span>
+                  <span className="font-mono text-[var(--green)]">Yes</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button size="sm" variant="outline" className="flex-1">
+                <Play className="w-3 h-3 mr-1" />
+                Preview 30s
+              </Button>
+              <Button size="sm" className="flex-1">
+                <Wand2 className="w-3 h-3 mr-1" />
+                Generate Ambient
+              </Button>
+            </div>
+          </div>
+        );
+      
       default:
         return (
           <div className="space-y-4">
