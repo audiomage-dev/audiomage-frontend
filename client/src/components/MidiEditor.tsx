@@ -236,35 +236,26 @@ export function MidiEditor({
     };
   }, []);
 
-  // Synchronized scrolling - keep piano keys and note grid in sync
+  // Synchronized scrolling - move piano keys content when note grid scrolls
   useEffect(() => {
     const pianoKeysEl = pianoKeysRef.current;
     const pianoRollEl = pianoRollRef.current;
     
     if (!pianoKeysEl || !pianoRollEl) return;
 
-    let isScrolling = false;
-
     const syncPianoToGrid = () => {
-      if (isScrolling) return;
-      isScrolling = true;
-      pianoKeysEl.scrollTop = pianoRollEl.scrollTop;
-      requestAnimationFrame(() => { isScrolling = false; });
-    };
-
-    const syncGridToPiano = () => {
-      if (isScrolling) return;
-      isScrolling = true;
-      pianoRollEl.scrollTop = pianoKeysEl.scrollTop;
-      requestAnimationFrame(() => { isScrolling = false; });
+      const scrollTop = pianoRollEl.scrollTop;
+      // Move the piano keys content by applying a transform
+      const pianoContent = pianoKeysEl.querySelector('div');
+      if (pianoContent) {
+        pianoContent.style.transform = `translateY(-${scrollTop}px)`;
+      }
     };
 
     pianoRollEl.addEventListener('scroll', syncPianoToGrid, { passive: true });
-    pianoKeysEl.addEventListener('scroll', syncGridToPiano, { passive: true });
 
     return () => {
       pianoRollEl.removeEventListener('scroll', syncPianoToGrid);
-      pianoKeysEl.removeEventListener('scroll', syncGridToPiano);
     };
   }, []);
 
@@ -1170,7 +1161,7 @@ export function MidiEditor({
           {/* Piano Keys */}
           <div 
             ref={pianoKeysRef}
-            className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-y-auto overflow-x-hidden"
+            className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-hidden"
           >
             <div
               className="relative"
