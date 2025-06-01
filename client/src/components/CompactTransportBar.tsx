@@ -99,6 +99,25 @@ export function CompactTransportBar({
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
+        {/* Zoom Controls */}
+        <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1">
+          <button
+            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)]"
+            title="Zoom Out"
+          >
+            -
+          </button>
+          <span className="text-xs text-[var(--foreground)] min-w-[2.5rem] text-center font-mono">
+            100%
+          </span>
+          <button
+            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)]"
+            title="Zoom In"
+          >
+            +
+          </button>
+        </div>
+        
         <div className="text-xs text-[var(--muted-foreground)]">
           {transport.isLooping ? 'LOOP' : 'LINEAR'}
         </div>

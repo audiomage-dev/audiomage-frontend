@@ -750,13 +750,12 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
 
       {/* Right Side - Timeline */}
       <div className="flex-1 flex flex-col">
-        {/* Timeline Header with Ruler and Zoom Controls */}
-        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative flex items-center justify-between pr-2">
-          {/* Time Ruler */}
+        {/* Timeline Header with Ruler */}
+        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
           <div 
-            className="absolute left-0 top-0 h-full flex items-center overflow-hidden"
+            className="absolute inset-0 flex items-center"
             style={{ 
-              width: `calc(100% - 120px)`,
+              width: `${Math.max(1200, 1200 * zoomLevel)}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
@@ -764,9 +763,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
               const timeSeconds = i * 60;
               const minutes = Math.floor(timeSeconds / 60);
               const seconds = timeSeconds % 60;
-              const position = (timeSeconds / 1200) * (100 * zoomLevel);
-              
-              if (position < 0 || position > 200) return null;
+              const position = (timeSeconds / 1200) * 100;
               
               return (
                 <div
@@ -778,27 +775,6 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 </div>
               );
             })}
-          </div>
-          
-          {/* Zoom Controls - Fixed Right Position */}
-          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded px-2 py-1 shadow-md">
-            <button
-              onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.2))}
-              className="h-6 w-6 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600"
-              title="Zoom Out"
-            >
-              -
-            </button>
-            <span className="text-xs text-gray-900 min-w-[3rem] text-center font-mono font-medium px-1">
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            <button
-              onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.2))}
-              className="h-6 w-6 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600"
-              title="Zoom In"
-            >
-              +
-            </button>
           </div>
         </div>
 
