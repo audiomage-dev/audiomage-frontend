@@ -164,20 +164,59 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
   const [accent, setAccent] = useState(true);
   const [currentBeat, setCurrentBeat] = useState(0);
   const [bpmInput, setBpmInput] = useState(currentBpm.toString());
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
   useEffect(() => {
     setBpmInput(currentBpm.toString());
   }, [currentBpm]);
 
+  // Initialize audio context
+  useEffect(() => {
+    if (isOpen && !audioContext) {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(ctx);
+    }
+  }, [isOpen, audioContext]);
+
+  // Generate metronome click sound
+  const playClick = (isAccent: boolean = false) => {
+    if (!audioContext) return;
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Different frequencies for accent vs regular beats
+    oscillator.frequency.setValueAtTime(isAccent ? 1200 : 800, audioContext.currentTime);
+    oscillator.type = 'square';
+
+    // Volume envelope
+    const volumeMultiplier = volume / 100;
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.1 * volumeMultiplier, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  };
+
   useEffect(() => {
     if (!isPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentBeat(prev => (prev + 1) % timeSignature[0]);
+      setCurrentBeat(prev => {
+        const newBeat = (prev + 1) % timeSignature[0];
+        const isFirstBeat = newBeat === 0;
+        const shouldAccent = accent && isFirstBeat;
+        playClick(shouldAccent);
+        return newBeat;
+      });
     }, (60 / currentBpm) * 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, currentBpm, timeSignature]);
+  }, [isPlaying, currentBpm, timeSignature, accent, volume, audioContext]);
 
   const handleBpmInputChange = (value: string) => {
     setBpmInput(value);
@@ -190,6 +229,26 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
   const adjustBpm = (delta: number) => {
     const newBpm = Math.max(40, Math.min(300, currentBpm + delta));
     onBpmChange(newBpm);
+  };
+
+  const startMetronome = async () => {
+    if (audioContext && audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+    setCurrentBeat(0);
+    setIsPlaying(true);
+  };
+
+  const stopMetronome = () => {
+    setIsPlaying(false);
+    setCurrentBeat(0);
+  };
+
+  const testClick = async () => {
+    if (audioContext && audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+    playClick(true); // Play accent click for test
   };
 
   const presetBpms = [60, 72, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180];
@@ -259,7 +318,7 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
         <div className="flex items-center justify-center space-x-3 mb-6">
           <Button
             variant={isPlaying ? "default" : "outline"}
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={isPlaying ? stopMetronome : startMetronome}
             className="flex items-center space-x-2"
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -268,9 +327,18 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
           
           <Button
             variant="outline"
-            onClick={() => setIsPlaying(false)}
+            onClick={stopMetronome}
           >
             <Square className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={testClick}
+            className="flex items-center space-x-2"
+          >
+            <Volume2 className="h-4 w-4" />
+            <span>Test</span>
           </Button>
         </div>
 
