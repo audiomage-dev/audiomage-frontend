@@ -48,6 +48,7 @@ export function MidiEditor({
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -236,28 +237,7 @@ export function MidiEditor({
     };
   }, []);
 
-  // Synchronized scrolling - move piano keys content when note grid scrolls
-  useEffect(() => {
-    const pianoKeysEl = pianoKeysRef.current;
-    const pianoRollEl = pianoRollRef.current;
-    
-    if (!pianoKeysEl || !pianoRollEl) return;
 
-    const syncPianoToGrid = () => {
-      const scrollTop = pianoRollEl.scrollTop;
-      // Move the piano keys content by applying a transform
-      const pianoContent = pianoKeysEl.querySelector('div');
-      if (pianoContent) {
-        pianoContent.style.transform = `translateY(-${scrollTop}px)`;
-      }
-    };
-
-    pianoRollEl.addEventListener('scroll', syncPianoToGrid, { passive: true });
-
-    return () => {
-      pianoRollEl.removeEventListener('scroll', syncPianoToGrid);
-    };
-  }, []);
 
   // Initialize MIDI notes when tracks change - only if not already initialized
   useEffect(() => {
@@ -599,6 +579,12 @@ export function MidiEditor({
       sound_fx: 1.0
     };
     return durationMap[instrument] || 0.5;
+  };
+
+  // Handle scroll synchronization
+  const handleScrollSync = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    setScrollOffset(scrollTop);
   };
 
   // MIDI-specific playback controls
@@ -1158,21 +1144,28 @@ export function MidiEditor({
 
         {/* Main Editor Area */}
         <div className="flex-1 flex">
-          {/* Piano Keys */}
+          {/* Piano Keys - Fixed Position */}
           <div 
             ref={pianoKeysRef}
             className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-hidden"
           >
             <div
               className="relative"
-              style={{ height: totalNotes * noteHeight }}
+              style={{ 
+                height: totalNotes * noteHeight,
+                transform: `translateY(-${scrollOffset}px)`
+              }}
             >
               {renderPianoKeys()}
             </div>
           </div>
 
-          {/* Note Grid */}
-          <div className="flex-1 relative overflow-auto" ref={pianoRollRef}>
+          {/* Note Grid - Scrollable */}
+          <div 
+            className="flex-1 relative overflow-auto" 
+            ref={pianoRollRef}
+            onScroll={handleScrollSync}
+          >
             <div
               ref={gridRef}
               className="relative cursor-crosshair"
