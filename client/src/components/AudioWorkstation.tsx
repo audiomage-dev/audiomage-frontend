@@ -34,6 +34,7 @@ export function AudioWorkstation() {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -45,6 +46,20 @@ export function AudioWorkstation() {
   const handleChannelVolumeChange = (channelId: string, volume: number) => {
     // Update channel volume logic
     console.log(`Channel ${channelId} volume: ${volume}`);
+  };
+
+  const handleZoomIn = () => {
+    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
+    setZoomLevel(newZoomLevel);
+  };
+
+  const handleZoomOut = () => {
+    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
+    setZoomLevel(newZoomLevel);
+  };
+
+  const handleZoomChange = (newZoomLevel: number) => {
+    setZoomLevel(newZoomLevel);
   };
 
   const handleChannelMute = (channelId: string) => {
@@ -89,10 +104,13 @@ export function AudioWorkstation() {
               transport={transport}
               bpm={currentProject.bpm}
               timeSignature={currentProject.timeSignature}
+              zoomLevel={zoomLevel}
               onPlay={play}
               onPause={pause}
               onStop={stop}
               onRecord={toggleRecording}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
             />
           </div>
           
@@ -105,6 +123,7 @@ export function AudioWorkstation() {
               onTrackSolo={toggleTrackSolo}
               onTrackSelect={setSelectedTrack}
               onClipMove={updateClipPosition}
+              onZoomChange={handleZoomChange}
             />
           </div>
 
