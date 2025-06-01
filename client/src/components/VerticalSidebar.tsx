@@ -5,6 +5,7 @@ import { AISuggestionsPanel } from './AISuggestionsPanel';
 import { AudioChangemapsPanel } from './AudioChangemapsPanel';
 import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
+import { AIToolsModal } from './AIToolsModal';
 import { 
   FolderOpen, 
   Search, 
@@ -72,6 +73,13 @@ interface SidebarItem {
 export function VerticalSidebar() {
   const [activePanel, setActivePanel] = useState<string>('files');
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
+  const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
+
+  const handleAIToolClick = (toolId: string) => {
+    setSelectedAITool(toolId);
+    setIsAIToolsModalOpen(true);
+  };
 
   const sidebarItems: SidebarItem[] = [
     {
@@ -276,19 +284,19 @@ export function VerticalSidebar() {
             {/* Real-time Processing */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">Real-time Processing</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-eq')}>
                 <Volume2 className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 AI Auto-EQ
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('smart-compressor')}>
                 <Zap className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Smart Compressor
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('noise-suppression')}>
                 <VolumeX className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Noise Suppression
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('de-esser')}>
                 <Headphones className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 De-esser Pro
               </Button>
@@ -297,19 +305,19 @@ export function VerticalSidebar() {
             {/* Audio Enhancement */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">Audio Enhancement</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('vocal-clarity')}>
                 <Sparkles className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Vocal Clarity AI
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('instrument-isolation')}>
                 <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Instrument Isolation
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('harmonic-enhancer')}>
                 <Waves className="w-3 h-3 mr-2 text-[var(--cyan)]" />
                 Harmonic Enhancer
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('stereo-widener')}>
                 <TrendingUp className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Stereo Widener
               </Button>
@@ -318,19 +326,19 @@ export function VerticalSidebar() {
             {/* Stem Separation */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">Stem Separation</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('isolate-vocals')}>
                 <Radio className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Isolate Vocals
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('extract-drums')}>
                 <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Extract Drums
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('separate-bass')}>
                 <Piano className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Separate Bass
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('four-stem-split')}>
                 <Layers className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 4-Stem Split
               </Button>
@@ -339,19 +347,19 @@ export function VerticalSidebar() {
             {/* Mix Analysis */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">Mix Analysis</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('frequency-analysis')}>
                 <BarChart3 className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Frequency Analysis
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('loudness-check')}>
                 <Target className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Loudness Check
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('phase-correlation')}>
                 <Activity className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Phase Correlation
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('dynamic-range')}>
                 <Gauge className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 Dynamic Range
               </Button>
@@ -360,19 +368,19 @@ export function VerticalSidebar() {
             {/* Mastering */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Mastering</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-master')}>
                 <Crown className="w-3 h-3 mr-2 text-[var(--yellow)]" />
                 Auto-Master
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('genre-matching')}>
                 <Sliders className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Genre Matching
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('limiting-ai')}>
                 <Minimize2 className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Limiting AI
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('platform-optimize')}>
                 <Globe className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Platform Optimize
               </Button>
@@ -381,19 +389,19 @@ export function VerticalSidebar() {
             {/* Content Generation */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Generation</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('voice-synthesis')}>
                 <Mic className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Voice Synthesis
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('ambient-generator')}>
                 <Wind className="w-3 h-3 mr-2 text-[var(--cyan)]" />
                 Ambient Generator
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('midi-composer')}>
                 <Music2 className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 MIDI Composer
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('variation-creator')}>
                 <Shuffle className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 Variation Creator
               </Button>
@@ -402,19 +410,19 @@ export function VerticalSidebar() {
             {/* Post-Production */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--foreground)] mb-2">Post-Production</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('video-sync')}>
                 <Film className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Audio to Video Sync
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('speech-enhancement')}>
                 <MessageSquare className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Speech Enhancement
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-edit')}>
                 <Scissors className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Auto-Edit
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('format-converter')}>
                 <FileAudio className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Format Converter
               </Button>
@@ -795,6 +803,13 @@ export function VerticalSidebar() {
           </div>
         </div>
       )}
+      
+      {/* AI Tools Modal */}
+      <AIToolsModal 
+        isOpen={isAIToolsModalOpen}
+        onClose={() => setIsAIToolsModalOpen(false)}
+        initialTool={selectedAITool}
+      />
     </div>
   );
 }
