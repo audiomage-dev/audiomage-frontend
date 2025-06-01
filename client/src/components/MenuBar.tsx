@@ -459,10 +459,29 @@ export function MenuBar() {
   const [showMetronome, setShowMetronome] = useState(false);
   const [bpm, setBpm] = useState(120);
   const [timeSignature, setTimeSignature] = useState<[number, number]>([4, 4]);
+  const [projectName, setProjectName] = useState("Untitled Project");
+  const [isEditingName, setIsEditingName] = useState(false);
 
   const handleCommand = (commandId: string) => {
     console.log('Executing command:', commandId);
     // Handle command execution here
+  };
+
+  const handleProjectNameEdit = () => {
+    setIsEditingName(true);
+  };
+
+  const handleProjectNameSave = (newName: string) => {
+    setProjectName(newName.trim() || "Untitled Project");
+    setIsEditingName(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleProjectNameSave(e.currentTarget.value);
+    } else if (e.key === 'Escape') {
+      setIsEditingName(false);
+    }
   };
 
   // Global keyboard shortcut for command palette
@@ -485,7 +504,25 @@ export function MenuBar() {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-[var(--foreground)]">Untitled Project</span>
+            {isEditingName ? (
+              <input
+                type="text"
+                defaultValue={projectName}
+                className="text-sm font-medium text-[var(--foreground)] bg-transparent border-none outline-none focus:bg-[var(--muted)] px-1 rounded"
+                onBlur={(e) => handleProjectNameSave(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                style={{ width: `${Math.max(projectName.length * 8 + 20, 120)}px` }}
+              />
+            ) : (
+              <span 
+                className="text-sm font-medium text-[var(--foreground)] cursor-pointer hover:bg-[var(--muted)] px-1 rounded transition-colors"
+                onClick={handleProjectNameEdit}
+                title="Click to edit project name"
+              >
+                {projectName}
+              </span>
+            )}
             <span className="text-xs text-[var(--muted-foreground)]">•</span>
             <span className="text-xs text-[var(--muted-foreground)]">Saved</span>
           </div>
