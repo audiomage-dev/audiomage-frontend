@@ -870,6 +870,137 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
   }, [multiSelection, tracks]);
 
+  const handleSelectionBoxDragStart = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (!multiSelection || multiSelection.isActive || multiSelection.selectedClips.length === 0) return;
+    
+    console.log(`Starting selection box drag with ${multiSelection.selectedClips.length} clips`);
+    
+    // Prepare all selected clips for group dragging
+    const selectedClips: Array<{ clipId: string; trackId: string; originalStartTime: number; originalTrackIndex: number; }> = [];
+    
+    multiSelection.selectedClips.forEach(selectedClipId => {
+      for (let trackIdx = 0; trackIdx < tracks.length; trackIdx++) {
+        const currentTrack = tracks[trackIdx];
+        const selectedClip = currentTrack.clips?.find(c => c.id === selectedClipId);
+        if (selectedClip) {
+          selectedClips.push({
+            clipId: selectedClipId,
+            trackId: currentTrack.id,
+            originalStartTime: selectedClip.startTime,
+            originalTrackIndex: trackIdx
+          });
+          break;
+        }
+      }
+    });
+    
+    // Use the first clip as the reference for dragging
+    const referenceClip = selectedClips[0];
+    if (!referenceClip) return;
+    
+    const dragState = {
+      clipId: referenceClip.clipId,
+      trackId: referenceClip.trackId,
+      startX: e.clientX,
+      startY: e.clientY,
+      originalStartTime: referenceClip.originalStartTime,
+      originalTrackIndex: referenceClip.originalTrackIndex,
+      currentTrackIndex: referenceClip.originalTrackIndex,
+      currentOffsetX: 0,
+      currentOffsetY: 0,
+      selectedClips
+    };
+    
+    setDraggingClip(dragState);
+    setIsDragging(true);
+    
+    // Add document-level mouse event listeners for smooth dragging
+    const handleDocumentMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragState.startX;
+      const deltaY = e.clientY - dragState.startY;
+      
+      // Calculate new track position for reference
+      const trackHeight = 96;
+      const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+        dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
+      ));
+      
+      setDraggingClip(prev => prev ? {
+        ...prev,
+        currentTrackIndex: newTrackIndex,
+        currentOffsetX: deltaX,
+        currentOffsetY: deltaY
+      } : null);
+    };
+    
+    const handleDocumentMouseUp = (e: MouseEvent) => {
+      document.removeEventListener('mousemove', handleDocumentMouseMove);
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+      
+      console.log('Mouse up - finalizing selection box drag');
+      
+      // Use the same group movement logic as clip dragging
+      const deltaX = e.clientX - dragState.startX;
+      const deltaY = e.clientY - dragState.startY;
+      
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const primaryClipDeltaTime = (deltaX / timelineWidth) * totalTime;
+      const primaryClipTrackDelta = Math.round(deltaY / 96);
+      
+      // Check if all clips can move to their new positions
+      let canMoveGroup = true;
+      const proposedMoves: Array<{
+        clipId: string;
+        fromTrackId: string;
+        toTrackId: string;
+        newStartTime: number;
+      }> = [];
+      
+      for (const selectedClip of selectedClips) {
+        let clipNewStartTime = selectedClip.originalStartTime + primaryClipDeltaTime;
+        let clipNewTrackIndex = selectedClip.originalTrackIndex + primaryClipTrackDelta;
+        
+        if (clipNewStartTime < 0 || clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
+          console.log(`Selection box move blocked: clip ${selectedClip.clipId} would go out of bounds`);
+          canMoveGroup = false;
+          break;
+        }
+        
+        const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+        if (!clipNewTrackId) {
+          canMoveGroup = false;
+          break;
+        }
+        
+        proposedMoves.push({
+          clipId: selectedClip.clipId,
+          fromTrackId: selectedClip.trackId,
+          toTrackId: clipNewTrackId,
+          newStartTime: clipNewStartTime
+        });
+      }
+      
+      if (canMoveGroup && onClipMove) {
+        console.log(`Moving selection box with ${proposedMoves.length} clips`);
+        proposedMoves.forEach(move => {
+          onClipMove(move.clipId, move.fromTrackId, move.toTrackId, move.newStartTime);
+        });
+        setMultiSelection(null);
+      } else {
+        console.log('Selection box move cancelled - one or more clips blocked');
+      }
+      
+      setDraggingClip(null);
+    };
+    
+    document.addEventListener('mousemove', handleDocumentMouseMove);
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+  }, [multiSelection, tracks, onClipMove, zoomLevel, getTimelineWidth]);
+
   const handleClipRightClick = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1343,6 +1474,31 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/80 flex items-center justify-center">
                   <span className="text-xs text-white font-mono font-semibold">
                     {multiSelection.selectedClips.length} clips
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Draggable Selection Box (when not actively selecting) */}
+            {multiSelection && !multiSelection.isActive && multiSelection.selectedClips.length > 0 && (
+              <div
+                className="absolute border-2 border-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 rounded-sm z-30 cursor-move transition-colors"
+                style={{
+                  left: `${Math.min(multiSelection.startX, multiSelection.endX)}px`,
+                  top: `${Math.min(multiSelection.startY, multiSelection.endY)}px`,
+                  width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
+                  height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
+                }}
+                onMouseDown={(e) => handleSelectionBoxDragStart(e)}
+              >
+                <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/80 flex items-center justify-center">
+                  <span className="text-xs text-white font-mono font-semibold">
+                    {multiSelection.selectedClips.length} clips selected
+                  </span>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs text-[var(--primary)] font-semibold bg-white/80 px-2 py-1 rounded">
+                    Drag to move
                   </span>
                 </div>
               </div>
