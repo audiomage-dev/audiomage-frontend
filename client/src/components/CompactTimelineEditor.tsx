@@ -1364,10 +1364,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           width: `${clipWidth}px`,
                           backgroundColor: clip.color,
                           borderColor: clip.color,
-                          transform: draggingClip?.clipId === clip.id 
-                            ? `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)` 
-                            : 'none',
-                          zIndex: draggingClip?.clipId === clip.id ? 50 : 5
+                          transform: (() => {
+                            // If this clip is being dragged and is part of a group selection, use group offset
+                            if (draggingClip?.clipId === clip.id && draggingClip.selectedClips && draggingClip.selectedClips.length > 0) {
+                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                            }
+                            // If this clip is being dragged individually
+                            else if (draggingClip?.clipId === clip.id) {
+                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                            }
+                            // If this clip is part of a dragged group but not the primary clip
+                            else if (draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)) {
+                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                            }
+                            return 'none';
+                          })(),
+                          zIndex: draggingClip?.clipId === clip.id ? 50 : 
+                                 draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id) ? 40 : 5
                         }}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
