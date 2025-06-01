@@ -458,6 +458,13 @@ export function MidiEditor({
   const handleGridMouseDown = (event: React.MouseEvent) => {
     if (!selectedTrack) return;
 
+    // Check if we clicked on an existing note - if so, don't create a new one
+    const target = event.target as Element;
+    if (target.tagName === 'rect' && target.getAttribute('data-note-id')) {
+      // Clicked on an existing note, don't create a new one
+      return;
+    }
+
     const rect = gridRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -467,7 +474,19 @@ export function MidiEditor({
     const beat = snapToBeat(getBeatFromX(x));
     const pitch = getMidiFromY(y);
 
-    // Start drawing a new note
+    // Check if there's already a note at this position
+    const existingNotes = midiNotes[selectedTrack] || [];
+    const noteAtPosition = existingNotes.find(note => 
+      Math.abs(note.pitch - pitch) < 0.5 && 
+      Math.abs(note.startTime - beat) < 0.25
+    );
+
+    if (noteAtPosition) {
+      // There's already a note here, don't create a new one
+      return;
+    }
+
+    // Start drawing a new note only if there's no existing note
     drawStartRef.current = { x, y };
     setIsDrawing(true);
 
@@ -980,6 +999,7 @@ export function MidiEditor({
         noteElements.push(
           <rect
             key={note.id}
+            data-note-id={note.id}
             x={x + 1}
             y={y + 1}
             width={Math.max(width, 10)}
