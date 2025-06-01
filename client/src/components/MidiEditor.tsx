@@ -688,11 +688,13 @@ export function MidiEditor({
 
     return (
       <div
-        className="fixed z-50 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg py-2 min-w-48"
+        className="fixed z-50 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-2 min-w-48 backdrop-blur-sm"
         style={{
           left: noteContextMenu.x,
           top: noteContextMenu.y,
-          transform: 'translate(-50%, -10px)'
+          transform: 'translate(-50%, -10px)',
+          backgroundColor: 'var(--background)',
+          opacity: 1
         }}
         onMouseLeave={() => setNoteContextMenu(null)}
       >
