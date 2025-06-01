@@ -399,6 +399,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           
           // Check if all clips can move to their new positions without conflicts
           let canMoveGroup = true;
+          let finalDeltaTime = primaryClipDeltaTime;
+          let finalTrackDelta = primaryClipTrackDelta;
           const proposedMoves: Array<{
             clipId: string;
             fromTrackId: string;
@@ -406,37 +408,106 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             newStartTime: number;
           }> = [];
           
-          // Pre-validate all movements
-          for (const selectedClip of dragState.selectedClips) {
-            let clipNewStartTime = selectedClip.originalStartTime + primaryClipDeltaTime;
-            let clipNewTrackIndex = selectedClip.originalTrackIndex + primaryClipTrackDelta;
-            
-            // Check boundaries
-            if (clipNewStartTime < 0) {
-              console.log(`Group move blocked: clip ${selectedClip.clipId} would go to negative time`);
-              canMoveGroup = false;
-              break;
+          // Helper function to check for collisions and find dodging position
+          const findValidGroupPosition = (deltaTime: number, trackDelta: number, maxAttempts = 10): { deltaTime: number; trackDelta: number; valid: boolean } => {
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              let hasCollision = false;
+              const testMoves: Array<{
+                clipId: string;
+                fromTrackId: string;
+                toTrackId: string;
+                newStartTime: number;
+              }> = [];
+              
+              // Test all clips at this position
+              for (const selectedClip of dragState.selectedClips || []) {
+                let clipNewStartTime = selectedClip.originalStartTime + deltaTime;
+                let clipNewTrackIndex = selectedClip.originalTrackIndex + trackDelta;
+                
+                // Check boundaries
+                if (clipNewStartTime < 0 || clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
+                  hasCollision = true;
+                  break;
+                }
+                
+                const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+                if (!clipNewTrackId) {
+                  hasCollision = true;
+                  break;
+                }
+                
+                // Get the clip's duration for collision detection
+                const originalTrack = tracks.find(t => t.id === selectedClip.trackId);
+                const originalClip = originalTrack?.clips?.find(c => c.id === selectedClip.clipId);
+                const clipDuration = originalClip?.duration || 10;
+                
+                // Check for collisions with existing clips on the target track
+                const targetTrack = tracks[clipNewTrackIndex];
+                const existingClips = targetTrack.clips || [];
+                
+                for (const existingClip of existingClips) {
+                  // Skip if it's one of the clips being moved
+                  if (dragState.selectedClips?.some(sc => sc.clipId === existingClip.id)) {
+                    continue;
+                  }
+                  
+                  // Check for time overlap
+                  const clipEnd = clipNewStartTime + clipDuration;
+                  const existingEnd = existingClip.startTime + existingClip.duration;
+                  
+                  if (!(clipEnd <= existingClip.startTime || clipNewStartTime >= existingEnd)) {
+                    hasCollision = true;
+                    break;
+                  }
+                }
+                
+                if (hasCollision) break;
+                
+                testMoves.push({
+                  clipId: selectedClip.clipId,
+                  fromTrackId: selectedClip.trackId,
+                  toTrackId: clipNewTrackId,
+                  newStartTime: clipNewStartTime
+                });
+              }
+              
+              if (!hasCollision) {
+                return { deltaTime, trackDelta, valid: true };
+              }
+              
+              // Try dodging in the direction opposite to movement
+              const dodgeDirection = deltaTime >= 0 ? -1 : 1;
+              deltaTime += dodgeDirection * 5; // Dodge by 5 seconds
             }
             
-            if (clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
-              console.log(`Group move blocked: clip ${selectedClip.clipId} would go outside track bounds`);
-              canMoveGroup = false;
-              break;
-            }
+            return { deltaTime: primaryClipDeltaTime, trackDelta: primaryClipTrackDelta, valid: false };
+          };
+          
+          // Find valid position with dodging
+          const validPosition = findValidGroupPosition(primaryClipDeltaTime, primaryClipTrackDelta);
+          
+          if (validPosition.valid) {
+            finalDeltaTime = validPosition.deltaTime;
+            finalTrackDelta = validPosition.trackDelta;
             
-            const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
-            if (!clipNewTrackId) {
-              console.log(`Group move blocked: target track not found for clip ${selectedClip.clipId}`);
-              canMoveGroup = false;
-              break;
+            // Generate final moves with the valid position
+            for (const selectedClip of dragState.selectedClips || []) {
+              let clipNewStartTime = selectedClip.originalStartTime + finalDeltaTime;
+              let clipNewTrackIndex = selectedClip.originalTrackIndex + finalTrackDelta;
+              const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+              
+              if (clipNewTrackId) {
+                proposedMoves.push({
+                  clipId: selectedClip.clipId,
+                  fromTrackId: selectedClip.trackId,
+                  toTrackId: clipNewTrackId,
+                  newStartTime: clipNewStartTime
+                });
+              }
             }
-            
-            proposedMoves.push({
-              clipId: selectedClip.clipId,
-              fromTrackId: selectedClip.trackId,
-              toTrackId: clipNewTrackId,
-              newStartTime: clipNewStartTime
-            });
+          } else {
+            console.log(`Group move blocked: could not find valid position even with dodging`);
+            canMoveGroup = false;
           }
           
           // Only move if all clips can be moved successfully
@@ -955,8 +1026,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       const primaryClipDeltaTime = (deltaX / timelineWidth) * totalTime;
       const primaryClipTrackDelta = Math.round(deltaY / 96);
       
-      // Check if all clips can move to their new positions
+      // Check if all clips can move to their new positions with dodging
       let canMoveGroup = true;
+      let finalDeltaTime = primaryClipDeltaTime;
+      let finalTrackDelta = primaryClipTrackDelta;
       const proposedMoves: Array<{
         clipId: string;
         fromTrackId: string;
@@ -964,28 +1037,91 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         newStartTime: number;
       }> = [];
       
-      for (const selectedClip of selectedClips) {
-        let clipNewStartTime = selectedClip.originalStartTime + primaryClipDeltaTime;
-        let clipNewTrackIndex = selectedClip.originalTrackIndex + primaryClipTrackDelta;
-        
-        if (clipNewStartTime < 0 || clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
-          console.log(`Selection box move blocked: clip ${selectedClip.clipId} would go out of bounds`);
-          canMoveGroup = false;
-          break;
+      // Helper function to check for collisions and find dodging position
+      const findValidGroupPosition = (deltaTime: number, trackDelta: number, maxAttempts = 10): { deltaTime: number; trackDelta: number; valid: boolean } => {
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          let hasCollision = false;
+          
+          // Test all clips at this position
+          for (const selectedClip of selectedClips) {
+            let clipNewStartTime = selectedClip.originalStartTime + deltaTime;
+            let clipNewTrackIndex = selectedClip.originalTrackIndex + trackDelta;
+            
+            // Check boundaries
+            if (clipNewStartTime < 0 || clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
+              hasCollision = true;
+              break;
+            }
+            
+            const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+            if (!clipNewTrackId) {
+              hasCollision = true;
+              break;
+            }
+            
+            // Get the clip's duration for collision detection
+            const originalTrack = tracks.find(t => t.id === selectedClip.trackId);
+            const originalClip = originalTrack?.clips?.find(c => c.id === selectedClip.clipId);
+            const clipDuration = originalClip?.duration || 10;
+            
+            // Check for collisions with existing clips on the target track
+            const targetTrack = tracks[clipNewTrackIndex];
+            const existingClips = targetTrack.clips || [];
+            
+            for (const existingClip of existingClips) {
+              // Skip if it's one of the clips being moved
+              if (selectedClips.some(sc => sc.clipId === existingClip.id)) {
+                continue;
+              }
+              
+              // Check for time overlap
+              const clipEnd = clipNewStartTime + clipDuration;
+              const existingEnd = existingClip.startTime + existingClip.duration;
+              
+              if (!(clipEnd <= existingClip.startTime || clipNewStartTime >= existingEnd)) {
+                hasCollision = true;
+                break;
+              }
+            }
+            
+            if (hasCollision) break;
+          }
+          
+          if (!hasCollision) {
+            return { deltaTime, trackDelta, valid: true };
+          }
+          
+          // Try dodging in the direction opposite to movement
+          const dodgeDirection = deltaTime >= 0 ? -1 : 1;
+          deltaTime += dodgeDirection * 5; // Dodge by 5 seconds
         }
         
-        const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
-        if (!clipNewTrackId) {
-          canMoveGroup = false;
-          break;
-        }
+        return { deltaTime: primaryClipDeltaTime, trackDelta: primaryClipTrackDelta, valid: false };
+      };
+      
+      // Find valid position with dodging
+      const validPosition = findValidGroupPosition(primaryClipDeltaTime, primaryClipTrackDelta);
+      
+      if (validPosition.valid) {
+        finalDeltaTime = validPosition.deltaTime;
+        finalTrackDelta = validPosition.trackDelta;
         
-        proposedMoves.push({
-          clipId: selectedClip.clipId,
-          fromTrackId: selectedClip.trackId,
-          toTrackId: clipNewTrackId,
-          newStartTime: clipNewStartTime
-        });
+        // Generate final moves with the valid position
+        for (const selectedClip of selectedClips) {
+          let clipNewStartTime = selectedClip.originalStartTime + finalDeltaTime;
+          let clipNewTrackIndex = selectedClip.originalTrackIndex + finalTrackDelta;
+          const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+          
+          proposedMoves.push({
+            clipId: selectedClip.clipId,
+            fromTrackId: selectedClip.trackId,
+            toTrackId: clipNewTrackId!,
+            newStartTime: clipNewStartTime
+          });
+        }
+      } else {
+        console.log(`Selection box move blocked: could not find valid position even with dodging`);
+        canMoveGroup = false;
       }
       
       if (canMoveGroup && onClipMove) {
