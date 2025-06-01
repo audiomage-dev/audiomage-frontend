@@ -28,7 +28,15 @@ import {
   Play,
   Pause,
   Volume2,
+  Monitor,
+  Headphones,
+  Keyboard,
+  Globe,
+  Shield,
+  Database,
   Download,
+  Upload,
+  RefreshCw,
   Heart,
   Filter,
   Tag,
@@ -37,8 +45,6 @@ import {
   Wand2,
   Sparkles,
   Mic,
-  Headphones,
-
   Radio,
   TrendingUp,
   Scissors,
@@ -52,7 +58,6 @@ import {
   Gauge,
   Crown,
   Minimize2,
-  Globe,
   Wind,
   Music2,
   Shuffle,
@@ -75,6 +80,7 @@ export function VerticalSidebar() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
