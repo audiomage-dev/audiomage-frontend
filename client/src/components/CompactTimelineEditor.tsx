@@ -396,25 +396,58 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           const primaryClipDeltaTime = (deltaX / timelineWidth) * totalTime;
           const primaryClipTrackDelta = Math.round(deltaY / trackHeight);
           
-          // Move all selected clips while preserving their relative positions
-          dragState.selectedClips.forEach(selectedClip => {
-            // Apply the same time and track delta to each clip
+          // Check if all clips can move to their new positions without conflicts
+          let canMoveGroup = true;
+          const proposedMoves: Array<{
+            clipId: string;
+            fromTrackId: string;
+            toTrackId: string;
+            newStartTime: number;
+          }> = [];
+          
+          // Pre-validate all movements
+          for (const selectedClip of dragState.selectedClips) {
             let clipNewStartTime = selectedClip.originalStartTime + primaryClipDeltaTime;
             let clipNewTrackIndex = selectedClip.originalTrackIndex + primaryClipTrackDelta;
             
-            // Ensure clips don't go negative in time
-            clipNewStartTime = Math.max(0, clipNewStartTime);
+            // Check boundaries
+            if (clipNewStartTime < 0) {
+              console.log(`Group move blocked: clip ${selectedClip.clipId} would go to negative time`);
+              canMoveGroup = false;
+              break;
+            }
             
-            // Ensure clips stay within track bounds
-            clipNewTrackIndex = Math.max(0, Math.min(tracks.length - 1, clipNewTrackIndex));
+            if (clipNewTrackIndex < 0 || clipNewTrackIndex >= tracks.length) {
+              console.log(`Group move blocked: clip ${selectedClip.clipId} would go outside track bounds`);
+              canMoveGroup = false;
+              break;
+            }
             
             const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
-            
-            if (onClipMove && clipNewTrackId) {
-              console.log(`Moving selected clip ${selectedClip.clipId} from ${selectedClip.originalStartTime}s to ${clipNewStartTime}s, track ${selectedClip.originalTrackIndex} to ${clipNewTrackIndex}`);
-              onClipMove(selectedClip.clipId, selectedClip.trackId, clipNewTrackId, clipNewStartTime);
+            if (!clipNewTrackId) {
+              console.log(`Group move blocked: target track not found for clip ${selectedClip.clipId}`);
+              canMoveGroup = false;
+              break;
             }
-          });
+            
+            proposedMoves.push({
+              clipId: selectedClip.clipId,
+              fromTrackId: selectedClip.trackId,
+              toTrackId: clipNewTrackId,
+              newStartTime: clipNewStartTime
+            });
+          }
+          
+          // Only move if all clips can be moved successfully
+          if (canMoveGroup && onClipMove) {
+            console.log(`Moving group of ${proposedMoves.length} clips`);
+            proposedMoves.forEach(move => {
+              console.log(`Moving selected clip ${move.clipId} to ${move.newStartTime}s on track ${move.toTrackId}`);
+              onClipMove(move.clipId, move.fromTrackId, move.toTrackId, move.newStartTime);
+            });
+          } else {
+            console.log(`Group move cancelled - one or more clips blocked`);
+          }
           
           // Clear the multi-selection after group move
           setMultiSelection(null);
