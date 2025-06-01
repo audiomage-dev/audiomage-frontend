@@ -376,27 +376,13 @@ export function MidiEditor({
 
 
 
-  // Transport integration - play notes when transport plays
+  // Transport integration - stop MIDI when transport stops
   useEffect(() => {
-    if (transport.isPlaying) {
-      // Find first available MIDI track if none selected
-      const targetTrack = selectedTrack || tracks.find(t => t.type === 'midi')?.id;
-      
-      if (targetTrack) {
-        console.log('Transport started playing - triggering MIDI playback for track:', targetTrack);
-        const trackNotes = midiNotes[targetTrack] || [];
-        if (trackNotes.length > 0) {
-          playAllNotes();
-        } else {
-          console.log('No MIDI notes found to play');
-        }
-      } else {
-        console.log('No MIDI track available for playback');
-      }
-    } else if (transport.isStopped) {
-      console.log('Transport stopped - MIDI playback stopped');
+    if (transport.isStopped && isMidiPlaying) {
+      console.log('Transport stopped - stopping MIDI playback');
+      stopMidiPlayback();
     }
-  }, [transport.isPlaying, transport.isStopped, selectedTrack, midiNotes, tracks]);
+  }, [transport.isStopped, isMidiPlaying]);
 
   // Handle note click - now plays the note
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
