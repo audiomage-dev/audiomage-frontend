@@ -605,8 +605,14 @@ export function MidiEditor({
   const renderNotes = (): JSX.Element[] => {
     const noteElements: JSX.Element[] = [];
     
-    tracks.forEach(track => {
+    // Only render notes for selected track or all MIDI tracks if none selected
+    const tracksToRender = selectedTrack ? 
+      tracks.filter(t => t.id === selectedTrack) : 
+      tracks.filter(t => t.type === 'midi');
+    
+    tracksToRender.forEach(track => {
       const trackNotes = midiNotes[track.id] || [];
+      console.log(`Rendering ${trackNotes.length} notes for track "${track.name}"`);
       
       trackNotes.forEach((note: MidiNote) => {
         const x = note.startTime * beatWidth;
