@@ -528,14 +528,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const handleMultiSelectionStart = useCallback((e: React.MouseEvent, startTrackIndex: number) => {
     if (e.button !== 0) return; // Only left click
     
-    const rect = e.currentTarget.getBoundingClientRect();
-    const startX = e.clientX - rect.left + scrollX;
-    const startY = e.clientY - rect.top;
+    const timelineRect = timelineRef.current?.getBoundingClientRect();
+    if (!timelineRect) return;
+    
+    const startX = e.clientX - timelineRect.left + scrollX;
+    // Calculate Y position relative to the track that was clicked
+    const trackY = startTrackIndex * 96; // Each track is 96px high
+    const startY = trackY + (e.clientY - e.currentTarget.getBoundingClientRect().top);
+    
     const timelineWidth = getTimelineWidth();
     const totalTime = timelineWidth / zoomLevel;
     const startTime = (startX / timelineWidth) * totalTime;
     
-    console.log('Starting multi-track selection:', { startX, startY, startTime, startTrackIndex });
+    console.log('Starting multi-track selection:', { startX, startY, startTime, startTrackIndex, trackY });
     
     setMultiSelection({
       startTime,
