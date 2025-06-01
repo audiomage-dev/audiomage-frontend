@@ -34,10 +34,11 @@ export function MidiEditor({
   onNoteEdit,
   onNoteDelete
 }: MidiEditorProps) {
-  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<string | null>(tracks.find(t => t.type === 'midi')?.id || null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -111,21 +112,21 @@ export function MidiEditor({
         const startTime = chordIndex * 4; // 4 beats per chord
         chord.forEach((pitch, noteIndex) => {
           notes.push({
-            id: `piano_chord_${chordIndex}_${noteIndex}`,
+            id: `piano_chord_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 5)}`,
             pitch,
             startTime,
             duration: 3.5,
-            velocity: 85 + Math.random() * 20,
+            velocity: 85 + Math.floor(Math.random() * 20),
           });
           
           // Add some arpeggiated notes
           if (Math.random() > 0.6) {
             notes.push({
-              id: `piano_arp_${chordIndex}_${noteIndex}`,
+              id: `piano_arp_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 5)}`,
               pitch: pitch + 12,
               startTime: startTime + 0.5 + noteIndex * 0.25,
               duration: 0.5,
-              velocity: 60 + Math.random() * 15,
+              velocity: 60 + Math.floor(Math.random() * 15),
             });
           }
         });
@@ -184,13 +185,25 @@ export function MidiEditor({
     return notes;
   };
 
-  // Get all MIDI notes for all tracks
-  const allMidiNotes: Record<string, MidiNote[]> = {};
-  tracks.forEach(track => {
-    if (track.type === 'midi') {
-      allMidiNotes[track.id] = getMidiNotesFromTrack(track);
-    }
-  });
+  // Initialize MIDI notes when tracks change
+  useEffect(() => {
+    const newMidiNotes: Record<string, MidiNote[]> = {};
+    tracks.forEach(track => {
+      if (track.type === 'midi') {
+        newMidiNotes[track.id] = getMidiNotesFromTrack(track);
+      }
+    });
+    setMidiNotes(newMidiNotes);
+  }, [tracks]);
+
+  // Add note function
+  const addNote = (trackId: string, note: MidiNote) => {
+    setMidiNotes(prev => ({
+      ...prev,
+      [trackId]: [...(prev[trackId] || []), note]
+    }));
+    onNoteAdd?.(trackId, note);
+  };
 
   // Handle note click
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
@@ -229,7 +242,8 @@ export function MidiEditor({
       velocity: 100,
     };
 
-    onNoteAdd?.(selectedTrack, newNote);
+    addNote(selectedTrack, newNote);
+    console.log(`Added note: ${getNoteNameFromMidi(pitch)} at beat ${beat}`);
   };
 
   // Render piano keys
@@ -321,9 +335,9 @@ export function MidiEditor({
     const noteElements: JSX.Element[] = [];
     
     tracks.forEach(track => {
-      const trackNotes = allMidiNotes[track.id] || [];
+      const trackNotes = midiNotes[track.id] || [];
       
-      trackNotes.forEach(note => {
+      trackNotes.forEach((note: MidiNote) => {
         const x = note.startTime * beatWidth;
         const y = getNoteY(note.pitch);
         const width = note.duration * beatWidth - 2; // Small gap between notes
@@ -453,7 +467,7 @@ export function MidiEditor({
               </div>
               
               <div className="text-xs text-[var(--muted-foreground)]">
-                {allMidiNotes[track.id]?.length || 0} notes
+                {midiNotes[track.id]?.length || 0} notes
               </div>
               
               {/* Track color indicator */}
