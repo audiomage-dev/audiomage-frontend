@@ -320,6 +320,13 @@ export function MidiEditor({
     });
   };
 
+  // Transport integration - play notes when transport plays
+  useEffect(() => {
+    if (transport.isPlaying && selectedTrack) {
+      playAllNotes();
+    }
+  }, [transport.isPlaying, selectedTrack]);
+
   // Handle note click - now plays the note
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -469,6 +476,11 @@ export function MidiEditor({
     drawStartRef.current = null;
   };
 
+  // Handle piano key click to play note
+  const handlePianoKeyClick = (pitch: number) => {
+    playNote(pitch, 100, 0.5);
+  };
+
   // Handle simple click (when not dragging)
   const handleGridClick = (event: React.MouseEvent) => {
     // This will be handled by mousedown/mouseup for consistent behavior
@@ -500,10 +512,7 @@ export function MidiEditor({
               ? 'inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.2)' 
               : 'inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.1)',
           }}
-          onClick={() => {
-            // Play note preview
-            console.log(`Playing note: ${noteName} (${midiNote})`);
-          }}
+          onClick={() => handlePianoKeyClick(midiNote)}
         >
           <span className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}>
             {noteName}
@@ -927,7 +936,9 @@ export function MidiEditor({
                 width: totalBeats * beatWidth,
                 height: totalNotes * noteHeight,
               }}
-              onClick={handleGridClick}
+              onMouseDown={handleGridMouseDown}
+              onMouseMove={handleGridMouseMove}
+              onMouseUp={handleGridMouseUp}
             >
               <svg
                 width={totalBeats * beatWidth}
