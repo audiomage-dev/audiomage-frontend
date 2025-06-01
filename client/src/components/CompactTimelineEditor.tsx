@@ -79,6 +79,12 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     currentTrackIndex: number;
     currentOffsetX: number;
     currentOffsetY: number;
+    selectedClips?: Array<{
+      clipId: string;
+      trackId: string;
+      originalStartTime: number;
+      originalTrackIndex: number;
+    }>;
   } | null>(null);
 
   // Clip resizing state
@@ -280,6 +286,34 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     if (clip && trackIndex >= 0) {
       console.log('Starting clip drag:', clipId);
       
+      // Check if this clip is part of a multi-selection
+      const isMultiSelected = multiSelection && 
+        !multiSelection.isActive && 
+        multiSelection.selectedClips.includes(clipId);
+      
+      let selectedClips: Array<{ clipId: string; trackId: string; originalStartTime: number; originalTrackIndex: number; }> = [];
+      
+      if (isMultiSelected && multiSelection) {
+        // Prepare all selected clips for group dragging
+        selectedClips = multiSelection.selectedClips.map(selectedClipId => {
+          for (let trackIdx = 0; trackIdx < tracks.length; trackIdx++) {
+            const currentTrack = tracks[trackIdx];
+            const selectedClip = currentTrack.clips?.find(c => c.id === selectedClipId);
+            if (selectedClip) {
+              return {
+                clipId: selectedClipId,
+                trackId: currentTrack.id,
+                originalStartTime: selectedClip.startTime,
+                originalTrackIndex: trackIdx
+              };
+            }
+          }
+          return null;
+        }).filter(Boolean) as Array<{ clipId: string; trackId: string; originalStartTime: number; originalTrackIndex: number; }>;
+        
+        console.log('Group dragging selected clips:', selectedClips.length);
+      }
+      
       const dragState = {
         clipId,
         trackId,
@@ -289,7 +323,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         originalTrackIndex: trackIndex,
         currentTrackIndex: trackIndex,
         currentOffsetX: 0,
-        currentOffsetY: 0
+        currentOffsetY: 0,
+        selectedClips: selectedClips.length > 0 ? selectedClips : undefined
       };
       
       setDraggingClip(dragState);
@@ -353,19 +388,43 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           newTrackId 
         });
         
-        console.log(`Clip ${dragState.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
-        
-        // Persist the clip movement to actual data
-        if (onClipMove && newTrackId) {
-          console.log('Calling onClipMove with:', { 
-            clipId: dragState.clipId, 
-            fromTrackId: dragState.trackId, 
-            toTrackId: newTrackId, 
-            newStartTime 
+        // Handle group movement if multiple clips are selected
+        if (dragState.selectedClips && dragState.selectedClips.length > 0) {
+          console.log(`Group moving ${dragState.selectedClips.length} clips`);
+          
+          // Move all selected clips with the same relative offset
+          dragState.selectedClips.forEach(selectedClip => {
+            const clipDeltaTime = (deltaX / timelineWidth) * totalTime;
+            const clipNewStartTime = Math.max(0, selectedClip.originalStartTime + clipDeltaTime);
+            
+            const clipNewTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
+              selectedClip.originalTrackIndex + Math.round(deltaY / trackHeight)
+            ));
+            const clipNewTrackId = tracks[clipNewTrackIndex]?.id;
+            
+            if (onClipMove && clipNewTrackId) {
+              console.log(`Moving selected clip ${selectedClip.clipId} to ${clipNewStartTime}s on track ${clipNewTrackId}`);
+              onClipMove(selectedClip.clipId, selectedClip.trackId, clipNewTrackId, clipNewStartTime);
+            }
           });
-          onClipMove(dragState.clipId, dragState.trackId, newTrackId, newStartTime);
+          
+          // Clear the multi-selection after group move
+          setMultiSelection(null);
         } else {
-          console.error('onClipMove not called:', { onClipMove: !!onClipMove, newTrackId });
+          // Single clip movement
+          console.log(`Clip ${dragState.clipId} moved to ${newStartTime}s on track ${newTrackId} (index ${newTrackIndex})`);
+          
+          if (onClipMove && newTrackId) {
+            console.log('Calling onClipMove with:', { 
+              clipId: dragState.clipId, 
+              fromTrackId: dragState.trackId, 
+              toTrackId: newTrackId, 
+              newStartTime 
+            });
+            onClipMove(dragState.clipId, dragState.trackId, newTrackId, newStartTime);
+          } else {
+            console.error('onClipMove not called:', { onClipMove: !!onClipMove, newTrackId });
+          }
         }
         
         console.log('Setting dragging clip to null');
@@ -1116,7 +1175,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       <div
                         key={clip.id}
                         className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
-                          draggingClip?.clipId === clip.id ? 'opacity-60 scale-105 z-50' : 'z-5'
+                          draggingClip?.clipId === clip.id 
+                            ? 'opacity-60 scale-105 z-50' 
+                            : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
+                              ? 'opacity-70 scale-102 z-40 ring-2 ring-[var(--primary)]'
+                              : multiSelection && multiSelection.selectedClips.includes(clip.id)
+                                ? 'ring-2 ring-[var(--primary)]'
+                                : 'z-5'
                         }`}
                         style={{
                           left: `${clipStartX}px`,
