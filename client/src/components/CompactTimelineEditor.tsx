@@ -39,10 +39,11 @@ interface CompactTimelineEditorProps {
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
   onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
+  onClipResize?: (clipId: string, trackId: string, newStartTime: number, newDuration: number) => void;
   onZoomChange?: (zoomLevel: number) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onZoomChange }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange }: CompactTimelineEditorProps) {
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
   const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
@@ -387,10 +388,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       if (Math.abs(newStartTime - resizingClip.originalStartTime) > 0.01 || 
           Math.abs(newDuration - resizingClip.originalDuration) > 0.01) {
         
-        if (onClipMove) {
-          // Use onClipMove for start time changes, would need separate handler for duration
+        if (onClipResize) {
           console.log('Applying clip resize:', { clipId: resizingClip.clipId, newStartTime, newDuration });
-          onClipMove(resizingClip.clipId, resizingClip.trackId, resizingClip.trackId, newStartTime);
+          onClipResize(resizingClip.clipId, resizingClip.trackId, newStartTime, newDuration);
         }
       }
       

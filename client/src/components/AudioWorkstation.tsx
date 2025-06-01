@@ -125,6 +125,7 @@ export function AudioWorkstation() {
               onTrackSolo={toggleTrackSolo}
               onTrackSelect={setSelectedTrack}
               onClipMove={updateClipPosition}
+              onClipResize={updateClipProperties}
               onZoomChange={handleZoomChange}
             />
           </div>
