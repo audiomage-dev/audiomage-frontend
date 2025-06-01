@@ -9,7 +9,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export function AudioWorkstation() {
   const {
@@ -39,6 +39,14 @@ export function AudioWorkstation() {
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
+  const [isMidiPlaying, setIsMidiPlaying] = useState(false);
+  
+  // Ref to access MIDI editor functions
+  const midiEditorRef = useRef<{
+    playMidiTrack: () => void;
+    pauseMidiPlayback: () => void;
+    stopMidiPlayback: () => void;
+  }>(null);
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({

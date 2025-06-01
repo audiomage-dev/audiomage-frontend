@@ -16,6 +16,12 @@ interface CompactTransportBarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onViewModeChange?: (mode: 'timeline' | 'midi') => void;
+  // MIDI-specific playback functions
+  onMidiPlay?: () => void;
+  onMidiPause?: () => void;
+  onMidiStop?: () => void;
+  isMidiPlaying?: boolean;
+  selectedTrack?: string | null;
 }
 
 export function CompactTransportBar({
@@ -31,7 +37,12 @@ export function CompactTransportBar({
   onSeek,
   onZoomIn,
   onZoomOut,
-  onViewModeChange
+  onViewModeChange,
+  onMidiPlay,
+  onMidiPause,
+  onMidiStop,
+  isMidiPlaying = false,
+  selectedTrack,
 }: CompactTransportBarProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -55,11 +66,32 @@ export function CompactTransportBar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={transport.isPlaying ? onPause : onPlay}
+          onClick={() => {
+            if (viewMode === 'midi') {
+              // MIDI mode: handle MIDI playback
+              if (isMidiPlaying) {
+                onMidiPause?.();
+              } else {
+                onMidiPlay?.();
+              }
+            } else {
+              // Timeline mode: handle timeline playback
+              if (transport.isPlaying) {
+                onPause();
+              } else {
+                onPlay();
+              }
+            }
+          }}
           className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title={transport.isPlaying ? "Pause" : "Play"}
+          title={
+            viewMode === 'midi' 
+              ? (isMidiPlaying ? "Pause MIDI" : "Play MIDI")
+              : (transport.isPlaying ? "Pause" : "Play")
+          }
+          disabled={viewMode === 'midi' && !selectedTrack}
         >
-          {transport.isPlaying ? (
+          {(viewMode === 'midi' ? isMidiPlaying : transport.isPlaying) ? (
             <Pause className="w-4 h-4" />
           ) : (
             <Play className="w-4 h-4" />
@@ -69,9 +101,15 @@ export function CompactTransportBar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onStop}
+          onClick={() => {
+            if (viewMode === 'midi') {
+              onMidiStop?.();
+            } else {
+              onStop();
+            }
+          }}
           className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title="Stop"
+          title={viewMode === 'midi' ? "Stop MIDI" : "Stop"}
         >
           <Square className="w-4 h-4" />
         </Button>
