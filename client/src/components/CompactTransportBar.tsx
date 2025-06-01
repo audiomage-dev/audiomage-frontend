@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 
 interface CompactTransportBarProps {
@@ -22,6 +22,11 @@ interface CompactTransportBarProps {
   onMidiStop?: () => void;
   isMidiPlaying?: boolean;
   selectedTrack?: string | null;
+  // Lock state management
+  isTimelineLocked?: boolean;
+  isMidiLocked?: boolean;
+  onTimelineLockToggle?: () => void;
+  onMidiLockToggle?: () => void;
 }
 
 export function CompactTransportBar({
@@ -43,6 +48,10 @@ export function CompactTransportBar({
   onMidiStop,
   isMidiPlaying = false,
   selectedTrack,
+  isTimelineLocked = false,
+  isMidiLocked = false,
+  onTimelineLockToggle,
+  onMidiLockToggle
 }: CompactTransportBarProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -205,6 +214,27 @@ export function CompactTransportBar({
         <div className="text-xs text-[var(--muted-foreground)]">
           {transport.isLooping ? 'LOOP' : 'LINEAR'}
         </div>
+        
+        {/* Lock Session Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 hover:bg-[var(--muted)] transition-colors"
+          onClick={() => {
+            if (viewMode === 'timeline' && onTimelineLockToggle) {
+              onTimelineLockToggle();
+            } else if (viewMode === 'midi' && onMidiLockToggle) {
+              onMidiLockToggle();
+            }
+          }}
+          title={`${viewMode === 'timeline' ? (isTimelineLocked ? 'Unlock Timeline' : 'Lock Timeline') : (isMidiLocked ? 'Unlock MIDI Editor' : 'Lock MIDI Editor')}`}
+        >
+          {viewMode === 'timeline' ? 
+            (isTimelineLocked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />) :
+            (isMidiLocked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />)
+          }
+        </Button>
+
         {transport.isRecording && (
           <div className="flex items-center space-x-1">
             <div className="w-2 h-2 bg-[var(--red)] rounded-full animate-pulse"></div>

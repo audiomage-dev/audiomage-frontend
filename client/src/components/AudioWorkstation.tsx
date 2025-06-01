@@ -41,6 +41,10 @@ export function AudioWorkstation() {
   const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   
+  // Lock states for Timeline and MIDI editors
+  const [isTimelineLocked, setIsTimelineLocked] = useState(false);
+  const [isMidiLocked, setIsMidiLocked] = useState(false);
+  
   // Global MIDI playback control functions
   const [midiPlaybackFunctions, setMidiPlaybackFunctions] = useState<{
     playMidiTrack: (() => void) | null;
@@ -135,6 +139,10 @@ export function AudioWorkstation() {
               onMidiStop={() => midiPlaybackFunctions.stopMidiPlayback?.()}
               isMidiPlaying={isMidiPlaying}
               selectedTrack={selectedTrack}
+              isTimelineLocked={isTimelineLocked}
+              isMidiLocked={isMidiLocked}
+              onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
+              onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
             />
           </div>
           
