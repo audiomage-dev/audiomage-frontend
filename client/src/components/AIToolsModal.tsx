@@ -526,35 +526,89 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Isolation Quality</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Isolation Algorithm</label>
                 <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
-                  <option>High (Slower)</option>
-                  <option>Standard</option>
-                  <option>Fast (Real-time)</option>
+                  <option>PANN-based Deep Learning</option>
+                  <option>Spectral Subtraction</option>
+                  <option>HPSS (Harmonic-Percussive)</option>
+                  <option>Center Channel Extraction</option>
+                  <option>AI Hybrid Model</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--muted-foreground)]">Output Format</label>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Processing Quality</label>
                 <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
-                  <option>Vocals Only</option>
-                  <option>Instrumental Only</option>
-                  <option>Both Stems</option>
+                  <option>Ultra High (8x processing)</option>
+                  <option>High Quality (4x processing)</option>
+                  <option>Balanced (2x processing)</option>
+                  <option>Real-time (1x processing)</option>
                 </select>
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Vocal Clarity</span>
-                <span className="text-xs text-[var(--muted-foreground)]">85%</span>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Vocal Sensitivity</label>
+                <input type="range" min="0" max="100" defaultValue="75" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center mt-1">75%</div>
               </div>
-              <input type="range" min="0" max="100" defaultValue="85" className="w-full" />
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Harmonic Preservation</label>
+                <input type="range" min="0" max="100" defaultValue="85" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center mt-1">85%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Artifact Reduction</label>
+                <input type="range" min="0" max="100" defaultValue="90" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center mt-1">90%</div>
+              </div>
             </div>
-            <div className="bg-[var(--secondary)] p-3 rounded">
-              <div className="text-xs font-medium mb-2">Processing Status</div>
-              <div className="flex items-center space-x-2">
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                <span className="text-xs">Analyzing audio structure...</span>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Output Configuration</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Isolated Vocals</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Instrumental Track</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Vocal Harmonies Only</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Lead Vocal Only</span>
+                </label>
               </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Separation Quality</span>
+                <span className="font-mono text-[var(--green)]">94.2%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>SNR Improvement</span>
+                <span className="font-mono text-[var(--blue)]">+18.7 dB</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
+                <span>Processing Time</span>
+                <span className="font-mono text-[var(--orange)]">2.3s</span>
+              </div>
+            </div>
+            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Real-time Separation Quality Monitor</div>
+            </div>
+            <div className="flex space-x-2">
+              <Button size="sm" variant="outline" className="flex-1">
+                <Play className="w-3 h-3 mr-1" />
+                Preview Separation
+              </Button>
+              <Button size="sm" className="flex-1">
+                <Download className="w-3 h-3 mr-1" />
+                Process & Export
+              </Button>
             </div>
           </div>
         );
