@@ -105,9 +105,115 @@ export function MidiEditor({
   const getMidiNotesFromTrack = (track: AudioTrack): MidiNote[] => {
     if (track.type !== 'midi') return [];
     
-    // Return empty array - no pre-loaded notes
-    console.log(`No pre-loaded notes for track: "${track.name}" (type: ${track.type})`);
-    return [];
+    console.log(`Generating MIDI notes for track: "${track.name}" (type: ${track.type})`);
+    const notes: MidiNote[] = [];
+    
+    if (track.name === 'Piano') {
+      // Piano chord progression in C major
+      const chordProgression = [
+        [60, 64, 67], // C major
+        [57, 60, 64], // A minor
+        [62, 65, 69], // D minor
+        [67, 71, 74], // G major
+        [60, 64, 67], // C major
+        [65, 69, 72], // F major
+        [67, 71, 74], // G major
+        [60, 64, 67], // C major
+      ];
+      
+      chordProgression.forEach((chord, chordIndex) => {
+        const startTime = chordIndex * 4; // 4 beats per chord
+        chord.forEach((pitch, noteIndex) => {
+          notes.push({
+            id: `piano_chord_${chordIndex}_${noteIndex}`,
+            pitch,
+            startTime,
+            duration: 3.5,
+            velocity: 85 + (chordIndex * 3) % 20,
+          });
+          
+          // Add some arpeggiated notes
+          if ((chordIndex + noteIndex) % 3 === 0) {
+            notes.push({
+              id: `piano_arp_${chordIndex}_${noteIndex}`,
+              pitch: pitch + 12,
+              startTime: startTime + 0.5 + noteIndex * 0.25,
+              duration: 0.5,
+              velocity: 60 + (noteIndex * 5) % 15,
+            });
+          }
+        });
+      });
+      
+      // Add melody line
+      const melody = [72, 74, 76, 77, 76, 74, 72, 69, 67, 69, 72, 71, 69, 67, 60];
+      melody.forEach((pitch, index) => {
+        notes.push({
+          id: `piano_melody_${index}`,
+          pitch,
+          startTime: index * 2 + 0.5,
+          duration: 1.5,
+          velocity: 95 + (index * 2) % 15,
+        });
+      });
+    }
+    
+    if (track.name === 'Synth Bass') {
+      // Bass line pattern
+      const bassNotes = [36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38];
+      bassNotes.forEach((pitch, index) => {
+        notes.push({
+          id: `bass_${index}`,
+          pitch,
+          startTime: index * 2,
+          duration: 1.75,
+          velocity: 110 + (index * 2) % 10,
+        });
+      });
+    }
+    
+    if (track.name === 'Strings' || track.name === 'Strings Section') {
+      // String pad chords
+      const stringChords = [
+        [48, 52, 55, 60], // C major spread
+        [45, 48, 52, 57], // A minor spread
+        [50, 53, 57, 62], // D minor spread
+        [55, 59, 62, 67], // G major spread
+      ];
+      
+      stringChords.forEach((chord, chordIndex) => {
+        const startTime = chordIndex * 8;
+        chord.forEach((pitch, noteIndex) => {
+          notes.push({
+            id: `strings_${chordIndex}_${noteIndex}`,
+            pitch,
+            startTime,
+            duration: 7.5,
+            velocity: 70 + (chordIndex * 3 + noteIndex * 2) % 15,
+          });
+        });
+      });
+    }
+    
+    // Fallback: Generate default notes for any MIDI track without specific patterns
+    if (notes.length === 0) {
+      console.log(`No specific pattern found for "${track.name}", generating default MIDI notes`);
+      
+      // Generate a simple melody pattern for any unmatched MIDI track
+      const defaultNotes = [60, 62, 64, 65, 67, 69, 71, 72]; // C major scale
+      defaultNotes.forEach((pitch, index) => {
+        notes.push({
+          id: `default_${track.name.replace(/\s+/g, '_')}_${index}`,
+          pitch,
+          startTime: index * 2,
+          duration: 1.5,
+          velocity: 80 + (index * 5) % 20,
+        });
+      });
+    }
+    
+    console.log(`Generated ${notes.length} MIDI notes for "${track.name}"`);
+    return notes;
   };
 
   // Initialize audio context for note playback
