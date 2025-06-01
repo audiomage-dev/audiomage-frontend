@@ -347,6 +347,57 @@ export function useAudioWorkstation() {
     },
     {
       id: '9',
+      name: 'Synth Bass',
+      type: 'midi',
+      volume: 82,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: '#BF616A',
+      clips: [
+        {
+          id: 'clip-bass-1',
+          name: 'Bass_Line.mid',
+          startTime: 0,
+          duration: 128.0,
+          offset: 0,
+          volume: 85,
+          color: '#BF616A',
+          waveformData: [60, 45, 70, 40, 65, 50, 75, 35, 60, 55, 70, 40, 65, 45, 75, 50, 60, 40, 70, 55, 65, 35, 75, 45, 60, 50, 70, 40, 65, 55, 75, 35, 60, 45, 70, 50, 65, 40, 75, 55]
+        }
+      ],
+      effects: [
+        { id: '16', name: 'Bass Compressor', type: 'compressor', enabled: true, parameters: {} },
+        { id: '17', name: 'Sub Bass', type: 'eq', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '10',
+      name: 'Strings',
+      type: 'midi',
+      volume: 70,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: '#A3BE8C',
+      clips: [
+        {
+          id: 'clip-strings-1',
+          name: 'String_Pads.mid',
+          startTime: 16.0,
+          duration: 96.0,
+          offset: 0,
+          volume: 72,
+          color: '#A3BE8C',
+          waveformData: [35, 50, 30, 55, 25, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55]
+        }
+      ],
+      effects: [
+        { id: '18', name: 'String Reverb', type: 'reverb', enabled: true, parameters: {} }
+      ],
+    },
+    {
+      id: '11',
       name: 'Backup Vocals',
       type: 'audio',
       volume: 62,

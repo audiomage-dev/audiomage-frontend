@@ -88,18 +88,109 @@ export function MidiEditor({
     return Math.round(beat / snapSize) * snapSize;
   };
 
-  // Mock MIDI notes for demonstration
-  const mockNotes: Record<string, MidiNote[]> = {
-    [tracks[0]?.id || 'track1']: [
-      { id: 'note1', pitch: 60, startTime: 0, duration: 1, velocity: 100 }, // C4
-      { id: 'note2', pitch: 64, startTime: 1, duration: 1, velocity: 90 },  // E4
-      { id: 'note3', pitch: 67, startTime: 2, duration: 1, velocity: 95 },  // G4
-      { id: 'note4', pitch: 72, startTime: 3, duration: 1, velocity: 85 },  // C5
-      { id: 'note5', pitch: 67, startTime: 4, duration: 2, velocity: 100 }, // G4
-      { id: 'note6', pitch: 64, startTime: 6, duration: 1, velocity: 90 },  // E4
-      { id: 'note7', pitch: 60, startTime: 7, duration: 1, velocity: 95 },  // C4
-    ],
+  // Generate realistic MIDI note data based on track content
+  const getMidiNotesFromTrack = (track: AudioTrack): MidiNote[] => {
+    if (track.type !== 'midi') return [];
+    
+    const notes: MidiNote[] = [];
+    
+    if (track.name === 'Piano') {
+      // Piano chord progression in C major
+      const chordProgression = [
+        [60, 64, 67], // C major
+        [57, 60, 64], // A minor
+        [62, 65, 69], // D minor
+        [67, 71, 74], // G major
+        [60, 64, 67], // C major
+        [65, 69, 72], // F major
+        [67, 71, 74], // G major
+        [60, 64, 67], // C major
+      ];
+      
+      chordProgression.forEach((chord, chordIndex) => {
+        const startTime = chordIndex * 4; // 4 beats per chord
+        chord.forEach((pitch, noteIndex) => {
+          notes.push({
+            id: `piano_chord_${chordIndex}_${noteIndex}`,
+            pitch,
+            startTime,
+            duration: 3.5,
+            velocity: 85 + Math.random() * 20,
+          });
+          
+          // Add some arpeggiated notes
+          if (Math.random() > 0.6) {
+            notes.push({
+              id: `piano_arp_${chordIndex}_${noteIndex}`,
+              pitch: pitch + 12,
+              startTime: startTime + 0.5 + noteIndex * 0.25,
+              duration: 0.5,
+              velocity: 60 + Math.random() * 15,
+            });
+          }
+        });
+      });
+      
+      // Add melody line
+      const melody = [72, 74, 76, 77, 76, 74, 72, 69, 67, 69, 72, 71, 69, 67, 60];
+      melody.forEach((pitch, index) => {
+        notes.push({
+          id: `piano_melody_${index}`,
+          pitch,
+          startTime: index * 2 + 0.5,
+          duration: 1.5,
+          velocity: 95 + Math.random() * 15,
+        });
+      });
+    }
+    
+    if (track.name === 'Synth Bass') {
+      // Bass line pattern
+      const bassNotes = [36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38];
+      bassNotes.forEach((pitch, index) => {
+        notes.push({
+          id: `bass_${index}`,
+          pitch,
+          startTime: index * 2,
+          duration: 1.75,
+          velocity: 110 + Math.random() * 10,
+        });
+      });
+    }
+    
+    if (track.name === 'Strings') {
+      // String pad chords
+      const stringChords = [
+        [48, 52, 55, 60], // C major spread
+        [45, 48, 52, 57], // A minor spread
+        [50, 53, 57, 62], // D minor spread
+        [55, 59, 62, 67], // G major spread
+      ];
+      
+      stringChords.forEach((chord, chordIndex) => {
+        const startTime = chordIndex * 8;
+        chord.forEach((pitch, noteIndex) => {
+          notes.push({
+            id: `strings_${chordIndex}_${noteIndex}`,
+            pitch,
+            startTime,
+            duration: 7.5,
+            velocity: 70 + Math.random() * 15,
+          });
+        });
+      });
+    }
+    
+    return notes;
   };
+
+  // Get all MIDI notes for all tracks
+  const allMidiNotes: Record<string, MidiNote[]> = {};
+  tracks.forEach(track => {
+    if (track.type === 'midi') {
+      allMidiNotes[track.id] = getMidiNotesFromTrack(track);
+    }
+  });
 
   // Handle note click
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
@@ -153,22 +244,28 @@ export function MidiEditor({
       keys.push(
         <div
           key={midiNote}
-          className={`absolute flex items-center px-2 text-xs border-b border-[var(--border)] cursor-pointer hover:bg-[var(--accent)] transition-colors ${
+          className={`absolute flex items-center px-2 text-xs border-b cursor-pointer transition-colors ${
             isBlack 
-              ? 'bg-[var(--muted)] text-[var(--muted-foreground)] w-20' 
-              : 'bg-[var(--background)] text-[var(--foreground)] w-28'
+              ? 'bg-gray-800 text-white border-gray-700 hover:bg-gray-700 w-20 shadow-inner' 
+              : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 w-28 shadow-sm'
           }`}
           style={{
             top: y,
             height: noteHeight,
             zIndex: isBlack ? 2 : 1,
+            borderRight: isBlack ? 'none' : '1px solid #e5e7eb',
+            boxShadow: isBlack 
+              ? 'inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.2)' 
+              : 'inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.1)',
           }}
           onClick={() => {
             // Play note preview
             console.log(`Playing note: ${noteName} (${midiNote})`);
           }}
         >
-          <span className="select-none">{noteName}</span>
+          <span className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}>
+            {noteName}
+          </span>
         </div>
       );
     }
@@ -224,7 +321,7 @@ export function MidiEditor({
     const noteElements: JSX.Element[] = [];
     
     tracks.forEach(track => {
-      const trackNotes = mockNotes[track.id] || [];
+      const trackNotes = allMidiNotes[track.id] || [];
       
       trackNotes.forEach(note => {
         const x = note.startTime * beatWidth;
@@ -243,11 +340,11 @@ export function MidiEditor({
             width={Math.max(width, 10)}
             height={height}
             fill={isSelected ? 'var(--primary)' : track.color}
-            fillOpacity={velocityOpacity * 0.8 + 0.2}
-            stroke={isSelected ? 'var(--primary)' : track.color}
-            strokeWidth="1"
-            rx="2"
-            className="cursor-pointer hover:stroke-2 transition-all"
+            fillOpacity={velocityOpacity * 0.7 + 0.3}
+            stroke={isSelected ? 'var(--primary)' : 'rgba(0,0,0,0.3)'}
+            strokeWidth={isSelected ? "2" : "1"}
+            rx="3"
+            className="cursor-pointer hover:brightness-110 transition-all"
             onClick={(e) => handleNoteClick(note.id, e as any)}
             onMouseDown={(e) => {
               e.preventDefault();
@@ -356,7 +453,7 @@ export function MidiEditor({
               </div>
               
               <div className="text-xs text-[var(--muted-foreground)]">
-                {mockNotes[track.id]?.length || 0} notes
+                {allMidiNotes[track.id]?.length || 0} notes
               </div>
               
               {/* Track color indicator */}
