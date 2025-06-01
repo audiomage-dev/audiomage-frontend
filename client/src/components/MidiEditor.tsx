@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
 import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square, MoreVertical, Trash2, ArrowUp, ArrowDown, RotateCcw, Volume1 } from 'lucide-react';
@@ -22,6 +22,11 @@ interface MidiEditorProps {
   onNoteEdit?: (trackId: string, noteId: string, note: Partial<MidiNote>) => void;
   onNoteDelete?: (trackId: string, noteId: string) => void;
   onMidiPlayingChange?: (isPlaying: boolean) => void;
+  onMidiControlsRegister?: (functions: {
+    playMidiTrack: () => void;
+    pauseMidiPlayback: () => void;
+    stopMidiPlayback: () => void;
+  }) => void;
 }
 
 export function MidiEditor({ 
@@ -33,7 +38,9 @@ export function MidiEditor({
   onTrackSelect,
   onNoteAdd,
   onNoteEdit,
-  onNoteDelete
+  onNoteDelete,
+  onMidiPlayingChange,
+  onMidiControlsRegister
 }: MidiEditorProps) {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(tracks.find(t => t.type === 'midi')?.id || null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());

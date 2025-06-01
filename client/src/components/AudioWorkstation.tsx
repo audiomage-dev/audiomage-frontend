@@ -41,12 +41,16 @@ export function AudioWorkstation() {
   const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   
-  // Ref to access MIDI editor functions
-  const midiEditorRef = useRef<{
-    playMidiTrack: () => void;
-    pauseMidiPlayback: () => void;
-    stopMidiPlayback: () => void;
-  }>(null);
+  // Global MIDI playback control functions
+  const [midiPlaybackFunctions, setMidiPlaybackFunctions] = useState<{
+    playMidiTrack: (() => void) | null;
+    pauseMidiPlayback: (() => void) | null;
+    stopMidiPlayback: (() => void) | null;
+  }>({
+    playMidiTrack: null,
+    pauseMidiPlayback: null,
+    stopMidiPlayback: null,
+  });
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -126,9 +130,9 @@ export function AudioWorkstation() {
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onViewModeChange={setViewMode}
-              onMidiPlay={() => midiEditorRef.current?.playMidiTrack()}
-              onMidiPause={() => midiEditorRef.current?.pauseMidiPlayback()}
-              onMidiStop={() => midiEditorRef.current?.stopMidiPlayback()}
+              onMidiPlay={() => midiPlaybackFunctions.playMidiTrack?.()}
+              onMidiPause={() => midiPlaybackFunctions.pauseMidiPlayback?.()}
+              onMidiStop={() => midiPlaybackFunctions.stopMidiPlayback?.()}
               isMidiPlaying={isMidiPlaying}
               selectedTrack={selectedTrack}
             />
@@ -157,7 +161,6 @@ export function AudioWorkstation() {
                 onTrackSolo={toggleTrackSolo}
                 onTrackSelect={setSelectedTrack}
                 onMidiPlayingChange={setIsMidiPlaying}
-                ref={midiEditorRef}
               />
             )}
           </div>
