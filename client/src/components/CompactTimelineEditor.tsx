@@ -1482,12 +1482,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* Draggable Selection Box (when not actively selecting) */}
             {multiSelection && !multiSelection.isActive && multiSelection.selectedClips.length > 0 && (
               <div
-                className="absolute border-2 border-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 rounded-sm z-30 cursor-move transition-colors"
+                className="absolute border-2 border-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 rounded-sm cursor-move transition-colors pointer-events-auto"
                 style={{
                   left: `${Math.min(multiSelection.startX, multiSelection.endX)}px`,
                   top: `${Math.min(multiSelection.startY, multiSelection.endY)}px`,
                   width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
                   height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
+                  zIndex: 100 // High z-index to be above clips
                 }}
                 onMouseDown={(e) => handleSelectionBoxDragStart(e)}
               >
