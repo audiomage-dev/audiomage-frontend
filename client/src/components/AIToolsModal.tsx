@@ -1953,6 +1953,529 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
           </div>
         );
 
+      case 'phase-correlation':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Analysis Mode</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Real-time Monitoring</option>
+                  <option>Full Track Analysis</option>
+                  <option>Critical Sections Only</option>
+                  <option>Frequency-specific</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Display Style</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Goniometer</option>
+                  <option>Correlation Meter</option>
+                  <option>Phase Scope</option>
+                  <option>Combined View</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Correlation</div>
+                <div className="text-lg font-mono text-[var(--green)]">+0.85</div>
+                <div className="text-xs text-[var(--green)]">Good</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Phase Shift</div>
+                <div className="text-lg font-mono text-[var(--blue)]">12°</div>
+                <div className="text-xs text-[var(--blue)]">Normal</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Mono Compat</div>
+                <div className="text-lg font-mono text-[var(--green)]">96%</div>
+                <div className="text-xs text-[var(--green)]">Excellent</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Width</div>
+                <div className="text-lg font-mono text-[var(--purple)]">115%</div>
+                <div className="text-xs text-[var(--purple)]">Enhanced</div>
+              </div>
+            </div>
+            <div className="h-32 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Phase Correlation Goniometer</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Frequency Band Analysis</div>
+              <div className="space-y-1">
+                {['Low (20-250 Hz)', 'Low-Mid (250-500 Hz)', 'Mid (500-2k Hz)', 'High-Mid (2k-8k Hz)', 'High (8k-20k Hz)'].map((band, i) => (
+                  <div key={band} className="flex items-center justify-between text-xs">
+                    <span>{band}</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 h-1 bg-[var(--muted)] rounded-full">
+                        <div 
+                          className="h-full bg-[var(--green)] rounded-full" 
+                          style={{ width: `${[85, 92, 88, 75, 68][i]}%` }}
+                        ></div>
+                      </div>
+                      <span className="font-mono w-8">{['+0.85', '+0.92', '+0.88', '+0.75', '+0.68'][i]}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'dynamic-range':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Measurement Standard</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>PLR (Peak to Loudness)</option>
+                  <option>LRA (Loudness Range)</option>
+                  <option>Crest Factor</option>
+                  <option>RMS to Peak</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Time Window</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Integrated</option>
+                  <option>Short-term (3s)</option>
+                  <option>Momentary (400ms)</option>
+                  <option>Instantaneous</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Target Genre</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Classical (High DR)</option>
+                  <option>Jazz (Medium-High DR)</option>
+                  <option>Rock (Medium DR)</option>
+                  <option>Pop (Low-Medium DR)</option>
+                  <option>Electronic (Low DR)</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Current DR</div>
+                <div className="text-2xl font-mono text-[var(--blue)]">8.3</div>
+                <div className="text-xs text-[var(--blue)]">LU</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Peak Level</div>
+                <div className="text-2xl font-mono text-[var(--green)]">-1.2</div>
+                <div className="text-xs text-[var(--green)]">dBFS</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">RMS Level</div>
+                <div className="text-2xl font-mono text-[var(--yellow)]">-18.5</div>
+                <div className="text-xs text-[var(--yellow)]">dBFS</div>
+              </div>
+              <div className="p-3 bg-[var(--secondary)] rounded">
+                <div className="text-xs text-[var(--muted-foreground)]">Crest Factor</div>
+                <div className="text-2xl font-mono text-[var(--purple)]">17.3</div>
+                <div className="text-xs text-[var(--purple)]">dB</div>
+              </div>
+            </div>
+            <div className="h-24 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Dynamic Range History Graph</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Genre Comparison</div>
+              <div className="space-y-1">
+                {[
+                  { genre: 'Classical', target: '15-20 LU', current: 8.3, status: 'Low' },
+                  { genre: 'Jazz', target: '10-15 LU', current: 8.3, status: 'Low' },
+                  { genre: 'Rock', target: '6-10 LU', current: 8.3, status: 'Good' },
+                  { genre: 'Pop', target: '4-8 LU', current: 8.3, status: 'Good' },
+                  { genre: 'Electronic', target: '3-6 LU', current: 8.3, status: 'High' }
+                ].map((item) => (
+                  <div key={item.genre} className="flex items-center justify-between text-xs p-2 bg-[var(--secondary)] rounded">
+                    <span className="font-medium">{item.genre}</span>
+                    <span className="text-[var(--muted-foreground)]">{item.target}</span>
+                    <span className={`font-mono ${
+                      item.status === 'Good' ? 'text-[var(--green)]' : 
+                      item.status === 'Low' ? 'text-[var(--red)]' : 'text-[var(--yellow)]'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'variation-creator':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Variation Type</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Melodic Variations</option>
+                  <option>Harmonic Changes</option>
+                  <option>Rhythmic Patterns</option>
+                  <option>Arrangement Ideas</option>
+                  <option>Genre Adaptations</option>
+                  <option>Complete Remixes</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Creativity Level</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Conservative (Stay close)</option>
+                  <option>Moderate (Some changes)</option>
+                  <option>Creative (More freedom)</option>
+                  <option>Experimental (Bold changes)</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Tempo Variation</label>
+                <input type="range" min="0" max="50" defaultValue="10" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">±10%</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Key Changes</label>
+                <input type="range" min="0" max="12" defaultValue="2" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">±2 ST</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Arrangement</label>
+                <input type="range" min="0" max="100" defaultValue="30" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">30%</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Variation Elements</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Chord Progressions</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Melodic Phrases</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Drum Patterns</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Bass Lines</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Sound Effects</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Song Structure</span>
+                </label>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Generated Variations</div>
+              <div className="space-y-2">
+                {[
+                  { name: 'Acoustic Version', changes: 'Instrumentation, Tempo -15%', rating: 4.5 },
+                  { name: 'Jazz Interpretation', changes: 'Harmony, Swing Feel', rating: 4.2 },
+                  { name: 'Electronic Remix', changes: 'Full Arrangement, +2 ST', rating: 3.8 },
+                  { name: 'Minimal Version', changes: 'Stripped Down, -30% Elements', rating: 4.0 }
+                ].map((variation, i) => (
+                  <div key={i} className="flex items-center justify-between p-2 bg-[var(--background)] rounded text-xs">
+                    <div>
+                      <div className="font-medium">{variation.name}</div>
+                      <div className="text-[var(--muted-foreground)]">{variation.changes}</div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, star) => (
+                          <span key={star} className={star < Math.floor(variation.rating) ? 'text-[var(--yellow)]' : 'text-[var(--muted)]'}>★</span>
+                        ))}
+                      </div>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                        <Play className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'video-sync':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Sync Method</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Automatic Detection</option>
+                  <option>Waveform Matching</option>
+                  <option>Timecode Sync</option>
+                  <option>Clap/Slate Detection</option>
+                  <option>Manual Alignment</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Precision Level</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Sample Accurate</option>
+                  <option>Frame Accurate</option>
+                  <option>Millisecond Accurate</option>
+                  <option>Quick Sync</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Video Frame Rate</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>23.976 fps</option>
+                  <option>24 fps</option>
+                  <option>25 fps (PAL)</option>
+                  <option>29.97 fps (NTSC)</option>
+                  <option>30 fps</option>
+                  <option>60 fps</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Audio Offset (ms)</label>
+                <input type="number" min="-5000" max="5000" defaultValue="0" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Drift Correction</label>
+                <input type="range" min="0" max="100" defaultValue="50" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">Auto</div>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Sync Analysis</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Detected offset:</span>
+                  <span className="font-mono">+125.3 ms</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Confidence level:</span>
+                  <span className="font-mono text-[var(--green)]">94.7%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Drift detected:</span>
+                  <span className="font-mono">-0.02%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Sync points found:</span>
+                  <span className="font-mono">12 markers</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
+              <div className="text-xs text-[var(--muted-foreground)]">Waveform Correlation Display</div>
+            </div>
+          </div>
+        );
+
+      case 'auto-edit':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Edit Type</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Podcast Cleanup</option>
+                  <option>Music Arrangement</option>
+                  <option>Interview Edit</option>
+                  <option>Dialogue Edit</option>
+                  <option>Custom Workflow</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Aggressiveness</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Conservative</option>
+                  <option>Balanced</option>
+                  <option>Aggressive</option>
+                  <option>Maximum</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Auto-Edit Features</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Remove Silence</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Noise Reduction</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Normalize Levels</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Remove Filler Words</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Auto-Crossfades</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Clip Boundaries</span>
+                </label>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Silence Threshold</label>
+                <input type="range" min="-60" max="-20" defaultValue="-45" className="w-full mt-1" />
+                <div className="text-xs text-[var(--muted-foreground)] text-center">-45 dB</div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Min Silence (ms)</label>
+                <input type="number" min="100" max="5000" defaultValue="500" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Fade Duration (ms)</label>
+                <input type="number" min="10" max="1000" defaultValue="50" className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded" />
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Processing Preview</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Detected silences:</span>
+                  <span className="font-mono">23 segments</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Time reduction:</span>
+                  <span className="font-mono text-[var(--green)]">-2:34 (12%)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Filler words found:</span>
+                  <span className="font-mono">7 instances</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Noise segments:</span>
+                  <span className="font-mono">4 regions</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'format-converter':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Output Format</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>WAV (Uncompressed)</option>
+                  <option>FLAC (Lossless)</option>
+                  <option>MP3 (320 kbps)</option>
+                  <option>AAC (256 kbps)</option>
+                  <option>OGG Vorbis</option>
+                  <option>AIFF</option>
+                  <option>DSD</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Sample Rate</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>44.1 kHz (CD Quality)</option>
+                  <option>48 kHz (Professional)</option>
+                  <option>88.2 kHz (High-Res)</option>
+                  <option>96 kHz (Studio)</option>
+                  <option>176.4 kHz</option>
+                  <option>192 kHz (Mastering)</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Bit Depth</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>16-bit (CD)</option>
+                  <option>24-bit (Professional)</option>
+                  <option>32-bit Float</option>
+                  <option>32-bit Integer</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Dithering</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>None</option>
+                  <option>Triangular PDF</option>
+                  <option>TPDF + Noise Shaping</option>
+                  <option>Advanced</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)]">Quality</label>
+                <select className="w-full mt-1 p-2 text-sm bg-[var(--secondary)] border border-[var(--border)] rounded">
+                  <option>Maximum</option>
+                  <option>High</option>
+                  <option>Good</option>
+                  <option>Fast</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">Processing Options</div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Normalize to -0.1 dBFS</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>DC Offset Removal</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <span>Preserve Metadata</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs">
+                  <input type="checkbox" className="rounded" />
+                  <span>Add Fade In/Out</span>
+                </label>
+              </div>
+            </div>
+            <div className="bg-[var(--secondary)] p-3 rounded">
+              <div className="text-xs font-medium mb-2">Conversion Preview</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Input:</span>
+                  <span className="font-mono">48kHz/24-bit WAV</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Output:</span>
+                  <span className="font-mono">44.1kHz/16-bit WAV</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Size reduction:</span>
+                  <span className="font-mono text-[var(--green)]">~33%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Est. time:</span>
+                  <span className="font-mono">0:45</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="space-y-4">
