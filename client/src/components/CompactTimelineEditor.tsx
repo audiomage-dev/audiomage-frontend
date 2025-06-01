@@ -1672,34 +1672,34 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   height: '64px',
                 }}
               >
-                {/* Extension action buttons */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-1 pointer-events-auto">
+                {/* Action buttons group - positioned next to cancel button */}
+                <div className="absolute top-0.5 right-7 flex space-x-1 pointer-events-auto">
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
+                    className="h-5 w-5 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('blank')}
                     title="Extend with blank/silent content"
                   >
-                    <Circle className="w-3 h-3" />
+                    <Circle className="w-2.5 h-2.5" />
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
+                    className="h-5 w-5 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('ai')}
                     title="Extend with AI-generated content"
                   >
-                    <Sparkles className="w-3 h-3" />
+                    <Sparkles className="w-2.5 h-2.5" />
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
+                    className="h-5 w-5 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('stretch')}
                     title="Extend by stretching existing content"
                   >
-                    <TrendingUp className="w-3 h-3" />
+                    <TrendingUp className="w-2.5 h-2.5" />
                   </Button>
                 </div>
                 
