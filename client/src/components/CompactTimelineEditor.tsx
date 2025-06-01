@@ -781,28 +781,24 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
           </div>
           
           {/* Zoom Controls - Fixed Right Position */}
-          <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 z-20 shadow-sm ml-auto">
-            <Button
+          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded px-2 py-1 shadow-md">
+            <button
               onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.2))}
-              variant="ghost"
-              size="sm"
-              className="h-5 w-5 p-0 hover:bg-[var(--accent)]"
+              className="h-6 w-6 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600"
               title="Zoom Out"
             >
-              <ZoomOut className="w-3 h-3" />
-            </Button>
-            <span className="text-xs text-[var(--foreground)] min-w-[3rem] text-center font-mono font-medium">
+              -
+            </button>
+            <span className="text-xs text-gray-900 min-w-[3rem] text-center font-mono font-medium px-1">
               {Math.round(zoomLevel * 100)}%
             </span>
-            <Button
+            <button
               onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.2))}
-              variant="ghost"
-              size="sm"
-              className="h-5 w-5 p-0 hover:bg-[var(--accent)]"
+              className="h-6 w-6 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600"
               title="Zoom In"
             >
-              <ZoomIn className="w-3 h-3" />
-            </Button>
+              +
+            </button>
           </div>
         </div>
 
