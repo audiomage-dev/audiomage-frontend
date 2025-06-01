@@ -678,29 +678,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
             </div>
           </div>
           
-          <div className="flex items-center justify-between px-3 py-1 border-t border-[var(--border)]">
-            <div className="flex items-center space-x-1">
-              <Button
-                onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.2))}
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0"
-              >
-                <ZoomOut className="w-3 h-3" />
-              </Button>
-              <span className="text-xs text-[var(--muted-foreground)] min-w-[3rem] text-center">
-                {Math.round(zoomLevel * 100)}%
-              </span>
-              <Button
-                onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.2))}
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0"
-              >
-                <ZoomIn className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
+
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -797,6 +775,29 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
                 </div>
               );
             })}
+          </div>
+          
+          {/* Zoom Controls - Right Side */}
+          <div className="absolute right-2 top-0 h-full flex items-center space-x-1 bg-[var(--muted)]/50 backdrop-blur-sm rounded px-2">
+            <Button
+              onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.2))}
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0"
+            >
+              <ZoomOut className="w-3 h-3" />
+            </Button>
+            <span className="text-xs text-[var(--muted-foreground)] min-w-[3rem] text-center font-mono">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <Button
+              onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.2))}
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0"
+            >
+              <ZoomIn className="w-3 h-3" />
+            </Button>
           </div>
         </div>
 
