@@ -54,16 +54,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
-  // Audio selection state
-  const [audioSelection, setAudioSelection] = useState<{
-    trackId: string;
+  // Multi-track selection state
+  const [multiSelection, setMultiSelection] = useState<{
     startTime: number;
     endTime: number;
+    startTrackIndex: number;
+    endTrackIndex: number;
     startX: number;
     endX: number;
-    trackIndex: number;
+    startY: number;
+    endY: number;
     isActive: boolean;
-    isLocked: boolean;
+    selectedClips: string[];
   } | null>(null);
 
   // Clip dragging state
@@ -523,28 +525,31 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     };
   }, [resizingClip, zoomLevel, getTimelineWidth, onClipMove]);
 
-  const handleAudioSelectionStart = useCallback((e: React.MouseEvent, trackId: string, trackIndex: number) => {
+  const handleMultiSelectionStart = useCallback((e: React.MouseEvent, startTrackIndex: number) => {
     if (e.button !== 0) return; // Only left click
     
     const rect = e.currentTarget.getBoundingClientRect();
     const startX = e.clientX - rect.left + scrollX;
+    const startY = e.clientY - rect.top;
     const timelineWidth = getTimelineWidth();
     const totalTime = timelineWidth / zoomLevel;
     const startTime = (startX / timelineWidth) * totalTime;
     
-    console.log('Starting audio selection:', { startX, startTime, trackId });
+    console.log('Starting multi-track selection:', { startX, startY, startTime, startTrackIndex });
     
-    setAudioSelection({
-      trackId,
+    setMultiSelection({
       startTime,
       endTime: startTime,
+      startTrackIndex,
+      endTrackIndex: startTrackIndex,
       startX,
       endX: startX,
-      trackIndex,
+      startY,
+      endY: startY,
       isActive: true,
-      isLocked: false
+      selectedClips: []
     });
-  }, [scrollX, zoomLevel]);
+  }, [scrollX, zoomLevel, getTimelineWidth]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
@@ -626,23 +631,47 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       }
     }
 
-    // Update audio selection if active
-    if (audioSelection && audioSelection.isActive && !audioSelection.isLocked) {
+    // Update multi-track selection if active
+    if (multiSelection && multiSelection.isActive) {
       const rect = timelineRef.current?.getBoundingClientRect();
       if (rect) {
         const currentX = e.clientX - rect.left + scrollX;
+        const currentY = e.clientY - rect.top;
         const timelineWidth = getTimelineWidth();
         const totalTime = timelineWidth / zoomLevel;
         const currentTime = (currentX / timelineWidth) * totalTime;
+        const currentTrackIndex = Math.floor(currentY / 96);
         
-        setAudioSelection(prev => prev ? {
+        // Calculate which clips are within the selection area
+        const startTime = Math.min(multiSelection.startTime, currentTime);
+        const endTime = Math.max(multiSelection.startTime, currentTime);
+        const startTrackIndex = Math.min(multiSelection.startTrackIndex, currentTrackIndex);
+        const endTrackIndex = Math.max(multiSelection.startTrackIndex, currentTrackIndex);
+        
+        const selectedClips: string[] = [];
+        for (let trackIdx = startTrackIndex; trackIdx <= endTrackIndex && trackIdx < tracks.length; trackIdx++) {
+          const track = tracks[trackIdx];
+          track.clips?.forEach(clip => {
+            const clipStart = clip.startTime;
+            const clipEnd = clip.startTime + clip.duration;
+            // Check if clip overlaps with selection
+            if (clipStart < endTime && clipEnd > startTime) {
+              selectedClips.push(clip.id);
+            }
+          });
+        }
+        
+        setMultiSelection(prev => prev ? {
           ...prev,
           endTime: currentTime,
-          endX: currentX
+          endX: currentX,
+          endY: currentY,
+          endTrackIndex: currentTrackIndex,
+          selectedClips
         } : null);
       }
     }
-  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, audioSelection, scrollX, draggingClip, getTimelineWidth]);
+  }, [isDragging, dragStart, zoomLevel, tracks.length, isSelecting, selectionBox, tracks, multiSelection, scrollX, draggingClip, getTimelineWidth]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     setIsDragging(false);
@@ -652,31 +681,38 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     // Note: Clip dragging finalization is handled by the document mouse up handler
     // to avoid duplicate calls to onClipMove
     
-    // Finalize audio selection if it exists and has a meaningful duration
-    if (audioSelection && Math.abs(audioSelection.endTime - audioSelection.startTime) > 0.1) { // Minimum 0.1 second selection
-      // Normalize the selection coordinates and keep it locked
-      const startTime = Math.min(audioSelection.startTime, audioSelection.endTime);
-      const endTime = Math.max(audioSelection.startTime, audioSelection.endTime);
-      const startX = Math.min(audioSelection.startX, audioSelection.endX);
-      const endX = Math.max(audioSelection.startX, audioSelection.endX);
+    // Finalize multi-track selection if it exists and has meaningful content
+    if (multiSelection && (Math.abs(multiSelection.endTime - multiSelection.startTime) > 0.1 || multiSelection.selectedClips.length > 0)) {
+      // Normalize the selection coordinates
+      const startTime = Math.min(multiSelection.startTime, multiSelection.endTime);
+      const endTime = Math.max(multiSelection.startTime, multiSelection.endTime);
+      const startX = Math.min(multiSelection.startX, multiSelection.endX);
+      const endX = Math.max(multiSelection.startX, multiSelection.endX);
+      const startY = Math.min(multiSelection.startY, multiSelection.endY);
+      const endY = Math.max(multiSelection.startY, multiSelection.endY);
+      const startTrackIndex = Math.min(multiSelection.startTrackIndex, multiSelection.endTrackIndex);
+      const endTrackIndex = Math.max(multiSelection.startTrackIndex, multiSelection.endTrackIndex);
       
-      setAudioSelection(prev => prev ? {
+      setMultiSelection(prev => prev ? {
         ...prev,
         startTime,
         endTime,
         startX,
         endX,
-        isActive: false,
-        isLocked: true
+        startY,
+        endY,
+        startTrackIndex,
+        endTrackIndex,
+        isActive: false
       } : null);
       
-      console.log('Audio selection finalized:', { startTime, endTime });
-    } else if (audioSelection) {
+      console.log('Multi-track selection finalized:', { startTime, endTime, startTrackIndex, endTrackIndex, selectedClips: multiSelection.selectedClips });
+    } else if (multiSelection) {
       // Selection too small, clear it
-      console.log('Selection too small, clearing:', audioSelection);
-      setAudioSelection(null);
+      console.log('Selection too small, clearing:', multiSelection);
+      setMultiSelection(null);
     }
-  }, [audioSelection, draggingClip, zoomLevel]);
+  }, [multiSelection, draggingClip, zoomLevel]);
 
   const handleScroll = useCallback((e: React.WheelEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -710,24 +746,24 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     });
   }, [selectedTrackIds]);
 
-  const handleAudioRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
+  const handleMultiSelectionRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (audioSelection && audioSelection.trackId === trackId && audioSelection.isLocked) {
+    if (multiSelection && !multiSelection.isActive) {
       const track = tracks.find(t => t.id === trackId);
       setAudioContextMenu({
         x: e.clientX,
         y: e.clientY,
         selection: {
           trackId,
-          startTime: audioSelection.startTime,
-          endTime: audioSelection.endTime,
+          startTime: multiSelection.startTime,
+          endTime: multiSelection.endTime,
           trackName: track?.name || 'Unknown Track'
         }
       });
     }
-  }, [audioSelection, tracks]);
+  }, [multiSelection, tracks]);
 
   const handleClipRightClick = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     e.preventDefault();
@@ -1062,8 +1098,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 {/* Audio Clips */}
                 <div 
                   className="h-full relative cursor-crosshair"
-                  onMouseDown={(e) => handleAudioSelectionStart(e, track.id, index)}
-                  onContextMenu={(e) => handleAudioRightClick(e, track.id)}
+                  onMouseDown={(e) => handleMultiSelectionStart(e, index)}
+                  onContextMenu={(e) => handleMultiSelectionRightClick(e, track.id)}
                 >
                   {track.clips?.map((clip) => {
                     const timelineWidth = getTimelineWidth();
