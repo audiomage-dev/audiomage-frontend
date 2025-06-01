@@ -38,9 +38,10 @@ interface CompactTimelineEditorProps {
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
   onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
+  onZoomChange?: (zoomLevel: number) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect, onClipMove }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onZoomChange }: CompactTimelineEditorProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [scrollX, setScrollX] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
@@ -96,6 +97,19 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
   const timelineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+
+  // Zoom functions
+  const handleZoomIn = useCallback(() => {
+    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
+    setZoomLevel(newZoomLevel);
+    onZoomChange?.(newZoomLevel);
+  }, [zoomLevel, onZoomChange]);
+
+  const handleZoomOut = useCallback(() => {
+    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
+    setZoomLevel(newZoomLevel);
+    onZoomChange?.(newZoomLevel);
+  }, [zoomLevel, onZoomChange]);
 
   // Calculate dynamic timeline width based on clips
   const getTimelineWidth = useCallback(() => {

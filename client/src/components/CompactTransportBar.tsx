@@ -6,20 +6,26 @@ interface CompactTransportBarProps {
   transport: TransportState;
   bpm: number;
   timeSignature: [number, number];
+  zoomLevel?: number;
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
   onRecord: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
 }
 
 export function CompactTransportBar({
   transport,
   bpm,
   timeSignature,
+  zoomLevel = 1,
   onPlay,
   onPause,
   onStop,
-  onRecord
+  onRecord,
+  onZoomIn,
+  onZoomOut
 }: CompactTransportBarProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -102,16 +108,20 @@ export function CompactTransportBar({
         {/* Zoom Controls */}
         <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1">
           <button
-            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)]"
+            onClick={onZoomOut}
+            disabled={!onZoomOut}
+            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)] disabled:opacity-50"
             title="Zoom Out"
           >
             -
           </button>
           <span className="text-xs text-[var(--foreground)] min-w-[2.5rem] text-center font-mono">
-            100%
+            {Math.round(zoomLevel * 100)}%
           </span>
           <button
-            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)]"
+            onClick={onZoomIn}
+            disabled={!onZoomIn}
+            className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)] disabled:opacity-50"
             title="Zoom In"
           >
             +
