@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings } from 'lucide-react';
 
 interface MidiNote {
   id: string;
@@ -39,6 +39,9 @@ export function MidiEditor({
   const [isDragging, setIsDragging] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
+  const [editingNote, setEditingNote] = useState<string | null>(null);
+  const [showVelocityEditor, setShowVelocityEditor] = useState(false);
+  const [quantizeValue, setQuantizeValue] = useState(0.25); // 16th note default
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -205,6 +208,52 @@ export function MidiEditor({
     onNoteAdd?.(trackId, note);
   };
 
+  // Edit note function
+  const editNote = (trackId: string, noteId: string, updates: Partial<MidiNote>) => {
+    setMidiNotes(prev => ({
+      ...prev,
+      [trackId]: (prev[trackId] || []).map(note => 
+        note.id === noteId ? { ...note, ...updates } : note
+      )
+    }));
+    onNoteEdit?.(trackId, noteId, updates);
+  };
+
+  // Delete note function
+  const deleteNote = (trackId: string, noteId: string) => {
+    setMidiNotes(prev => ({
+      ...prev,
+      [trackId]: (prev[trackId] || []).filter(note => note.id !== noteId)
+    }));
+    onNoteDelete?.(trackId, noteId);
+  };
+
+  // Quantize selected notes
+  const quantizeNotes = () => {
+    if (!selectedTrack || selectedNotes.size === 0) return;
+    
+    selectedNotes.forEach(noteId => {
+      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+      if (note) {
+        const quantizedStartTime = Math.round(note.startTime / quantizeValue) * quantizeValue;
+        editNote(selectedTrack, noteId, { startTime: quantizedStartTime });
+      }
+    });
+  };
+
+  // Adjust velocity for selected notes
+  const adjustVelocity = (velocityChange: number) => {
+    if (!selectedTrack || selectedNotes.size === 0) return;
+    
+    selectedNotes.forEach(noteId => {
+      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+      if (note) {
+        const newVelocity = Math.max(1, Math.min(127, note.velocity + velocityChange));
+        editNote(selectedTrack, noteId, { velocity: newVelocity });
+      }
+    });
+  };
+
   // Handle note click
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -220,6 +269,68 @@ export function MidiEditor({
       setSelectedNotes(new Set([noteId]));
     }
   };
+
+  // Handle note right-click context menu
+  const handleNoteRightClick = (noteId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (!selectedTrack) return;
+    
+    // Select the note if not already selected
+    if (!selectedNotes.has(noteId)) {
+      setSelectedNotes(new Set([noteId]));
+    }
+    
+    // Show context menu options
+    const shouldDelete = window.confirm('Delete selected note(s)?');
+    if (shouldDelete) {
+      selectedNotes.forEach(id => {
+        deleteNote(selectedTrack, id);
+      });
+      setSelectedNotes(new Set());
+    }
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedTrack) return;
+      
+      // Delete selected notes
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        selectedNotes.forEach(noteId => {
+          deleteNote(selectedTrack, noteId);
+        });
+        setSelectedNotes(new Set());
+      }
+      
+      // Quantize notes
+      if (e.key === 'q' || e.key === 'Q') {
+        quantizeNotes();
+      }
+      
+      // Velocity adjustments
+      if (e.key === 'ArrowUp' && selectedNotes.size > 0) {
+        e.preventDefault();
+        adjustVelocity(10);
+      }
+      if (e.key === 'ArrowDown' && selectedNotes.size > 0) {
+        e.preventDefault();
+        adjustVelocity(-10);
+      }
+      
+      // Select all notes in current track
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        const trackNotes = midiNotes[selectedTrack] || [];
+        setSelectedNotes(new Set(trackNotes.map(note => note.id)));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTrack, selectedNotes, midiNotes, quantizeNotes, adjustVelocity]);
 
   // Handle grid click for note creation
   const handleGridClick = (event: React.MouseEvent) => {
@@ -360,6 +471,7 @@ export function MidiEditor({
             rx="3"
             className="cursor-pointer hover:brightness-110 transition-all"
             onClick={(e) => handleNoteClick(note.id, e as any)}
+            onContextMenu={(e) => handleNoteRightClick(note.id, e as any)}
             onMouseDown={(e) => {
               e.preventDefault();
               setIsDragging(true);
@@ -489,6 +601,127 @@ export function MidiEditor({
 
       {/* Piano Roll Editor */}
       <div className="flex-1 flex flex-col">
+        {/* MIDI Toolbar */}
+        <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* Editing Tools */}
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                title="Edit Tool"
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                title="Cut Tool"
+              >
+                <Scissors className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                title="Copy Selected Notes"
+                onClick={() => {
+                  if (selectedNotes.size > 0) {
+                    console.log(`Copied ${selectedNotes.size} notes`);
+                  }
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="w-px h-6 bg-[var(--border)]"></div>
+
+            {/* Quantize Controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                onClick={quantizeNotes}
+                title="Quantize Selected Notes (Q)"
+                disabled={selectedNotes.size === 0}
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <select
+                value={quantizeValue}
+                onChange={(e) => setQuantizeValue(parseFloat(e.target.value))}
+                className="h-8 px-2 text-xs bg-[var(--background)] border border-[var(--border)] rounded"
+              >
+                <option value={1}>1/4</option>
+                <option value={0.5}>1/8</option>
+                <option value={0.25}>1/16</option>
+                <option value={0.125}>1/32</option>
+              </select>
+            </div>
+
+            <div className="w-px h-6 bg-[var(--border)]"></div>
+
+            {/* Velocity Controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                onClick={() => setShowVelocityEditor(!showVelocityEditor)}
+                title="Toggle Velocity Editor"
+              >
+                <BarChart3 className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-xs"
+                  onClick={() => adjustVelocity(-10)}
+                  disabled={selectedNotes.size === 0}
+                  title="Decrease Velocity"
+                >
+                  -
+                </Button>
+                <span className="text-xs text-[var(--muted-foreground)] min-w-[3rem] text-center">
+                  {selectedNotes.size > 0 && selectedTrack ? 
+                    `${midiNotes[selectedTrack]?.find(n => selectedNotes.has(n.id))?.velocity || 0}` : 
+                    'Vel'
+                  }
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-xs"
+                  onClick={() => adjustVelocity(10)}
+                  disabled={selectedNotes.size === 0}
+                  title="Increase Velocity"
+                >
+                  +
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-[var(--muted-foreground)]">
+              {selectedNotes.size > 0 ? `${selectedNotes.size} selected` : 'No selection'}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              title="MIDI Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
         {/* Ruler */}
         <div className="h-10 bg-[var(--background)] border-b border-[var(--border)] flex">
           <div className="w-28 bg-[var(--muted)] border-r border-[var(--border)] flex items-center justify-center">
