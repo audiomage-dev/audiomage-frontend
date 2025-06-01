@@ -4,6 +4,7 @@ import { VerticalSidebar } from './VerticalSidebar';
 import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
+import { MidiEditor } from './MidiEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
@@ -118,19 +119,30 @@ export function AudioWorkstation() {
             />
           </div>
           
-          {/* Timeline Editor */}
+          {/* Editor Area - Timeline or MIDI */}
           <div className="flex-1 overflow-hidden">
-            <CompactTimelineEditor
-              tracks={tracks}
-              transport={transport}
-              zoomLevel={zoomLevel}
-              onTrackMute={toggleTrackMute}
-              onTrackSolo={toggleTrackSolo}
-              onTrackSelect={setSelectedTrack}
-              onClipMove={updateClipPosition}
-              onClipResize={updateClipProperties}
-              onZoomChange={handleZoomChange}
-            />
+            {viewMode === 'timeline' ? (
+              <CompactTimelineEditor
+                tracks={tracks}
+                transport={transport}
+                zoomLevel={zoomLevel}
+                onTrackMute={toggleTrackMute}
+                onTrackSolo={toggleTrackSolo}
+                onTrackSelect={setSelectedTrack}
+                onClipMove={updateClipPosition}
+                onClipResize={updateClipProperties}
+                onZoomChange={handleZoomChange}
+              />
+            ) : (
+              <MidiEditor
+                tracks={tracks}
+                transport={transport}
+                zoomLevel={zoomLevel}
+                onTrackMute={toggleTrackMute}
+                onTrackSolo={toggleTrackSolo}
+                onTrackSelect={setSelectedTrack}
+              />
+            )}
           </div>
 
           {/* Track Inspector Bottom Pane */}
