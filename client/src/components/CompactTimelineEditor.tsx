@@ -89,6 +89,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     originalDuration: number;
   } | null>(null);
 
+  // Virtual extension state
+  const [virtualExtension, setVirtualExtension] = useState<{
+    clipId: string;
+    trackId: string;
+    edge: 'left' | 'right';
+    startTime: number;
+    endTime: number;
+    originalStartTime: number;
+    originalDuration: number;
+    extensionLength: number;
+    x: number;
+    y: number;
+    width: number;
+  } | null>(null);
+
   // Context menu states
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackIds: string[] } | null>(null);
   const [audioContextMenu, setAudioContextMenu] = useState<{ 
@@ -106,6 +121,53 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
   const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
+
+  // Virtual extension action handlers
+  const handleExtensionAction = useCallback((action: 'blank' | 'ai' | 'stretch') => {
+    if (!virtualExtension) return;
+
+    const { clipId, trackId, edge, originalStartTime, originalDuration, extensionLength } = virtualExtension;
+
+    switch (action) {
+      case 'blank':
+        // Extend with blank/silent content
+        console.log('Extending clip with blank content:', { clipId, extensionLength });
+        const blankNewStartTime = edge === 'left' ? originalStartTime - extensionLength : originalStartTime;
+        const blankNewDuration = originalDuration + extensionLength;
+        if (onClipResize) {
+          onClipResize(clipId, trackId, blankNewStartTime, blankNewDuration);
+        }
+        break;
+
+      case 'ai':
+        // Extend with AI-generated content
+        console.log('Extending clip with AI content:', { clipId, extensionLength });
+        // For now, treat as blank extension - AI generation would be implemented later
+        const aiNewStartTime = edge === 'left' ? originalStartTime - extensionLength : originalStartTime;
+        const aiNewDuration = originalDuration + extensionLength;
+        if (onClipResize) {
+          onClipResize(clipId, trackId, aiNewStartTime, aiNewDuration);
+        }
+        break;
+
+      case 'stretch':
+        // Extend by stretching existing content
+        console.log('Extending clip by stretching:', { clipId, extensionLength });
+        const stretchNewStartTime = edge === 'left' ? originalStartTime - extensionLength : originalStartTime;
+        const stretchNewDuration = originalDuration + extensionLength;
+        if (onClipResize) {
+          onClipResize(clipId, trackId, stretchNewStartTime, stretchNewDuration);
+        }
+        break;
+    }
+
+    // Clear virtual extension
+    setVirtualExtension(null);
+  }, [virtualExtension, onClipResize]);
+
+  const cancelVirtualExtension = useCallback(() => {
+    setVirtualExtension(null);
+  }, []);
   
   const timelineRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -360,7 +422,52 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       // Ensure minimum duration
       newDuration = Math.max(0.1, newDuration);
       
-      console.log('Resizing clip:', { edge: resizingClip.edge, newStartTime, newDuration });
+      // Check if we're extending beyond original clip bounds (virtual extension)
+      const isExtending = (resizingClip.edge === 'right' && newDuration > resizingClip.originalDuration) ||
+                         (resizingClip.edge === 'left' && newStartTime < resizingClip.originalStartTime);
+      
+      if (isExtending) {
+        // Calculate virtual extension properties
+        const track = tracks.find(t => t.id === resizingClip.trackId);
+        const trackIndex = tracks.findIndex(t => t.id === resizingClip.trackId);
+        
+        if (track && trackIndex >= 0) {
+          const extensionLength = resizingClip.edge === 'right' 
+            ? newDuration - resizingClip.originalDuration
+            : resizingClip.originalStartTime - newStartTime;
+          
+          const extensionStartTime = resizingClip.edge === 'right'
+            ? resizingClip.originalStartTime + resizingClip.originalDuration
+            : newStartTime;
+          
+          const extensionEndTime = resizingClip.edge === 'right'
+            ? resizingClip.originalStartTime + newDuration
+            : resizingClip.originalStartTime;
+          
+          // Calculate position and dimensions for virtual extension overlay
+          const extensionX = (extensionStartTime / totalTime) * timelineWidth;
+          const extensionWidth = (extensionLength / totalTime) * timelineWidth;
+          const extensionY = trackIndex * 96;
+          
+          setVirtualExtension({
+            clipId: resizingClip.clipId,
+            trackId: resizingClip.trackId,
+            edge: resizingClip.edge,
+            startTime: extensionStartTime,
+            endTime: extensionEndTime,
+            originalStartTime: resizingClip.originalStartTime,
+            originalDuration: resizingClip.originalDuration,
+            extensionLength,
+            x: extensionX,
+            y: extensionY,
+            width: extensionWidth
+          });
+        }
+      } else {
+        setVirtualExtension(null);
+      }
+      
+      console.log('Resizing clip:', { edge: resizingClip.edge, newStartTime, newDuration, isExtending });
     };
 
     const handleDocumentMouseUp = (e: MouseEvent) => {
@@ -384,14 +491,24 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       
       newDuration = Math.max(0.1, newDuration);
       
-      // Apply the resize if there was actual change
-      if (Math.abs(newStartTime - resizingClip.originalStartTime) > 0.01 || 
-          Math.abs(newDuration - resizingClip.originalDuration) > 0.01) {
-        
-        if (onClipResize) {
-          console.log('Applying clip resize:', { clipId: resizingClip.clipId, newStartTime, newDuration });
-          onClipResize(resizingClip.clipId, resizingClip.trackId, newStartTime, newDuration);
+      // Check if we have a virtual extension (extending beyond original bounds)
+      const isExtending = (resizingClip.edge === 'right' && newDuration > resizingClip.originalDuration) ||
+                         (resizingClip.edge === 'left' && newStartTime < resizingClip.originalStartTime);
+      
+      if (isExtending && virtualExtension) {
+        // Keep virtual extension active for user to choose action
+        console.log('Virtual extension active - waiting for user action');
+      } else {
+        // Apply the resize if there was actual change within original bounds
+        if (Math.abs(newStartTime - resizingClip.originalStartTime) > 0.01 || 
+            Math.abs(newDuration - resizingClip.originalDuration) > 0.01) {
+          
+          if (onClipResize) {
+            console.log('Applying clip resize:', { clipId: resizingClip.clipId, newStartTime, newDuration });
+            onClipResize(resizingClip.clipId, resizingClip.trackId, newStartTime, newDuration);
+          }
         }
+        setVirtualExtension(null);
       }
       
       setResizingClip(null);
@@ -1060,6 +1177,69 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               </div>
             ))}
             
+            {/* Virtual Extension Overlay */}
+            {virtualExtension && (
+              <div
+                className="absolute z-15 border-2 border-dashed border-[var(--primary)] bg-[var(--primary)]/10 pointer-events-none"
+                style={{
+                  left: `${virtualExtension.x}px`,
+                  top: `${virtualExtension.y + 8}px`,
+                  width: `${virtualExtension.width}px`,
+                  height: '80px',
+                }}
+              >
+                {/* Extension action buttons */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-2 pointer-events-auto">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    onClick={() => handleExtensionAction('blank')}
+                    title="Extend with blank/silent content"
+                  >
+                    <Circle className="w-4 h-4 mr-1" />
+                    Blank
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    onClick={() => handleExtensionAction('ai')}
+                    title="Extend with AI-generated content"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    AI
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    onClick={() => handleExtensionAction('stretch')}
+                    title="Extend by stretching existing content"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    Stretch
+                  </Button>
+                </div>
+                
+                {/* Cancel button */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-1 right-1 h-6 w-6 p-0 pointer-events-auto hover:bg-[var(--destructive)]/20"
+                  onClick={cancelVirtualExtension}
+                  title="Cancel extension"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+                
+                {/* Extension info */}
+                <div className="absolute bottom-1 left-2 text-xs text-[var(--muted-foreground)] font-mono pointer-events-none">
+                  +{virtualExtension.extensionLength.toFixed(2)}s
+                </div>
+              </div>
+            )}
+
             {/* Playhead */}
             <div 
               className="absolute top-0 bottom-0 w-0.5 bg-[var(--primary)] z-20 pointer-events-none"
