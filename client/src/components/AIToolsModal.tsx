@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -105,6 +105,13 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
   const [selectedTool, setSelectedTool] = useState(initialTool);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  
+  // Update selected tool when modal opens with a specific tool
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedTool(initialTool);
+    }
+  }, [isOpen, initialTool]);
   
   const categories = ['All', ...Array.from(new Set(aiTools.map(tool => tool.category)))];
   
