@@ -230,8 +230,8 @@ export function CompactTransportBar({
           title={`${viewMode === 'timeline' ? (isTimelineLocked ? 'Unlock Timeline' : 'Lock Timeline') : (isMidiLocked ? 'Unlock MIDI Editor' : 'Lock MIDI Editor')}`}
         >
           {viewMode === 'timeline' ? 
-            (isTimelineLocked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />) :
-            (isMidiLocked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />)
+            (isTimelineLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />) :
+            (isMidiLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />)
           }
         </Button>
 
