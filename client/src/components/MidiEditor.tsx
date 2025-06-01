@@ -682,6 +682,132 @@ export function MidiEditor({
     setNoteContextMenu(null);
   };
 
+  // Note Context Menu Component
+  const NoteContextMenu = () => {
+    if (!noteContextMenu) return null;
+
+    return (
+      <div
+        className="fixed z-50 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg py-2 min-w-48"
+        style={{
+          left: noteContextMenu.x,
+          top: noteContextMenu.y,
+          transform: 'translate(-50%, -10px)'
+        }}
+        onMouseLeave={() => setNoteContextMenu(null)}
+      >
+        {/* Note Info Header */}
+        <div className="px-3 py-2 border-b border-[var(--border)] bg-[var(--muted)]/30">
+          <div className="text-xs font-medium text-[var(--foreground)]">
+            {getNoteNameFromMidi(noteContextMenu.note.pitch)} • Vel: {noteContextMenu.note.velocity}
+          </div>
+          <div className="text-xs text-[var(--muted-foreground)]">
+            Duration: {noteContextMenu.note.duration.toFixed(2)} beats
+          </div>
+        </div>
+
+        {/* Playback Actions */}
+        <div className="py-1">
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('play-note', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Play className="w-4 h-4" />
+            <span>Play Note</span>
+          </button>
+        </div>
+
+        <div className="border-t border-[var(--border)] my-1"></div>
+
+        {/* Edit Actions */}
+        <div className="py-1">
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('duplicate', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Copy className="w-4 h-4" />
+            <span>Duplicate Note</span>
+          </button>
+          
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('quantize', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Grid3x3 className="w-4 h-4" />
+            <span>Quantize to Grid</span>
+          </button>
+        </div>
+
+        <div className="border-t border-[var(--border)] my-1"></div>
+
+        {/* Velocity Controls */}
+        <div className="py-1">
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('velocity-up', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Volume2 className="w-4 h-4" />
+            <span>Increase Velocity (+10)</span>
+          </button>
+          
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('velocity-down', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Volume1 className="w-4 h-4" />
+            <span>Decrease Velocity (-10)</span>
+          </button>
+        </div>
+
+        <div className="border-t border-[var(--border)] my-1"></div>
+
+        {/* Pitch Controls */}
+        <div className="py-1">
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('octave-up', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <ArrowUp className="w-4 h-4" />
+            <span>Octave Up (+12)</span>
+          </button>
+          
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
+            onClick={() => handleNoteContextAction('octave-down', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <ArrowDown className="w-4 h-4" />
+            <span>Octave Down (-12)</span>
+          </button>
+        </div>
+
+        <div className="border-t border-[var(--border)] my-1"></div>
+
+        {/* Destructive Actions */}
+        <div className="py-1">
+          <button
+            className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--destructive)] hover:text-[var(--destructive-foreground)] flex items-center space-x-2 text-[var(--destructive)]"
+            onClick={() => handleNoteContextAction('delete', noteContextMenu.note, noteContextMenu.trackId)}
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Note</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setNoteContextMenu(null);
+    };
+
+    if (noteContextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [noteContextMenu]);
+
   // MIDI-specific playback controls
   const playMidiTrack = () => {
     if (!selectedTrack || !midiNotes[selectedTrack]) return;
@@ -1285,6 +1411,9 @@ export function MidiEditor({
           </div>
         </div>
       </div>
+
+      {/* Note Context Menu */}
+      <NoteContextMenu />
     </div>
   );
 }
