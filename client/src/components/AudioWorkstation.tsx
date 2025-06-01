@@ -29,6 +29,7 @@ export function AudioWorkstation() {
     switchSession,
     setCurrentProject,
     updateClipPosition,
+    updateClipProperties,
   } = useAudioWorkstation();
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);

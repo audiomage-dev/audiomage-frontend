@@ -78,6 +78,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     currentOffsetY: number;
   } | null>(null);
 
+  // Clip resizing state
+  const [resizingClip, setResizingClip] = useState<{
+    clipId: string;
+    trackId: string;
+    edge: 'left' | 'right';
+    startX: number;
+    originalStartTime: number;
+    originalDuration: number;
+  } | null>(null);
+
   // Context menu states
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackIds: string[] } | null>(null);
   const [audioContextMenu, setAudioContextMenu] = useState<{ 
@@ -301,6 +311,100 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       document.addEventListener('mouseup', handleDocumentMouseUp);
     }
   }, [tracks, onClipMove, zoomLevel, getTimelineWidth]);
+
+  // Clip resizing functionality
+  const handleClipResizeStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string, edge: 'left' | 'right') => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const track = tracks.find(t => t.id === trackId);
+    const clip = track?.clips?.find(c => c.id === clipId);
+    if (!clip) return;
+    
+    console.log('Starting clip resize:', clipId, edge);
+    
+    setResizingClip({
+      clipId,
+      trackId,
+      edge,
+      startX: e.clientX,
+      originalStartTime: clip.startTime,
+      originalDuration: clip.duration
+    });
+  }, [tracks]);
+
+  // Handle clip resize movement
+  useEffect(() => {
+    if (!resizingClip) return;
+
+    const handleDocumentMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizingClip.startX;
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const deltaTime = (deltaX / timelineWidth) * totalTime;
+      
+      // Calculate new clip properties based on resize edge
+      let newStartTime = resizingClip.originalStartTime;
+      let newDuration = resizingClip.originalDuration;
+      
+      if (resizingClip.edge === 'left') {
+        // Resizing from the left edge - changes start time and duration
+        newStartTime = Math.max(0, resizingClip.originalStartTime + deltaTime);
+        newDuration = resizingClip.originalDuration - (newStartTime - resizingClip.originalStartTime);
+      } else {
+        // Resizing from the right edge - only changes duration
+        newDuration = Math.max(0.1, resizingClip.originalDuration + deltaTime);
+      }
+      
+      // Ensure minimum duration
+      newDuration = Math.max(0.1, newDuration);
+      
+      console.log('Resizing clip:', { edge: resizingClip.edge, newStartTime, newDuration });
+    };
+
+    const handleDocumentMouseUp = (e: MouseEvent) => {
+      console.log('Clip resize finished for:', resizingClip.clipId);
+      
+      const deltaX = e.clientX - resizingClip.startX;
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const deltaTime = (deltaX / timelineWidth) * totalTime;
+      
+      // Calculate final clip properties
+      let newStartTime = resizingClip.originalStartTime;
+      let newDuration = resizingClip.originalDuration;
+      
+      if (resizingClip.edge === 'left') {
+        newStartTime = Math.max(0, resizingClip.originalStartTime + deltaTime);
+        newDuration = resizingClip.originalDuration - (newStartTime - resizingClip.originalStartTime);
+      } else {
+        newDuration = Math.max(0.1, resizingClip.originalDuration + deltaTime);
+      }
+      
+      newDuration = Math.max(0.1, newDuration);
+      
+      // Apply the resize if there was actual change
+      if (Math.abs(newStartTime - resizingClip.originalStartTime) > 0.01 || 
+          Math.abs(newDuration - resizingClip.originalDuration) > 0.01) {
+        
+        if (onClipMove) {
+          // Use onClipMove for start time changes, would need separate handler for duration
+          console.log('Applying clip resize:', { clipId: resizingClip.clipId, newStartTime, newDuration });
+          onClipMove(resizingClip.clipId, resizingClip.trackId, resizingClip.trackId, newStartTime);
+        }
+      }
+      
+      setResizingClip(null);
+    };
+
+    document.addEventListener('mousemove', handleDocumentMouseMove);
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleDocumentMouseMove);
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+    };
+  }, [resizingClip, zoomLevel, getTimelineWidth, onClipMove]);
 
   const handleAudioSelectionStart = useCallback((e: React.MouseEvent, trackId: string, trackIndex: number) => {
     if (e.button !== 0) return; // Only left click
@@ -919,8 +1023,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         )}
                         
                         {/* Resize Handles */}
-                        <div className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors" />
-                        <div className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors" />
+                        <div 
+                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
+                          onMouseDown={(e) => handleClipResizeStart(e, clip.id, track.id, 'left')}
+                        />
+                        <div 
+                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
+                          onMouseDown={(e) => handleClipResizeStart(e, clip.id, track.id, 'right')}
+                        />
                       </div>
                     );
                   })}

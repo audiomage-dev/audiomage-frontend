@@ -761,6 +761,34 @@ export function useAudioWorkstation() {
     });
   }, []);
 
+  // Update clip properties (for resizing)
+  const updateClipProperties = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration: number) => {
+    console.log(`updateClipProperties called: ${clipId} on ${trackId} - startTime: ${newStartTime}s, duration: ${newDuration}s`);
+    
+    setTracks(prevTracks => {
+      return prevTracks.map(track => {
+        if (track.id === trackId) {
+          const updatedTrack = {
+            ...track,
+            clips: track.clips?.map(clip => {
+              if (clip.id === clipId) {
+                return {
+                  ...clip,
+                  startTime: newStartTime,
+                  duration: newDuration
+                };
+              }
+              return clip;
+            }) || []
+          };
+          console.log(`Updated clip properties on track ${track.name}`);
+          return updatedTrack;
+        }
+        return track;
+      });
+    });
+  }, []);
+
   // AI suggestions
   const [aiSuggestions] = useState([
     'The bass track could benefit from low-end enhancement at 80Hz',
@@ -821,5 +849,6 @@ export function useAudioWorkstation() {
     setTracks,
     setMixerChannels,
     updateClipPosition,
+    updateClipProperties,
   };
 }
