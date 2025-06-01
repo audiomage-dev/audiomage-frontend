@@ -147,8 +147,20 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
                 <input type="range" min="0" max="100" defaultValue="75" className="w-full mt-1" />
               </div>
             </div>
-            <div className="h-32 bg-[var(--muted)] rounded flex items-center justify-center">
-              <div className="text-xs text-[var(--muted-foreground)]">Frequency Response Graph</div>
+            <div className="h-32 bg-[var(--muted)] rounded p-3 relative">
+              <div className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Frequency Response Graph</div>
+              <div className="h-20 relative border-l border-b border-[var(--border)]">
+                <svg className="w-full h-full" viewBox="0 0 300 80">
+                  <path d="M0,60 Q75,45 150,50 T300,55" stroke="var(--blue)" strokeWidth="2" fill="none" opacity="0.8"/>
+                  <path d="M0,70 Q75,55 150,60 T300,65" stroke="var(--green)" strokeWidth="1.5" fill="none" opacity="0.6"/>
+                  <circle cx="120" cy="50" r="3" fill="var(--yellow)" opacity="0.8">
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                <div className="absolute bottom-0 left-0 text-xs text-[var(--muted-foreground)]">20Hz</div>
+                <div className="absolute bottom-0 right-0 text-xs text-[var(--muted-foreground)]">20kHz</div>
+                <div className="absolute top-0 left-0 text-xs text-[var(--muted-foreground)]">+12dB</div>
+              </div>
             </div>
             <div className="flex space-x-2">
               <Button size="sm" className="flex-1">
@@ -1121,8 +1133,21 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
                 ))}
               </div>
             </div>
-            <div className="h-20 bg-[var(--muted)] rounded flex items-center justify-center">
-              <div className="text-xs text-[var(--muted-foreground)]">Loudness History Graph</div>
+            <div className="h-20 bg-[var(--muted)] rounded p-3 relative">
+              <div className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Loudness History (LUFS)</div>
+              <div className="h-12 relative border-l border-b border-[var(--border)]">
+                <svg className="w-full h-full" viewBox="0 0 200 48">
+                  <path d="M0,35 L25,32 L50,28 L75,30 L100,25 L125,27 L150,24 L175,26 L200,23" 
+                        stroke="var(--green)" strokeWidth="2" fill="none" opacity="0.8"/>
+                  <path d="M0,20 L200,20" stroke="var(--red)" strokeWidth="1" strokeDasharray="3,3" opacity="0.6"/>
+                  <circle cx="175" cy="26" r="2" fill="var(--blue)">
+                    <animate attributeName="cy" values="26;24;28;26" dur="3s" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                <div className="absolute top-0 left-0 text-xs text-[var(--muted-foreground)]">-10</div>
+                <div className="absolute bottom-0 left-0 text-xs text-[var(--muted-foreground)]">-30</div>
+                <div className="absolute bottom-0 right-0 text-xs text-[var(--muted-foreground)]">Now</div>
+              </div>
             </div>
           </div>
         );
@@ -1386,8 +1411,18 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
                 <div className="text-xs text-[var(--muted-foreground)] text-center">25 ms</div>
               </div>
             </div>
-            <div className="h-16 bg-[var(--muted)] rounded flex items-center justify-center">
-              <div className="text-xs text-[var(--muted-foreground)]">Sibilance Detection Display</div>
+            <div className="h-16 bg-[var(--muted)] rounded p-3 relative">
+              <div className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Sibilance Detection</div>
+              <div className="h-8 relative border-l border-b border-[var(--border)]">
+                <svg className="w-full h-full" viewBox="0 0 200 32">
+                  <path d="M0,20 L40,18 L80,25 L120,15 L160,22 L200,19" stroke="var(--blue)" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                  <rect x="100" y="8" width="40" height="16" fill="var(--red)" opacity="0.4">
+                    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+                  </rect>
+                </svg>
+                <div className="absolute bottom-0 left-0 text-xs text-[var(--muted-foreground)]">6kHz</div>
+                <div className="absolute bottom-0 right-0 text-xs text-[var(--muted-foreground)]">8kHz</div>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="flex items-center justify-between p-2 bg-[var(--secondary)] rounded">
@@ -1998,8 +2033,25 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
                 <div className="text-xs text-[var(--purple)]">Enhanced</div>
               </div>
             </div>
-            <div className="h-32 bg-[var(--muted)] rounded flex items-center justify-center">
-              <div className="text-xs text-[var(--muted-foreground)]">Phase Correlation Goniometer</div>
+            <div className="h-32 bg-[var(--muted)] rounded p-3 relative">
+              <div className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Phase Correlation Goniometer</div>
+              <div className="h-24 relative border border-[var(--border)] rounded">
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" stroke="var(--border)" strokeWidth="1" fill="none"/>
+                  <circle cx="50" cy="50" r="30" stroke="var(--border)" strokeWidth="0.5" fill="none"/>
+                  <circle cx="50" cy="50" r="15" stroke="var(--border)" strokeWidth="0.5" fill="none"/>
+                  <line x1="5" y1="50" x2="95" y2="50" stroke="var(--border)" strokeWidth="0.5"/>
+                  <line x1="50" y1="5" x2="50" y2="95" stroke="var(--border)" strokeWidth="0.5"/>
+                  <ellipse cx="50" cy="50" rx="25" ry="15" stroke="var(--green)" strokeWidth="2" fill="none" opacity="0.7">
+                    <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
+                  </ellipse>
+                  <circle cx="50" cy="50" r="2" fill="var(--blue)">
+                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                <div className="absolute top-1 left-1 text-xs text-[var(--muted-foreground)]">+1</div>
+                <div className="absolute bottom-1 left-1 text-xs text-[var(--muted-foreground)]">-1</div>
+              </div>
             </div>
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--muted-foreground)]">Frequency Band Analysis</div>
@@ -2078,8 +2130,21 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
                 <div className="text-xs text-[var(--purple)]">dB</div>
               </div>
             </div>
-            <div className="h-24 bg-[var(--muted)] rounded flex items-center justify-center">
-              <div className="text-xs text-[var(--muted-foreground)]">Dynamic Range History Graph</div>
+            <div className="h-24 bg-[var(--muted)] rounded p-3 relative">
+              <div className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Dynamic Range History</div>
+              <div className="h-16 relative border-l border-b border-[var(--border)]">
+                <svg className="w-full h-full" viewBox="0 0 240 64">
+                  <path d="M0,50 L20,45 L40,35 L60,40 L80,30 L100,38 L120,25 L140,35 L160,28 L180,32 L200,26 L220,30 L240,35" 
+                        stroke="var(--blue)" strokeWidth="2" fill="none" opacity="0.8"/>
+                  <path d="M0,55 L240,55" stroke="var(--red)" strokeWidth="1" strokeDasharray="5,5" opacity="0.5"/>
+                  <circle cx="220" cy="30" r="2" fill="var(--yellow)">
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                <div className="absolute bottom-0 left-0 text-xs text-[var(--muted-foreground)]">-5m</div>
+                <div className="absolute bottom-0 right-0 text-xs text-[var(--muted-foreground)]">Now</div>
+                <div className="absolute top-0 left-0 text-xs text-[var(--muted-foreground)]">20 LU</div>
+              </div>
             </div>
             <div className="space-y-2">
               <div className="text-xs font-medium text-[var(--muted-foreground)]">Genre Comparison</div>
@@ -2497,7 +2562,7 @@ export function AIToolsModal({ isOpen, onClose, initialTool = 'auto-eq' }: AIToo
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-start justify-center pt-20 z-50">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[800px] max-w-[95vw] max-h-[80vh] flex flex-col overflow-hidden">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[1000px] max-w-[95vw] max-h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)] rounded-t-xl">
           <div className="flex items-center justify-between">
