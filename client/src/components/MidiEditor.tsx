@@ -119,21 +119,21 @@ export function MidiEditor({
         const startTime = chordIndex * 4; // 4 beats per chord
         chord.forEach((pitch, noteIndex) => {
           notes.push({
-            id: `piano_chord_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 5)}`,
+            id: `piano_chord_${chordIndex}_${noteIndex}`,
             pitch,
             startTime,
             duration: 3.5,
-            velocity: 85 + Math.floor(Math.random() * 20),
+            velocity: 85 + (chordIndex * 3) % 20,
           });
           
           // Add some arpeggiated notes
-          if (Math.random() > 0.6) {
+          if ((chordIndex + noteIndex) % 3 === 0) {
             notes.push({
-              id: `piano_arp_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 5)}`,
+              id: `piano_arp_${chordIndex}_${noteIndex}`,
               pitch: pitch + 12,
               startTime: startTime + 0.5 + noteIndex * 0.25,
               duration: 0.5,
-              velocity: 60 + Math.floor(Math.random() * 15),
+              velocity: 60 + (noteIndex * 5) % 15,
             });
           }
         });
@@ -147,7 +147,7 @@ export function MidiEditor({
           pitch,
           startTime: index * 2 + 0.5,
           duration: 1.5,
-          velocity: 95 + Math.random() * 15,
+          velocity: 95 + (index * 2) % 15,
         });
       });
     }
@@ -157,11 +157,11 @@ export function MidiEditor({
       const bassNotes = [36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38];
       bassNotes.forEach((pitch, index) => {
         notes.push({
-          id: `bass_${index}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `bass_${index}`,
           pitch,
           startTime: index * 2,
           duration: 1.75,
-          velocity: 110 + Math.random() * 10,
+          velocity: 110 + (index * 2) % 10,
         });
       });
     }
@@ -179,11 +179,11 @@ export function MidiEditor({
         const startTime = chordIndex * 8;
         chord.forEach((pitch, noteIndex) => {
           notes.push({
-            id: `strings_${chordIndex}_${noteIndex}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `strings_${chordIndex}_${noteIndex}`,
             pitch,
             startTime,
             duration: 7.5,
-            velocity: 70 + Math.random() * 15,
+            velocity: 70 + (chordIndex * 3 + noteIndex * 2) % 15,
           });
         });
       });
@@ -197,11 +197,11 @@ export function MidiEditor({
       const defaultNotes = [60, 62, 64, 65, 67, 69, 71, 72]; // C major scale
       defaultNotes.forEach((pitch, index) => {
         notes.push({
-          id: `default_${track.name.replace(/\s+/g, '_')}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `default_${track.name.replace(/\s+/g, '_')}_${index}`,
           pitch,
           startTime: index * 2,
           duration: 1.5,
-          velocity: 80 + Math.random() * 20,
+          velocity: 80 + (index * 5) % 20,
         });
       });
     }
