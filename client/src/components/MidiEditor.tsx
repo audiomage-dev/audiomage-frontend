@@ -21,6 +21,7 @@ interface MidiEditorProps {
   onNoteAdd?: (trackId: string, note: MidiNote) => void;
   onNoteEdit?: (trackId: string, noteId: string, note: Partial<MidiNote>) => void;
   onNoteDelete?: (trackId: string, noteId: string) => void;
+  onMidiPlayingChange?: (isPlaying: boolean) => void;
 }
 
 export function MidiEditor({ 
@@ -1189,35 +1190,10 @@ export function MidiEditor({
         {/* MIDI Toolbar */}
         <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {/* MIDI Playback Controls */}
+            {/* Note: MIDI playback is now handled by the main transport controls */}
+            
+            {/* Copy/Edit Tools */}
             <div className="flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={isMidiPlaying ? pauseMidiPlayback : playMidiTrack}
-                disabled={!selectedTrack}
-                title={isMidiPlaying ? "Pause MIDI Track" : "Play MIDI Track"}
-              >
-                {isMidiPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={stopMidiPlayback}
-                disabled={!selectedTrack}
-                title="Stop MIDI Track"
-              >
-                <Square className="h-4 w-4" />
-              </Button>
-              
-              <div className="w-px h-6 bg-[var(--border)] mx-2"></div>
-              
               <Button
                 variant="ghost"
                 size="sm"

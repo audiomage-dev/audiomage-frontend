@@ -126,6 +126,11 @@ export function AudioWorkstation() {
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onViewModeChange={setViewMode}
+              onMidiPlay={() => midiEditorRef.current?.playMidiTrack()}
+              onMidiPause={() => midiEditorRef.current?.pauseMidiPlayback()}
+              onMidiStop={() => midiEditorRef.current?.stopMidiPlayback()}
+              isMidiPlaying={isMidiPlaying}
+              selectedTrack={selectedTrack}
             />
           </div>
           
@@ -151,6 +156,8 @@ export function AudioWorkstation() {
                 onTrackMute={toggleTrackMute}
                 onTrackSolo={toggleTrackSolo}
                 onTrackSelect={setSelectedTrack}
+                onMidiPlayingChange={setIsMidiPlaying}
+                ref={midiEditorRef}
               />
             )}
           </div>
