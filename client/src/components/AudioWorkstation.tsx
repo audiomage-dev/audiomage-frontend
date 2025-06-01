@@ -24,6 +24,7 @@ export function AudioWorkstation() {
     pause,
     stop,
     toggleRecording,
+    seekTo,
     updateTrackVolume,
     toggleTrackMute,
     toggleTrackSolo,
@@ -113,6 +114,7 @@ export function AudioWorkstation() {
               onPause={pause}
               onStop={stop}
               onRecord={toggleRecording}
+              onSeek={seekTo}
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onViewModeChange={setViewMode}

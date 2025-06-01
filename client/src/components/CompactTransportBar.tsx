@@ -12,6 +12,7 @@ interface CompactTransportBarProps {
   onPause: () => void;
   onStop: () => void;
   onRecord: () => void;
+  onSeek?: (time: number) => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onViewModeChange?: (mode: 'timeline' | 'midi') => void;
@@ -27,6 +28,7 @@ export function CompactTransportBar({
   onPause,
   onStop,
   onRecord,
+  onSeek,
   onZoomIn,
   onZoomOut,
   onViewModeChange

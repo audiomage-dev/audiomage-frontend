@@ -726,6 +726,10 @@ export function useAudioWorkstation() {
     setTransport(prev => ({ ...prev, isRecording: !prev.isRecording }));
   }, []);
 
+  const seekTo = useCallback((time: number) => {
+    setTransport(prev => ({ ...prev, currentTime: Math.max(0, time) }));
+  }, []);
+
   // Track controls
   const updateTrackVolume = useCallback((trackId: string, volume: number) => {
     setTracks(prev => prev.map(track => 
@@ -892,6 +896,7 @@ export function useAudioWorkstation() {
     pause,
     stop,
     toggleRecording,
+    seekTo,
     updateTrackVolume,
     toggleTrackMute,
     toggleTrackSolo,
