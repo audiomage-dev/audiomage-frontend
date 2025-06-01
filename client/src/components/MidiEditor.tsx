@@ -41,6 +41,7 @@ export function MidiEditor({
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
+  const [currentInstrument, setCurrentInstrument] = useState('piano');
   const [quantizeValue, setQuantizeValue] = useState(0.25); // 16th note default
   const [drawingNote, setDrawingNote] = useState<MidiNote | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -82,6 +83,11 @@ export function MidiEditor({
   // Get MIDI note from Y position
   const getMidiFromY = (y: number): number => {
     return Math.max(0, Math.min(127, 127 - Math.floor(y / noteHeight)));
+  };
+
+  // Convert MIDI note to frequency
+  const midiToFrequency = (midiNote: number): number => {
+    return 440 * Math.pow(2, (midiNote - 69) / 12);
   };
 
   // Get beat position from X coordinate
@@ -518,7 +524,54 @@ export function MidiEditor({
 
   // Handle piano key click to play note
   const handlePianoKeyClick = (pitch: number) => {
-    playNote(pitch, 100, 0.5);
+    // Play the exact MIDI note with instrument-specific characteristics
+    const velocity = getInstrumentVelocity(currentInstrument);
+    const duration = getInstrumentDuration(currentInstrument);
+    
+    playNote(pitch, velocity, duration);
+    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz`);
+  };
+
+  // Get velocity based on instrument type
+  const getInstrumentVelocity = (instrument: string): number => {
+    const velocityMap: Record<string, number> = {
+      piano: 100,
+      electric_piano: 90,
+      organ: 110,
+      guitar: 85,
+      bass: 120,
+      strings: 75,
+      brass: 105,
+      woodwind: 80,
+      synth_lead: 110,
+      synth_pad: 70,
+      synth_bass: 115,
+      drums: 127,
+      percussion: 100,
+      sound_fx: 95
+    };
+    return velocityMap[instrument] || 100;
+  };
+
+  // Get duration based on instrument type
+  const getInstrumentDuration = (instrument: string): number => {
+    const durationMap: Record<string, number> = {
+      piano: 0.8,
+      electric_piano: 0.6,
+      organ: 1.2,
+      guitar: 0.7,
+      bass: 0.9,
+      strings: 1.5,
+      brass: 1.0,
+      woodwind: 1.1,
+      synth_lead: 0.5,
+      synth_pad: 2.0,
+      synth_bass: 0.8,
+      drums: 0.3,
+      percussion: 0.4,
+      sound_fx: 1.0
+    };
+    return durationMap[instrument] || 0.5;
   };
 
   // Handle simple click (when not dragging)
@@ -738,6 +791,23 @@ export function MidiEditor({
               onClick={() => {
                 setSelectedTrack(track.id);
                 onTrackSelect?.(track.id);
+                
+                // Auto-select appropriate instrument based on track name
+                const trackName = track.name.toLowerCase();
+                if (trackName.includes('piano')) setCurrentInstrument('piano');
+                else if (trackName.includes('bass')) setCurrentInstrument('bass');
+                else if (trackName.includes('string')) setCurrentInstrument('strings');
+                else if (trackName.includes('synth')) {
+                  if (trackName.includes('lead')) setCurrentInstrument('synth_lead');
+                  else if (trackName.includes('pad')) setCurrentInstrument('synth_pad');
+                  else if (trackName.includes('bass')) setCurrentInstrument('synth_bass');
+                  else setCurrentInstrument('synth_lead');
+                }
+                else if (trackName.includes('guitar')) setCurrentInstrument('guitar');
+                else if (trackName.includes('organ')) setCurrentInstrument('organ');
+                else if (trackName.includes('brass')) setCurrentInstrument('brass');
+                else if (trackName.includes('drum')) setCurrentInstrument('drums');
+                else if (trackName.includes('percussion')) setCurrentInstrument('percussion');
               }}
             >
               <div className="flex items-center justify-between mb-1">
@@ -908,6 +978,34 @@ export function MidiEditor({
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Instrument Selector */}
+            {selectedTrack && (
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-[var(--muted-foreground)]">Instrument:</span>
+                <select
+                  value={currentInstrument}
+                  onChange={(e) => setCurrentInstrument(e.target.value)}
+                  className="h-8 px-2 text-xs bg-[var(--background)] border border-[var(--border)] rounded min-w-[100px]"
+                  title="Select MIDI Instrument"
+                >
+                  <option value="piano">Piano</option>
+                  <option value="electric_piano">Electric Piano</option>
+                  <option value="organ">Organ</option>
+                  <option value="guitar">Guitar</option>
+                  <option value="bass">Bass</option>
+                  <option value="strings">Strings</option>
+                  <option value="brass">Brass</option>
+                  <option value="woodwind">Woodwind</option>
+                  <option value="synth_lead">Synth Lead</option>
+                  <option value="synth_pad">Synth Pad</option>
+                  <option value="synth_bass">Synth Bass</option>
+                  <option value="drums">Drums</option>
+                  <option value="percussion">Percussion</option>
+                  <option value="sound_fx">Sound FX</option>
+                </select>
+              </div>
+            )}
+            
             <span className="text-xs text-[var(--muted-foreground)]">
               {selectedNotes.size > 0 ? `${selectedNotes.size} selected` : 'No selection'}
             </span>
