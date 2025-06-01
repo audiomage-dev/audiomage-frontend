@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, X } from 'lucide-react';
 import { TransportState } from '@/types/audio';
+import { useState } from 'react';
 
 interface CompactTransportBarProps {
   transport: TransportState;
@@ -27,6 +28,154 @@ interface CompactTransportBarProps {
   isMidiLocked?: boolean;
   onTimelineLockToggle?: () => void;
   onMidiLockToggle?: () => void;
+  // Metronome functions
+  onBpmChange?: (bpm: number) => void;
+  onTimeSignatureChange?: (timeSignature: [number, number]) => void;
+}
+
+interface MetronomeProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentBpm: number;
+  timeSignature: [number, number];
+  onBpmChange: (bpm: number) => void;
+  onTimeSignatureChange: (timeSignature: [number, number]) => void;
+}
+
+function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, onTimeSignatureChange }: MetronomeProps) {
+  const [bpm, setBpm] = useState(currentBpm);
+  const [numerator, setNumerator] = useState(timeSignature[0]);
+  const [denominator, setDenominator] = useState(timeSignature[1]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[400px] shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* BPM Control */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-[var(--foreground)]">Tempo (BPM)</label>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newBpm = Math.max(60, bpm - 10);
+                  setBpm(newBpm);
+                  onBpmChange(newBpm);
+                }}
+              >
+                -10
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newBpm = Math.max(60, bpm - 1);
+                  setBpm(newBpm);
+                  onBpmChange(newBpm);
+                }}
+              >
+                -1
+              </Button>
+              <div className="text-2xl font-mono font-bold text-[var(--foreground)] min-w-[4rem] text-center">
+                {bpm}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newBpm = Math.min(300, bpm + 1);
+                  setBpm(newBpm);
+                  onBpmChange(newBpm);
+                }}
+              >
+                +1
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newBpm = Math.min(300, bpm + 10);
+                  setBpm(newBpm);
+                  onBpmChange(newBpm);
+                }}
+              >
+                +10
+              </Button>
+            </div>
+            <input
+              type="range"
+              min="60"
+              max="300"
+              value={bpm}
+              onChange={(e) => {
+                const newBpm = parseInt(e.target.value);
+                setBpm(newBpm);
+                onBpmChange(newBpm);
+              }}
+              className="w-full"
+            />
+          </div>
+
+          {/* Time Signature */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-[var(--foreground)]">Time Signature</label>
+            <div className="flex items-center space-x-3">
+              <select
+                value={numerator}
+                onChange={(e) => {
+                  const newNumerator = parseInt(e.target.value);
+                  setNumerator(newNumerator);
+                  onTimeSignatureChange([newNumerator, denominator]);
+                }}
+                className="px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 16].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+              <span className="text-xl font-mono text-[var(--foreground)]">/</span>
+              <select
+                value={denominator}
+                onChange={(e) => {
+                  const newDenominator = parseInt(e.target.value);
+                  setDenominator(newDenominator);
+                  onTimeSignatureChange([numerator, newDenominator]);
+                }}
+                className="px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+              >
+                {[2, 4, 8, 16].map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end p-4 border-t border-[var(--border)] space-x-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>Done</Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function CompactTransportBar({
@@ -51,8 +200,11 @@ export function CompactTransportBar({
   isTimelineLocked = false,
   isMidiLocked = false,
   onTimelineLockToggle,
-  onMidiLockToggle
+  onMidiLockToggle,
+  onBpmChange,
+  onTimeSignatureChange
 }: CompactTransportBarProps) {
+  const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -155,9 +307,13 @@ export function CompactTransportBar({
           {formatTime(transport.currentTime)}
         </div>
         <div className="w-px h-4 bg-[var(--border)]"></div>
-        <div className="text-sm text-[var(--muted-foreground)]">
+        <button 
+          className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer px-2 py-1 rounded hover:bg-[var(--accent)]"
+          onClick={() => setIsMetronomeOpen(true)}
+          title="Click to open Metronome"
+        >
           {bpm} BPM • {timeSignature[0]}/{timeSignature[1]}
-        </div>
+        </button>
       </div>
 
       {/* Right: Additional Controls */}
@@ -242,6 +398,16 @@ export function CompactTransportBar({
           </div>
         )}
       </div>
+
+      {/* Metronome Modal */}
+      <Metronome
+        isOpen={isMetronomeOpen}
+        onClose={() => setIsMetronomeOpen(false)}
+        currentBpm={bpm}
+        timeSignature={timeSignature}
+        onBpmChange={onBpmChange || (() => {})}
+        onTimeSignatureChange={onTimeSignatureChange || (() => {})}
+      />
     </div>
   );
 }
