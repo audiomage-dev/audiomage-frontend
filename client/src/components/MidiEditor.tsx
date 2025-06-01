@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings } from 'lucide-react';
+import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square } from 'lucide-react';
 
 interface MidiNote {
   id: string;
@@ -45,6 +45,9 @@ export function MidiEditor({
   const [quantizeValue, setQuantizeValue] = useState(0.25); // 16th note default
   const [drawingNote, setDrawingNote] = useState<MidiNote | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [isMidiPlaying, setIsMidiPlaying] = useState(false);
+  const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
+  const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -595,6 +598,65 @@ export function MidiEditor({
     return durationMap[instrument] || 0.5;
   };
 
+  // MIDI-specific playback controls
+  const playMidiTrack = () => {
+    if (!selectedTrack || !midiNotes[selectedTrack]) return;
+    
+    setIsMidiPlaying(true);
+    setMidiPlaybackTime(0);
+    
+    const startTime = Date.now();
+    const bpm = 120; // Default BPM for MIDI playback
+    const beatsPerSecond = bpm / 60;
+    
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const currentBeat = elapsed * beatsPerSecond;
+      setMidiPlaybackTime(currentBeat);
+      
+      // Play notes that should be triggered at this time
+      const trackNotes = midiNotes[selectedTrack] || [];
+      trackNotes.forEach(note => {
+        const noteStartTime = note.startTime;
+        const timeDiff = Math.abs(currentBeat - noteStartTime);
+        
+        // If we're very close to the note start time (within 0.1 beats)
+        if (timeDiff < 0.1 && currentBeat >= noteStartTime) {
+          const velocity = getInstrumentVelocity(currentInstrument);
+          const duration = getInstrumentDuration(currentInstrument);
+          playNote(note.pitch, velocity, duration);
+        }
+      });
+      
+      // Stop at end of track (64 beats)
+      if (currentBeat >= 64) {
+        stopMidiPlayback();
+      }
+    }, 50); // Update every 50ms for smooth playback
+    
+    setMidiPlaybackInterval(interval);
+    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === selectedTrack)?.name}"`);
+  };
+
+  const pauseMidiPlayback = () => {
+    if (midiPlaybackInterval) {
+      clearInterval(midiPlaybackInterval);
+      setMidiPlaybackInterval(null);
+    }
+    setIsMidiPlaying(false);
+    console.log('MIDI playback paused');
+  };
+
+  const stopMidiPlayback = () => {
+    if (midiPlaybackInterval) {
+      clearInterval(midiPlaybackInterval);
+      setMidiPlaybackInterval(null);
+    }
+    setIsMidiPlaying(false);
+    setMidiPlaybackTime(0);
+    console.log('MIDI playback stopped');
+  };
+
   // Handle simple click (when not dragging)
   const handleGridClick = (event: React.MouseEvent) => {
     // This will be handled by mousedown/mouseup for consistent behavior
@@ -895,24 +957,35 @@ export function MidiEditor({
         {/* MIDI Toolbar */}
         <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {/* Editing Tools */}
+            {/* MIDI Playback Controls */}
             <div className="flex items-center space-x-1">
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-8 px-2"
-                title="Edit Tool"
+                onClick={isMidiPlaying ? pauseMidiPlayback : playMidiTrack}
+                disabled={!selectedTrack}
+                title={isMidiPlaying ? "Pause MIDI Track" : "Play MIDI Track"}
               >
-                <Edit3 className="h-4 w-4" />
+                {isMidiPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4" />
+                )}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-8 px-2"
-                title="Cut Tool"
+                onClick={stopMidiPlayback}
+                disabled={!selectedTrack}
+                title="Stop MIDI Track"
               >
-                <Scissors className="h-4 w-4" />
+                <Square className="h-4 w-4" />
               </Button>
+              
+              <div className="w-px h-6 bg-[var(--border)] mx-2"></div>
+              
               <Button
                 variant="ghost"
                 size="sm"
