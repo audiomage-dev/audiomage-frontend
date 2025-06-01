@@ -226,15 +226,21 @@ export function MidiEditor({
     };
   }, []);
 
-  // Initialize MIDI notes when tracks change
+  // Initialize MIDI notes when tracks change - only if not already initialized
   useEffect(() => {
-    const newMidiNotes: Record<string, MidiNote[]> = {};
+    const newMidiNotes: Record<string, MidiNote[]> = { ...midiNotes };
+    let hasChanges = false;
+    
     tracks.forEach(track => {
-      if (track.type === 'midi') {
+      if (track.type === 'midi' && !newMidiNotes[track.id]) {
         newMidiNotes[track.id] = getMidiNotesFromTrack(track);
+        hasChanges = true;
       }
     });
-    setMidiNotes(newMidiNotes);
+    
+    if (hasChanges) {
+      setMidiNotes(newMidiNotes);
+    }
   }, [tracks]);
 
   // Add note function
