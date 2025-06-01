@@ -934,6 +934,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         currentOffsetX: deltaX,
         currentOffsetY: deltaY
       } : null);
+      
+      // Don't update selection coordinates during drag - keep them stable for clickability
+      // Visual feedback will be handled through CSS transforms instead
     };
     
     const handleDocumentMouseUp = (e: MouseEvent) => {
@@ -1488,7 +1491,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   top: `${Math.min(multiSelection.startY, multiSelection.endY)}px`,
                   width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
                   height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
-                  zIndex: 100 // High z-index to be above clips
+                  zIndex: 100, // High z-index to be above clips
+                  transform: draggingClip && draggingClip.selectedClips ? 
+                    `translate(${draggingClip.currentOffsetX || 0}px, ${draggingClip.currentOffsetY || 0}px)` : 
+                    'none'
                 }}
                 onMouseDown={(e) => handleSelectionBoxDragStart(e)}
               >
@@ -1499,7 +1505,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-xs text-[var(--primary)] font-semibold bg-white/80 px-2 py-1 rounded">
-                    Drag to move
+                    {draggingClip && draggingClip.selectedClips ? 'Moving...' : 'Drag to move'}
                   </span>
                 </div>
               </div>
