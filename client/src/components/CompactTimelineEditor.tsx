@@ -277,6 +277,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   }, [onTrackSelect]);
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
+    // Prevent dragging when timeline is locked
+    if (isLocked) {
+      return;
+    }
+    
     e.stopPropagation();
     e.preventDefault();
     
@@ -551,6 +556,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   // Clip resizing functionality
   const handleClipResizeStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string, edge: 'left' | 'right') => {
+    // Prevent resizing when timeline is locked
+    if (isLocked) {
+      return;
+    }
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -699,6 +709,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   const handleMultiSelectionStart = useCallback((e: React.MouseEvent, startTrackIndex: number) => {
     if (e.button !== 0) return; // Only left click
+    
+    // Prevent multi-selection when timeline is locked
+    if (isLocked) {
+      return;
+    }
     
     const timelineRect = timelineRef.current?.getBoundingClientRect();
     if (!timelineRect) return;

@@ -274,6 +274,11 @@ export function MidiEditor({
 
   // Add note function
   const addNote = (trackId: string, note: MidiNote) => {
+    // Prevent adding notes when MIDI editor is locked
+    if (isLocked) {
+      return;
+    }
+    
     setMidiNotes(prev => ({
       ...prev,
       [trackId]: [...(prev[trackId] || []), note]
