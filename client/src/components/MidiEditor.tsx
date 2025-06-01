@@ -42,8 +42,11 @@ export function MidiEditor({
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
   const [quantizeValue, setQuantizeValue] = useState(0.25); // 16th note default
+  const [drawingNote, setDrawingNote] = useState<MidiNote | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const drawStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // MIDI note configuration
   const noteHeight = 16;
@@ -188,6 +191,22 @@ export function MidiEditor({
     return notes;
   };
 
+  // Initialize audio context for note playback
+  useEffect(() => {
+    const initAudio = () => {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(ctx);
+    };
+    
+    initAudio();
+    
+    return () => {
+      if (audioContext) {
+        audioContext.close();
+      }
+    };
+  }, []);
+
   // Initialize MIDI notes when tracks change
   useEffect(() => {
     const newMidiNotes: Record<string, MidiNote[]> = {};
@@ -254,9 +273,66 @@ export function MidiEditor({
     });
   };
 
-  // Handle note click
+  // Play a single MIDI note
+  const playNote = (pitch: number, velocity: number = 100, duration: number = 0.5) => {
+    if (!audioContext) return;
+    
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Convert MIDI note to frequency
+    const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    oscillator.type = 'sine';
+    
+    // Set volume based on velocity
+    const volume = (velocity / 127) * 0.1;
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+    
+    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
+  };
+
+  // Play all notes in the current track (transport play functionality)
+  const playAllNotes = () => {
+    if (!selectedTrack || !audioContext) return;
+    
+    const trackNotes = midiNotes[selectedTrack] || [];
+    if (trackNotes.length === 0) return;
+    
+    console.log(`Playing ${trackNotes.length} notes from track`);
+    
+    trackNotes.forEach(note => {
+      const delay = note.startTime * 0.5; // Convert beats to seconds (simplified)
+      setTimeout(() => {
+        playNote(note.pitch, note.velocity, note.duration * 0.5);
+      }, delay * 1000);
+    });
+  };
+
+  // Handle note click - now plays the note
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
     event.stopPropagation();
+    
+    // Find and play the clicked note
+    if (selectedTrack) {
+      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+      if (note) {
+        playNote(note.pitch, note.velocity, note.duration * 0.5);
+      }
+    }
+    
+    // Handle selection
     if (event.ctrlKey || event.metaKey) {
       const newSelected = new Set(selectedNotes);
       if (newSelected.has(noteId)) {
@@ -332,9 +408,9 @@ export function MidiEditor({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedTrack, selectedNotes, midiNotes, quantizeNotes, adjustVelocity]);
 
-  // Handle grid click for note creation
-  const handleGridClick = (event: React.MouseEvent) => {
-    if (!selectedTrack || isDragging) return;
+  // Handle grid mouse down for note creation/drawing
+  const handleGridMouseDown = (event: React.MouseEvent) => {
+    if (!selectedTrack) return;
 
     const rect = gridRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -345,16 +421,57 @@ export function MidiEditor({
     const beat = snapToBeat(getBeatFromX(x));
     const pitch = getMidiFromY(y);
 
+    // Start drawing a new note
+    drawStartRef.current = { x, y };
+    setIsDrawing(true);
+
     const newNote: MidiNote = {
       id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       pitch,
       startTime: beat,
-      duration: 1,
+      duration: 0.25, // Start with minimum duration
       velocity: 100,
     };
 
-    addNote(selectedTrack, newNote);
-    console.log(`Added note: ${getNoteNameFromMidi(pitch)} at beat ${beat}`);
+    setDrawingNote(newNote);
+  };
+
+  // Handle grid mouse move for note resizing during drawing
+  const handleGridMouseMove = (event: React.MouseEvent) => {
+    if (!isDrawing || !drawingNote || !drawStartRef.current) return;
+
+    const rect = gridRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const currentX = event.clientX - rect.left;
+    const startBeat = getBeatFromX(drawStartRef.current.x);
+    const currentBeat = getBeatFromX(currentX);
+    
+    const duration = Math.max(0.25, snapToBeat(currentBeat - startBeat));
+
+    setDrawingNote(prev => prev ? { ...prev, duration } : null);
+  };
+
+  // Handle grid mouse up to finalize note creation
+  const handleGridMouseUp = () => {
+    if (!isDrawing || !drawingNote || !selectedTrack) return;
+
+    // Add the final note to the track
+    addNote(selectedTrack, drawingNote);
+    console.log(`Added note: ${getNoteNameFromMidi(drawingNote.pitch)} at beat ${drawingNote.startTime} with duration ${drawingNote.duration}`);
+    
+    // Play the created note
+    playNote(drawingNote.pitch, drawingNote.velocity, 0.3);
+
+    // Reset drawing state
+    setIsDrawing(false);
+    setDrawingNote(null);
+    drawStartRef.current = null;
+  };
+
+  // Handle simple click (when not dragging)
+  const handleGridClick = (event: React.MouseEvent) => {
+    // This will be handled by mousedown/mouseup for consistent behavior
   };
 
   // Render piano keys
@@ -497,6 +614,34 @@ export function MidiEditor({
         }
       });
     });
+
+    // Render drawing note preview
+    if (drawingNote && selectedTrack) {
+      const track = tracks.find(t => t.id === selectedTrack);
+      if (track) {
+        const x = drawingNote.startTime * beatWidth;
+        const y = getNoteY(drawingNote.pitch);
+        const width = drawingNote.duration * beatWidth - 2;
+        const height = noteHeight - 2;
+
+        noteElements.push(
+          <rect
+            key="drawing-preview"
+            x={x + 1}
+            y={y + 1}
+            width={Math.max(width, 10)}
+            height={height}
+            fill={track.color}
+            fillOpacity={0.5}
+            stroke={track.color}
+            strokeWidth="2"
+            strokeDasharray="5,5"
+            rx="3"
+            className="pointer-events-none"
+          />
+        );
+      }
+    }
     
     return noteElements;
   };
