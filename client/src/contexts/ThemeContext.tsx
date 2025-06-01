@@ -11,7 +11,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('nord-light');
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage first, default to nord-dark
+    const saved = localStorage.getItem('audiomage-theme');
+    return (saved as Theme) || 'nord-dark';
+  });
 
   useEffect(() => {
     // Remove all theme classes first
