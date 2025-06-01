@@ -1097,7 +1097,8 @@ export function MidiEditor({
 
   // Render playhead
   const renderPlayhead = () => {
-    const x = (transport.currentTime / 60) * 120 * beatWidth; // Assuming 120 BPM for conversion
+    // Use MIDI playback time for MIDI editor, measured in beats
+    const x = midiPlaybackTime * beatWidth;
     
     return (
       <line
@@ -1105,9 +1106,10 @@ export function MidiEditor({
         y1="0"
         x2={x}
         y2={totalNotes * noteHeight}
-        stroke="var(--destructive)"
+        stroke="var(--primary)"
         strokeWidth="2"
         className="pointer-events-none"
+        style={{ filter: 'drop-shadow(0 0 2px var(--primary))' }}
       />
     );
   };
@@ -1428,7 +1430,7 @@ export function MidiEditor({
               >
                 {renderGrid()}
                 {renderNotes()}
-                {transport.isPlaying && renderPlayhead()}
+                {isMidiPlaying && renderPlayhead()}
               </svg>
             </div>
           </div>
