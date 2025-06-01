@@ -100,7 +100,11 @@ export function CompactTransportBar({
 
       {/* Center: Time Display */}
       <div className="flex items-center space-x-4">
-        <div className="text-sm font-mono text-[var(--foreground)]">
+        <div 
+          className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
+          onClick={() => onSeek?.(0)}
+          title="Click to seek to beginning"
+        >
           {formatTime(transport.currentTime)}
         </div>
         <div className="w-px h-4 bg-[var(--border)]"></div>
