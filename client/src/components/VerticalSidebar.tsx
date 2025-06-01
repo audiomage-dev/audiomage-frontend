@@ -771,6 +771,7 @@ export function VerticalSidebar() {
             size="sm"
             className="w-full h-10 p-0 mb-1 rounded-none hover:bg-[var(--accent)]"
             title="Settings"
+            onClick={() => setIsSettingsModalOpen(true)}
           >
             <Settings className="w-5 h-5" />
           </Button>
@@ -816,6 +817,200 @@ export function VerticalSidebar() {
         onClose={() => setIsAIToolsModalOpen(false)}
         initialTool={selectedAITool}
       />
+
+      {/* Settings Modal */}
+      {isSettingsModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[800px] max-h-[90vh] flex flex-col shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">Settings</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSettingsModalOpen(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="flex flex-1 min-h-0">
+              {/* Settings Categories */}
+              <div className="w-64 border-r border-[var(--border)] bg-[var(--muted)]/30">
+                <div className="p-3">
+                  <div className="space-y-1">
+                    {[
+                      { id: 'general', icon: Settings, label: 'General' },
+                      { id: 'audio', icon: Headphones, label: 'Audio' },
+                      { id: 'display', icon: Monitor, label: 'Display' },
+                      { id: 'keyboard', icon: Keyboard, label: 'Keyboard' },
+                      { id: 'ai', icon: Sparkles, label: 'AI Assistant' },
+                      { id: 'network', icon: Globe, label: 'Network' },
+                      { id: 'privacy', icon: Shield, label: 'Privacy' },
+                      { id: 'storage', icon: Database, label: 'Storage' }
+                    ].map((category) => (
+                      <button
+                        key={category.id}
+                        className="w-full flex items-center space-x-3 px-3 py-2 text-left text-sm hover:bg-[var(--accent)] rounded-md transition-colors"
+                      >
+                        <category.icon className="w-4 h-4 text-[var(--muted-foreground)]" />
+                        <span className="text-[var(--foreground)]">{category.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Settings Panel */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="space-y-6">
+                  {/* General Settings */}
+                  <div className="space-y-4">
+                    <h3 className="text-base font-medium text-[var(--foreground)]">General</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium text-[var(--foreground)]">Auto-save</label>
+                          <p className="text-xs text-[var(--muted-foreground)]">Automatically save project changes</p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium text-[var(--foreground)]">Show AI suggestions</label>
+                          <p className="text-xs text-[var(--muted-foreground)]">Display AI-powered editing suggestions</p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">Default project location</label>
+                        <div className="flex space-x-2">
+                          <input
+                            type="text"
+                            value="/home/user/AudioProjects"
+                            className="flex-1 px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                            readOnly
+                          />
+                          <Button variant="outline" size="sm">
+                            <FolderOpen className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audio Settings */}
+                  <div className="space-y-4">
+                    <h3 className="text-base font-medium text-[var(--foreground)]">Audio</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">Sample Rate</label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
+                          <option>44.1 kHz</option>
+                          <option>48 kHz</option>
+                          <option>96 kHz</option>
+                          <option>192 kHz</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">Buffer Size</label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
+                          <option>64 samples</option>
+                          <option>128 samples</option>
+                          <option>256 samples</option>
+                          <option>512 samples</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">Audio Driver</label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
+                          <option>ASIO</option>
+                          <option>Core Audio</option>
+                          <option>DirectSound</option>
+                          <option>WASAPI</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Settings */}
+                  <div className="space-y-4">
+                    <h3 className="text-base font-medium text-[var(--foreground)]">AI Assistant</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium text-[var(--foreground)]">Real-time analysis</label>
+                          <p className="text-xs text-[var(--muted-foreground)]">Analyze audio in real-time</p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">AI Processing Quality</label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
+                          <option>Fast</option>
+                          <option>Balanced</option>
+                          <option>High Quality</option>
+                          <option>Maximum Quality</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between p-4 border-t border-[var(--border)] bg-[var(--muted)]/20">
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reset to Defaults
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Settings
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import Settings
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsSettingsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => setIsSettingsModalOpen(false)}
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Apply Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
