@@ -901,6 +901,17 @@ export function MidiEditor({
     console.log('MIDI playback stopped');
   };
 
+  // Register MIDI playback functions with parent component
+  useEffect(() => {
+    if (onMidiControlsRegister) {
+      onMidiControlsRegister({
+        playMidiTrack,
+        pauseMidiPlayback,
+        stopMidiPlayback,
+      });
+    }
+  }, [onMidiControlsRegister]);
+
   // Handle simple click (when not dragging)
   const handleGridClick = (event: React.MouseEvent) => {
     // This will be handled by mousedown/mouseup for consistent behavior
