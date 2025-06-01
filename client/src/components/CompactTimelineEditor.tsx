@@ -1188,31 +1188,55 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     );
                   })}
                   
-                  {/* Audio Selection Overlay */}
-                  {audioSelection && audioSelection.trackId === track.id && (
-                    <div
-                      className="absolute top-0 bottom-0 bg-[var(--primary)]/25 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
-                      style={{
-                        left: `${audioSelection.startX}px`,
-                        width: `${audioSelection.endX - audioSelection.startX}px`,
-                        zIndex: 10
-                      }}
-                    >
-                      <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/60 flex items-center justify-center border-b border-[var(--primary)]">
-                        <span className="text-xs text-white font-mono font-semibold">
-                          {(audioSelection.endTime - audioSelection.startTime).toFixed(2)}s
-                        </span>
-                      </div>
-                      
-                      {/* Selection handles */}
-                      <div className="absolute left-0 top-0 w-1 h-full bg-[var(--primary)] cursor-ew-resize" />
-                      <div className="absolute right-0 top-0 w-1 h-full bg-[var(--primary)] cursor-ew-resize" />
-                    </div>
+                  {/* Multi-track Selection Overlay - highlight selected clips */}
+                  {multiSelection && !multiSelection.isActive && (
+                    <>
+                      {track.clips?.map((clip) => {
+                        if (multiSelection.selectedClips.includes(clip.id)) {
+                          const timelineWidth = getTimelineWidth();
+                          const totalTime = timelineWidth / zoomLevel;
+                          const leftPosition = (clip.startTime / totalTime) * timelineWidth;
+                          const clipWidth = (clip.duration / totalTime) * timelineWidth;
+                          
+                          return (
+                            <div
+                              key={`selection-${clip.id}`}
+                              className="absolute top-0 bottom-0 bg-[var(--primary)]/30 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
+                              style={{
+                                left: `${leftPosition}px`,
+                                width: `${clipWidth}px`,
+                                zIndex: 15
+                              }}
+                            />
+                          );
+                        }
+                        return null;
+                      })}
+                    </>
                   )}
                 </div>
               </div>
             ))}
             
+            {/* Multi-track Selection Box */}
+            {multiSelection && multiSelection.isActive && (
+              <div
+                className="absolute border-2 border-[var(--primary)] bg-[var(--primary)]/20 pointer-events-none rounded-sm z-20"
+                style={{
+                  left: `${Math.min(multiSelection.startX, multiSelection.endX)}px`,
+                  top: `${Math.min(multiSelection.startY, multiSelection.endY)}px`,
+                  width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
+                  height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
+                }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/80 flex items-center justify-center">
+                  <span className="text-xs text-white font-mono font-semibold">
+                    {multiSelection.selectedClips.length} clips
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Virtual Extension Overlay */}
             {virtualExtension && (
               <div
@@ -1371,9 +1395,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               <button
                 key={label}
                 onClick={() => {
-                  console.log(`${action} audio selection:`, audioContextMenu.selection);
+                  console.log(`${action} multi-track selection:`, audioContextMenu.selection);
                   setAudioContextMenu(null);
-                  setAudioSelection(null);
+                  setMultiSelection(null);
                 }}
                 className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition-colors ${
                   destructive 
