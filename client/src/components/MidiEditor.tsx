@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square } from 'lucide-react';
+import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square, MoreVertical, Trash2, ArrowUp, ArrowDown, RotateCcw, Volume1 } from 'lucide-react';
 
 interface MidiNote {
   id: string;
@@ -49,6 +49,12 @@ export function MidiEditor({
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [noteContextMenu, setNoteContextMenu] = useState<{
+    x: number;
+    y: number;
+    note: MidiNote;
+    trackId: string;
+  } | null>(null);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -406,27 +412,7 @@ export function MidiEditor({
     }
   };
 
-  // Handle note right-click context menu
-  const handleNoteRightClick = (noteId: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    if (!selectedTrack) return;
-    
-    // Select the note if not already selected
-    if (!selectedNotes.has(noteId)) {
-      setSelectedNotes(new Set([noteId]));
-    }
-    
-    // Show context menu options
-    const shouldDelete = window.confirm('Delete selected note(s)?');
-    if (shouldDelete) {
-      selectedNotes.forEach(id => {
-        deleteNote(selectedTrack, id);
-      });
-      setSelectedNotes(new Set());
-    }
-  };
+
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -585,6 +571,115 @@ export function MidiEditor({
   const handleScrollSync = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
     setScrollOffset(scrollTop);
+  };
+
+  // Handle note right-click context menu
+  const handleNoteRightClick = (e: React.MouseEvent, note: MidiNote, trackId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setNoteContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      note,
+      trackId
+    });
+  };
+
+  // Handle note context menu actions
+  const handleNoteContextAction = (action: string, note: MidiNote, trackId: string) => {
+    switch (action) {
+      case 'duplicate':
+        const duplicatedNote: MidiNote = {
+          ...note,
+          id: `${trackId}-${Date.now()}-${Math.random()}`,
+          startTime: note.startTime + note.duration
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: [...(prev[trackId] || []), duplicatedNote]
+        }));
+        console.log('Note duplicated');
+        break;
+        
+      case 'delete':
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).filter(n => n.id !== note.id)
+        }));
+        console.log('Note deleted');
+        break;
+        
+      case 'quantize':
+        const quantizedNote = {
+          ...note,
+          startTime: Math.round(note.startTime * 4) / 4, // Quantize to 16th notes
+          duration: Math.round(note.duration * 4) / 4
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? quantizedNote : n)
+        }));
+        console.log('Note quantized');
+        break;
+        
+      case 'velocity-up':
+        const velocityUpNote = {
+          ...note,
+          velocity: Math.min(127, note.velocity + 10)
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? velocityUpNote : n)
+        }));
+        console.log('Note velocity increased');
+        break;
+        
+      case 'velocity-down':
+        const velocityDownNote = {
+          ...note,
+          velocity: Math.max(1, note.velocity - 10)
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? velocityDownNote : n)
+        }));
+        console.log('Note velocity decreased');
+        break;
+        
+      case 'octave-up':
+        const octaveUpNote = {
+          ...note,
+          pitch: Math.min(127, note.pitch + 12)
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? octaveUpNote : n)
+        }));
+        console.log('Note moved up one octave');
+        break;
+        
+      case 'octave-down':
+        const octaveDownNote = {
+          ...note,
+          pitch: Math.max(0, note.pitch - 12)
+        };
+        setMidiNotes(prev => ({
+          ...prev,
+          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? octaveDownNote : n)
+        }));
+        console.log('Note moved down one octave');
+        break;
+        
+      case 'play-note':
+        const velocity = getInstrumentVelocity(currentInstrument);
+        const duration = getInstrumentDuration(currentInstrument);
+        playNote(note.pitch, velocity, duration);
+        console.log(`Playing note: ${getNoteNameFromMidi(note.pitch)}`);
+        break;
+    }
+    
+    setNoteContextMenu(null);
   };
 
   // MIDI-specific playback controls
@@ -768,7 +863,7 @@ export function MidiEditor({
             rx="3"
             className="cursor-pointer hover:brightness-110 transition-all"
             onClick={(e) => handleNoteClick(note.id, e as any)}
-            onContextMenu={(e) => handleNoteRightClick(note.id, e as any)}
+            onContextMenu={(e) => handleNoteRightClick(e, note, selectedTrack || '')}
             onMouseDown={(e) => {
               e.preventDefault();
               setIsDragging(true);
