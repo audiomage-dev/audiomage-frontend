@@ -496,7 +496,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                          (resizingClip.edge === 'left' && newStartTime < resizingClip.originalStartTime);
       
       if (isExtending && virtualExtension) {
-        // Keep virtual extension active for user to choose action
+        // Keep virtual extension active for user to choose action - don't apply resize yet
         console.log('Virtual extension active - waiting for user action');
       } else {
         // Apply the resize if there was actual change within original bounds
@@ -1180,45 +1180,42 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* Virtual Extension Overlay */}
             {virtualExtension && (
               <div
-                className="absolute z-15 border-2 border-dashed border-[var(--primary)] bg-[var(--primary)]/10 pointer-events-none"
+                className="absolute z-15 border-2 border-dashed border-[var(--primary)] bg-[var(--primary)]/10 pointer-events-none rounded-md"
                 style={{
                   left: `${virtualExtension.x}px`,
-                  top: `${virtualExtension.y + 8}px`,
+                  top: `${virtualExtension.y + 12}px`,
                   width: `${virtualExtension.width}px`,
-                  height: '80px',
+                  height: '64px',
                 }}
               >
                 {/* Extension action buttons */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-2 pointer-events-auto">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-1 pointer-events-auto">
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('blank')}
                     title="Extend with blank/silent content"
                   >
-                    <Circle className="w-4 h-4 mr-1" />
-                    Blank
+                    <Circle className="w-3 h-3" />
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('ai')}
                     title="Extend with AI-generated content"
                   >
-                    <Sparkles className="w-4 h-4 mr-1" />
-                    AI
+                    <Sparkles className="w-3 h-3" />
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 px-3 text-xs bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-md"
+                    className="h-7 w-7 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
                     onClick={() => handleExtensionAction('stretch')}
                     title="Extend by stretching existing content"
                   >
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    Stretch
+                    <TrendingUp className="w-3 h-3" />
                   </Button>
                 </div>
                 
@@ -1226,16 +1223,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="absolute top-1 right-1 h-6 w-6 p-0 pointer-events-auto hover:bg-[var(--destructive)]/20"
+                  className="absolute top-0.5 right-0.5 h-5 w-5 p-0 pointer-events-auto hover:bg-[var(--destructive)]/20 rounded-full"
                   onClick={cancelVirtualExtension}
                   title="Cancel extension"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5" />
                 </Button>
                 
                 {/* Extension info */}
-                <div className="absolute bottom-1 left-2 text-xs text-[var(--muted-foreground)] font-mono pointer-events-none">
-                  +{virtualExtension.extensionLength.toFixed(2)}s
+                <div className="absolute bottom-0.5 left-1.5 text-[10px] text-[var(--muted-foreground)] font-mono pointer-events-none">
+                  +{virtualExtension.extensionLength.toFixed(1)}s
                 </div>
               </div>
             )}
