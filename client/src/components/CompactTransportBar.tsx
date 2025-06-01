@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 
 interface CompactTransportBarProps {
@@ -7,12 +7,14 @@ interface CompactTransportBarProps {
   bpm: number;
   timeSignature: [number, number];
   zoomLevel?: number;
+  viewMode?: 'timeline' | 'midi';
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
   onRecord: () => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
+  onViewModeChange?: (mode: 'timeline' | 'midi') => void;
 }
 
 export function CompactTransportBar({
@@ -20,12 +22,14 @@ export function CompactTransportBar({
   bpm,
   timeSignature,
   zoomLevel = 1,
+  viewMode = 'timeline',
   onPlay,
   onPause,
   onStop,
   onRecord,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  onViewModeChange
 }: CompactTransportBarProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -105,6 +109,32 @@ export function CompactTransportBar({
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
+        {/* View Mode Toggle */}
+        <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
+          <button
+            onClick={() => onViewModeChange?.('timeline')}
+            className={`h-7 px-2 flex items-center justify-center transition-colors ${
+              viewMode === 'timeline' 
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
+            }`}
+            title="Timeline View"
+          >
+            <Music className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => onViewModeChange?.('midi')}
+            className={`h-7 px-2 flex items-center justify-center transition-colors ${
+              viewMode === 'midi' 
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
+            }`}
+            title="MIDI Editor"
+          >
+            <Piano className="w-3 h-3" />
+          </button>
+        </div>
+
         {/* Zoom Controls */}
         <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1">
           <button

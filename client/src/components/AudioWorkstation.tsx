@@ -36,6 +36,7 @@ export function AudioWorkstation() {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
 
   const handleMasterVolumeChange = (volume: number) => {
     setCurrentProject({
@@ -106,12 +107,14 @@ export function AudioWorkstation() {
               bpm={currentProject.bpm}
               timeSignature={currentProject.timeSignature}
               zoomLevel={zoomLevel}
+              viewMode={viewMode}
               onPlay={play}
               onPause={pause}
               onStop={stop}
               onRecord={toggleRecording}
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
+              onViewModeChange={setViewMode}
             />
           </div>
           
