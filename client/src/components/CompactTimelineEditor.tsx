@@ -802,7 +802,7 @@ export function CompactTimelineEditor({ tracks, transport, onTrackMute, onTrackS
 
         {/* Timeline Content with Canvas Grid */}
         <div 
-          className="flex-1 overflow-auto scrollbar-thin select-none mt-8" 
+          className="flex-1 overflow-auto scrollbar-thin select-none" 
           ref={timelineRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
