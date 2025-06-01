@@ -610,6 +610,11 @@ export function MidiEditor({
 
   // Handle note context menu actions
   const handleNoteContextAction = (action: string, note: MidiNote, trackId: string) => {
+    // Prevent note editing when MIDI editor is locked
+    if (isLocked && action !== 'play-note') {
+      return;
+    }
+    
     switch (action) {
       case 'duplicate':
         const duplicatedNote: MidiNote = {
