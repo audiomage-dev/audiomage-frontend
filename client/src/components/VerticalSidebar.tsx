@@ -44,7 +44,22 @@ import {
   Copy,
   RotateCcw,
   Volume,
-  VolumeX
+  VolumeX,
+  Waves,
+  Piano,
+  Activity,
+  Gauge,
+  Crown,
+  Minimize2,
+  Globe,
+  Wind,
+  Music2,
+  Shuffle,
+  Film,
+  MessageSquare,
+  FileAudio,
+  BarChart3,
+  Target
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -248,21 +263,184 @@ export function VerticalSidebar() {
       icon: <Zap className="w-5 h-5" />,
       label: 'AI Assistant',
       component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">AI Tools</h3>
-          <div className="space-y-2">
-            <Button size="sm" variant="outline" className="w-full justify-start text-xs">
-              <Music className="w-3 h-3 mr-2" />
-              Auto-Master Track
-            </Button>
-            <Button size="sm" variant="outline" className="w-full justify-start text-xs">
-              <Zap className="w-3 h-3 mr-2" />
-              Enhance Audio
-            </Button>
-            <Button size="sm" variant="outline" className="w-full justify-start text-xs">
-              <Search className="w-3 h-3 mr-2" />
-              Analyze Mix
-            </Button>
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">AI Production Suite</h3>
+            <p className="text-xs text-[var(--muted-foreground)]">Advanced AI tools for audio production and post-production</p>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            
+            {/* Real-time Processing */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Real-time Processing</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Volume2 className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                AI Auto-EQ
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Zap className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Smart Compressor
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <VolumeX className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Noise Suppression
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Headphones className="w-3 h-3 mr-2 text-[var(--orange)]" />
+                De-esser Pro
+              </Button>
+            </div>
+
+            {/* Audio Enhancement */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Audio Enhancement</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Sparkles className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Vocal Clarity AI
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Instrument Isolation
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Waves className="w-3 h-3 mr-2 text-[var(--cyan)]" />
+                Harmonic Enhancer
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <TrendingUp className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Stereo Widener
+              </Button>
+            </div>
+
+            {/* Stem Separation */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Stem Separation</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Radio className="w-3 h-3 mr-2 text-[var(--red)]" />
+                Isolate Vocals
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Extract Drums
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Piano className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Separate Bass
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Layers className="w-3 h-3 mr-2 text-[var(--orange)]" />
+                4-Stem Split
+              </Button>
+            </div>
+
+            {/* Mix Analysis */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Mix Analysis</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <BarChart3 className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Frequency Analysis
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Target className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Loudness Check
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Activity className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Phase Correlation
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Gauge className="w-3 h-3 mr-2 text-[var(--orange)]" />
+                Dynamic Range
+              </Button>
+            </div>
+
+            {/* Mastering */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Mastering</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Crown className="w-3 h-3 mr-2 text-[var(--yellow)]" />
+                Auto-Master
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Sliders className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Genre Matching
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Minimize2 className="w-3 h-3 mr-2 text-[var(--red)]" />
+                Limiting AI
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Globe className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Platform Optimize
+              </Button>
+            </div>
+
+            {/* Content Generation */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Generation</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Mic className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Voice Synthesis
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Wind className="w-3 h-3 mr-2 text-[var(--cyan)]" />
+                Ambient Generator
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Music2 className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                MIDI Composer
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Shuffle className="w-3 h-3 mr-2 text-[var(--orange)]" />
+                Variation Creator
+              </Button>
+            </div>
+
+            {/* Post-Production */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Post-Production</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Film className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Audio to Video Sync
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <MessageSquare className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Speech Enhancement
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Scissors className="w-3 h-3 mr-2 text-[var(--red)]" />
+                Auto-Edit
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <FileAudio className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Format Converter
+              </Button>
+            </div>
+
+            {/* AI Status */}
+            <div className="p-3 bg-[var(--secondary)] rounded-md mt-4">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Engine Status</div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span>GPU Acceleration</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
+                    <span className="text-[var(--green)]">Active</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span>Neural Models</span>
+                  <span className="font-mono">12 loaded</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span>Processing Queue</span>
+                  <span className="font-mono">3 tasks</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )
