@@ -1,7 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Moon, Sun, Settings, Mic2, Search, Command, Play, Pause, Square, Volume2, Plus, Minus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useTheme } from '../contexts/ThemeContext';
+import { 
+  Search, 
+  Command, 
+  Sun, 
+  Moon, 
+  Volume2, 
+  Play, 
+  Pause, 
+  Minus, 
+  Plus 
+} from 'lucide-react';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -75,28 +86,50 @@ function CommandPalette({ isOpen, onClose, onCommand }: CommandPaletteProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-32">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-2xl mx-4">
-        {/* Search Header */}
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-start justify-center pt-20 z-50">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[600px] max-w-[90vw] max-h-[70vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)] rounded-t-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center">
+                <Command className="h-4 w-4 text-[var(--primary-foreground)]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">Command Palette</h3>
+                <p className="text-xs text-[var(--muted-foreground)]">Quick access to all functions</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+            >
+              ×
+            </Button>
+          </div>
+        </div>
+
+        {/* Search */}
         <div className="p-4 border-b border-[var(--border)]">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-[var(--muted-foreground)]" />
-            <input
-              type="text"
-              placeholder="Type a command or search..."
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]" />
+            <Input
+              placeholder="Search commands..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-10 pr-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
+              className="pl-10 bg-[var(--secondary)] border-[var(--border)] focus:ring-[var(--ring)]"
               autoFocus
             />
           </div>
         </div>
 
-        {/* Commands List */}
-        <div className="max-h-96 overflow-y-auto scrollbar-thin">
+        {/* Commands */}
+        <div className="flex-1 overflow-y-auto p-2">
           {filteredCommands.length > 0 ? (
-            <div className="p-2">
+            <div className="space-y-1">
               {Object.entries(
                 filteredCommands.reduce((groups, cmd) => {
                   if (!groups[cmd.category]) groups[cmd.category] = [];
@@ -160,27 +193,25 @@ function CommandPalette({ isOpen, onClose, onCommand }: CommandPaletteProps) {
 
 function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, onTimeSignatureChange }: MetronomeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(75);
-  const [accent, setAccent] = useState(true);
   const [currentBeat, setCurrentBeat] = useState(0);
-  const [bpmInput, setBpmInput] = useState(currentBpm.toString());
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-
-  useEffect(() => {
-    setBpmInput(currentBpm.toString());
-  }, [currentBpm]);
+  const [volume, setVolume] = useState(50);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize audio context
-  useEffect(() => {
-    if (isOpen && !audioContext) {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      setAudioContext(ctx);
+  const initAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-  }, [isOpen, audioContext]);
+    return audioContextRef.current;
+  };
 
-  // Generate metronome click sound
+  // Play click sound
   const playClick = (isAccent: boolean = false) => {
-    if (!audioContext) return;
+    const audioContext = initAudioContext();
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -188,238 +219,233 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Different frequencies for accent vs regular beats
+    // Higher frequency for accent beats
     oscillator.frequency.setValueAtTime(isAccent ? 1200 : 800, audioContext.currentTime);
-    oscillator.type = 'square';
+    oscillator.type = 'sine';
 
-    // Volume envelope
-    const volumeMultiplier = volume / 100;
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.1 * volumeMultiplier, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+    // Volume control
+    const adjustedVolume = (volume / 100) * 0.1; // Keep volume reasonable
+    gainNode.gain.setValueAtTime(adjustedVolume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
   };
 
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const interval = setInterval(() => {
-      setCurrentBeat(prev => {
-        const newBeat = (prev + 1) % timeSignature[0];
-        const isFirstBeat = newBeat === 0;
-        const shouldAccent = accent && isFirstBeat;
-        playClick(shouldAccent);
-        return newBeat;
-      });
-    }, (60 / currentBpm) * 1000);
-
-    return () => clearInterval(interval);
-  }, [isPlaying, currentBpm, timeSignature, accent, volume, audioContext]);
-
-  const handleBpmInputChange = (value: string) => {
-    setBpmInput(value);
-    const numValue = parseInt(value);
-    if (!isNaN(numValue) && numValue >= 40 && numValue <= 300) {
-      onBpmChange(numValue);
+  // Start/stop metronome
+  const togglePlayback = () => {
+    if (isPlaying) {
+      stopMetronome();
+    } else {
+      startMetronome();
     }
   };
 
-  const adjustBpm = (delta: number) => {
-    const newBpm = Math.max(40, Math.min(300, currentBpm + delta));
-    onBpmChange(newBpm);
-  };
+  const startMetronome = () => {
+    const interval = 60000 / currentBpm; // Convert BPM to milliseconds
+    let beat = 0;
 
-  const startMetronome = async () => {
-    if (audioContext && audioContext.state === 'suspended') {
-      await audioContext.resume();
-    }
-    setCurrentBeat(0);
+    const tick = () => {
+      const isAccent = beat === 0; // First beat of measure is accent
+      playClick(isAccent);
+      setCurrentBeat(beat);
+      beat = (beat + 1) % timeSignature[0];
+    };
+
+    // Play first beat immediately
+    tick();
+    
+    intervalRef.current = setInterval(tick, interval);
     setIsPlaying(true);
   };
 
   const stopMetronome = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsPlaying(false);
     setCurrentBeat(0);
   };
 
-  const testClick = async () => {
-    if (audioContext && audioContext.state === 'suspended') {
-      await audioContext.resume();
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopMetronome();
+    };
+  }, []);
+
+  // Update interval when BPM changes
+  useEffect(() => {
+    if (isPlaying) {
+      stopMetronome();
+      startMetronome();
     }
-    playClick(true); // Play accent click for test
+  }, [currentBpm]);
+
+  const adjustBpm = (delta: number) => {
+    const newBpm = Math.max(60, Math.min(200, currentBpm + delta));
+    onBpmChange(newBpm);
   };
 
-  const presetBpms = [60, 72, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180];
+  const presetBpms = [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180];
   const timeSignatures: [number, number][] = [[4, 4], [3, 4], [2, 4], [6, 8], [9, 8], [12, 8]];
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl p-6 w-96 max-w-[90vw]">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            ×
-          </Button>
-        </div>
-
-        {/* BPM Display and Controls */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center space-x-4 mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => adjustBpm(-1)}
-              className="h-8 w-8 p-0"
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            
-            <div className="flex flex-col items-center">
-              <input
-                type="number"
-                value={bpmInput}
-                onChange={(e) => handleBpmInputChange(e.target.value)}
-                className="text-4xl font-bold text-center bg-transparent border-none outline-none w-24 text-[var(--foreground)]"
-                min="40"
-                max="300"
-              />
-              <span className="text-sm text-[var(--muted-foreground)]">BPM</span>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => adjustBpm(1)}
-              className="h-8 w-8 p-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Fine adjustment */}
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Button variant="outline" size="sm" onClick={() => adjustBpm(-10)}>-10</Button>
-            <Button variant="outline" size="sm" onClick={() => adjustBpm(-5)}>-5</Button>
-            <Button variant="outline" size="sm" onClick={() => adjustBpm(5)}>+5</Button>
-            <Button variant="outline" size="sm" onClick={() => adjustBpm(10)}>+10</Button>
-          </div>
-        </div>
-
-        {/* Transport Controls */}
-        <div className="flex items-center justify-center space-x-3 mb-6">
-          <Button
-            variant={isPlaying ? "default" : "outline"}
-            onClick={isPlaying ? stopMetronome : startMetronome}
-            className="flex items-center space-x-2"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            <span>{isPlaying ? "Stop" : "Start"}</span>
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={stopMetronome}
-          >
-            <Square className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={testClick}
-            className="flex items-center space-x-2"
-          >
-            <Volume2 className="h-4 w-4" />
-            <span>Test</span>
-          </Button>
-        </div>
-
-        {/* Beat Indicator */}
-        <div className="flex justify-center space-x-2 mb-6">
-          {Array.from({ length: timeSignature[0] }, (_, i) => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-full transition-colors duration-100 ${
-                i === currentBeat && isPlaying
-                  ? i === 0 && accent
-                    ? 'bg-[var(--red)]'
-                    : 'bg-[var(--primary)]'
-                  : 'bg-[var(--muted)]'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Time Signature */}
-        <div className="mb-6">
-          <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Time Signature</label>
-          <div className="flex flex-wrap gap-2">
-            {timeSignatures.map((sig) => (
-              <Button
-                key={`${sig[0]}/${sig[1]}`}
-                variant={timeSignature[0] === sig[0] && timeSignature[1] === sig[1] ? "default" : "outline"}
-                size="sm"
-                onClick={() => onTimeSignatureChange(sig)}
-              >
-                {sig[0]}/{sig[1]}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Volume and Settings */}
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Volume</label>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-start justify-center pt-20 z-50">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[600px] max-w-[90vw] max-h-[70vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)] rounded-t-xl">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Volume2 className="h-4 w-4 text-[var(--muted-foreground)]" />
+              <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center">
+                <Volume2 className="h-4 w-4 text-[var(--primary-foreground)]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h3>
+                <p className="text-xs text-[var(--muted-foreground)]">Professional timing and tempo control</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+            >
+              ×
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* BPM Display and Controls */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => adjustBpm(-1)}
+                className="h-8 w-8 p-0"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              
+              <div className="flex flex-col items-center">
+                <input
+                  type="number"
+                  value={currentBpm}
+                  onChange={(e) => onBpmChange(Math.max(60, Math.min(200, parseInt(e.target.value) || 60)))}
+                  className="text-4xl font-bold text-center bg-transparent border-none outline-none w-20 text-[var(--foreground)]"
+                  min="60"
+                  max="200"
+                />
+                <span className="text-sm text-[var(--muted-foreground)] uppercase tracking-wider">BPM</span>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => adjustBpm(1)}
+                className="h-8 w-8 p-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Beat Indicator */}
+            <div className="flex items-center justify-center space-x-2 mb-6">
+              {Array.from({ length: timeSignature[0] }, (_, i) => (
+                <div
+                  key={i}
+                  className={`w-4 h-4 rounded-full border-2 transition-all duration-100 ${
+                    i === currentBeat && isPlaying
+                      ? 'bg-[var(--primary)] border-[var(--primary)] scale-125'
+                      : i === 0
+                      ? 'border-[var(--primary)] bg-transparent'
+                      : 'border-[var(--muted-foreground)] bg-transparent'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Play/Pause Button */}
+            <Button
+              onClick={togglePlayback}
+              className="h-16 w-16 rounded-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mb-6"
+            >
+              {isPlaying ? (
+                <Pause className="h-6 w-6 text-[var(--primary-foreground)]" />
+              ) : (
+                <Play className="h-6 w-6 text-[var(--primary-foreground)] ml-1" />
+              )}
+            </Button>
+          </div>
+
+          {/* Time Signature */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Time Signature</label>
+            <div className="flex justify-center space-x-2">
+              {timeSignatures.map((sig) => (
+                <Button
+                  key={`${sig[0]}/${sig[1]}`}
+                  variant={timeSignature[0] === sig[0] && timeSignature[1] === sig[1] ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onTimeSignatureChange(sig)}
+                  className="text-xs"
+                >
+                  {sig[0]}/{sig[1]}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Volume Control */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Volume</label>
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-[var(--muted-foreground)]">0</span>
               <input
                 type="range"
                 min="0"
                 max="100"
                 value={volume}
                 onChange={(e) => setVolume(parseInt(e.target.value))}
-                className="flex-1"
+                className="flex-1 h-2 bg-[var(--secondary)] rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-sm text-[var(--muted-foreground)] w-8">{volume}</span>
+              <span className="text-sm text-[var(--muted-foreground)]">100</span>
             </div>
+            <div className="text-center mt-1 text-sm text-[var(--muted-foreground)]">{volume}%</div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-[var(--foreground)]">Accent first beat</label>
-            <Button
-              variant={accent ? "default" : "outline"}
-              size="sm"
-              onClick={() => setAccent(!accent)}
-            >
-              {accent ? "On" : "Off"}
-            </Button>
+          {/* BPM Presets */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Quick BPM</label>
+            <div className="grid grid-cols-4 gap-2">
+              {presetBpms.map((bpm) => (
+                <Button
+                  key={bpm}
+                  variant={currentBpm === bpm ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onBpmChange(bpm)}
+                  className="text-xs"
+                >
+                  {bpm}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* BPM Presets */}
-        <div className="mt-6">
-          <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Quick BPM</label>
-          <div className="grid grid-cols-6 gap-2">
-            {presetBpms.map((bpm) => (
-              <Button
-                key={bpm}
-                variant={currentBpm === bpm ? "default" : "outline"}
-                size="sm"
-                onClick={() => onBpmChange(bpm)}
-                className="text-xs"
-              >
-                {bpm}
-              </Button>
-            ))}
+        {/* Footer */}
+        <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)] rounded-b-xl">
+          <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+            <div className="flex items-center space-x-4">
+              <span>Click BPM display in transport to open</span>
+            </div>
+            <span>{timeSignature[0]}/{timeSignature[1]} at {currentBpm} BPM</span>
           </div>
         </div>
       </div>
@@ -455,57 +481,52 @@ export function MenuBar() {
   return (
     <>
       <div className="h-12 bg-gradient-to-r from-[var(--background)] via-[var(--muted)] to-[var(--background)] border-b border-[var(--border)] px-6 flex items-center justify-between shadow-lg">
-        <div className="flex items-center space-x-8">
-          <div className="flex items-center space-x-3">
-            <div className="flex space-x-1">
-              <div className="w-3 h-3 rounded-full bg-[var(--red)] shadow-sm"></div>
-              <div className="w-3 h-3 rounded-full bg-[var(--yellow)] shadow-sm"></div>
-              <div className="w-3 h-3 rounded-full bg-[var(--green)] shadow-sm"></div>
-            </div>
-            <Mic2 className="w-5 h-5 text-[var(--primary)]" />
-            <span className="font-bold text-lg bg-gradient-to-r from-[var(--primary)] to-[var(--frost3)] bg-clip-text text-transparent">
-              Audiomage Studio
-            </span>
+        {/* Left side - Project Info */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span className="text-sm font-medium text-[var(--foreground)]">Untitled Project</span>
+            <span className="text-xs text-[var(--muted-foreground)]">•</span>
+            <span className="text-xs text-[var(--muted-foreground)]">Saved</span>
           </div>
-          
-          {/* Command Palette Trigger */}
+        </div>
+
+        {/* Center - Quick Actions */}
+        <div className="flex items-center space-x-2">
           <Button
-            onClick={() => setShowCommandPalette(true)}
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="flex items-center space-x-2 px-4 py-2 border-[var(--border)] hover:bg-[var(--accent)] transition-all duration-200"
+            onClick={() => setShowCommandPalette(true)}
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
-            <Command className="w-4 h-4" />
-            <span className="text-sm">Command Palette</span>
-            <kbd className="px-2 py-1 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">⌘⇧P</kbd>
+            <Command className="h-4 w-4 mr-1" />
+            Commands
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowMetronome(true)}
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            {bpm} BPM
           </Button>
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3 bg-[var(--muted)] px-4 py-2 rounded-xl border border-[var(--border)]">
-            <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
-            <span className="text-sm font-medium text-[var(--muted-foreground)]">AI Ready</span>
-          </div>
-          
-          <div 
-            className="flex items-center space-x-2 bg-[var(--secondary)] px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--secondary)]/80 transition-colors"
-            onClick={() => setShowMetronome(true)}
-          >
-            <span className="text-sm font-mono font-bold text-[var(--secondary-foreground)]">{bpm}</span>
-            <span className="text-xs text-[var(--muted-foreground)]">BPM</span>
-            <div className="w-px h-4 bg-[var(--border)]"></div>
-            <span className="text-sm font-mono font-bold text-[var(--secondary-foreground)]">{timeSignature[0]}/{timeSignature[1]}</span>
-          </div>
-          
+
+        {/* Right side - Theme toggle */}
+        <div className="flex items-center space-x-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={toggleTheme}
-            className="h-9 w-9 p-0 rounded-lg border-[var(--border)] hover:bg-[var(--accent)] transition-all duration-200"
+            className="h-8 w-8 p-0"
           >
-            {theme === 'nord-light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            {theme === 'nord-dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </Button>
-
         </div>
       </div>
 
@@ -514,7 +535,7 @@ export function MenuBar() {
         onClose={() => setShowCommandPalette(false)}
         onCommand={handleCommand}
       />
-
+      
       <Metronome
         isOpen={showMetronome}
         onClose={() => setShowMetronome(false)}
