@@ -844,7 +844,7 @@ export function MidiEditor({
   };
 
   return (
-    <div className="flex h-full bg-[var(--background)]">
+    <div className="flex h-full bg-[var(--background)] overflow-hidden">
       {/* Track List Sidebar */}
       <div className="w-48 bg-[var(--muted)] border-r border-[var(--border)] flex flex-col">
         <div className="h-10 bg-[var(--background)] border-b border-[var(--border)] flex items-center px-3">
@@ -942,7 +942,7 @@ export function MidiEditor({
       </div>
 
       {/* Piano Roll Editor */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* MIDI Toolbar */}
         <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -1143,7 +1143,7 @@ export function MidiEditor({
         </div>
 
         {/* Main Editor Area */}
-        <div className="flex-1 flex">
+        <div className="flex-1 flex min-h-0">
           {/* Piano Keys - Fixed Position */}
           <div 
             ref={pianoKeysRef}
