@@ -1062,7 +1062,7 @@ export function MidiEditor({
         {/* Main Editor Area */}
         <div className="flex-1 flex">
           {/* Piano Keys */}
-          <div className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-hidden">
+          <div className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-y-auto overflow-x-hidden">
             <div
               className="relative"
               style={{ height: totalNotes * noteHeight }}
