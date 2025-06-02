@@ -250,7 +250,7 @@ export function QuickActionsPanel() {
   return (
     <div className="h-full flex flex-col">
       {/* Category Navigation */}
-      <div className="p-3 border-b border-[var(--border)] bg-gradient-to-br from-[var(--muted)]/20 via-[var(--background)] to-[var(--muted)]/10">
+      <div className="p-3 border-b border-[var(--border)] bg-[var(--card)]">
         {/* Category Pills */}
         <div className="flex flex-wrap gap-2 mb-3">
           {categories.map((category) => {
@@ -259,22 +259,20 @@ export function QuickActionsPanel() {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                   selectedCategory === category.id
-                    ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/80 text-[var(--primary-foreground)] shadow-lg shadow-[var(--primary)]/25'
-                    : 'bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:bg-[var(--accent)]/60 hover:border-[var(--primary)]/30 text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                    : 'bg-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
                 }`}
               >
-                <div className={`transition-all duration-300 ${
-                  selectedCategory === category.id ? 'text-[var(--primary-foreground)]' : ''
-                }`}>
+                <div className="w-4 h-4">
                   {category.icon}
                 </div>
                 <span className="text-xs font-medium">{category.name}</span>
-                <div className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                   selectedCategory === category.id
                     ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
-                    : 'bg-[var(--muted)] text-[var(--muted-foreground)]'
+                    : 'bg-[var(--background)] text-[var(--muted-foreground)]'
                 }`}>
                   {categoryCount}
                 </div>
@@ -284,15 +282,15 @@ export function QuickActionsPanel() {
         </div>
         
         {/* Active Category Header */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 border border-[var(--primary)]/20">
-          <div className="flex items-center space-x-2">
-            <div className="p-1 rounded-md bg-[var(--primary)]/20">
-              <div className="text-[var(--primary)]">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--muted)] border border-[var(--border)]">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-md bg-[var(--primary)]/10 border border-[var(--primary)]/20">
+              <div className="text-[var(--primary)] w-4 h-4">
                 {categories.find(c => c.id === selectedCategory)?.icon}
               </div>
             </div>
             <div>
-              <span className="text-sm font-bold text-[var(--foreground)]">
+              <span className="text-sm font-semibold text-[var(--foreground)]">
                 {categories.find(c => c.id === selectedCategory)?.name}
               </span>
               <p className="text-xs text-[var(--muted-foreground)]">
@@ -316,7 +314,7 @@ export function QuickActionsPanel() {
       </div>
 
       {/* Selection Info */}
-      <div className="px-3 py-2 text-xs text-[var(--muted-foreground)] bg-[var(--muted)]/20 border-b border-[var(--border)]">
+      <div className="px-3 py-2 text-xs text-[var(--muted-foreground)] bg-[var(--background)] border-b border-[var(--border)]">
         {selectedItems.length > 0 ? (
           `${selectedItems.length} items selected`
         ) : (
@@ -326,42 +324,38 @@ export function QuickActionsPanel() {
 
       {/* Actions List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="p-2 space-y-2">
-          {filteredActions.map((action, index) => (
+        <div className="p-2 space-y-1">
+          {filteredActions.map((action) => (
             <div
               key={action.id}
-              className="group relative"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="group"
             >
               <Button
                 variant="ghost"
                 onClick={() => handleActionClick(action.id)}
                 disabled={selectedItems.length === 0 && !['ai-master', 'backup-project'].includes(action.id)}
-                className="w-full h-auto p-3 text-left justify-start disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[var(--accent)] hover:to-[var(--accent)]/50 transition-all duration-300 hover:shadow-md rounded-lg border border-transparent hover:border-[var(--border)] group-hover:scale-[1.02] transform"
+                className="w-full h-auto p-3 text-left justify-start disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[var(--accent)] transition-colors rounded-lg border border-transparent hover:border-[var(--border)]"
               >
                 <div className="flex items-start space-x-3 w-full">
-                  <div className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-all duration-300 group-hover:scale-110 transform">
+                  <div className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors w-4 h-4 mt-0.5">
                     {action.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                      <span className="text-xs font-semibold text-[var(--foreground)]">
                         {action.name}
                       </span>
                       {action.shortcut && (
-                        <span className="text-xs text-[var(--muted-foreground)] font-mono bg-[var(--muted)]/30 px-1.5 py-0.5 rounded group-hover:bg-[var(--primary)]/10 transition-colors">
+                        <span className="text-xs text-[var(--muted-foreground)] font-mono bg-[var(--muted)] px-1.5 py-0.5 rounded">
                           {action.shortcut}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed group-hover:text-[var(--foreground)]/80 transition-colors">
+                    <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
                       {action.description}
                     </p>
                   </div>
                 </div>
-                
-                {/* Subtle glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none"></div>
               </Button>
             </div>
           ))}
@@ -369,16 +363,16 @@ export function QuickActionsPanel() {
       </div>
 
       {/* Quick Execute Bar */}
-      <div className="border-t border-[var(--border)] p-3 bg-gradient-to-r from-[var(--muted)]/30 to-[var(--muted)]/10 backdrop-blur-sm">
+      <div className="border-t border-[var(--border)] p-3 bg-[var(--card)]">
         <div className="flex space-x-2">
           <Button
             size="sm"
             variant="ghost"
-            className="flex-1 text-xs font-medium bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 hover:from-[var(--primary)]/20 hover:to-[var(--primary)]/10 border border-[var(--primary)]/20 hover:border-[var(--primary)]/40 transition-all duration-300 hover:shadow-lg disabled:opacity-40"
+            className="flex-1 text-xs font-medium bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 border border-[var(--primary)]/20 hover:border-[var(--primary)]/40 transition-colors disabled:opacity-40"
             disabled={selectedItems.length === 0}
           >
             <Rocket className="w-3 h-3 mr-1.5" />
-            Execute Magic
+            Execute
           </Button>
           <Button
             size="sm"
@@ -391,15 +385,14 @@ export function QuickActionsPanel() {
           </Button>
         </div>
         
-        {/* Fun status indicator */}
         <div className="mt-2 flex items-center justify-center space-x-2">
-          <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+          <div className={`w-2 h-2 rounded-full transition-colors ${
             selectedItems.length > 0 
-              ? 'bg-[var(--green)] shadow-lg shadow-[var(--green)]/50' 
+              ? 'bg-[var(--primary)]' 
               : 'bg-[var(--muted-foreground)]'
           }`}></div>
-          <span className="text-xs text-[var(--muted-foreground)] font-medium">
-            {selectedItems.length > 0 ? 'Ready to rock!' : 'Select items to begin'}
+          <span className="text-xs text-[var(--muted-foreground)]">
+            {selectedItems.length > 0 ? 'Ready to execute' : 'Select items to begin'}
           </span>
         </div>
       </div>
