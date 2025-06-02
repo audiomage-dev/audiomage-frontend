@@ -59,6 +59,8 @@ export function MidiEditor({
     startY: number;
     originalNote: MidiNote;
   } | null>(null);
+  const [heldPianoKey, setHeldPianoKey] = useState<number | null>(null);
+  const heldOscillatorRef = useRef<OscillatorNode | null>(null);
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
@@ -616,6 +618,25 @@ export function MidiEditor({
     }
   }, [isDragging, dragState, onNoteEdit, beatWidth, noteHeight, midiNotes]);
 
+  // Global mouse up listener for piano keys
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (heldPianoKey !== null) {
+        handlePianoKeyMouseUp();
+      }
+    };
+
+    if (heldPianoKey !== null) {
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('mouseleave', handleGlobalMouseUp);
+      
+      return () => {
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener('mouseleave', handleGlobalMouseUp);
+      };
+    }
+  }, [heldPianoKey]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -744,6 +765,70 @@ export function MidiEditor({
     
     playNote(pitch, velocity, duration);
     console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz`);
+  };
+
+  const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
+    event.preventDefault();
+    if (!audioContext || heldPianoKey === pitch) return;
+    
+    // Stop any currently held note
+    if (heldOscillatorRef.current) {
+      try {
+        heldOscillatorRef.current.stop();
+      } catch (e) {
+        // Oscillator might already be stopped
+      }
+    }
+    
+    const waveType = getInstrumentWaveType(currentInstrument);
+    const frequency = midiToFrequency(pitch);
+    const velocity = getInstrumentVelocity(currentInstrument);
+    
+    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.type = waveType;
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    
+    gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.start();
+    
+    // Store the oscillator and note state
+    heldOscillatorRef.current = oscillator;
+    setHeldPianoKey(pitch);
+  };
+
+  const handlePianoKeyMouseUp = () => {
+    if (heldOscillatorRef.current && audioContext) {
+      try {
+        // Fade out the note smoothly
+        const gainNode = audioContext.createGain();
+        heldOscillatorRef.current.disconnect();
+        heldOscillatorRef.current.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        heldOscillatorRef.current.stop(audioContext.currentTime + 0.1);
+      } catch (e) {
+        // Oscillator might already be stopped
+        if (heldOscillatorRef.current) {
+          try {
+            heldOscillatorRef.current.stop();
+          } catch (e2) {
+            // Already stopped
+          }
+        }
+      }
+      heldOscillatorRef.current = null;
+    }
+    setHeldPianoKey(null);
   };
 
   // Get velocity based on instrument type
@@ -1366,6 +1451,8 @@ export function MidiEditor({
               ? 'inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.2)' 
               : 'inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.1)',
           }}
+          onMouseDown={(e) => handlePianoKeyMouseDown(midiNote, e)}
+          onMouseUp={handlePianoKeyMouseUp}
           onClick={() => handlePianoKeyClick(midiNote)}
         >
           <span className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}>
