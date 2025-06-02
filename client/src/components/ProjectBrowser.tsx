@@ -129,6 +129,15 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
           size: 8192000,
           duration: 240.1
         },
+        { 
+          id: '19', 
+          name: 'file_example_WAV_1MG (1).wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/attached_assets/file_example_WAV_1MG (1).wav',
+          size: 1048576,
+          duration: 33.0
+        },
       ]
     },
     {
