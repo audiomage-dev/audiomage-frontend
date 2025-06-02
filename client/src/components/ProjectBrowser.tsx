@@ -134,7 +134,7 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
           name: 'file_example_WAV_1MG (1).wav', 
           type: 'audio', 
           level: 1,
-          url: '/attached_assets/file_example_WAV_1MG (1).wav',
+          url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
           size: 1048576,
           duration: 33.0
         },
