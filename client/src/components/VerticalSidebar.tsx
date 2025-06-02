@@ -76,7 +76,7 @@ interface SidebarItem {
 }
 
 export function VerticalSidebar() {
-  const [activePanel, setActivePanel] = useState<string>('files');
+  const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
