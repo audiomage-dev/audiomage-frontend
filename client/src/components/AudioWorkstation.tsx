@@ -169,6 +169,7 @@ export function AudioWorkstation() {
                 midiPlaybackFunctions.playMidiTrack?.();
               }}
               onMidiPause={() => {
+                console.log('AudioWorkstation: onMidiPause called, functions available:', !!midiPlaybackFunctions.pauseMidiPlayback);
                 midiPlaybackFunctions.pauseMidiPlayback?.();
               }}
               onMidiStop={() => {
