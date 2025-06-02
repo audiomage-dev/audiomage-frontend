@@ -811,7 +811,7 @@ export function MidiEditor({
 
   const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
     event.preventDefault();
-    if (!audioContext || heldPianoKey === pitch) return;
+    if (heldPianoKey === pitch) return;
     
     // Stop any currently held note
     if (heldOscillatorRef.current) {
@@ -845,55 +845,24 @@ export function MidiEditor({
       }
     }
     
-    const waveType = getInstrumentWaveType(instrumentForSound);
-    const frequency = midiToFrequency(pitch);
+    // Use the same playNote function that existing notes use for consistent instrument sounds
     const velocity = getInstrumentVelocity(instrumentForSound);
+    const duration = 2.0; // Longer duration for hold
     
-    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${instrumentForSound} (${waveType})`);
+    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
     
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.type = waveType;
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-    
-    gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.start();
-    
-    // Store the oscillator and note state
-    heldOscillatorRef.current = oscillator;
+    // Play using the same function as existing notes
+    playNote(pitch, velocity, duration);
     setHeldPianoKey(pitch);
   };
 
   const handlePianoKeyMouseUp = () => {
-    if (heldOscillatorRef.current && audioContext) {
-      try {
-        // Fade out the note smoothly
-        const gainNode = audioContext.createGain();
-        heldOscillatorRef.current.disconnect();
-        heldOscillatorRef.current.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-        heldOscillatorRef.current.stop(audioContext.currentTime + 0.1);
-      } catch (e) {
-        // Oscillator might already be stopped
-        if (heldOscillatorRef.current) {
-          try {
-            heldOscillatorRef.current.stop();
-          } catch (e2) {
-            // Already stopped
-          }
-        }
-      }
+    // For instrument sounds using playNote, we don't need to manually stop oscillators
+    // The playNote function handles the audio lifecycle automatically
+    setHeldPianoKey(null);
+    if (heldOscillatorRef.current) {
       heldOscillatorRef.current = null;
     }
-    setHeldPianoKey(null);
   };
 
   // Get velocity based on instrument type
