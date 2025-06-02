@@ -614,9 +614,9 @@ export function MenuBar() {
               variant="ghost"
               size="sm"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700"
+              className="h-8 w-8 p-0 rounded bg-[var(--primary)] hover:bg-[var(--primary)]/90 flex items-center justify-center"
             >
-              <User className="h-4 w-4 text-white" />
+              <span className="text-[var(--primary-foreground)] font-semibold text-sm">U</span>
             </Button>
             
             {showUserMenu && (
