@@ -69,6 +69,7 @@ export function MidiEditor({
     trackId: string;
   } | null>(null);
   const [activeOscillators, setActiveOscillators] = useState<Set<OscillatorNode>>(new Set());
+  const activeOscillatorsRef = useRef<Set<OscillatorNode>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -388,11 +389,13 @@ export function MidiEditor({
       gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
       
-      // Track active oscillator
+      // Track active oscillator in both state and ref
+      activeOscillatorsRef.current.add(oscillator);
       setActiveOscillators(prev => new Set(prev).add(oscillator));
       
       // Remove oscillator from active set when it ends
       oscillator.onended = () => {
+        activeOscillatorsRef.current.delete(oscillator);
         setActiveOscillators(prev => {
           const newSet = new Set(prev);
           newSet.delete(oscillator);
@@ -985,7 +988,7 @@ export function MidiEditor({
   };
 
   const pauseMidiPlayback = () => {
-    console.log('Pausing MIDI playback - stopping', activeOscillators.size, 'active notes');
+    console.log('Pausing MIDI playback - stopping', activeOscillatorsRef.current.size, 'active notes');
     setIsPaused(true);
     
     // Clear the playback interval
@@ -994,8 +997,8 @@ export function MidiEditor({
       setMidiPlaybackInterval(null);
     }
     
-    // Stop all active oscillators immediately
-    const oscillatorsToStop = Array.from(activeOscillators);
+    // Stop all active oscillators immediately using ref
+    const oscillatorsToStop = Array.from(activeOscillatorsRef.current);
     oscillatorsToStop.forEach(oscillator => {
       try {
         oscillator.stop(0); // Stop immediately
@@ -1004,6 +1007,9 @@ export function MidiEditor({
         console.log('Error stopping oscillator:', error);
       }
     });
+    
+    // Clear both ref and state
+    activeOscillatorsRef.current.clear();
     setActiveOscillators(new Set());
     
     onMidiPlayingChange?.(false);
