@@ -716,12 +716,12 @@ export function MenuBar() {
       {/* Access Modal */}
       {showAccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="bg-[var(--popover)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
               <div className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-[var(--primary)]" />
-                <h2 className="text-lg font-semibold text-[var(--popover-foreground)]">Audio Project Access</h2>
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">Audio Project Access</h2>
               </div>
               <Button
                 variant="ghost"
@@ -740,7 +740,7 @@ export function MenuBar() {
                   <span className="text-[var(--primary-foreground)] font-semibold text-sm">A</span>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-[var(--popover-foreground)]">Audio Production Studio</div>
+                  <div className="text-sm font-medium text-[var(--foreground)]">Audio Production Studio</div>
                   <div className="text-xs text-[var(--muted-foreground)]">audiomage-audio-project</div>
                 </div>
               </div>
@@ -760,8 +760,8 @@ export function MenuBar() {
             {/* Content */}
             <div className="max-h-[400px] overflow-y-auto">
               {/* Groups with access */}
-              <div className="p-4 bg-[var(--popover)]">
-                <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">Groups with access</h3>
+              <div className="p-4 bg-[var(--background)]">
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Groups with access</h3>
                 
                 {/* Audio Production Team */}
                 <div className="mb-4">
@@ -771,7 +771,7 @@ export function MenuBar() {
                         <span className="text-[var(--primary-foreground)] font-semibold text-sm">A</span>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-[var(--popover-foreground)]">Audio Production Team</div>
+                        <div className="text-sm font-medium text-[var(--foreground)]">Audio Production Team</div>
                         <div className="text-xs text-[var(--muted-foreground)]">4 members</div>
                       </div>
                     </div>
@@ -782,7 +782,7 @@ export function MenuBar() {
                     <div className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        <span className="text-sm text-[var(--popover-foreground)]">Producers</span>
+                        <span className="text-sm text-[var(--foreground)]">Producers</span>
                         <span className="text-xs text-[var(--muted-foreground)]">1 member</span>
                       </div>
                       <Button
@@ -797,7 +797,7 @@ export function MenuBar() {
                     <div className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        <span className="text-sm text-[var(--popover-foreground)]">Engineers</span>
+                        <span className="text-sm text-[var(--foreground)]">Engineers</span>
                         <span className="text-xs text-[var(--muted-foreground)]">2 members</span>
                       </div>
                       <Button
@@ -812,7 +812,7 @@ export function MenuBar() {
                     <div className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        <span className="text-sm text-[var(--popover-foreground)]">Collaborators</span>
+                        <span className="text-sm text-[var(--foreground)]">Collaborators</span>
                         <span className="text-xs text-[var(--muted-foreground)]">0 members</span>
                       </div>
                       <Button
@@ -827,7 +827,7 @@ export function MenuBar() {
                     <div className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-2">
                         <Eye className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        <span className="text-sm text-[var(--popover-foreground)]">Listeners</span>
+                        <span className="text-sm text-[var(--foreground)]">Listeners</span>
                         <span className="text-xs text-[var(--muted-foreground)]">1 member</span>
                       </div>
                       <Button
@@ -843,8 +843,8 @@ export function MenuBar() {
               </div>
 
               {/* People with access */}
-              <div className="p-4 border-t border-[var(--border)] bg-[var(--popover)]">
-                <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">People with access</h3>
+              <div className="p-4 border-t border-[var(--border)] bg-[var(--background)]">
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">People with access</h3>
                 
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center space-x-3">
@@ -852,7 +852,7 @@ export function MenuBar() {
                       <User className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-[var(--popover-foreground)]">Project Owner</div>
+                      <div className="text-sm font-medium text-[var(--foreground)]">Project Owner</div>
                       <div className="text-xs text-[var(--muted-foreground)]">Audio Producer</div>
                     </div>
                   </div>
