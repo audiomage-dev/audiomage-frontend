@@ -227,10 +227,10 @@ export function ScoreEditor({
   };
 
   // Convert note duration to seconds based on current BPM
-  const noteDurationToSeconds = (noteDuration: number, bpm: number = 120) => {
+  const noteDurationToSeconds = (noteDuration: number, currentBpm: number = bpm) => {
     // Note duration is in beats (4 = whole note, 1 = quarter note, etc.)
-    // At 120 BPM, a quarter note = 0.5 seconds
-    return (noteDuration * 60) / bpm;
+    // At any BPM, quarter note duration = 60 / BPM seconds
+    return (noteDuration * 60) / currentBpm;
   };
 
   // Play a single note with instrument-specific sound
@@ -707,6 +707,12 @@ export function ScoreEditor({
           });
         } else {
           setSelectedNotes(new Set([clickedNote.note.id]));
+          // Play the clicked note with BPM-based timing
+          const staff = staffs.find(s => s.id === clickedNote.staffId);
+          if (staff) {
+            const noteDurationInSeconds = noteDurationToSeconds(clickedNote.note.duration);
+            playNote(clickedNote.note, staff.instrument, noteDurationInSeconds);
+          }
         }
       } else if (!clickedNote && currentTool === 'note') {
         // Add a new note with enhanced properties
