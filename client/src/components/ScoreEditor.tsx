@@ -487,10 +487,10 @@ export function ScoreEditor({
   };
 
   return (
-    <div className="h-full flex bg-white dark:bg-gray-900">
+    <div className="h-full flex bg-[var(--background)]">
       {/* Left Control Palette */}
-      <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="w-64 bg-[var(--muted)] border-r border-[var(--border)] flex flex-col">
+        <div className="border-b border-[var(--border)]">
           <Select value={selectedPaletteCategory} onValueChange={setSelectedPaletteCategory}>
             <SelectTrigger className="w-full border-0 rounded-none">
               <SelectValue />
@@ -510,7 +510,7 @@ export function ScoreEditor({
                 key={item.id}
                 variant="ghost"
                 size="sm"
-                className="h-12 p-1 flex flex-col items-center justify-center text-xs hover:bg-blue-50 dark:hover:bg-blue-900"
+                className="h-12 p-1 flex flex-col items-center justify-center text-xs hover:bg-[var(--accent)] text-[var(--foreground)]"
                 onClick={item.action}
                 title={item.label}
               >
@@ -618,12 +618,12 @@ export function ScoreEditor({
       </div>
 
       {/* Right Sidebar */}
-      <div className="w-64 bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-sm mb-2">Staff Controls</h3>
+      <div className="w-64 bg-[var(--muted)] border-l border-[var(--border)] flex flex-col">
+        <div className="p-4 border-b border-[var(--border)]">
+          <h3 className="font-semibold text-sm mb-2 text-[var(--foreground)]">Staff Controls</h3>
           
           <div className="mb-3">
-            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Key Signature</label>
+            <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Key Signature</label>
             <Select value={currentKeySignature} onValueChange={setCurrentKeySignature}>
               <SelectTrigger className="w-full h-8">
                 <SelectValue />
@@ -639,7 +639,7 @@ export function ScoreEditor({
           </div>
 
           <div className="mb-3">
-            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Tempo (BPM)</label>
+            <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Tempo (BPM)</label>
             <div className="flex items-center space-x-2">
               <Slider
                 value={[currentTempo]}
