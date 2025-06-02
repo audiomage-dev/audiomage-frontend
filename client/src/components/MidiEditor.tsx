@@ -952,7 +952,7 @@ export function MidiEditor({
       selectedTrack, 
       midiNotesKeys: Object.keys(midiNotes),
       selectedTrackNotes: midiNotes[selectedTrack || '']?.length || 0,
-      allMidiNotes: midiNotes
+      trackNames: tracks.map(t => ({ id: t.id, name: t.name, type: t.type }))
     });
     
     // If no selected track, use the first available MIDI track
