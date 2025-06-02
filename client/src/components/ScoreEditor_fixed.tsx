@@ -678,7 +678,37 @@ export function ScoreEditor({
             <span className="text-sm text-[var(--muted-foreground)]">Duration:</span>
             <select
               value={noteValue}
-              onChange={(e) => setNoteValue(Number(e.target.value))}
+              onChange={(e) => {
+                const newDuration = Number(e.target.value);
+                setNoteValue(newDuration);
+                
+                // Update selected notes to the new duration
+                if (selectedNotes.size > 0) {
+                  setStaffs(prev => prev.map(staff => ({
+                    ...staff,
+                    notes: staff.notes.map(note => 
+                      selectedNotes.has(note.id)
+                        ? { ...note, duration: newDuration }
+                        : note
+                    )
+                  })));
+                  
+                  // Play audio preview of the first selected note with new duration
+                  const firstSelectedStaff = staffs.find(staff => 
+                    staff.notes.some(note => selectedNotes.has(note.id))
+                  );
+                  if (firstSelectedStaff) {
+                    const firstSelectedNote = firstSelectedStaff.notes.find(note => 
+                      selectedNotes.has(note.id)
+                    );
+                    if (firstSelectedNote) {
+                      const updatedNote = { ...firstSelectedNote, duration: newDuration };
+                      const noteDurationInSeconds = noteDurationToSeconds(newDuration);
+                      playNote(updatedNote, firstSelectedStaff.instrument, noteDurationInSeconds);
+                    }
+                  }
+                }
+              }}
               className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
             >
               <option value={4}>𝅝 Whole</option>
