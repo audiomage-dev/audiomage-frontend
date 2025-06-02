@@ -1432,7 +1432,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               
               return (
                 <div
-                  key={`timeline-marker-${i}`}
+                  key={`${componentId}-timeline-marker-${i}-${timeSeconds}`}
                   className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                   style={{ left: `${position}%` }}
                 >
