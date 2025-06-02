@@ -1466,9 +1466,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           >
             {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
               const timeSeconds = i * 60;
-              const minutes = Math.floor(timeSeconds / 60);
-              const seconds = timeSeconds % 60;
+              // Calculate measure number based on BPM and time signature
+              // Assuming 4/4 time signature and 120 BPM as default
+              const beatsPerMinute = 120; // This should come from props
+              const beatsPerMeasure = 4; // This should come from time signature
+              const secondsPerBeat = 60 / beatsPerMinute;
+              const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
+              const measureNumber = Math.floor(timeSeconds / secondsPerMeasure) + 1;
               const position = (timeSeconds / 1200) * 100;
+              
+              // Only show markers at measure boundaries
+              const isAtMeasureBoundary = (timeSeconds % secondsPerMeasure) === 0;
+              
+              if (!isAtMeasureBoundary) return null;
               
               return (
                 <div
@@ -1476,10 +1486,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                   style={{ left: `${position}%` }}
                 >
-                  {minutes}:{seconds.toString().padStart(2, '0')}
+                  {measureNumber}
                 </div>
               );
-            })}
+            }).filter(Boolean)}
           </div>
         </div>
 
