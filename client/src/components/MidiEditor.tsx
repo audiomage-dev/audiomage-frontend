@@ -1003,6 +1003,14 @@ export function MidiEditor({
     return waveTypeMap[instrument] || 'sine';
   };
 
+  // Helper function to convert MIDI note to note name
+  const midiToNoteName = (midiNote: number): string => {
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octave = Math.floor(midiNote / 12) - 1;
+    const noteName = noteNames[midiNote % 12];
+    return `${noteName}${octave}`;
+  };
+
   // Handle scroll synchronization
   const handleScrollSync = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
