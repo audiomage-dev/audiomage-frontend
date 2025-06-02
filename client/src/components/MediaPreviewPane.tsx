@@ -137,11 +137,11 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
         {/* Media Content */}
         <div className="space-y-4">
           {file.type === 'video' && (
-            <div className="relative bg-black rounded-lg overflow-hidden max-h-64">
+            <div className="relative rounded-lg overflow-hidden max-h-64 flex justify-center">
               <video
                 ref={videoRef}
                 src={file.url}
-                className="w-full h-auto max-h-64 object-contain"
+                className="max-h-64 object-contain rounded-lg"
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleTimeUpdate}
                 onPlay={() => setIsPlaying(true)}
