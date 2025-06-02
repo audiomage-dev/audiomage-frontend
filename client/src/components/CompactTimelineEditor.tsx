@@ -201,8 +201,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   // Calculate dynamic timeline width based on clips
   const getTimelineWidth = useCallback(() => {
-    let maxTime = 1200; // Default 20 minutes
+    let maxTime = 300; // Minimum 5 minutes default
     
+    // Find the actual longest clip end time
     tracks.forEach(track => {
       track.clips?.forEach(clip => {
         const clipEndTime = clip.startTime + clip.duration;
@@ -212,11 +213,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       });
     });
     
-    // Add 10% buffer and ensure minimum width
-    const bufferedTime = maxTime * 1.1;
-    const scaledWidth = bufferedTime * zoomLevel;
+    // Add reasonable buffer (20% or minimum 60 seconds)
+    const bufferTime = Math.max(maxTime * 0.2, 60);
+    const totalTime = maxTime + bufferTime;
     
-    return Math.max(1200, scaledWidth);
+    // Scale based on zoom level with better pixel-per-second ratio
+    const pixelsPerSecond = Math.max(2, 4 * zoomLevel); // Better scaling
+    const calculatedWidth = totalTime * pixelsPerSecond;
+    
+    // Ensure minimum width for usability
+    return Math.max(800, calculatedWidth);
   }, [tracks, zoomLevel]);
 
   // Canvas drawing function for grid background
