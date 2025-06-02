@@ -20,7 +20,7 @@ import {
   ZoomOut
 } from 'lucide-react';
 
-interface TimelineEditorProps {
+interface AudioEditorProps {
   tracks: AudioTrack[];
   transport: TransportState;
   onTrackMute: (trackId: string) => void;
@@ -216,7 +216,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
   );
 }
 
-export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: TimelineEditorProps) {
+export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: AudioEditorProps) {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackId: string } | null>(null);
   const [showChatBox, setShowChatBox] = useState(false);
@@ -413,7 +413,7 @@ export function TimelineEditor({ tracks, transport, onTrackMute, onTrackSolo }: 
       <div className="bg-[var(--muted)] border-b border-[var(--border)] p-2">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-semibold">Timeline Editor</span>
+            <span className="text-sm font-semibold">Audio Editor</span>
             <Button variant="ghost" size="sm" className="text-xs bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto">
               <i className="fas fa-search-plus mr-1"></i>Zoom
             </Button>
