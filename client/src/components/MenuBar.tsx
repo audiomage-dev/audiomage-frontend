@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Link } from 'wouter';
 import { useTheme } from '../contexts/ThemeContext';
 import audiomageLogoPath from '@assets/audiomage-logo-transparent.png';
 import { 
@@ -502,11 +503,13 @@ export function MenuBar() {
         {/* Left side - Project Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <img 
-              src={audiomageLogoPath} 
-              alt="Audiomage Logo" 
-              className="w-8 h-8 object-contain"
-            />
+            <Link href="/home">
+              <img 
+                src={audiomageLogoPath} 
+                alt="Audiomage Logo" 
+                className="w-8 h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
             {isEditingName ? (
               <input
                 type="text"
