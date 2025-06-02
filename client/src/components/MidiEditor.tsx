@@ -763,8 +763,9 @@ export function MidiEditor({
     if (!selectedTrack) return;
     
     // Get instrument type from selected track
-    let instrumentForSound = currentInstrument;
     const track = tracks.find(t => t.id === selectedTrack);
+    let instrumentForSound = 'piano'; // Default
+    
     if (track) {
       const trackName = track.name.toLowerCase();
       if (trackName.includes('piano')) instrumentForSound = 'piano';
@@ -783,126 +784,98 @@ export function MidiEditor({
       else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
     }
     
-    // Play sound based on current mode - only one sound type
+    // Play appropriate sound based on mode
     if (pianoMode === 'instrument') {
-      // Play instrument sound only
       const velocity = getInstrumentVelocity(instrumentForSound);
-      const duration = getInstrumentDuration(instrumentForSound);
+      const duration = 0.8;
       playNote(pitch, velocity, duration);
-      console.log(`Playing ${instrumentForSound} note: ${getNoteNameFromMidi(pitch)} (${pitch})`);
     } else {
-      // Play MIDI oscillator sound only
+      // MIDI mode - direct oscillator
       if (audioContext) {
         const waveType = getInstrumentWaveType(instrumentForSound);
         const frequency = midiToFrequency(pitch);
-        const velocity = getInstrumentVelocity(instrumentForSound);
         
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         
         oscillator.type = waveType;
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        oscillator.frequency.value = frequency;
+        gainNode.gain.value = 0.15;
         
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
         oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.5);
-        
-        console.log(`Playing MIDI ${waveType}: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
+        oscillator.stop(audioContext.currentTime + 0.3);
       }
     }
     
-    // Add note to the canvas at the current playback position
+    // Add note to canvas
     const currentTime = midiPlaybackTime || 0;
-    const startTime = Math.max(0, currentTime);
-    
     const newNote: MidiNote = {
       id: `note-${Date.now()}-${Math.random()}`,
       pitch: pitch,
-      startTime: startTime,
-      duration: 1.0, // 1 beat duration
-      velocity: Math.round(getInstrumentVelocity(instrumentForSound) * 127) // Convert to MIDI velocity (0-127)
+      startTime: Math.max(0, currentTime),
+      duration: 1.0,
+      velocity: 80
     };
     
-    // Add the note to the track
     if (onNoteAdd) {
       onNoteAdd(selectedTrack, newNote);
-      console.log(`Added note: ${getNoteNameFromMidi(pitch)} (${pitch}) at beat ${startTime.toFixed(2)} to track ${selectedTrack}`);
     }
   };
 
   const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
     event.preventDefault();
-    if (heldPianoKey === pitch) return;
+    if (heldPianoKey === pitch || !selectedTrack) return;
     
     // Stop any currently held note
     if (heldOscillatorRef.current) {
       try {
         heldOscillatorRef.current.stop();
       } catch (e) {
-        // Oscillator might already be stopped
+        // Already stopped
+      }
+      heldOscillatorRef.current = null;
+    }
+    
+    // Get instrument from track
+    const track = tracks.find(t => t.id === selectedTrack);
+    let instrumentForSound = 'piano';
+    
+    if (track) {
+      const trackName = track.name.toLowerCase();
+      if (trackName.includes('piano')) instrumentForSound = 'piano';
+      else if (trackName.includes('bass')) instrumentForSound = 'bass';
+      else if (trackName.includes('string')) instrumentForSound = 'strings';
+      else if (trackName.includes('synth')) {
+        if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
+        else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
+        else instrumentForSound = 'synth_lead';
       }
     }
     
-    // Get instrument type from selected track
-    let instrumentForSound = currentInstrument;
-    if (selectedTrack) {
-      const track = tracks.find(t => t.id === selectedTrack);
-      if (track) {
-        const trackName = track.name.toLowerCase();
-        if (trackName.includes('piano')) instrumentForSound = 'piano';
-        else if (trackName.includes('bass')) instrumentForSound = 'bass';
-        else if (trackName.includes('string')) instrumentForSound = 'strings';
-        else if (trackName.includes('synth')) {
-          if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
-          else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
-          else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
-          else instrumentForSound = 'synth_lead';
-        }
-        else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
-        else if (trackName.includes('organ')) instrumentForSound = 'organ';
-        else if (trackName.includes('brass')) instrumentForSound = 'brass';
-        else if (trackName.includes('drum')) instrumentForSound = 'drums';
-        else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
-      }
-    }
-    
-    if (pianoMode === 'instrument') {
-      // Use instrument sound for hold
-      const velocity = getInstrumentVelocity(instrumentForSound);
-      const duration = 2.0; // Longer duration for hold
+    if (pianoMode === 'midi' && audioContext) {
+      // Sustained MIDI oscillator
+      const waveType = getInstrumentWaveType(instrumentForSound);
+      const frequency = midiToFrequency(pitch);
       
-      console.log(`Holding ${instrumentForSound}: ${getNoteNameFromMidi(pitch)} (${pitch})`);
-      playNote(pitch, velocity, duration);
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.type = waveType;
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = 0.2;
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start();
+      heldOscillatorRef.current = oscillator;
     } else {
-      // Use MIDI oscillator for sustained hold
-      if (audioContext) {
-        const waveType = getInstrumentWaveType(instrumentForSound);
-        const frequency = midiToFrequency(pitch);
-        const velocity = getInstrumentVelocity(instrumentForSound);
-        
-        console.log(`Holding MIDI ${waveType}: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
-        
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.type = waveType;
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.start();
-        
-        // Store the oscillator for manual stopping
-        heldOscillatorRef.current = oscillator;
-      }
+      // Instrument mode - use longer duration for hold effect
+      const velocity = getInstrumentVelocity(instrumentForSound);
+      playNote(pitch, velocity, 2.0);
     }
     
     setHeldPianoKey(pitch);
