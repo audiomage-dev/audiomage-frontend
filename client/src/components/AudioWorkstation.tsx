@@ -206,6 +206,7 @@ export function AudioWorkstation() {
                 onTrackSelect={setSelectedTrack}
                 onMidiPlayingChange={setIsMidiPlaying}
                 onMidiControlsRegister={setMidiPlaybackFunctions}
+                isMidiPlaying={isMidiPlaying}
                 isLocked={isMidiLocked}
               />
             )}

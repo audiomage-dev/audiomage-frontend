@@ -27,6 +27,7 @@ interface MidiEditorProps {
     pauseMidiPlayback: () => void;
     stopMidiPlayback: () => void;
   }) => void;
+  isMidiPlaying?: boolean;
   isLocked?: boolean;
 }
 
@@ -42,6 +43,7 @@ export function MidiEditor({
   onNoteDelete,
   onMidiPlayingChange,
   onMidiControlsRegister,
+  isMidiPlaying = false,
   isLocked = false
 }: MidiEditorProps) {
   const [selectedTrack, setSelectedTrack] = useState<string | null>(tracks.find(t => t.type === 'midi')?.id || null);
@@ -55,7 +57,6 @@ export function MidiEditor({
   const [quantizeValue, setQuantizeValue] = useState(0.25); // 16th note default
   const [drawingNote, setDrawingNote] = useState<MidiNote | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -841,9 +842,8 @@ export function MidiEditor({
   const playMidiTrack = () => {
     if (!selectedTrack || !midiNotes[selectedTrack]) return;
     
-    setIsMidiPlaying(true);
-    setMidiPlaybackTime(0);
     onMidiPlayingChange?.(true);
+    setMidiPlaybackTime(0);
     
     const startTime = Date.now();
     const bpm = 120; // Default BPM for MIDI playback
@@ -883,7 +883,6 @@ export function MidiEditor({
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
     }
-    setIsMidiPlaying(false);
     onMidiPlayingChange?.(false);
     console.log('MIDI playback paused');
   };
@@ -893,9 +892,8 @@ export function MidiEditor({
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
     }
-    setIsMidiPlaying(false);
-    setMidiPlaybackTime(0);
     onMidiPlayingChange?.(false);
+    setMidiPlaybackTime(0);
     console.log('MIDI playback stopped');
   };
 
