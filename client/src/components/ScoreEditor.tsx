@@ -32,6 +32,50 @@ interface Note {
   velocity: number;
   accidental?: 'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat';
   articulation?: string[];
+  tie?: { start: boolean; end: boolean; };
+  slur?: string;
+  beam?: string;
+  tuplet?: { type: number; bracket: boolean; };
+  lyrics?: string;
+  fingering?: string;
+}
+
+interface Chord {
+  id: string;
+  notes: Note[];
+  startTime: number;
+  duration: number;
+  symbol?: string;
+}
+
+interface Dynamic {
+  id: string;
+  time: number;
+  marking: string;
+  type: 'dynamic' | 'crescendo' | 'diminuendo';
+  endTime?: number;
+}
+
+interface TempoMarking {
+  id: string;
+  time: number;
+  bpm: number;
+  text?: string;
+}
+
+interface RehearsalMark {
+  id: string;
+  time: number;
+  letter: string;
+}
+
+interface Measure {
+  id: string;
+  number: number;
+  timeSignature?: [number, number];
+  keySignature?: string;
+  barlineType: 'single' | 'double' | 'final' | 'repeat-start' | 'repeat-end' | 'invisible';
+  repeatCount?: number;
 }
 
 interface Staff {
@@ -42,10 +86,19 @@ interface Staff {
   instrument: string;
   tempo: number;
   notes: Note[];
+  chords: Chord[];
+  dynamics: Dynamic[];
+  tempoMarkings: TempoMarking[];
+  rehearsalMarks: RehearsalMark[];
+  measures: Measure[];
   visible: boolean;
   locked: boolean;
   volume: number;
   pan: number;
+  midiChannel: number;
+  transposition: number;
+  capo?: number;
+  tuning?: string[];
 }
 
 interface ScoreEditorProps {
@@ -190,12 +243,16 @@ export function ScoreEditor({
 
     const isDark = document.documentElement.classList.contains('dark');
     const colors = {
-      background: isDark ? '#1e1e1e' : '#fefefe',
-      staffLines: isDark ? '#666666' : '#000000',
-      notes: isDark ? '#ffffff' : '#000000',
-      text: isDark ? '#cccccc' : '#333333',
+      background: isDark ? '#1f2937' : '#ffffff',
+      staffLines: isDark ? '#9ca3af' : '#374151',
+      notes: isDark ? '#f9fafb' : '#111827',
+      text: isDark ? '#e5e7eb' : '#374151',
       selectedNote: '#3b82f6',
-      measureLines: isDark ? '#555555' : '#999999',
+      measureLines: isDark ? '#6b7280' : '#d1d5db',
+      ledgerLines: isDark ? '#9ca3af' : '#374151',
+      accidentals: isDark ? '#f3f4f6' : '#1f2937',
+      dynamics: isDark ? '#a78bfa' : '#8b5cf6',
+      tempo: isDark ? '#fbbf24' : '#f59e0b'
     };
 
     ctx.fillStyle = colors.background;
@@ -288,7 +345,7 @@ export function ScoreEditor({
         
         // Ledger lines
         if (needsLedgerLines.length > 0) {
-          ctx.strokeStyle = colors.staffLines;
+          ctx.strokeStyle = colors.ledgerLines;
           ctx.lineWidth = 1;
           needsLedgerLines.forEach(ledgerY => {
             ctx.beginPath();
@@ -531,12 +588,15 @@ export function ScoreEditor({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-4 bg-white dark:bg-gray-900">
           <canvas
             ref={scoreCanvasRef}
-            className="w-full h-full border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 cursor-pointer"
+            className="w-full h-full border border-gray-200 dark:border-gray-700 rounded cursor-pointer"
             onClick={handleCanvasClick}
-            style={{ minHeight: '600px' }}
+            style={{ 
+              minHeight: '600px',
+              backgroundColor: 'transparent'
+            }}
           />
         </div>
       </div>
