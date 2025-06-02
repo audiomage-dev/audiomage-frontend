@@ -519,14 +519,6 @@ export function CompactTransportBar({
             {getCurrentDisplayTime()}
           </div>
         )}
-        <div className="w-px h-4 bg-[var(--border)]"></div>
-        <button 
-          className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer px-2 py-1 rounded hover:bg-[var(--accent)]"
-          onClick={() => setIsMetronomeOpen(true)}
-          title="Click to open Metronome"
-        >
-          {bpm} BPM • {timeSignature[0]}/{timeSignature[1]}
-        </button>
       </div>
 
       {/* Right: Additional Controls */}
