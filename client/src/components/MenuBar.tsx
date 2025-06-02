@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '../contexts/ThemeContext';
+import logoRoughPath from '@assets/logo_rough.png';
 import { 
   Search, 
   Command, 
@@ -456,9 +457,7 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
 export function MenuBar() {
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showMetronome, setShowMetronome] = useState(false);
-  const [bpm, setBpm] = useState(120);
-  const [timeSignature, setTimeSignature] = useState<[number, number]>([4, 4]);
+
   const [projectName, setProjectName] = useState("Untitled Project");
   const [isEditingName, setIsEditingName] = useState(false);
 
@@ -503,7 +502,11 @@ export function MenuBar() {
         {/* Left side - Project Info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <img 
+              src={logoRoughPath} 
+              alt="Audiomage Logo" 
+              className="w-6 h-6 object-contain"
+            />
             {isEditingName ? (
               <input
                 type="text"
@@ -566,14 +569,7 @@ export function MenuBar() {
         onCommand={handleCommand}
       />
       
-      <Metronome
-        isOpen={showMetronome}
-        onClose={() => setShowMetronome(false)}
-        currentBpm={bpm}
-        timeSignature={timeSignature}
-        onBpmChange={setBpm}
-        onTimeSignatureChange={setTimeSignature}
-      />
+
     </>
   );
 }
