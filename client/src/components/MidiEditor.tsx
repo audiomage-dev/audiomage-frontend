@@ -61,6 +61,7 @@ export function MidiEditor({
   } | null>(null);
   const [heldPianoKey, setHeldPianoKey] = useState<number | null>(null);
   const heldOscillatorRef = useRef<OscillatorNode | null>(null);
+  const [pianoMode, setPianoMode] = useState<'midi' | 'instrument'>('instrument');
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
@@ -782,11 +783,38 @@ export function MidiEditor({
       else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
     }
     
-    // Play the exact MIDI note with track-specific instrument characteristics
-    const velocity = getInstrumentVelocity(instrumentForSound);
-    const duration = getInstrumentDuration(instrumentForSound);
-    
-    playNote(pitch, velocity, duration);
+    // Play sound based on current mode
+    if (pianoMode === 'instrument') {
+      // Play instrument sound
+      const velocity = getInstrumentVelocity(instrumentForSound);
+      const duration = getInstrumentDuration(instrumentForSound);
+      playNote(pitch, velocity, duration);
+      console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
+    } else {
+      // Play MIDI oscillator sound
+      if (audioContext) {
+        const waveType = getInstrumentWaveType(instrumentForSound);
+        const frequency = midiToFrequency(pitch);
+        const velocity = getInstrumentVelocity(instrumentForSound);
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = waveType;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.5);
+        
+        console.log(`Playing MIDI note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+      }
+    }
     
     // Add note to the canvas at the current playback position
     const currentTime = midiPlaybackTime || 0;
@@ -797,7 +825,7 @@ export function MidiEditor({
       pitch: pitch,
       startTime: startTime,
       duration: 1.0, // 1 beat duration
-      velocity: Math.round(velocity * 127) // Convert to MIDI velocity (0-127)
+      velocity: Math.round(getInstrumentVelocity(instrumentForSound) * 127) // Convert to MIDI velocity (0-127)
     };
     
     // Add the note to the track
@@ -805,8 +833,6 @@ export function MidiEditor({
       onNoteAdd(selectedTrack, newNote);
       console.log(`Added note: ${getNoteNameFromMidi(pitch)} (${pitch}) at beat ${startTime.toFixed(2)} to track ${selectedTrack}`);
     }
-    
-    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz with ${instrumentForSound}`);
   };
 
   const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
@@ -845,24 +871,69 @@ export function MidiEditor({
       }
     }
     
-    // Use the same playNote function that existing notes use for consistent instrument sounds
-    const velocity = getInstrumentVelocity(instrumentForSound);
-    const duration = 2.0; // Longer duration for hold
+    if (pianoMode === 'instrument') {
+      // Use instrument sound for hold
+      const velocity = getInstrumentVelocity(instrumentForSound);
+      const duration = 2.0; // Longer duration for hold
+      
+      console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
+      playNote(pitch, velocity, duration);
+    } else {
+      // Use MIDI oscillator for sustained hold
+      if (audioContext) {
+        const waveType = getInstrumentWaveType(instrumentForSound);
+        const frequency = midiToFrequency(pitch);
+        const velocity = getInstrumentVelocity(instrumentForSound);
+        
+        console.log(`Holding MIDI note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = waveType;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        
+        // Store the oscillator for manual stopping
+        heldOscillatorRef.current = oscillator;
+      }
+    }
     
-    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
-    
-    // Play using the same function as existing notes
-    playNote(pitch, velocity, duration);
     setHeldPianoKey(pitch);
   };
 
   const handlePianoKeyMouseUp = () => {
-    // For instrument sounds using playNote, we don't need to manually stop oscillators
-    // The playNote function handles the audio lifecycle automatically
-    setHeldPianoKey(null);
-    if (heldOscillatorRef.current) {
+    if (pianoMode === 'midi' && heldOscillatorRef.current && audioContext) {
+      try {
+        // Fade out the MIDI oscillator smoothly
+        const gainNode = audioContext.createGain();
+        heldOscillatorRef.current.disconnect();
+        heldOscillatorRef.current.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        heldOscillatorRef.current.stop(audioContext.currentTime + 0.1);
+      } catch (e) {
+        // Oscillator might already be stopped
+        if (heldOscillatorRef.current) {
+          try {
+            heldOscillatorRef.current.stop();
+          } catch (e2) {
+            // Already stopped
+          }
+        }
+      }
       heldOscillatorRef.current = null;
     }
+    // For instrument mode, playNote handles the audio lifecycle automatically
+    setHeldPianoKey(null);
   };
 
   // Get velocity based on instrument type
@@ -1755,6 +1826,35 @@ export function MidiEditor({
         {/* MIDI Toolbar */}
         <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            {/* Piano Mode Toggle */}
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-[var(--muted-foreground)]">Piano:</span>
+              <div className="flex bg-[var(--muted)] rounded-md p-0.5">
+                <button
+                  onClick={() => setPianoMode('midi')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    pianoMode === 'midi'
+                      ? 'bg-[var(--primary)] text-white shadow-sm'
+                      : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  MIDI
+                </button>
+                <button
+                  onClick={() => setPianoMode('instrument')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    pianoMode === 'instrument'
+                      ? 'bg-[var(--primary)] text-white shadow-sm'
+                      : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  Instrument
+                </button>
+              </div>
+            </div>
+
+            <div className="w-px h-6 bg-[var(--border)]"></div>
+            
             {/* Note: MIDI playback is now handled by the main transport controls */}
             
             {/* Copy/Edit Tools */}
