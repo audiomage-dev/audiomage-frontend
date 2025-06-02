@@ -66,13 +66,69 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       type: 'folder',
       level: 0,
       children: [
-        { id: '2', name: 'Lead_Vocal_take3.wav', type: 'audio', level: 1 },
-        { id: '3', name: 'Drums_Master.wav', type: 'audio', level: 1 },
-        { id: '4', name: 'Bass_DI_compressed.wav', type: 'audio', level: 1 },
-        { id: '11', name: 'Guitar_Clean.wav', type: 'audio', level: 1 },
-        { id: '12', name: 'Synth_Pad.wav', type: 'audio', level: 1 },
-        { id: '17', name: 'Vocal_Harmony.mp3', type: 'audio', level: 1 },
-        { id: '18', name: 'Background_Music.flac', type: 'audio', level: 1 },
+        { 
+          id: '2', 
+          name: 'Lead_Vocal_take3.wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 2048000,
+          duration: 15.3
+        },
+        { 
+          id: '3', 
+          name: 'Drums_Master.wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 1536000,
+          duration: 8.7
+        },
+        { 
+          id: '4', 
+          name: 'Bass_DI_compressed.wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 3072000,
+          duration: 32.1
+        },
+        { 
+          id: '11', 
+          name: 'Guitar_Clean.wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 1024000,
+          duration: 12.5
+        },
+        { 
+          id: '12', 
+          name: 'Synth_Pad.wav', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 2560000,
+          duration: 45.2
+        },
+        { 
+          id: '17', 
+          name: 'Vocal_Harmony.mp3', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 4096000,
+          duration: 180.7
+        },
+        { 
+          id: '18', 
+          name: 'Background_Music.flac', 
+          type: 'audio', 
+          level: 1,
+          url: '/demo-audio.wav',
+          size: 8192000,
+          duration: 240.1
+        },
       ]
     },
     {
@@ -209,7 +265,16 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         console.log('Opening:', item.name);
         break;
       case 'preview':
-        console.log('Previewing:', item.name);
+        if ((item.type === 'audio' || item.type === 'video' || item.type === 'image') && item.url && onFileSelect) {
+          onFileSelect({
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            url: item.url,
+            duration: item.duration,
+            size: item.size
+          });
+        }
         break;
       case 'play':
         console.log('Playing:', item.name);
@@ -338,7 +403,20 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
             matchesSearch ? 'bg-[var(--accent)]/50' : ''
           }`}
           style={{ paddingLeft: `${paddingLeft}px` }}
-          onClick={() => hasChildren && toggleFolder(item.id)}
+          onClick={() => {
+            if (hasChildren) {
+              toggleFolder(item.id);
+            } else if ((item.type === 'audio' || item.type === 'video' || item.type === 'image') && item.url && onFileSelect) {
+              onFileSelect({
+                id: item.id,
+                name: item.name,
+                type: item.type,
+                url: item.url,
+                duration: item.duration,
+                size: item.size
+              });
+            }
+          }}
           onContextMenu={(e) => {
             e.preventDefault();
             setContextMenu({
