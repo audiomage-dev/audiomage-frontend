@@ -144,6 +144,13 @@ export function ScoreEditor({
     return instrumentMap[instrument] || 'triangle';
   };
 
+  // Convert note duration to seconds based on current BPM
+  const noteDurationToSeconds = (noteDuration: number, bpm: number = 120) => {
+    // Note duration is in beats (4 = whole note, 1 = quarter note, etc.)
+    // At 120 BPM, a quarter note = 0.5 seconds
+    return (noteDuration * 60) / bpm;
+  };
+
   // Play a single note with instrument-specific sound
   const playNote = (note: Note, instrument: string, duration: number = 0.5) => {
     if (!audioContext) return;
@@ -408,10 +415,11 @@ export function ScoreEditor({
       const clickedNote = getNoteAtPosition(x, y, staffIndex);
       
       if (clickedNote && currentTool === 'select') {
-        // Play the note when clicked
+        // Play the note when clicked for its actual duration
         const staff = staffs.find(s => s.id === clickedNote.staffId);
         if (staff) {
-          playNote(clickedNote.note, staff.instrument, 0.8);
+          const noteDurationInSeconds = noteDurationToSeconds(clickedNote.note.duration);
+          playNote(clickedNote.note, staff.instrument, noteDurationInSeconds);
         }
         
         // Start dragging the note
@@ -451,8 +459,9 @@ export function ScoreEditor({
             velocity: 80
           };
           
-          // Play the newly created note
-          playNote(newNote, staff.instrument, 0.6);
+          // Play the newly created note for its actual duration
+          const noteDurationInSeconds = noteDurationToSeconds(newNote.duration);
+          playNote(newNote, staff.instrument, noteDurationInSeconds);
           
           setStaffs(prev => prev.map(s => 
             s.id === staff.id 
@@ -531,7 +540,8 @@ export function ScoreEditor({
         const staff = staffs.find(s => s.id === clickedNote.staffId);
         if (staff) {
           const updatedNote = { ...clickedNote.note, duration: nextDuration };
-          playNote(updatedNote, staff.instrument, Math.min(nextDuration * 0.5, 1.5));
+          const noteDurationInSeconds = noteDurationToSeconds(nextDuration);
+          playNote(updatedNote, staff.instrument, noteDurationInSeconds);
         }
         
         setStaffs(prev => prev.map(staff => ({
@@ -605,8 +615,9 @@ export function ScoreEditor({
             // Play the duplicated notes as a quick preview
             duplicatedNotes.forEach((note, index) => {
               setTimeout(() => {
-                playNote(note, staff.instrument, 0.4);
-              }, index * 100); // Stagger playback slightly
+                const noteDurationInSeconds = noteDurationToSeconds(note.duration);
+                playNote(note, staff.instrument, noteDurationInSeconds);
+              }, index * 150); // Stagger playback slightly
             });
             
             setStaffs(prev => prev.map(s => 
