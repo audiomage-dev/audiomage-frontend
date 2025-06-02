@@ -52,6 +52,13 @@ export function MidiEditor({
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [dragState, setDragState] = useState<{
+    noteId: string;
+    trackId: string;
+    startX: number;
+    startY: number;
+    originalNote: MidiNote;
+  } | null>(null);
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
@@ -470,7 +477,144 @@ export function MidiEditor({
     }
   };
 
+  // Note dragging functionality
+  const handleNoteMouseDown = (noteId: string, event: React.MouseEvent) => {
+    if (isLocked) return;
+    
+    event.stopPropagation();
+    event.preventDefault();
+    
+    if (!selectedTrack) return;
+    
+    const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+    if (!note) return;
+    
+    // Start dragging
+    setIsDragging(true);
+    setDragState({
+      noteId,
+      trackId: selectedTrack,
+      startX: event.clientX,
+      startY: event.clientY,
+      originalNote: { ...note }
+    });
+    
+    // Add selected note if not already selected
+    if (!selectedNotes.has(noteId)) {
+      setSelectedNotes(new Set([noteId]));
+    }
+  };
 
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (!dragState || !isDragging) return;
+    
+    event.preventDefault();
+    
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+    
+    // Calculate new position
+    const beatsPerPixel = 1 / beatWidth;
+    const pitchPerPixel = 1 / noteHeight;
+    
+    const newStartTime = Math.max(0, dragState.originalNote.startTime + (deltaX * beatsPerPixel));
+    const newPitch = Math.max(0, Math.min(127, dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)));
+    
+    // Update note position
+    setMidiNotes(prevNotes => {
+      const updatedNotes = { ...prevNotes };
+      if (updatedNotes[dragState.trackId]) {
+        updatedNotes[dragState.trackId] = updatedNotes[dragState.trackId].map(note => 
+          note.id === dragState.noteId ? {
+            ...note,
+            startTime: newStartTime,
+            pitch: newPitch
+          } : note
+        );
+      }
+      return updatedNotes;
+    });
+  };
+
+  const handleMouseUp = () => {
+    if (dragState) {
+      // Notify parent component of note changes
+      if (onNoteEdit && dragState.trackId) {
+        const updatedNote = midiNotes[dragState.trackId]?.find(n => n.id === dragState.noteId);
+        if (updatedNote) {
+          onNoteEdit(dragState.trackId, dragState.noteId, {
+            startTime: updatedNote.startTime,
+            pitch: updatedNote.pitch
+          });
+        }
+      }
+    }
+    
+    setIsDragging(false);
+    setDragState(null);
+  };
+
+
+
+  // Global mouse event handlers for dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (dragState && isDragging) {
+        const deltaX = e.clientX - dragState.startX;
+        const deltaY = e.clientY - dragState.startY;
+        
+        // Calculate new position
+        const beatsPerPixel = 1 / beatWidth;
+        const pitchPerPixel = 1 / noteHeight;
+        
+        const newStartTime = Math.max(0, dragState.originalNote.startTime + (deltaX * beatsPerPixel));
+        const newPitch = Math.max(0, Math.min(127, dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)));
+        
+        // Update note position
+        setMidiNotes(prevNotes => {
+          const updatedNotes = { ...prevNotes };
+          if (updatedNotes[dragState.trackId]) {
+            updatedNotes[dragState.trackId] = updatedNotes[dragState.trackId].map(note => 
+              note.id === dragState.noteId ? {
+                ...note,
+                startTime: newStartTime,
+                pitch: newPitch
+              } : note
+            );
+          }
+          return updatedNotes;
+        });
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (dragState) {
+        // Notify parent component of note changes
+        if (onNoteEdit && dragState.trackId) {
+          const updatedNote = midiNotes[dragState.trackId]?.find(n => n.id === dragState.noteId);
+          if (updatedNote) {
+            onNoteEdit(dragState.trackId, dragState.noteId, {
+              startTime: updatedNote.startTime,
+              pitch: updatedNote.pitch
+            });
+          }
+        }
+      }
+      
+      setIsDragging(false);
+      setDragState(null);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [isDragging, dragState, onNoteEdit, beatWidth, noteHeight, midiNotes]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -915,10 +1059,10 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    console.log('playMidiTrack called - isPaused:', isPaused, 'currentTrack:', currentPlayingTrackRef.current, 'selectedTrack:', selectedTrack);
+    console.log('playMidiTrack called - isPaused:', isPaused, 'isPausedRef:', isPausedRef.current, 'currentTrack:', currentPlayingTrackRef.current, 'selectedTrack:', selectedTrack);
     
     // If paused and same track, resume playback from pause position
-    if (isPaused && currentPlayingTrackRef.current === selectedTrack) {
+    if (isPausedRef.current && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       
       // Adjust the start time to account for the pause
@@ -936,14 +1080,14 @@ export function MidiEditor({
     }
     
     // If paused but different track, stop current and start new
-    if (isPaused && currentPlayingTrackRef.current !== selectedTrack) {
+    if (isPausedRef.current && currentPlayingTrackRef.current !== selectedTrack) {
       console.log('Switching tracks during pause, stopping current playback...');
       stopMidiPlayback();
       // Continue to start new track
     }
     
     // If playing, pause instead
-    if (midiPlaybackInterval && !isPaused) {
+    if (midiPlaybackInterval && !isPausedRef.current) {
       pauseMidiPlayback();
       return;
     }
@@ -1217,13 +1361,9 @@ export function MidiEditor({
             strokeWidth={isSelected ? "2" : "1"}
             rx="3"
             className="cursor-pointer hover:brightness-110 transition-all"
-            onClick={(e) => handleNoteClick(note.id, e as any)}
+            onClick={(e) => !isDragging && handleNoteClick(note.id, e as any)}
             onContextMenu={(e) => handleNoteRightClick(e, note, selectedTrack || '')}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-              // Start drag operation
-            }}
+            onMouseDown={(e) => handleNoteMouseDown(note.id, e as any)}
           />
         );
         
