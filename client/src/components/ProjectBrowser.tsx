@@ -132,6 +132,23 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       ]
     },
     {
+      id: '25',
+      name: 'Video',
+      type: 'folder',
+      level: 0,
+      children: [
+        { 
+          id: '26', 
+          name: 'SampleVideo_1280x720_1mb.mp4', 
+          type: 'video', 
+          level: 1,
+          url: '/attached_assets/SampleVideo_1280x720_1mb.mp4',
+          size: 1048576,
+          duration: 30.0
+        },
+      ]
+    },
+    {
       id: '5',
       name: 'MIDI',
       type: 'folder',
