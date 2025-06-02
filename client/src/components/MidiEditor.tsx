@@ -68,6 +68,7 @@ export function MidiEditor({
     note: MidiNote;
     trackId: string;
   } | null>(null);
+  const [activeOscillators, setActiveOscillators] = useState<Set<OscillatorNode>>(new Set());
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -385,6 +386,18 @@ export function MidiEditor({
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      
+      // Track active oscillator
+      setActiveOscillators(prev => new Set(prev).add(oscillator));
+      
+      // Remove oscillator from active set when it ends
+      oscillator.onended = () => {
+        setActiveOscillators(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(oscillator);
+          return newSet;
+        });
+      };
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + duration);
@@ -963,8 +976,19 @@ export function MidiEditor({
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
     }
+    
+    // Stop all active oscillators
+    activeOscillators.forEach(oscillator => {
+      try {
+        oscillator.stop();
+      } catch (error) {
+        // Oscillator might already be stopped
+      }
+    });
+    setActiveOscillators(new Set());
+    
     onMidiPlayingChange?.(false);
-    console.log('MIDI playback paused');
+    console.log('MIDI playback paused - stopped', activeOscillators.size, 'active notes');
   };
 
   const stopMidiPlayback = () => {
@@ -972,6 +996,17 @@ export function MidiEditor({
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
     }
+    
+    // Stop all active oscillators
+    activeOscillators.forEach(oscillator => {
+      try {
+        oscillator.stop();
+      } catch (error) {
+        // Oscillator might already be stopped
+      }
+    });
+    setActiveOscillators(new Set());
+    
     onMidiPlayingChange?.(false);
     setMidiPlaybackTime(0);
     console.log('MIDI playback stopped');
