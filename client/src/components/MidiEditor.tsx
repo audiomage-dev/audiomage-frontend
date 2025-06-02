@@ -1252,9 +1252,21 @@ export function MidiEditor({
 
   const pauseMidiPlayback = () => {
     console.log('Pausing MIDI playback - stopping', activeOscillatorsRef.current.size, 'active notes');
+    console.log('Current midiPlaybackTime:', midiPlaybackTime);
+    
+    // Calculate current playback time more accurately if needed
+    let currentTime = midiPlaybackTime;
+    if (playbackStartTimeRef.current > 0) {
+      const bpm = 120;
+      const beatsPerSecond = bpm / 60;
+      const elapsed = (Date.now() - playbackStartTimeRef.current) / 1000;
+      currentTime = elapsed * beatsPerSecond;
+      console.log('Calculated current time from elapsed:', currentTime);
+    }
     
     // Save current playback time for resume
-    pauseTimeRef.current = midiPlaybackTime;
+    pauseTimeRef.current = Math.max(currentTime, 0);
+    console.log('Saved pause time:', pauseTimeRef.current);
     
     // Set pause state immediately in both state and ref
     isPausedRef.current = true;
