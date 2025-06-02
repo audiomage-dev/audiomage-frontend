@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, X } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X } from 'lucide-react';
 import { TransportState } from '@/types/audio';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface CompactTransportBarProps {
   transport: TransportState;
@@ -43,135 +43,261 @@ interface MetronomeProps {
 }
 
 function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, onTimeSignatureChange }: MetronomeProps) {
-  const [bpm, setBpm] = useState(currentBpm);
-  const [numerator, setNumerator] = useState(timeSignature[0]);
-  const [denominator, setDenominator] = useState(timeSignature[1]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentBeat, setCurrentBeat] = useState(0);
+  const [volume, setVolume] = useState(50);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize audio context
+  const initAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return audioContextRef.current;
+  };
+
+  // Play click sound
+  const playClick = (isAccent: boolean = false) => {
+    const audioContext = initAudioContext();
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Higher frequency for accent beats
+    oscillator.frequency.setValueAtTime(isAccent ? 1200 : 800, audioContext.currentTime);
+    oscillator.type = 'sine';
+
+    // Volume control
+    const adjustedVolume = (volume / 100) * 0.1; // Keep volume reasonable
+    gainNode.gain.setValueAtTime(adjustedVolume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  };
+
+  // Start/stop metronome
+  const togglePlayback = () => {
+    if (isPlaying) {
+      stopMetronome();
+    } else {
+      startMetronome();
+    }
+  };
+
+  const startMetronome = () => {
+    const interval = 60000 / currentBpm; // Convert BPM to milliseconds
+    let beat = 0;
+
+    const tick = () => {
+      const isAccent = beat === 0; // First beat of measure is accent
+      playClick(isAccent);
+      setCurrentBeat(beat);
+      beat = (beat + 1) % timeSignature[0];
+    };
+
+    // Play first beat immediately
+    tick();
+    
+    intervalRef.current = setInterval(tick, interval);
+    setIsPlaying(true);
+  };
+
+  const stopMetronome = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setIsPlaying(false);
+    setCurrentBeat(0);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopMetronome();
+    };
+  }, []);
+
+  // Update interval when BPM changes
+  useEffect(() => {
+    if (isPlaying) {
+      stopMetronome();
+      startMetronome();
+    }
+  }, [currentBpm]);
+
+  const adjustBpm = (delta: number) => {
+    const newBpm = Math.max(60, Math.min(200, currentBpm + delta));
+    onBpmChange(newBpm);
+  };
+
+  const presetBpms = [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180];
+  const timeSignatures: [number, number][] = [[4, 4], [3, 4], [2, 4], [6, 8], [9, 8], [12, 8]];
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[400px] shadow-xl">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-start justify-center pt-20 z-50">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[600px] max-w-[90vw] max-h-[70vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)] rounded-t-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center">
+                <Volume2 className="h-4 w-4 text-[var(--primary-foreground)]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h3>
+                <p className="text-xs text-[var(--muted-foreground)]">Professional timing and tempo control</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* BPM Control */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-[var(--foreground)]">Tempo (BPM)</label>
-            <div className="flex items-center space-x-4">
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* BPM Display and Controls */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-4 mb-4">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const newBpm = Math.max(60, bpm - 10);
-                  setBpm(newBpm);
-                  onBpmChange(newBpm);
-                }}
+                onClick={() => adjustBpm(-1)}
+                className="h-8 w-8 p-0"
               >
-                -10
+                <Minus className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newBpm = Math.max(60, bpm - 1);
-                  setBpm(newBpm);
-                  onBpmChange(newBpm);
-                }}
-              >
-                -1
-              </Button>
-              <div className="text-2xl font-mono font-bold text-[var(--foreground)] min-w-[4rem] text-center">
-                {bpm}
+              
+              <div className="flex flex-col items-center">
+                <input
+                  type="number"
+                  value={currentBpm}
+                  onChange={(e) => onBpmChange(Math.max(60, Math.min(200, parseInt(e.target.value) || 60)))}
+                  className="text-4xl font-bold text-center bg-transparent border-none outline-none w-20 text-[var(--foreground)]"
+                  min="60"
+                  max="200"
+                />
+                <span className="text-sm text-[var(--muted-foreground)] uppercase tracking-wider">BPM</span>
               </div>
+              
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const newBpm = Math.min(300, bpm + 1);
-                  setBpm(newBpm);
-                  onBpmChange(newBpm);
-                }}
+                onClick={() => adjustBpm(1)}
+                className="h-8 w-8 p-0"
               >
-                +1
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newBpm = Math.min(300, bpm + 10);
-                  setBpm(newBpm);
-                  onBpmChange(newBpm);
-                }}
-              >
-                +10
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <input
-              type="range"
-              min="60"
-              max="300"
-              value={bpm}
-              onChange={(e) => {
-                const newBpm = parseInt(e.target.value);
-                setBpm(newBpm);
-                onBpmChange(newBpm);
-              }}
-              className="w-full"
-            />
+
+            {/* Beat Indicator */}
+            <div className="flex items-center justify-center space-x-2 mb-6">
+              {Array.from({ length: timeSignature[0] }, (_, i) => (
+                <div
+                  key={i}
+                  className={`w-4 h-4 rounded-full border-2 transition-all duration-100 ${
+                    i === currentBeat && isPlaying
+                      ? 'bg-[var(--primary)] border-[var(--primary)] scale-125'
+                      : i === 0
+                      ? 'border-[var(--primary)] bg-transparent'
+                      : 'border-[var(--muted-foreground)] bg-transparent'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Play/Pause Button */}
+            <Button
+              onClick={togglePlayback}
+              className="h-16 w-16 rounded-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mb-6"
+            >
+              {isPlaying ? (
+                <Pause className="h-6 w-6 text-[var(--primary-foreground)]" />
+              ) : (
+                <Play className="h-6 w-6 text-[var(--primary-foreground)] ml-1" />
+              )}
+            </Button>
           </div>
 
           {/* Time Signature */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-[var(--foreground)]">Time Signature</label>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Time Signature</label>
+            <div className="flex justify-center space-x-2">
+              {timeSignatures.map((sig) => (
+                <Button
+                  key={`${sig[0]}/${sig[1]}`}
+                  variant={timeSignature[0] === sig[0] && timeSignature[1] === sig[1] ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onTimeSignatureChange(sig)}
+                  className="text-xs"
+                >
+                  {sig[0]}/{sig[1]}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Volume Control */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Volume</label>
             <div className="flex items-center space-x-3">
-              <select
-                value={numerator}
-                onChange={(e) => {
-                  const newNumerator = parseInt(e.target.value);
-                  setNumerator(newNumerator);
-                  onTimeSignatureChange([newNumerator, denominator]);
-                }}
-                className="px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 16].map(n => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-              <span className="text-xl font-mono text-[var(--foreground)]">/</span>
-              <select
-                value={denominator}
-                onChange={(e) => {
-                  const newDenominator = parseInt(e.target.value);
-                  setDenominator(newDenominator);
-                  onTimeSignatureChange([numerator, newDenominator]);
-                }}
-                className="px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-              >
-                {[2, 4, 8, 16].map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              <span className="text-sm text-[var(--muted-foreground)]">0</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(parseInt(e.target.value))}
+                className="flex-1 h-2 bg-[var(--secondary)] rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm text-[var(--muted-foreground)]">100</span>
+            </div>
+            <div className="text-center mt-1 text-sm text-[var(--muted-foreground)]">{volume}%</div>
+          </div>
+
+          {/* BPM Presets */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Quick BPM</label>
+            <div className="grid grid-cols-4 gap-2">
+              {presetBpms.map((bpm) => (
+                <Button
+                  key={bpm}
+                  variant={currentBpm === bpm ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onBpmChange(bpm)}
+                  className="text-xs"
+                >
+                  {bpm}
+                </Button>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end p-4 border-t border-[var(--border)] space-x-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={onClose}>Done</Button>
+        <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)] rounded-b-xl">
+          <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+            <div className="flex items-center space-x-4">
+              <span>Click BPM display in transport to open</span>
+            </div>
+            <span>{timeSignature[0]}/{timeSignature[1]} at {currentBpm} BPM</span>
+          </div>
         </div>
       </div>
     </div>
