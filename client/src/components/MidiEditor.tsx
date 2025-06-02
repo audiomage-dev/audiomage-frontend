@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square, MoreVertical, Trash2, ArrowUp, ArrowDown, RotateCcw, Volume1, ChevronRight } from 'lucide-react';
+import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square, MoreVertical, Trash2, ArrowUp, ArrowDown, RotateCcw, Volume1 } from 'lucide-react';
 
 interface MidiNote {
   id: string;
@@ -62,7 +62,6 @@ export function MidiEditor({
   const [heldPianoKey, setHeldPianoKey] = useState<number | null>(null);
   const heldOscillatorRef = useRef<OscillatorNode | null>(null);
   const [pianoMode, setPianoMode] = useState<'midi' | 'instrument'>('instrument');
-  const [expandedTracks, setExpandedTracks] = useState<Set<string>>(new Set());
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
@@ -1745,164 +1744,85 @@ export function MidiEditor({
         </div>
         
         <div className="flex-1 overflow-y-auto scrollbar-hide">
-          {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').map(track => {
-            const trackName = track.name.toLowerCase();
-            const isSection = trackName.includes('string') || trackName.includes('brass') || trackName.includes('woodwind');
-            const isExpanded = expandedTracks.has(track.id);
-            
-            // Define sub-instruments for sections
-            const getSubInstruments = () => {
-              if (trackName.includes('string')) {
-                return [
-                  { id: 'violin', name: 'Violin', instrument: 'strings' },
-                  { id: 'viola', name: 'Viola', instrument: 'strings' },
-                  { id: 'cello', name: 'Cello', instrument: 'strings' },
-                  { id: 'contrabass', name: 'Contrabass', instrument: 'bass' }
-                ];
-              } else if (trackName.includes('brass')) {
-                return [
-                  { id: 'trumpet', name: 'Trumpet', instrument: 'brass' },
-                  { id: 'horn', name: 'French Horn', instrument: 'brass' },
-                  { id: 'trombone', name: 'Trombone', instrument: 'brass' },
-                  { id: 'tuba', name: 'Tuba', instrument: 'bass' }
-                ];
-              } else if (trackName.includes('woodwind')) {
-                return [
-                  { id: 'flute', name: 'Flute', instrument: 'woodwind' },
-                  { id: 'clarinet', name: 'Clarinet', instrument: 'woodwind' },
-                  { id: 'oboe', name: 'Oboe', instrument: 'woodwind' },
-                  { id: 'bassoon', name: 'Bassoon', instrument: 'woodwind' }
-                ];
-              }
-              return [];
-            };
-            
-            return (
-              <div key={track.id}>
-                {/* Main track */}
-                <div
-                  className={`p-3 border-b border-[var(--border)] cursor-pointer transition-colors ${
-                    selectedTrack === track.id 
-                      ? 'bg-[var(--muted)] border-l-4 border-l-[var(--primary)]' 
-                      : 'hover:bg-[var(--muted)]/50'
-                  }`}
-                  onClick={() => {
-                    if (isSection) {
-                      // Toggle expansion for sections
-                      setExpandedTracks(prev => {
-                        const newSet = new Set(prev);
-                        if (newSet.has(track.id)) {
-                          newSet.delete(track.id);
-                        } else {
-                          newSet.add(track.id);
-                        }
-                        return newSet;
-                      });
-                    } else {
-                      setSelectedTrack(track.id);
-                      onTrackSelect?.(track.id);
-                      
-                      // Auto-select appropriate instrument based on track name
-                      if (trackName.includes('piano')) setCurrentInstrument('piano');
-                      else if (trackName.includes('bass')) setCurrentInstrument('bass');
-                      else if (trackName.includes('string')) setCurrentInstrument('strings');
-                      else if (trackName.includes('synth')) {
-                        if (trackName.includes('lead')) setCurrentInstrument('synth_lead');
-                        else if (trackName.includes('pad')) setCurrentInstrument('synth_pad');
-                        else if (trackName.includes('bass')) setCurrentInstrument('synth_bass');
-                        else setCurrentInstrument('synth_lead');
-                      }
-                      else if (trackName.includes('guitar')) setCurrentInstrument('guitar');
-                      else if (trackName.includes('organ')) setCurrentInstrument('organ');
-                      else if (trackName.includes('brass')) setCurrentInstrument('brass');
-                      else if (trackName.includes('drum')) setCurrentInstrument('drums');
-                      else if (trackName.includes('percussion')) setCurrentInstrument('percussion');
-                    }
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center space-x-2">
-                      {isSection && (
-                        <div className={`transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
-                          <ChevronRight className="h-3 w-3 text-[var(--muted-foreground)]" />
-                        </div>
-                      )}
-                      <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                        {track.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackSolo(track.id);
-                        }}
-                        title={track.soloed ? "Unsolo" : "Solo"}
-                      >
-                        <span className={`text-xs font-bold ${track.soloed ? 'text-[var(--primary)]' : 'text-[var(--muted-foreground)]'}`}>
-                          S
-                        </span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackMute(track.id);
-                        }}
-                        title={track.muted ? "Unmute" : "Mute"}
-                      >
-                        {track.muted ? (
-                          <VolumeX className="h-3 w-3 text-[var(--muted-foreground)]" />
-                        ) : (
-                          <Volume2 className="h-3 w-3 text-[var(--muted-foreground)]" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="text-xs text-[var(--muted-foreground)]">
-                    {midiNotes[track.id]?.length || 0} notes
-                  </div>
-                  
-                  {/* Track color indicator */}
-                  <div
-                    className="w-full h-1 rounded mt-2"
-                    style={{ backgroundColor: track.color }}
-                  />
-                </div>
+          {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').map(track => (
+            <div
+              key={track.id}
+              className={`p-3 border-b border-[var(--border)] cursor-pointer transition-colors ${
+                selectedTrack === track.id 
+                  ? 'bg-[var(--muted)] border-l-4 border-l-[var(--primary)]' 
+                  : 'hover:bg-[var(--muted)]/50'
+              }`}
+              onClick={() => {
+                setSelectedTrack(track.id);
+                onTrackSelect?.(track.id);
                 
-                {/* Sub-instruments for expanded sections */}
-                {isSection && isExpanded && (
-                  <div className="bg-[var(--background)]">
-                    {getSubInstruments().map(subInstrument => (
-                      <div
-                        key={`${track.id}-${subInstrument.id}`}
-                        className={`pl-8 pr-3 py-2 border-b border-[var(--border)]/50 cursor-pointer transition-colors hover:bg-[var(--muted)]/30 ${
-                          selectedTrack === `${track.id}-${subInstrument.id}` 
-                            ? 'bg-[var(--muted)]/50 border-l-2 border-l-[var(--primary)]' 
-                            : ''
-                        }`}
-                        onClick={() => {
-                          setSelectedTrack(`${track.id}-${subInstrument.id}`);
-                          onTrackSelect?.(track.id); // Still use parent track for data
-                          setCurrentInstrument(subInstrument.instrument);
-                        }}
-                      >
-                        <span className="text-sm text-[var(--foreground)]">
-                          {subInstrument.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                // Auto-select appropriate instrument based on track name
+                const trackName = track.name.toLowerCase();
+                if (trackName.includes('piano')) setCurrentInstrument('piano');
+                else if (trackName.includes('bass')) setCurrentInstrument('bass');
+                else if (trackName.includes('string')) setCurrentInstrument('strings');
+                else if (trackName.includes('synth')) {
+                  if (trackName.includes('lead')) setCurrentInstrument('synth_lead');
+                  else if (trackName.includes('pad')) setCurrentInstrument('synth_pad');
+                  else if (trackName.includes('bass')) setCurrentInstrument('synth_bass');
+                  else setCurrentInstrument('synth_lead');
+                }
+                else if (trackName.includes('guitar')) setCurrentInstrument('guitar');
+                else if (trackName.includes('organ')) setCurrentInstrument('organ');
+                else if (trackName.includes('brass')) setCurrentInstrument('brass');
+                else if (trackName.includes('drum')) setCurrentInstrument('drums');
+                else if (trackName.includes('percussion')) setCurrentInstrument('percussion');
+              }}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                  {track.name}
+                </span>
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTrackSolo(track.id);
+                    }}
+                    title={track.soloed ? "Unsolo" : "Solo"}
+                  >
+                    <span className={`text-xs font-bold ${track.soloed ? 'text-[var(--primary)]' : 'text-[var(--muted-foreground)]'}`}>
+                      S
+                    </span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTrackMute(track.id);
+                    }}
+                    title={track.muted ? "Unmute" : "Mute"}
+                  >
+                    {track.muted ? (
+                      <VolumeX className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    ) : (
+                      <Volume2 className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    )}
+                  </Button>
+                </div>
               </div>
-            );
-          })}
+              
+              <div className="text-xs text-[var(--muted-foreground)]">
+                {midiNotes[track.id]?.length || 0} notes
+              </div>
+              
+              {/* Track color indicator */}
+              <div
+                className="w-full h-1 rounded mt-2"
+                style={{ backgroundColor: track.color }}
+              />
+            </div>
+          ))}
           
           {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').length === 0 && (
             <div className="p-6 text-center text-[var(--muted-foreground)]">
