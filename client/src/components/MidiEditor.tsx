@@ -770,6 +770,9 @@ export function MidiEditor({
       const trackName = track.name.toLowerCase();
       if (trackName.includes('piano')) instrumentForSound = 'piano';
       else if (trackName.includes('bass')) instrumentForSound = 'bass';
+      else if (trackName.includes('violin')) instrumentForSound = 'violin';
+      else if (trackName.includes('cello')) instrumentForSound = 'cello';
+      else if (trackName.includes('flute')) instrumentForSound = 'flute';
       else if (trackName.includes('string')) instrumentForSound = 'strings';
       else if (trackName.includes('synth')) {
         if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
@@ -973,6 +976,9 @@ export function MidiEditor({
       guitar: 'sawtooth',
       bass: 'triangle',
       strings: 'sawtooth',
+      violin: 'sawtooth',
+      cello: 'triangle',
+      flute: 'sine',
       brass: 'sawtooth',
       woodwind: 'sine',
       synth_lead: 'sawtooth',
