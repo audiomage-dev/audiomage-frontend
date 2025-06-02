@@ -22,7 +22,12 @@ import {
   UserPlus,
   Terminal,
   LogOut,
-  Settings
+  Settings,
+  X,
+  UserCheck,
+  Eye,
+  Edit,
+  Crown
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -471,6 +476,7 @@ export function MenuBar() {
   const [projectName, setProjectName] = useState("Untitled Project");
   const [isEditingName, setIsEditingName] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleCommand = (commandId: string) => {
@@ -583,6 +589,7 @@ export function MenuBar() {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setShowAccessModal(true)}
             className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
             <Shield className="h-4 w-4 mr-1" />
@@ -705,7 +712,201 @@ export function MenuBar() {
         onClose={() => setShowCommandPalette(false)}
         onCommand={handleCommand}
       />
-      
+
+      {/* Access Modal */}
+      {showAccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-[var(--popover)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden opacity-100">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <div className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-[var(--primary)]" />
+                <h2 className="text-lg font-semibold text-[var(--popover-foreground)]">Audio Project Access</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAccessModal(false)}
+                className="h-8 w-8 p-0 hover:bg-[var(--muted)]"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Project Info */}
+            <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]/20">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded bg-[var(--primary)] flex items-center justify-center">
+                  <span className="text-[var(--primary-foreground)] font-semibold text-sm">A</span>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-[var(--popover-foreground)]">Audio Production Studio</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">audiomage-audio-project</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="p-4 border-b border-[var(--border)]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]" />
+                <Input
+                  placeholder="Share with groups or other members"
+                  className="pl-10 bg-[var(--background)] border-[var(--border)] text-[var(--foreground)]"
+                />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="max-h-[400px] overflow-y-auto">
+              {/* Groups with access */}
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">Groups with access</h3>
+                
+                {/* Audio Production Team */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded bg-[var(--primary)] flex items-center justify-center">
+                        <span className="text-[var(--primary-foreground)] font-semibold text-sm">A</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-[var(--popover-foreground)]">Audio Production Team</div>
+                        <div className="text-xs text-[var(--muted-foreground)]">4 members</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Role Groups */}
+                  <div className="ml-11 mt-2 space-y-2">
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-[var(--muted-foreground)]" />
+                        <span className="text-sm text-[var(--popover-foreground)]">Producers</span>
+                        <span className="text-xs text-[var(--muted-foreground)]">1 member</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                      >
+                        Owner <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-[var(--muted-foreground)]" />
+                        <span className="text-sm text-[var(--popover-foreground)]">Engineers</span>
+                        <span className="text-xs text-[var(--muted-foreground)]">2 members</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                      >
+                        Editor <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-[var(--muted-foreground)]" />
+                        <span className="text-sm text-[var(--popover-foreground)]">Collaborators</span>
+                        <span className="text-xs text-[var(--muted-foreground)]">0 members</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                      >
+                        None <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <Eye className="h-4 w-4 text-[var(--muted-foreground)]" />
+                        <span className="text-sm text-[var(--popover-foreground)]">Listeners</span>
+                        <span className="text-xs text-[var(--muted-foreground)]">1 member</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                      >
+                        Viewer <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* People with access */}
+              <div className="p-4 border-t border-[var(--border)]">
+                <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">People with access</h3>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-[var(--popover-foreground)]">Project Owner</div>
+                      <div className="text-xs text-[var(--muted-foreground)]">Audio Producer</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-3 text-xs"
+                  >
+                    Owner <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Info Banner */}
+              <div className="p-4 border-t border-[var(--border)]">
+                <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs">i</span>
+                  </div>
+                  <div className="text-sm text-blue-900 dark:text-blue-100">
+                    <span className="font-medium">View detailed role permissions</span>
+                    <span className="text-blue-600 dark:text-blue-400 ml-1 cursor-pointer hover:underline">here.</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 ml-auto text-blue-600 dark:text-blue-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-[var(--border)] bg-[var(--muted)]/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-xs text-[var(--muted-foreground)]">
+                  <Shield className="h-4 w-4" />
+                  <span>Internal to Audio Production</span>
+                  <ChevronDown className="h-3 w-3" />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  Cover page
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </>
   );
