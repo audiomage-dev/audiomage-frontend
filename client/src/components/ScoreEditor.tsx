@@ -256,8 +256,8 @@ export function ScoreEditor({
       tempo: isDark ? '#ebcb8b' : '#d08770'
     };
 
-    ctx.fillStyle = colors.background;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     const pageMargin = 60;
     const systemSpacing = 120;
@@ -846,11 +846,10 @@ export function ScoreEditor({
         <div className="flex-1 overflow-auto p-4 bg-[var(--background)] text-[var(--foreground)]">
           <canvas
             ref={scoreCanvasRef}
-            className="w-full h-full border border-gray-200 dark:border-gray-700 rounded cursor-pointer"
+            className="w-full h-full border border-[var(--border)] rounded cursor-pointer bg-[var(--background)]"
             onClick={handleCanvasClick}
             style={{ 
-              minHeight: '600px',
-              backgroundColor: 'transparent'
+              minHeight: '600px'
             }}
           />
         </div>
