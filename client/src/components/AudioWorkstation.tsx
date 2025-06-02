@@ -5,6 +5,7 @@ import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MidiEditor } from './MidiEditor';
+import { ScoreEditor } from './ScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
@@ -215,15 +216,15 @@ export function AudioWorkstation() {
                 isLocked={isMidiLocked}
               />
             ) : (
-              <div className="h-full bg-[var(--background)] flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <FileMusic className="w-16 h-16 mx-auto text-[var(--muted-foreground)]" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-[var(--foreground)]">Score Editor</h3>
-                    <p className="text-[var(--muted-foreground)]">Musical notation and score editing interface</p>
-                  </div>
-                </div>
-              </div>
+              <ScoreEditor
+                tracks={tracks}
+                transport={transport}
+                zoomLevel={zoomLevel}
+                onTrackMute={toggleTrackMute}
+                onTrackSolo={toggleTrackSolo}
+                onTrackSelect={setSelectedTrack}
+                isLocked={isTimelineLocked}
+              />
             )}
           </div>
 
