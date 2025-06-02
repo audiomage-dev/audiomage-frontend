@@ -59,6 +59,14 @@ export function ScoreEditor({
 }: ScoreEditorProps) {
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragState, setDragState] = useState<{
+    noteId: string;
+    staffId: string;
+    startX: number;
+    startY: number;
+    originalNote: Note;
+  } | null>(null);
   const [staffs, setStaffs] = useState<Staff[]>([
     {
       id: 'staff-1',
@@ -87,6 +95,56 @@ export function ScoreEditor({
   const staffHeight = 120;
   const lineSpacing = 12;
   const noteWidth = 40;
+
+  // Check if click is on a note
+  const getNoteAtPosition = (x: number, y: number, staffIndex: number): { note: Note; staffId: string } | null => {
+    const staff = staffs[staffIndex];
+    if (!staff) return null;
+    
+    const yOffset = staffIndex * (staffHeight + 60) + 40;
+    
+    for (const note of staff.notes) {
+      const noteX = 140 + (note.startTime * noteWidth * zoomLevel);
+      const midiToLine = (pitch: number) => {
+        if (staff.clef === 'treble') {
+          return 6 - (pitch - 60) / 2;
+        } else {
+          return (pitch - 40) / 2;
+        }
+      };
+      const line = midiToLine(note.pitch);
+      const noteY = yOffset + (line * lineSpacing / 2) + 24;
+      
+      // Check if click is within note bounds
+      if (Math.abs(x - noteX) <= 12 && Math.abs(y - noteY) <= 10) {
+        return { note, staffId: staff.id };
+      }
+    }
+    return null;
+  };
+
+  // Convert pixel position to musical position
+  const pixelToMusicalPosition = (x: number, y: number, staffIndex: number, staffId: string) => {
+    const staff = staffs.find(s => s.id === staffId);
+    if (!staff) return null;
+    
+    const time = Math.max(0, (x - 140) / (noteWidth * zoomLevel));
+    const yOffset = staffIndex * (staffHeight + 60) + 40;
+    const relativeY = y - yOffset;
+    const line = Math.round((relativeY - 24) / (lineSpacing / 2));
+    
+    let midiNote: number;
+    if (staff.clef === 'treble') {
+      midiNote = 72 - line;
+    } else {
+      midiNote = 50 - line;
+    }
+    
+    return {
+      time: Math.round(time * 4) / 4, // Quantize to 16th notes
+      pitch: Math.max(0, Math.min(127, midiNote))
+    };
+  };
 
   // Enhanced musical notation rendering
   const drawScore = () => {
@@ -153,27 +211,66 @@ export function ScoreEditor({
         const line = midiToLine(note.pitch);
         const y = yOffset + (line * lineSpacing / 2) + 24;
         
-        // Draw note head with proper styling
-        ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+        // Determine note color based on state
+        let noteColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+        if (selectedNotes.has(note.id)) {
+          noteColor = '#3b82f6';
+        } else if (dragState && dragState.noteId === note.id) {
+          noteColor = '#ef4444'; // Red during drag
+        }
+        
+        // Draw note head with proper styling and hover effect
+        ctx.fillStyle = noteColor;
+        ctx.strokeStyle = noteColor;
         ctx.beginPath();
+        
+        // Add slight glow effect for selected/dragged notes
+        if (selectedNotes.has(note.id) || (dragState && dragState.noteId === note.id)) {
+          ctx.shadowColor = noteColor;
+          ctx.shadowBlur = 3;
+        } else {
+          ctx.shadowBlur = 0;
+        }
         
         if (note.duration >= 2) {
           ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
+          ctx.lineWidth = 2;
           ctx.stroke();
         } else {
           ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
           ctx.fill();
         }
         
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        
         // Draw stem for quarter notes and shorter
         if (note.duration <= 2 && note.duration >= 0.25) {
-          ctx.strokeStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+          ctx.strokeStyle = noteColor;
           ctx.lineWidth = 2;
           ctx.beginPath();
           const stemDirection = line <= 2 ? 1 : -1;
           ctx.moveTo(x + (stemDirection > 0 ? 7 : -7), y);
           ctx.lineTo(x + (stemDirection > 0 ? 7 : -7), y + (stemDirection * -35));
           ctx.stroke();
+          
+          // Draw flags for eighth notes and shorter
+          if (note.duration < 1) {
+            ctx.font = '20px serif';
+            ctx.fillStyle = noteColor;
+            const flagX = x + (stemDirection > 0 ? 7 : -15);
+            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 5 : -5);
+            ctx.fillText(stemDirection > 0 ? '𝄀' : '𝄁', flagX, flagY);
+          }
+        }
+        
+        // Draw selection outline for selected notes
+        if (selectedNotes.has(note.id)) {
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 2]);
+          ctx.strokeRect(x - 12, y - 12, 24, 24);
+          ctx.setLineDash([]);
         }
       });
       
@@ -190,8 +287,8 @@ export function ScoreEditor({
     });
   };
 
-  // Handle canvas interactions
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle mouse down for note dragging and selection
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
     
     const canvas = scoreCanvasRef.current;
@@ -206,32 +303,128 @@ export function ScoreEditor({
       const staff = staffs[staffIndex];
       setSelectedStaff(staff.id);
       
-      if (currentTool === 'note') {
-        const time = Math.max(0, (x - 140) / (noteWidth * zoomLevel));
-        const staffY = staffIndex * (staffHeight + 60) + 40;
-        const relativeY = y - staffY;
-        const line = Math.round((relativeY - 24) / (lineSpacing / 2));
+      // Check if clicking on an existing note
+      const clickedNote = getNoteAtPosition(x, y, staffIndex);
+      
+      if (clickedNote && currentTool === 'select') {
+        // Start dragging the note
+        setIsDragging(true);
+        setDragState({
+          noteId: clickedNote.note.id,
+          staffId: clickedNote.staffId,
+          startX: x,
+          startY: y,
+          originalNote: { ...clickedNote.note }
+        });
         
-        let midiNote: number;
-        if (staff.clef === 'treble') {
-          midiNote = 72 - line;
+        // Select the note
+        if (e.ctrlKey || e.metaKey) {
+          // Multi-select
+          setSelectedNotes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(clickedNote.note.id)) {
+              newSet.delete(clickedNote.note.id);
+            } else {
+              newSet.add(clickedNote.note.id);
+            }
+            return newSet;
+          });
         } else {
-          midiNote = 50 - line;
+          setSelectedNotes(new Set([clickedNote.note.id]));
         }
+      } else if (!clickedNote && currentTool === 'note') {
+        // Add a new note
+        const musicalPos = pixelToMusicalPosition(x, y, staffIndex, staff.id);
+        if (musicalPos) {
+          const newNote: Note = {
+            id: `note-${Date.now()}`,
+            pitch: musicalPos.pitch,
+            startTime: musicalPos.time,
+            duration: noteValue,
+            velocity: 80
+          };
+          
+          setStaffs(prev => prev.map(s => 
+            s.id === staff.id 
+              ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
+              : s
+          ));
+        }
+      } else if (!clickedNote && currentTool === 'select') {
+        // Clear selection when clicking empty space
+        setSelectedNotes(new Set());
+      }
+    }
+  };
+
+  // Handle mouse move for note dragging
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !dragState || isLocked) return;
+    
+    const canvas = scoreCanvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Find which staff the mouse is over
+    const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
+    if (staffIndex >= 0 && staffIndex < staffs.length) {
+      const targetStaff = staffs[staffIndex];
+      const musicalPos = pixelToMusicalPosition(x, y, staffIndex, targetStaff.id);
+      
+      if (musicalPos) {
+        // Update the note position in real-time
+        setStaffs(prev => prev.map(staff => ({
+          ...staff,
+          notes: staff.notes.map(note => 
+            note.id === dragState.noteId
+              ? { ...note, startTime: musicalPos.time, pitch: musicalPos.pitch }
+              : note
+          )
+        })));
+      }
+    }
+  };
+
+  // Handle mouse up to finish dragging
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDragging && dragState) {
+      setIsDragging(false);
+      setDragState(null);
+    }
+  };
+
+  // Handle double-click for note editing
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isLocked) return;
+    
+    const canvas = scoreCanvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
+    if (staffIndex >= 0 && staffIndex < staffs.length) {
+      const clickedNote = getNoteAtPosition(x, y, staffIndex);
+      
+      if (clickedNote) {
+        // Open note properties dialog (for now, cycle through durations)
+        const durations = [4, 2, 1, 0.5, 0.25];
+        const currentIndex = durations.indexOf(clickedNote.note.duration);
+        const nextDuration = durations[(currentIndex + 1) % durations.length];
         
-        const newNote: Note = {
-          id: `note-${Date.now()}`,
-          pitch: Math.max(0, Math.min(127, midiNote)),
-          startTime: Math.round(time * 4) / 4,
-          duration: noteValue,
-          velocity: 80
-        };
-        
-        setStaffs(prev => prev.map(s => 
-          s.id === staff.id 
-            ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
-            : s
-        ));
+        setStaffs(prev => prev.map(staff => ({
+          ...staff,
+          notes: staff.notes.map(note => 
+            note.id === clickedNote.note.id
+              ? { ...note, duration: nextDuration }
+              : note
+          )
+        })));
       }
     }
   };
@@ -246,10 +439,73 @@ export function ScoreEditor({
     }
   }, [transport.isPlaying]);
 
+  // Handle keyboard shortcuts for note operations
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLocked) return;
+      
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Delete selected notes
+        if (selectedNotes.size > 0) {
+          setStaffs(prev => prev.map(staff => ({
+            ...staff,
+            notes: staff.notes.filter(note => !selectedNotes.has(note.id))
+          })));
+          setSelectedNotes(new Set());
+        }
+      } else if (e.key === 'Escape') {
+        // Clear selection and cancel drag
+        setSelectedNotes(new Set());
+        setIsDragging(false);
+        setDragState(null);
+      } else if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+        // Select all notes in current staff
+        e.preventDefault();
+        if (selectedStaff) {
+          const staff = staffs.find(s => s.id === selectedStaff);
+          if (staff) {
+            setSelectedNotes(new Set(staff.notes.map(note => note.id)));
+          }
+        }
+      } else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+        // Copy selected notes (placeholder for future implementation)
+        if (selectedNotes.size > 0) {
+          console.log(`Copied ${selectedNotes.size} notes`);
+        }
+      } else if (e.key === 'd' && (e.ctrlKey || e.metaKey)) {
+        // Duplicate selected notes
+        e.preventDefault();
+        if (selectedNotes.size > 0 && selectedStaff) {
+          const staff = staffs.find(s => s.id === selectedStaff);
+          if (staff) {
+            const selectedNoteObjects = staff.notes.filter(note => selectedNotes.has(note.id));
+            const duplicatedNotes = selectedNoteObjects.map(note => ({
+              ...note,
+              id: `note-${Date.now()}-${Math.random()}`,
+              startTime: note.startTime + 1 // Offset by 1 beat
+            }));
+            
+            setStaffs(prev => prev.map(s => 
+              s.id === selectedStaff 
+                ? { ...s, notes: [...s.notes, ...duplicatedNotes].sort((a, b) => a.startTime - b.startTime) }
+                : s
+            ));
+            
+            // Select the duplicated notes
+            setSelectedNotes(new Set(duplicatedNotes.map(note => note.id)));
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNotes, isLocked, selectedStaff, staffs]);
+
   // Redraw when state changes
   useEffect(() => {
     drawScore();
-  }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition]);
+  }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition, isDragging, dragState]);
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
@@ -328,7 +584,10 @@ export function ScoreEditor({
             ref={scoreCanvasRef}
             className="w-full h-full cursor-crosshair"
             style={{ minHeight: '600px' }}
-            onClick={handleCanvasClick}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onDoubleClick={handleDoubleClick}
           />
         </div>
 
