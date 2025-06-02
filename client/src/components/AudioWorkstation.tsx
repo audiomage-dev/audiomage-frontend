@@ -183,6 +183,8 @@ export function AudioWorkstation() {
               isMidiLocked={isMidiLocked}
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
+              onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
+              onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
           </div>
           

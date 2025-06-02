@@ -147,6 +147,17 @@ export function ScoreEditor({
   const lineSpacing = 12;
   const noteWidth = 40;
 
+  // Update staffs when BPM or time signature changes from metronome
+  useEffect(() => {
+    setStaffs(prevStaffs => 
+      prevStaffs.map(staff => ({
+        ...staff,
+        tempo: bpm,
+        timeSignature: timeSignature,
+      }))
+    );
+  }, [bpm, timeSignature]);
+
   // Initialize audio context
   useEffect(() => {
     const initAudio = () => {
