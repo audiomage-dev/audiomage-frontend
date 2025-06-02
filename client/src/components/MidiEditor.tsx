@@ -72,6 +72,7 @@ export function MidiEditor({
   const activeOscillatorsRef = useRef<Set<OscillatorNode>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
+  const currentPlayingTrackRef = useRef<string | null>(null);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -911,8 +912,24 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    // If already playing, pause instead
-    if (midiPlaybackInterval || isMidiPlaying) {
+    // If paused and same track, resume playback
+    if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current === selectedTrack) {
+      console.log('Resuming MIDI playback from pause...');
+      isPausedRef.current = false;
+      setIsPaused(false);
+      onMidiPlayingChange?.(true);
+      return;
+    }
+    
+    // If paused but different track, stop current and start new
+    if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current !== selectedTrack) {
+      console.log('Switching tracks during pause, stopping current playback...');
+      stopMidiPlayback();
+      // Continue to start new track
+    }
+    
+    // If playing, pause instead
+    if (midiPlaybackInterval && !isPaused) {
       pauseMidiPlayback();
       return;
     }
@@ -946,6 +963,7 @@ export function MidiEditor({
     const activeTrack = trackToPlay;
     
     console.log('Starting MIDI playback...');
+    currentPlayingTrackRef.current = activeTrack;
     isPausedRef.current = false;
     setIsPaused(false);
     onMidiPlayingChange?.(true);
