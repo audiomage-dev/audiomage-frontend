@@ -1695,19 +1695,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     size="sm"
                     variant="secondary"
                     className="h-5 w-5 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
-                    onClick={() => handleExtensionAction('blank')}
-                    title="Extend with blank/silent content"
+                    onClick={() => handleExtensionAction('ai')}
+                    title="Extend with AI-generated content"
                   >
-                    <Circle className="w-2.5 h-2.5" />
+                    <Sparkles className="w-2.5 h-2.5" />
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
                     className="h-5 w-5 p-0 bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--muted)] shadow-lg"
-                    onClick={() => handleExtensionAction('ai')}
-                    title="Extend with AI-generated content"
+                    onClick={() => handleExtensionAction('blank')}
+                    title="Extend with blank/silent content"
                   >
-                    <Sparkles className="w-2.5 h-2.5" />
+                    <Circle className="w-2.5 h-2.5" />
                   </Button>
                   <Button
                     size="sm"
