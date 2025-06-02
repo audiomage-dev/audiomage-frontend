@@ -35,6 +35,8 @@ interface CompactTimelineEditorProps {
   tracks: AudioTrack[];
   transport: TransportState;
   zoomLevel?: number;
+  bpm?: number;
+  timeSignature?: [number, number];
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -44,7 +46,7 @@ interface CompactTimelineEditorProps {
   isLocked?: boolean;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
@@ -1466,10 +1468,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           >
             {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
               const timeSeconds = i * 60;
-              // Calculate measure number based on BPM and time signature
-              // Assuming 4/4 time signature and 120 BPM as default
-              const beatsPerMinute = 120; // This should come from props
-              const beatsPerMeasure = 4; // This should come from time signature
+              // Calculate measure number based on actual BPM and time signature
+              const beatsPerMinute = bpm;
+              const beatsPerMeasure = timeSignature[0]; // numerator of time signature
               const secondsPerBeat = 60 / beatsPerMinute;
               const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
               const measureNumber = Math.floor(timeSeconds / secondsPerMeasure) + 1;
