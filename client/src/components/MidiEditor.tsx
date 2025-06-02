@@ -915,6 +915,8 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
+    console.log('playMidiTrack called - isPaused:', isPaused, 'currentTrack:', currentPlayingTrackRef.current, 'selectedTrack:', selectedTrack);
+    
     // If paused and same track, resume playback from pause position
     if (isPaused && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
