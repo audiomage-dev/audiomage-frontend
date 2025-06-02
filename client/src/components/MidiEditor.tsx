@@ -1116,7 +1116,7 @@ export function MidiEditor({
           <span className="text-sm font-medium text-[var(--foreground)]">MIDI Tracks</span>
         </div>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').map(track => (
             <div
               key={track.id}

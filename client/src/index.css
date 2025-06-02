@@ -159,6 +159,16 @@ html.nord-light, .nord-light {
     background: var(--primary);
   }
 
+  /* Hide scrollbar completely */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+
   .waveform-bar {
     transition: height 0.1s ease;
   }
