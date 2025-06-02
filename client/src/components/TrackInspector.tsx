@@ -30,6 +30,8 @@ interface WaveformDisplayProps {
 
 function WaveformDisplay({ track }: WaveformDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number; time: number; amplitude: number } | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<{ time: number; amplitude: number; dbLevel: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -119,15 +121,107 @@ function WaveformDisplay({ track }: WaveformDisplayProps) {
 
   }, [track]);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Convert mouse position to time and amplitude
+    const time = (x / canvas.offsetWidth) * 4; // 0-4 seconds
+    const centerY = canvas.offsetHeight / 2;
+    const amplitude = (centerY - y) / centerY; // -1 to 1 range
+
+    setMousePosition({ x, y, time, amplitude });
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const time = (x / canvas.offsetWidth) * 4;
+    const centerY = canvas.offsetHeight / 2;
+    const amplitude = (centerY - y) / centerY;
+    
+    // Convert amplitude to dB level (simplified calculation)
+    const dbLevel = amplitude > 0 ? 20 * Math.log10(Math.abs(amplitude)) : -60;
+
+    setSelectedPoint({ time, amplitude, dbLevel });
+  };
+
+  const formatAmplitude = (amp: number): string => {
+    return `${(amp * 100).toFixed(1)}%`;
+  };
+
+  const formatDbLevel = (db: number): string => {
+    if (db <= -60) return '-∞dB';
+    return `${db.toFixed(1)}dB`;
+  };
+
   return (
     <div className="w-full h-full relative">
       <canvas 
         ref={canvasRef}
-        className="w-full h-full"
+        className="w-full h-full cursor-crosshair"
         style={{ width: '100%', height: '100%' }}
+        onMouseMove={handleMouseMove}
+        onClick={handleClick}
+        onMouseLeave={() => setMousePosition(null)}
       />
-      <div className="absolute top-2 left-2 text-xs text-[var(--muted-foreground)] bg-black/20 px-2 py-1 rounded">
-        {track.clips?.[0]?.name || track.name}
+      
+      {/* Crosshair overlay */}
+      {mousePosition && (
+        <>
+          <div 
+            className="absolute border-l border-blue-400/60 pointer-events-none"
+            style={{ 
+              left: mousePosition.x,
+              top: 0,
+              height: '100%'
+            }}
+          />
+          <div 
+            className="absolute border-t border-blue-400/60 pointer-events-none"
+            style={{ 
+              top: mousePosition.y,
+              left: 0,
+              width: '100%'
+            }}
+          />
+        </>
+      )}
+      
+      {/* Tooltip */}
+      {mousePosition && (
+        <div 
+          className="absolute bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none z-10"
+          style={{ 
+            left: Math.min(mousePosition.x + 10, 200),
+            top: Math.max(mousePosition.y - 30, 5)
+          }}
+        >
+          <div>{mousePosition.time.toFixed(3)}s</div>
+          <div>{formatAmplitude(mousePosition.amplitude)}</div>
+        </div>
+      )}
+      
+      {/* Selected point info */}
+      {selectedPoint && (
+        <div className="absolute bottom-2 left-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+          <div>Time: {selectedPoint.time.toFixed(3)}s</div>
+          <div>Amplitude: {formatAmplitude(selectedPoint.amplitude)}</div>
+          <div>Level: {formatDbLevel(selectedPoint.dbLevel)}</div>
+        </div>
+      )}
+      
+      <div className="absolute top-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
+        Interactive Waveform
       </div>
     </div>
   );
