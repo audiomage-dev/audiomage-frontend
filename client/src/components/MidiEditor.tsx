@@ -757,29 +757,29 @@ export function MidiEditor({
     drawStartRef.current = null;
   };
 
-  // Handle piano key click to play note
+  // Handle piano key click to play note and add to canvas
   const handlePianoKeyClick = (pitch: number) => {
+    if (!selectedTrack) return;
+    
     // Get instrument type from selected track
     let instrumentForSound = currentInstrument;
-    if (selectedTrack) {
-      const track = tracks.find(t => t.id === selectedTrack);
-      if (track) {
-        const trackName = track.name.toLowerCase();
-        if (trackName.includes('piano')) instrumentForSound = 'piano';
-        else if (trackName.includes('bass')) instrumentForSound = 'bass';
-        else if (trackName.includes('string')) instrumentForSound = 'strings';
-        else if (trackName.includes('synth')) {
-          if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
-          else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
-          else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
-          else instrumentForSound = 'synth_lead';
-        }
-        else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
-        else if (trackName.includes('organ')) instrumentForSound = 'organ';
-        else if (trackName.includes('brass')) instrumentForSound = 'brass';
-        else if (trackName.includes('drum')) instrumentForSound = 'drums';
-        else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
+    const track = tracks.find(t => t.id === selectedTrack);
+    if (track) {
+      const trackName = track.name.toLowerCase();
+      if (trackName.includes('piano')) instrumentForSound = 'piano';
+      else if (trackName.includes('bass')) instrumentForSound = 'bass';
+      else if (trackName.includes('string')) instrumentForSound = 'strings';
+      else if (trackName.includes('synth')) {
+        if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
+        else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
+        else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
+        else instrumentForSound = 'synth_lead';
       }
+      else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+      else if (trackName.includes('organ')) instrumentForSound = 'organ';
+      else if (trackName.includes('brass')) instrumentForSound = 'brass';
+      else if (trackName.includes('drum')) instrumentForSound = 'drums';
+      else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
     }
     
     // Play the exact MIDI note with track-specific instrument characteristics
@@ -787,6 +787,25 @@ export function MidiEditor({
     const duration = getInstrumentDuration(instrumentForSound);
     
     playNote(pitch, velocity, duration);
+    
+    // Add note to the canvas at the current playback position
+    const currentTime = midiPlaybackTime || 0;
+    const startTime = Math.max(0, currentTime);
+    
+    const newNote: MidiNote = {
+      id: `note-${Date.now()}-${Math.random()}`,
+      pitch: pitch,
+      startTime: startTime,
+      duration: 1.0, // 1 beat duration
+      velocity: Math.round(velocity * 127) // Convert to MIDI velocity (0-127)
+    };
+    
+    // Add the note to the track
+    if (onNoteAdd) {
+      onNoteAdd(selectedTrack, newNote);
+      console.log(`Added note: ${getNoteNameFromMidi(pitch)} (${pitch}) at beat ${startTime.toFixed(2)} to track ${selectedTrack}`);
+    }
+    
     console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz with ${instrumentForSound}`);
   };
 
