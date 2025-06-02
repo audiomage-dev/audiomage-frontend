@@ -1677,12 +1677,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           />
                         )}
 
-                          {/* Fade Handles - appear when hovering over header */}
-                          {hoveredClip === clip.id && (
-                            <>
-                              {/* Fade-in handle - positioned on the left side */}
+                        {/* Fade Handle Lines - draggable fade boundaries */}
+                        {hoveredClip === clip.id && (
+                          <>
+                            {/* Fade-in line handle */}
+                            {((clip.fadeIn && clip.fadeIn > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0)) && (
                               <div 
-                                className="absolute left-0 top-0 h-5 w-6 bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/60 hover:from-[var(--primary)] hover:to-[var(--primary)]/80 cursor-ew-resize transition-all duration-200 flex items-center justify-start pl-1 z-30 rounded-tl-md"
+                                className="absolute top-0 h-full w-1 bg-[var(--primary)] hover:bg-[var(--primary)]/80 cursor-ew-resize z-30 transition-colors duration-200 flex items-center justify-center group"
+                                style={{ 
+                                  left: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0) / clip.duration) * 100}%`,
+                                  transform: 'translateX(-50%)'
+                                }}
                                 onMouseDown={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
@@ -1720,13 +1725,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 }}
                                 title={`Drag to adjust fade-in: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0).toFixed(1)}s`}
                               >
-                                <div className="w-1 h-3 bg-white/90 rounded-full shadow-sm"></div>
-                                <span className="text-xs text-white ml-1 font-medium">IN</span>
+                                <div className="w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                               </div>
-                              
-                              {/* Fade-out handle - positioned on the right side */}
+                            )}
+                            
+                            {/* Fade-out line handle */}
+                            {((clip.fadeOut && clip.fadeOut > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0)) && (
                               <div 
-                                className="absolute right-0 top-0 h-5 w-6 bg-gradient-to-l from-[var(--primary)] to-[var(--primary)]/60 hover:from-[var(--primary)] hover:to-[var(--primary)]/80 cursor-ew-resize transition-all duration-200 flex items-center justify-end pr-1 z-30 rounded-tr-md"
+                                className="absolute top-0 h-full w-1 bg-[var(--primary)] hover:bg-[var(--primary)]/80 cursor-ew-resize z-30 transition-colors duration-200 flex items-center justify-center group"
+                                style={{ 
+                                  right: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0) / clip.duration) * 100}%`,
+                                  transform: 'translateX(50%)'
+                                }}
                                 onMouseDown={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
@@ -1764,11 +1774,56 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 }}
                                 title={`Drag to adjust fade-out: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0).toFixed(1)}s`}
                               >
-                                <span className="text-xs text-white mr-1 font-medium">OUT</span>
-                                <div className="w-1 h-3 bg-white/90 rounded-full shadow-sm"></div>
+                                <div className="w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                               </div>
-                            </>
-                          )}
+                            )}
+
+                            {/* Quick fade buttons in header for starting fades */}
+                            {!(clip.fadeIn && clip.fadeIn > 0) && !(fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0) && (
+                              <button 
+                                className="absolute left-1 top-0.5 h-4 w-4 bg-[var(--primary)]/70 hover:bg-[var(--primary)] rounded text-xs text-white flex items-center justify-center z-30 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newFadeIn = Math.min(1, clip.duration * 0.1);
+                                  setFadeControls({
+                                    clipId: clip.id,
+                                    trackId: track.id,
+                                    fadeIn: newFadeIn,
+                                    fadeOut: clip.fadeOut || 0,
+                                    isDragging: false,
+                                    dragType: null
+                                  });
+                                  console.log(`Started fade-in for clip ${clip.id}: ${newFadeIn.toFixed(2)}s`);
+                                }}
+                                title="Add fade-in"
+                              >
+                                ↗
+                              </button>
+                            )}
+                            
+                            {!(clip.fadeOut && clip.fadeOut > 0) && !(fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0) && (
+                              <button 
+                                className="absolute right-1 top-0.5 h-4 w-4 bg-[var(--primary)]/70 hover:bg-[var(--primary)] rounded text-xs text-white flex items-center justify-center z-30 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newFadeOut = Math.min(1, clip.duration * 0.1);
+                                  setFadeControls({
+                                    clipId: clip.id,
+                                    trackId: track.id,
+                                    fadeIn: clip.fadeIn || 0,
+                                    fadeOut: newFadeOut,
+                                    isDragging: false,
+                                    dragType: null
+                                  });
+                                  console.log(`Started fade-out for clip ${clip.id}: ${newFadeOut.toFixed(2)}s`);
+                                }}
+                                title="Add fade-out"
+                              >
+                                ↘
+                              </button>
+                            )}
+                          </>
+                        )}
                         
                         {/* Resize Handles */}
                         <div 
