@@ -331,11 +331,53 @@ export function CompactTransportBar({
   onTimeSignatureChange
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
+  const [isTimeEditing, setIsTimeEditing] = useState(false);
+  const [editTimeValue, setEditTimeValue] = useState('');
+  const timeInputRef = useRef<HTMLInputElement>(null);
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const parseTimeString = (timeStr: string): number => {
+    const parts = timeStr.split(':');
+    if (parts.length === 2) {
+      const mins = parseInt(parts[0]) || 0;
+      const secs = parseInt(parts[1]) || 0;
+      return mins * 60 + secs;
+    }
+    return 0;
+  };
+
+  const handleTimeClick = () => {
+    setIsTimeEditing(true);
+    setEditTimeValue(formatTime(transport.currentTime));
+  };
+
+  const handleTimeSubmit = () => {
+    const newTime = parseTimeString(editTimeValue);
+    if (onSeek && newTime >= 0) {
+      onSeek(newTime);
+    }
+    setIsTimeEditing(false);
+  };
+
+  const handleTimeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTimeSubmit();
+    } else if (e.key === 'Escape') {
+      setIsTimeEditing(false);
+      setEditTimeValue('');
+    }
+  };
+
+  useEffect(() => {
+    if (isTimeEditing && timeInputRef.current) {
+      timeInputRef.current.focus();
+      timeInputRef.current.select();
+    }
+  }, [isTimeEditing]);
 
   return (
     <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
@@ -425,13 +467,26 @@ export function CompactTransportBar({
 
       {/* Center: Time Display */}
       <div className="flex items-center space-x-4">
-        <div 
-          className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
-          onClick={() => onSeek?.(0)}
-          title="Click to seek to beginning"
-        >
-          {formatTime(transport.currentTime)}
-        </div>
+        {isTimeEditing ? (
+          <input
+            ref={timeInputRef}
+            type="text"
+            value={editTimeValue}
+            onChange={(e) => setEditTimeValue(e.target.value)}
+            onKeyDown={handleTimeKeyDown}
+            onBlur={handleTimeSubmit}
+            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-16 text-center focus:outline-none"
+            placeholder="MM:SS"
+          />
+        ) : (
+          <div 
+            className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
+            onClick={handleTimeClick}
+            title="Click to edit time position"
+          >
+            {formatTime(transport.currentTime)}
+          </div>
+        )}
         <div className="w-px h-4 bg-[var(--border)]"></div>
         <button 
           className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer px-2 py-1 rounded hover:bg-[var(--accent)]"
