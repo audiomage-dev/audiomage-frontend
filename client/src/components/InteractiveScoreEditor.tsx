@@ -664,25 +664,6 @@ export function InteractiveScoreEditor({
         {/* Top Toolbar */}
         <div className="bg-[var(--background)] border-b border-[var(--border)] p-2 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <Play className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Pause className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Square className="h-4 w-4" />
-            </Button>
-            
-            <div className="w-px h-6 bg-[var(--border)] mx-2" />
-            
-            <Button variant="ghost" size="sm">
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-            
             <Select value={viewMode} onValueChange={(value: 'page' | 'continuous') => setViewMode(value)}>
               <SelectTrigger className="w-32 border-0">
                 <SelectValue />
