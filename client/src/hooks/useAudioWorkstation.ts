@@ -285,10 +285,10 @@ export function useAudioWorkstation() {
     },
     {
       id: '7',
-      name: 'Strings Section',
+      name: 'Violin',
       type: 'midi',
       volume: 65,
-      pan: 50,
+      pan: 30,
       muted: false,
       soloed: false,
       color: '#D08770',
@@ -373,10 +373,10 @@ export function useAudioWorkstation() {
     },
     {
       id: '10',
-      name: 'Strings',
+      name: 'Cello',
       type: 'midi',
       volume: 70,
-      pan: 50,
+      pan: 70,
       muted: false,
       soloed: false,
       color: '#A3BE8C',
@@ -479,28 +479,28 @@ export function useAudioWorkstation() {
     },
     {
       id: '11',
-      name: 'Ambient Texture',
-      type: 'ai-generated',
-      volume: 45,
-      pan: 50,
+      name: 'Flute',
+      type: 'midi',
+      volume: 58,
+      pan: 40,
       muted: false,
       soloed: false,
       color: '#81A1C1',
       clips: [
         {
           id: 'clip-22',
-          name: 'AI_Ambient_Pad.wav',
-          startTime: 0,
-          duration: 240.0,
+          name: 'Flute_Melody.mid',
+          startTime: 80.0,
+          duration: 64.0,
           offset: 0,
-          volume: 48,
+          volume: 60,
           color: '#81A1C1',
-          waveformData: [20, 40, 15, 45, 10, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45, 15, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45, 15, 50, 5, 40, 20, 45, 15, 50, 10, 40, 20, 45]
+          waveformData: [30, 65, 25, 70, 20, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70]
         }
       ],
       effects: [
-        { id: '19', name: 'AI Spatial Processor', type: 'ai-spatial', enabled: true, parameters: {} },
-        { id: '20', name: 'Reverb - Large Hall', type: 'reverb', enabled: true, parameters: {} }
+        { id: '19', name: 'Woodwind Reverb', type: 'reverb', enabled: true, parameters: {} },
+        { id: '20', name: 'Breath Controller', type: 'dynamics', enabled: true, parameters: {} }
       ],
     },
     {
