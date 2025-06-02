@@ -1038,6 +1038,7 @@ export function MidiEditor({
     // Set pause state immediately in both state and ref
     isPausedRef.current = true;
     setIsPaused(true);
+    console.log('Pause state set to true - isPausedRef:', isPausedRef.current, 'currentTrack:', currentPlayingTrackRef.current);
     
     // Don't clear the interval during pause - we need it for resume
     // The interval will check isPausedRef.current and skip execution
