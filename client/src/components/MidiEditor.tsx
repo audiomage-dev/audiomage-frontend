@@ -240,9 +240,18 @@ export function MidiEditor({
 
   // Initialize audio context for note playback
   useEffect(() => {
-    const initAudio = () => {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      setAudioContext(ctx);
+    const initAudio = async () => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(ctx);
+        
+        // Resume audio context if suspended (required by browsers)
+        if (ctx.state === 'suspended') {
+          console.log('Audio context suspended, will resume on user interaction');
+        }
+      } catch (error) {
+        console.error('Failed to initialize audio context:', error);
+      }
     };
     
     initAudio();
@@ -334,33 +343,54 @@ export function MidiEditor({
   };
 
   // Play a single MIDI note
-  const playNote = (pitch: number, velocity: number = 100, duration: number = 0.5) => {
-    if (!audioContext) return;
-    
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
+  const playNote = async (pitch: number, velocity: number = 100, duration: number = 0.5) => {
+    if (!audioContext) {
+      console.warn('Audio context not available');
+      return;
     }
+    
+    try {
+      // Ensure audio context is running
+      if (audioContext.state === 'suspended') {
+        console.log('Resuming audio context...');
+        await audioContext.resume();
+      }
 
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Convert MIDI note to frequency
-    const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-    oscillator.type = 'sine';
-    
-    // Set volume based on velocity
-    const volume = (velocity / 127) * 0.1;
-    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-    
-    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      const filterNode = audioContext.createBiquadFilter();
+      
+      // Connect audio nodes
+      oscillator.connect(filterNode);
+      filterNode.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Convert MIDI note to frequency
+      const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      
+      // Set oscillator type based on instrument
+      const waveType = getInstrumentWaveType(currentInstrument);
+      oscillator.type = waveType;
+      
+      // Configure filter for more realistic sound
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(frequency * 4, audioContext.currentTime);
+      filterNode.Q.setValueAtTime(1, audioContext.currentTime);
+      
+      // Set volume based on velocity with better dynamics
+      const volume = Math.max(0.01, (velocity / 127) * 0.2);
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+      
+      console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+    } catch (error) {
+      console.error('Error playing note:', error);
+    }
   };
 
   // Play all notes in the current track (transport play functionality)
@@ -382,13 +412,8 @@ export function MidiEditor({
 
 
 
-  // Transport integration - stop MIDI when transport stops
-  useEffect(() => {
-    if (transport.isStopped && isMidiPlaying) {
-      console.log('Transport stopped - stopping MIDI playback');
-      stopMidiPlayback();
-    }
-  }, [transport.isStopped, isMidiPlaying]);
+  // Transport integration disabled to prevent interference with MIDI playback
+  // MIDI playback is independent and controlled by MIDI transport controls
 
   // Handle note click - now plays the note
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
@@ -588,6 +613,27 @@ export function MidiEditor({
       sound_fx: 1.0
     };
     return durationMap[instrument] || 0.5;
+  };
+
+  // Get waveform type based on instrument
+  const getInstrumentWaveType = (instrument: string): OscillatorType => {
+    const waveTypeMap: Record<string, OscillatorType> = {
+      piano: 'triangle',
+      electric_piano: 'triangle',
+      organ: 'square',
+      guitar: 'sawtooth',
+      bass: 'triangle',
+      strings: 'sawtooth',
+      brass: 'sawtooth',
+      woodwind: 'sine',
+      synth_lead: 'sawtooth',
+      synth_pad: 'triangle',
+      synth_bass: 'square',
+      drums: 'square',
+      percussion: 'triangle',
+      sound_fx: 'square'
+    };
+    return waveTypeMap[instrument] || 'sine';
   };
 
   // Handle scroll synchronization
@@ -840,14 +886,19 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    if (!selectedTrack || !midiNotes[selectedTrack]) return;
+    if (!selectedTrack || !midiNotes[selectedTrack]) {
+      console.log('No selected track or no MIDI notes');
+      return;
+    }
     
+    console.log('Starting MIDI playback...');
     onMidiPlayingChange?.(true);
     setMidiPlaybackTime(0);
     
     const startTime = Date.now();
     const bpm = 120; // Default BPM for MIDI playback
     const beatsPerSecond = bpm / 60;
+    const playedNotes = new Set<string>(); // Track which notes have been played
     
     const interval = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 1000;
@@ -858,24 +909,27 @@ export function MidiEditor({
       const trackNotes = midiNotes[selectedTrack] || [];
       trackNotes.forEach(note => {
         const noteStartTime = note.startTime;
-        const timeDiff = Math.abs(currentBeat - noteStartTime);
+        const noteKey = `${note.id}-${noteStartTime}`;
         
-        // If we're very close to the note start time (within 0.1 beats)
-        if (timeDiff < 0.1 && currentBeat >= noteStartTime) {
-          const velocity = getInstrumentVelocity(currentInstrument);
-          const duration = getInstrumentDuration(currentInstrument);
+        // If we've reached this note's start time and haven't played it yet
+        if (currentBeat >= noteStartTime && !playedNotes.has(noteKey)) {
+          playedNotes.add(noteKey);
+          const velocity = note.velocity || getInstrumentVelocity(currentInstrument);
+          const duration = note.duration * 0.4 || getInstrumentDuration(currentInstrument);
           playNote(note.pitch, velocity, duration);
+          console.log(`Playing note at beat ${currentBeat.toFixed(2)}: ${getNoteNameFromMidi(note.pitch)}`);
         }
       });
       
-      // Stop at end of track (64 beats)
-      if (currentBeat >= 64) {
+      // Stop at end of track (32 beats for demo)
+      if (currentBeat >= 32) {
+        console.log('Reached end of track, stopping playback');
         stopMidiPlayback();
       }
-    }, 50); // Update every 50ms for smooth playback
+    }, 25); // Update every 25ms for smoother playback
     
     setMidiPlaybackInterval(interval);
-    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === selectedTrack)?.name}"`);
+    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === selectedTrack)?.name}" with ${midiNotes[selectedTrack]?.length || 0} notes`);
   };
 
   const pauseMidiPlayback = () => {
