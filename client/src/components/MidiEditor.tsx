@@ -902,6 +902,12 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
+    // Stop any existing playback first
+    if (midiPlaybackInterval) {
+      clearInterval(midiPlaybackInterval);
+      setMidiPlaybackInterval(null);
+    }
+    
     console.log('Debug playMidiTrack:', { 
       selectedTrack, 
       midiNotesKeys: Object.keys(midiNotes),
@@ -980,6 +986,12 @@ export function MidiEditor({
 
   const pauseMidiPlayback = () => {
     setIsPaused(true);
+    
+    // Clear the playback interval
+    if (midiPlaybackInterval) {
+      clearInterval(midiPlaybackInterval);
+      setMidiPlaybackInterval(null);
+    }
     
     // Stop all active oscillators
     activeOscillators.forEach(oscillator => {
