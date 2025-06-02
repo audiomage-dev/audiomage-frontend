@@ -140,6 +140,8 @@ interface SpectrogramDisplayProps {
 
 function SpectrogramDisplay({ track }: SpectrogramDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number; frequency: number; time: number } | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<{ frequency: number; time: number; magnitude: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -226,15 +228,114 @@ function SpectrogramDisplay({ track }: SpectrogramDisplayProps) {
 
   }, [track]);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Convert mouse position to frequency and time
+    const frequency = ((canvas.offsetHeight - y) / canvas.offsetHeight) * 22050; // 0-22kHz
+    const time = (x / canvas.offsetWidth) * 4; // 0-4 seconds
+
+    setMousePosition({ x, y, frequency, time });
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const frequency = ((canvas.offsetHeight - y) / canvas.offsetHeight) * 22050;
+    const time = (x / canvas.offsetWidth) * 4;
+    
+    // Calculate magnitude at this point (simplified simulation)
+    const trackVolume = (track.volume || 80) / 100;
+    let magnitude = 0;
+    
+    if (frequency < 250) {
+      magnitude = trackVolume * (0.8 + Math.sin(time * 10) * 0.3);
+    } else if (frequency < 4000) {
+      magnitude = trackVolume * (0.6 + Math.sin(time * 5 + frequency * 0.002) * 0.4);
+    } else {
+      magnitude = trackVolume * (0.3 + Math.sin(time * 8 + frequency * 0.001) * 0.2) * (1 - frequency / 22050);
+    }
+    
+    magnitude = Math.max(0, Math.min(1, magnitude));
+
+    setSelectedPoint({ frequency, time, magnitude });
+  };
+
+  const formatFrequency = (freq: number): string => {
+    if (freq >= 1000) {
+      return `${(freq / 1000).toFixed(1)}kHz`;
+    }
+    return `${freq.toFixed(0)}Hz`;
+  };
+
   return (
     <div className="w-full h-full relative">
       <canvas 
         ref={canvasRef}
-        className="w-full h-full"
+        className="w-full h-full cursor-crosshair"
         style={{ width: '100%', height: '100%' }}
+        onMouseMove={handleMouseMove}
+        onClick={handleClick}
+        onMouseLeave={() => setMousePosition(null)}
       />
+      
+      {/* Crosshair overlay */}
+      {mousePosition && (
+        <>
+          <div 
+            className="absolute border-l border-white/60 pointer-events-none"
+            style={{ 
+              left: mousePosition.x,
+              top: 0,
+              height: '100%'
+            }}
+          />
+          <div 
+            className="absolute border-t border-white/60 pointer-events-none"
+            style={{ 
+              top: mousePosition.y,
+              left: 0,
+              width: '100%'
+            }}
+          />
+        </>
+      )}
+      
+      {/* Tooltip */}
+      {mousePosition && (
+        <div 
+          className="absolute bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none z-10"
+          style={{ 
+            left: Math.min(mousePosition.x + 10, 200),
+            top: Math.max(mousePosition.y - 30, 5)
+          }}
+        >
+          <div>{formatFrequency(mousePosition.frequency)}</div>
+          <div>{mousePosition.time.toFixed(2)}s</div>
+        </div>
+      )}
+      
+      {/* Selected point info */}
+      {selectedPoint && (
+        <div className="absolute bottom-2 left-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+          <div>Selected: {formatFrequency(selectedPoint.frequency)}</div>
+          <div>Time: {selectedPoint.time.toFixed(2)}s</div>
+          <div>Magnitude: {(selectedPoint.magnitude * 100).toFixed(1)}%</div>
+        </div>
+      )}
+      
       <div className="absolute top-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
-        Spectrogram
+        Interactive Spectrogram
       </div>
     </div>
   );
