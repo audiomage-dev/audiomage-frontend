@@ -317,6 +317,8 @@ export function ScoreEditor({
     ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     
     staffs.forEach((staff, staffIndex) => {
+      if (!staff.visible) return;
+      
       const yOffset = staffIndex * (staffHeight + 60) + 40;
       
       // Draw staff lines
@@ -328,6 +330,52 @@ export function ScoreEditor({
         ctx.moveTo(40, y);
         ctx.lineTo(canvas.offsetWidth - 280, y);
         ctx.stroke();
+      }
+      
+      // Draw measure lines and grid
+      const measureWidth = noteWidth * 4 * zoomLevel;
+      const totalMeasures = Math.ceil((canvas.offsetWidth - 320) / measureWidth);
+      
+      for (let m = 0; m <= totalMeasures; m++) {
+        const measureX = 140 + (m * measureWidth);
+        if (measureX > canvas.offsetWidth - 280) break;
+        
+        // Draw measure line
+        ctx.strokeStyle = m === 0 ? 
+          (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000') :
+          (getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#cccccc');
+        ctx.lineWidth = m === 0 ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(measureX, yOffset);
+        ctx.lineTo(measureX, yOffset + (4 * lineSpacing));
+        ctx.stroke();
+        
+        // Draw measure numbers if enabled
+        if (showMeasureNumbers && m > 0 && staffIndex === 0) {
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+          ctx.font = '11px sans-serif';
+          ctx.fillText(m.toString(), measureX + 4, yOffset - 8);
+        }
+      }
+      
+      // Draw grid if enabled
+      if (showGrid) {
+        ctx.strokeStyle = (getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#cccccc') + '40';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([1, 2]);
+        
+        // Vertical grid lines for beat divisions
+        for (let beat = 0; beat < totalMeasures * 4; beat++) {
+          const beatX = 140 + (beat * noteWidth * zoomLevel);
+          if (beatX > canvas.offsetWidth - 280) break;
+          
+          ctx.beginPath();
+          ctx.moveTo(beatX, yOffset);
+          ctx.lineTo(beatX, yOffset + (4 * lineSpacing));
+          ctx.stroke();
+        }
+        
+        ctx.setLineDash([]);
       }
       
       // Draw clef
@@ -345,11 +393,13 @@ export function ScoreEditor({
       ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 16);
       ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 36);
       
-      // Draw instrument name and tempo
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
-      ctx.fillText(staff.instrument, 10, yOffset - 10);
-      ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
+      // Draw instrument name and tempo if enabled
+      if (showInstrumentNames) {
+        ctx.font = '12px sans-serif';
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+        ctx.fillText(staff.instrument, 10, yOffset - 10);
+        ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
+      }
       
       // Draw notes with enhanced styling
       ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
@@ -860,7 +910,37 @@ export function ScoreEditor({
                   variant={noteValue === note.value ? 'default' : 'ghost'}
                   size="sm"
                   className="h-8 w-8 p-0 text-lg"
-                  onClick={() => setNoteValue(note.value)}
+                  onClick={() => {
+                    setNoteValue(note.value);
+                    // Update selected notes to the new duration
+                    if (selectedNotes.size > 0) {
+                      setUndoHistory(prev => [...prev, staffs]);
+                      setRedoHistory([]);
+                      setStaffs(prev => prev.map(staff => ({
+                        ...staff,
+                        notes: staff.notes.map(n => 
+                          selectedNotes.has(n.id)
+                            ? { ...n, duration: note.value }
+                            : n
+                        )
+                      })));
+                      
+                      // Play audio preview
+                      const firstSelectedStaff = staffs.find(staff => 
+                        staff.notes.some(n => selectedNotes.has(n.id))
+                      );
+                      if (firstSelectedStaff) {
+                        const firstSelectedNote = firstSelectedStaff.notes.find(n => 
+                          selectedNotes.has(n.id)
+                        );
+                        if (firstSelectedNote) {
+                          const updatedNote = { ...firstSelectedNote, duration: note.value };
+                          const noteDurationInSeconds = noteDurationToSeconds(note.value);
+                          playNote(updatedNote, firstSelectedStaff.instrument, noteDurationInSeconds);
+                        }
+                      }
+                    }
+                  }}
                   title={note.name}
                 >
                   {note.symbol}
@@ -881,7 +961,39 @@ export function ScoreEditor({
                   variant={currentAccidental === acc.type ? 'default' : 'ghost'}
                   size="sm"
                   className="h-8 w-8 p-0 text-lg"
-                  onClick={() => setCurrentAccidental(currentAccidental === acc.type ? null : acc.type as any)}
+                  onClick={() => {
+                    const newAccidental = currentAccidental === acc.type ? null : acc.type as any;
+                    setCurrentAccidental(newAccidental);
+                    
+                    // Apply accidental to selected notes
+                    if (selectedNotes.size > 0) {
+                      setUndoHistory(prev => [...prev, staffs]);
+                      setRedoHistory([]);
+                      setStaffs(prev => prev.map(staff => ({
+                        ...staff,
+                        notes: staff.notes.map(note => 
+                          selectedNotes.has(note.id)
+                            ? { ...note, accidental: newAccidental || undefined }
+                            : note
+                        )
+                      })));
+                      
+                      // Play audio preview with accidental
+                      const firstSelectedStaff = staffs.find(staff => 
+                        staff.notes.some(note => selectedNotes.has(note.id))
+                      );
+                      if (firstSelectedStaff) {
+                        const firstSelectedNote = firstSelectedStaff.notes.find(note => 
+                          selectedNotes.has(note.id)
+                        );
+                        if (firstSelectedNote) {
+                          const updatedNote = { ...firstSelectedNote, accidental: newAccidental || undefined };
+                          const noteDurationInSeconds = noteDurationToSeconds(updatedNote.duration);
+                          playNote(updatedNote, firstSelectedStaff.instrument, noteDurationInSeconds);
+                        }
+                      }
+                    }
+                  }}
                   title={acc.type.charAt(0).toUpperCase() + acc.type.slice(1)}
                 >
                   {acc.symbol}
@@ -962,13 +1074,39 @@ export function ScoreEditor({
         <div className="flex items-center space-x-2">
           {/* Zoom Controls */}
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Zoom Out">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0" 
+              title="Zoom Out"
+              onClick={() => {
+                const newZoom = Math.max(0.25, zoomLevel - 0.25);
+                // Update zoom level through parent component if available
+                if (typeof zoomLevel !== 'undefined') {
+                  // For now, we'll handle zoom internally
+                  drawScore();
+                }
+              }}
+            >
               <ZoomOut className="h-4 w-4" />
             </Button>
             <span className="text-xs text-[var(--foreground)] min-w-[3rem] text-center font-mono">
               {Math.round(zoomLevel * 100)}%
             </span>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Zoom In">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0" 
+              title="Zoom In"
+              onClick={() => {
+                const newZoom = Math.min(4, zoomLevel + 0.25);
+                // Update zoom level through parent component if available
+                if (typeof zoomLevel !== 'undefined') {
+                  // For now, we'll handle zoom internally
+                  drawScore();
+                }
+              }}
+            >
               <ZoomIn className="h-4 w-4" />
             </Button>
           </div>
