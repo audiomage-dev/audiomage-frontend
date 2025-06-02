@@ -90,11 +90,112 @@ export function ScoreEditor({
   const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics'>('select');
   const [noteValue, setNoteValue] = useState<number>(1);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const staffHeight = 120;
   const lineSpacing = 12;
   const noteWidth = 40;
+
+  // Initialize audio context
+  useEffect(() => {
+    const initAudio = () => {
+      if (!audioContext) {
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          setAudioContext(ctx);
+        } catch (error) {
+          console.warn('Audio context not available:', error);
+        }
+      }
+    };
+    
+    // Initialize on first user interaction
+    const handleFirstInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+    
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [audioContext]);
+
+  // Get instrument waveform based on staff instrument
+  const getInstrumentWaveform = (instrument: string): OscillatorType => {
+    const instrumentMap: { [key: string]: OscillatorType } = {
+      'Piano': 'triangle',
+      'Organ': 'sawtooth',
+      'Guitar': 'sawtooth',
+      'Violin': 'triangle',
+      'Flute': 'sine',
+      'Trumpet': 'square',
+      'Saxophone': 'sawtooth',
+      'Clarinet': 'triangle',
+      'Cello': 'sawtooth',
+      'Bass': 'triangle'
+    };
+    
+    return instrumentMap[instrument] || 'triangle';
+  };
+
+  // Play a single note with instrument-specific sound
+  const playNote = (note: Note, instrument: string, duration: number = 0.5) => {
+    if (!audioContext) return;
+    
+    try {
+      const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12); // A4 = 440Hz
+      const waveform = getInstrumentWaveform(instrument);
+      
+      // Create oscillator for the note
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Set waveform and frequency
+      oscillator.type = waveform;
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      
+      // Set volume based on note velocity
+      const velocity = (note.velocity || 80) / 127;
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(velocity * 0.3, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+      
+      // Apply instrument-specific envelope
+      if (instrument.includes('Piano')) {
+        // Piano has quick attack, slower decay
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.4, audioContext.currentTime + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration * 0.8);
+      } else if (instrument.includes('Organ')) {
+        // Organ has sustained tone
+        gainNode.gain.setValueAtTime(velocity * 0.25, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(velocity * 0.25, audioContext.currentTime + duration * 0.9);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+      } else if (instrument.includes('Violin') || instrument.includes('Cello')) {
+        // Strings have gradual attack
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.3, audioContext.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime + duration * 0.7);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+      }
+      
+      // Start and stop the oscillator
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+      
+    } catch (error) {
+      console.warn('Error playing note:', error);
+    }
+  };
 
   // Check if click is on a note
   const getNoteAtPosition = (x: number, y: number, staffIndex: number): { note: Note; staffId: string } | null => {
@@ -307,6 +408,12 @@ export function ScoreEditor({
       const clickedNote = getNoteAtPosition(x, y, staffIndex);
       
       if (clickedNote && currentTool === 'select') {
+        // Play the note when clicked
+        const staff = staffs.find(s => s.id === clickedNote.staffId);
+        if (staff) {
+          playNote(clickedNote.note, staff.instrument, 0.8);
+        }
+        
         // Start dragging the note
         setIsDragging(true);
         setDragState({
@@ -343,6 +450,9 @@ export function ScoreEditor({
             duration: noteValue,
             velocity: 80
           };
+          
+          // Play the newly created note
+          playNote(newNote, staff.instrument, 0.6);
           
           setStaffs(prev => prev.map(s => 
             s.id === staff.id 
@@ -417,6 +527,13 @@ export function ScoreEditor({
         const currentIndex = durations.indexOf(clickedNote.note.duration);
         const nextDuration = durations[(currentIndex + 1) % durations.length];
         
+        // Play the note with its new duration
+        const staff = staffs.find(s => s.id === clickedNote.staffId);
+        if (staff) {
+          const updatedNote = { ...clickedNote.note, duration: nextDuration };
+          playNote(updatedNote, staff.instrument, Math.min(nextDuration * 0.5, 1.5));
+        }
+        
         setStaffs(prev => prev.map(staff => ({
           ...staff,
           notes: staff.notes.map(note => 
@@ -484,6 +601,13 @@ export function ScoreEditor({
               id: `note-${Date.now()}-${Math.random()}`,
               startTime: note.startTime + 1 // Offset by 1 beat
             }));
+            
+            // Play the duplicated notes as a quick preview
+            duplicatedNotes.forEach((note, index) => {
+              setTimeout(() => {
+                playNote(note, staff.instrument, 0.4);
+              }, index * 100); // Stagger playback slightly
+            });
             
             setStaffs(prev => prev.map(s => 
               s.id === selectedStaff 
