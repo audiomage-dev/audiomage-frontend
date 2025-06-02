@@ -241,9 +241,9 @@ export function ScoreEditor({
     const canvasWidth = rect.width;
     const canvasHeight = rect.height;
 
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = document.documentElement.classList.contains('nord-dark') || document.documentElement.classList.contains('dark');
     const colors = {
-      background: isDark ? '#2e3440' : '#ffffff',
+      background: isDark ? '#2e3440' : '#eceff4',
       staffLines: isDark ? '#81a1c1' : '#2e3440',
       notes: isDark ? '#eceff4' : '#2e3440',
       text: isDark ? '#d8dee9' : '#2e3440',
@@ -393,6 +393,22 @@ export function ScoreEditor({
 
   useEffect(() => {
     renderScore();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          setTimeout(renderScore, 0); // Small delay to ensure class changes are applied
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
   }, [renderScore]);
 
   // Handle canvas click
@@ -588,7 +604,7 @@ export function ScoreEditor({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 bg-white dark:bg-gray-900">
+        <div className="flex-1 overflow-auto p-4 bg-[var(--background)] text-[var(--foreground)]">
           <canvas
             ref={scoreCanvasRef}
             className="w-full h-full border border-gray-200 dark:border-gray-700 rounded cursor-pointer"
