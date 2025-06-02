@@ -869,12 +869,21 @@ export function MidiEditor({
       const trackName = track.name.toLowerCase();
       if (trackName.includes('piano')) instrumentForSound = 'piano';
       else if (trackName.includes('bass')) instrumentForSound = 'bass';
+      else if (trackName.includes('violin')) instrumentForSound = 'violin';
+      else if (trackName.includes('cello')) instrumentForSound = 'cello';
+      else if (trackName.includes('flute')) instrumentForSound = 'flute';
       else if (trackName.includes('string')) instrumentForSound = 'strings';
       else if (trackName.includes('synth')) {
         if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
+        else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
         else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
         else instrumentForSound = 'synth_lead';
       }
+      else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+      else if (trackName.includes('organ')) instrumentForSound = 'organ';
+      else if (trackName.includes('brass')) instrumentForSound = 'brass';
+      else if (trackName.includes('drum')) instrumentForSound = 'drums';
+      else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
     }
     
     if (pianoMode === 'midi' && audioContext) {
