@@ -15,6 +15,8 @@ interface Note {
   accidental?: 'sharp' | 'flat' | 'natural';
   tied?: boolean;
   velocity?: number; // 0-127
+  articulation?: 'staccato' | 'accent' | 'tenuto' | 'marcato' | 'fermata';
+  ornament?: 'trill' | 'turn' | 'mordent' | 'grace';
 }
 
 interface Chord {
@@ -303,6 +305,69 @@ export function ScoreEditor({
           ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
           ctx.fillText(accidental === 'sharp' ? '♯' : '♭', x - 20, y + 5);
         }
+        
+        // Draw articulations
+        if (note.articulation) {
+          ctx.font = '12px serif';
+          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+          const articulationY = line <= 2 ? y + 20 : y - 15;
+          
+          switch (note.articulation) {
+            case 'staccato':
+              ctx.fillText('•', x, articulationY);
+              break;
+            case 'accent':
+              ctx.fillText('>', x, articulationY);
+              break;
+            case 'tenuto':
+              ctx.fillText('_', x, articulationY);
+              break;
+            case 'marcato':
+              ctx.fillText('^', x, articulationY);
+              break;
+            case 'fermata':
+              ctx.fillText('𝄐', x, articulationY);
+              break;
+          }
+        }
+        
+        // Draw ornaments
+        if (note.ornament) {
+          ctx.font = '10px serif';
+          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+          const ornamentY = line <= 2 ? y - 25 : y + 30;
+          
+          switch (note.ornament) {
+            case 'trill':
+              ctx.fillText('tr', x - 5, ornamentY);
+              break;
+            case 'turn':
+              ctx.fillText('∽', x, ornamentY);
+              break;
+            case 'mordent':
+              ctx.fillText('𝄘', x, ornamentY);
+              break;
+            case 'grace':
+              ctx.fillText('♮', x - 10, ornamentY);
+              break;
+          }
+        }
+      });
+      
+      // Draw chord symbols
+      staff.chords.forEach((chord) => {
+        const x = 140 + (chord.startTime * noteWidth * zoomLevel);
+        
+        // Generate chord name based on notes
+        if (chord.notes.length > 0) {
+          const rootNote = chord.notes[0];
+          const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+          const chordName = noteNames[rootNote.pitch % 12];
+          
+          ctx.font = 'bold 14px serif';
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+          ctx.fillText(chordName, x, yOffset - 15);
+        }
       });
       
       // Draw playback cursor
@@ -479,6 +544,28 @@ export function ScoreEditor({
               title="Note Tool"
             >
               <Music className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentTool('chord')}
+              className={`h-8 px-2 flex items-center justify-center transition-colors ${
+                currentTool === 'chord' 
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
+              }`}
+              title="Chord Tool"
+            >
+              <Piano className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentTool('dynamics')}
+              className={`h-8 px-2 flex items-center justify-center transition-colors ${
+                currentTool === 'dynamics' 
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
+              }`}
+              title="Dynamics Tool"
+            >
+              <Volume2 className="h-4 w-4" />
             </button>
           </div>
 
@@ -658,8 +745,11 @@ export function ScoreEditor({
 
         {/* Staff List Sidebar */}
         <div className="w-64 border-l border-[var(--border)] bg-[var(--muted)] p-4 overflow-y-auto">
-          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Staffs</h3>
-          <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Score Properties</h3>
+          
+          {/* Staff List */}
+          <div className="space-y-2 mb-4">
+            <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">Staffs</h4>
             {staffs.map((staff) => (
               <div
                 key={staff.id}
@@ -671,10 +761,13 @@ export function ScoreEditor({
                 onClick={() => setSelectedStaff(staff.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <div className="text-sm font-medium">{staff.instrument}</div>
                     <div className="text-xs text-[var(--muted-foreground)]">
-                      {staff.clef} clef • {staff.keySignature} • {staff.timeSignature[0]}/{staff.timeSignature[1]}
+                      {staff.clef} • {staff.keySignature} • {staff.timeSignature[0]}/{staff.timeSignature[1]}
+                    </div>
+                    <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                      {staff.notes.length} notes • ♩ = {staff.tempo}
                     </div>
                   </div>
                   <div className="flex items-center space-x-1">
@@ -706,6 +799,100 @@ export function ScoreEditor({
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Selected Staff Properties */}
+          {selectedStaff && (
+            <div className="space-y-3 border-t border-[var(--border)] pt-4">
+              <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">Staff Properties</h4>
+              
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-[var(--muted-foreground)]">Instrument Name</label>
+                  <input
+                    type="text"
+                    value={staffs.find(s => s.id === selectedStaff)?.instrument || ''}
+                    onChange={(e) => {
+                      setStaffs(prev => prev.map(s => 
+                        s.id === selectedStaff 
+                          ? { ...s, instrument: e.target.value }
+                          : s
+                      ));
+                    }}
+                    className="w-full h-7 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-[var(--muted-foreground)]">Tempo (BPM)</label>
+                  <input
+                    type="number"
+                    min="40"
+                    max="200"
+                    value={staffs.find(s => s.id === selectedStaff)?.tempo || 120}
+                    onChange={(e) => {
+                      setStaffs(prev => prev.map(s => 
+                        s.id === selectedStaff 
+                          ? { ...s, tempo: parseInt(e.target.value) || 120 }
+                          : s
+                      ));
+                    }}
+                    className="w-full h-7 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-[var(--muted-foreground)]">Time Signature</label>
+                  <div className="flex space-x-1">
+                    <select
+                      value={staffs.find(s => s.id === selectedStaff)?.timeSignature[0] || 4}
+                      onChange={(e) => {
+                        const staff = staffs.find(s => s.id === selectedStaff);
+                        if (staff) {
+                          setStaffs(prev => prev.map(s => 
+                            s.id === selectedStaff 
+                              ? { ...s, timeSignature: [parseInt(e.target.value), staff.timeSignature[1]] as [number, number] }
+                              : s
+                          ));
+                        }
+                      }}
+                      className="flex-1 h-7 px-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
+                    >
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
+                      <option value={4}>4</option>
+                      <option value={5}>5</option>
+                      <option value={6}>6</option>
+                      <option value={7}>7</option>
+                      <option value={9}>9</option>
+                      <option value={12}>12</option>
+                    </select>
+                    <span className="text-xs flex items-center">/</span>
+                    <select
+                      value={staffs.find(s => s.id === selectedStaff)?.timeSignature[1] || 4}
+                      onChange={(e) => {
+                        const staff = staffs.find(s => s.id === selectedStaff);
+                        if (staff) {
+                          setStaffs(prev => prev.map(s => 
+                            s.id === selectedStaff 
+                              ? { ...s, timeSignature: [staff.timeSignature[0], parseInt(e.target.value)] as [number, number] }
+                              : s
+                          ));
+                        }
+                      }}
+                      className="flex-1 h-7 px-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
+                    >
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={4}>4</option>
+                      <option value={8}>8</option>
+                      <option value={16}>16</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
             
             <Button
               variant="outline"
