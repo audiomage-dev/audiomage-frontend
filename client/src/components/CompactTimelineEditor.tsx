@@ -1557,7 +1557,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     return (
                       <div
                         key={clip.id}
-                        className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                        className={`absolute top-1 h-[88px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
                             ? 'opacity-60 scale-105 z-50' 
                             : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
@@ -1600,7 +1600,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         </div>
                         
                         {/* Line Waveform */}
-                        <div className="h-14 px-2 py-1 relative">
+                        <div className="h-16 px-2 py-1 relative">
                           {clip.waveformData && (
                             <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} 52`} preserveAspectRatio="none">
                               <path
