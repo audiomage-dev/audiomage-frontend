@@ -154,118 +154,213 @@ export function VerticalSidebar() {
       icon: <Sliders className="w-5 h-5" />,
       label: 'Quick Mix',
       component: (
-        <div className="p-4 space-y-4">
-          {/* Master Section */}
-          <div>
-            <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Master Controls</h3>
-            
-            {/* Master Volume */}
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--muted-foreground)]">Master Volume</span>
-                <span className="text-xs font-mono text-[var(--foreground)]">-6.2dB</span>
+        <div className="h-full flex flex-col bg-gradient-to-b from-[var(--background)] to-[var(--muted)]/20">
+          {/* Header with Mixing State */}
+          <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--primary)]/5 to-[var(--secondary)]/5">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-[var(--foreground)]">Mix Engine</h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></div>
+                <span className="text-xs text-[var(--muted-foreground)] font-mono">LIVE</span>
               </div>
-              <div className="relative">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  defaultValue="75"
-                  className="w-full h-2 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1">
-                  <span>-∞</span>
-                  <span>0dB</span>
-                  <span>+6</span>
+            </div>
+            <div className="text-xs text-[var(--muted-foreground)]">Real-time processing active</div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {/* Revolutionary Circular Master Volume */}
+            <div className="relative">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3 text-center">Master Volume</div>
+              <div className="relative w-24 h-24 mx-auto">
+                {/* Outer Ring */}
+                <div className="absolute inset-0 rounded-full border-4 border-[var(--muted)]"></div>
+                {/* Progress Ring */}
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke="url(#volumeGradient)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray="264"
+                    strokeDashoffset="66"
+                    className="transition-all duration-300"
+                  />
+                  <defs>
+                    <linearGradient id="volumeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--primary)" />
+                      <stop offset="100%" stopColor="var(--secondary)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {/* Center Value */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-[var(--foreground)]">-6.2</div>
+                    <div className="text-xs text-[var(--muted-foreground)]">dB</div>
+                  </div>
+                </div>
+                {/* Interactive Dots */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-[var(--primary)] rounded-full animate-pulse"></div>
                 </div>
               </div>
             </div>
 
-            {/* Level Meters */}
-            <div className="space-y-2 mb-4">
-              <div className="text-xs text-[var(--muted-foreground)]">Output Levels</div>
-              <div className="flex space-x-1">
-                {/* Left Channel */}
-                <div className="flex-1">
-                  <div className="text-xs text-center mb-1">L</div>
-                  <div className="h-20 w-4 bg-[var(--muted)] rounded-sm relative overflow-hidden">
-                    <div className="absolute bottom-0 w-full bg-gradient-to-t from-[var(--green)] via-[var(--yellow)] to-[var(--red)] h-3/4 rounded-sm"></div>
-                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[var(--red)] opacity-50"></div>
-                  </div>
-                  <div className="text-xs text-center mt-1 font-mono">-3.2</div>
-                </div>
-                {/* Right Channel */}
-                <div className="flex-1">
-                  <div className="text-xs text-center mb-1">R</div>
-                  <div className="h-20 w-4 bg-[var(--muted)] rounded-sm relative overflow-hidden">
-                    <div className="absolute bottom-0 w-full bg-gradient-to-t from-[var(--green)] via-[var(--yellow)] to-[var(--red)] h-2/3 rounded-sm"></div>
-                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[var(--red)] opacity-50"></div>
-                  </div>
-                  <div className="text-xs text-center mt-1 font-mono">-4.1</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick EQ */}
-            <div className="space-y-2 mb-4">
-              <div className="text-xs text-[var(--muted-foreground)]">Master EQ</div>
-              <div className="grid grid-cols-3 gap-2">
+            {/* Innovative Level Meters */}
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-[var(--foreground)] text-center">Output Analysis</div>
+              <div className="flex justify-center space-x-4">
+                {/* Left Channel - Waveform Style */}
                 <div className="text-center">
-                  <div className="text-xs mb-1">High</div>
-                  <input type="range" min="0" max="100" defaultValue="50" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" orient="vertical" />
-                  <div className="text-xs font-mono mt-1">+0.0</div>
+                  <div className="text-xs mb-2 font-mono">L</div>
+                  <div className="relative w-8 h-32 bg-[var(--muted)] rounded-full overflow-hidden">
+                    {/* Animated bars */}
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 rounded-full transition-all duration-150 ${
+                          i < 9 ? 'bg-[var(--green)]' : i < 11 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'
+                        }`}
+                        style={{
+                          height: `${(i + 1) * 8}%`,
+                          animationDelay: `${i * 50}ms`,
+                          opacity: i < 9 ? 1 : 0.7
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-xs font-mono mt-1 text-[var(--green)]">-3.2</div>
                 </div>
+                
+                {/* Right Channel - Waveform Style */}
                 <div className="text-center">
-                  <div className="text-xs mb-1">Mid</div>
-                  <input type="range" min="0" max="100" defaultValue="45" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" />
-                  <div className="text-xs font-mono mt-1">-1.2</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xs mb-1">Low</div>
-                  <input type="range" min="0" max="100" defaultValue="55" className="w-full h-1 bg-[var(--muted)] rounded-lg appearance-none cursor-pointer" />
-                  <div className="text-xs font-mono mt-1">+2.1</div>
+                  <div className="text-xs mb-2 font-mono">R</div>
+                  <div className="relative w-8 h-32 bg-[var(--muted)] rounded-full overflow-hidden">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 rounded-full transition-all duration-200 ${
+                          i < 8 ? 'bg-[var(--green)]' : i < 10 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'
+                        }`}
+                        style={{
+                          height: `${(i + 1) * 6.5}%`,
+                          animationDelay: `${i * 60}ms`,
+                          opacity: i < 8 ? 1 : 0.6
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-xs font-mono mt-1 text-[var(--green)]">-4.1</div>
                 </div>
               </div>
             </div>
 
-            {/* Master Effects */}
-            <div className="space-y-2 mb-4">
-              <div className="text-xs text-[var(--muted-foreground)]">Master Chain</div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded text-xs">
-                  <span>Compressor</span>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
-                    <span className="font-mono">3:1</span>
-                  </div>
+            {/* Radial EQ Controls */}
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-[var(--foreground)] text-center">Frequency Sculptor</div>
+              <div className="relative w-32 h-32 mx-auto">
+                {/* EQ Visualization Circle */}
+                <div className="absolute inset-0 rounded-full border border-[var(--border)] bg-gradient-to-br from-[var(--muted)]/20 to-[var(--muted)]/5">
+                  {/* Frequency bands as dots around circle */}
+                  {['High', 'Mid', 'Low'].map((band, index) => {
+                    const angle = (index * 120) - 90; // Distribute around circle
+                    const x = 50 + 35 * Math.cos(angle * Math.PI / 180);
+                    const y = 50 + 35 * Math.sin(angle * Math.PI / 180);
+                    return (
+                      <div
+                        key={band}
+                        className="absolute w-6 h-6 -ml-3 -mt-3"
+                        style={{ left: `${x}%`, top: `${y}%` }}
+                      >
+                        <div className={`w-full h-full rounded-full border-2 cursor-pointer transition-all duration-300 hover:scale-125 ${
+                          band === 'High' ? 'border-[var(--blue)] bg-[var(--blue)]/20' :
+                          band === 'Mid' ? 'border-[var(--green)] bg-[var(--green)]/20' :
+                          'border-[var(--red)] bg-[var(--red)]/20'
+                        }`}>
+                          <div className="absolute inset-1 rounded-full bg-current opacity-50"></div>
+                        </div>
+                        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-mono text-center">
+                          <div className="font-medium">{band}</div>
+                          <div className="text-[var(--muted-foreground)]">
+                            {band === 'High' ? '+0.0' : band === 'Mid' ? '-1.2' : '+2.1'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded text-xs">
-                  <span>Limiter</span>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-[var(--blue)] rounded-full"></div>
-                    <span className="font-mono">-0.1dB</span>
+                {/* Center frequency display */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-xs text-[var(--muted-foreground)]">EQ</div>
+                    <div className="text-xs font-mono text-[var(--foreground)]">Active</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* AI Analysis */}
-            <div className="p-3 bg-[var(--secondary)] rounded-md">
-              <div className="text-xs text-[var(--muted-foreground)] mb-2">AI Analysis</div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span>LUFS</span>
-                  <span className="font-mono text-[var(--green)]">-14.2</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span>Dynamic Range</span>
-                  <span className="font-mono text-[var(--blue)]">8.3 LU</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span>Peak</span>
-                  <span className="font-mono text-[var(--yellow)]">-1.2dBFS</span>
-                </div>
-                <div className="text-xs text-[var(--green)] mt-2">✓ Broadcast ready</div>
+            {/* Processing Chain */}
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-[var(--foreground)] text-center">Processing Chain</div>
+              <div className="space-y-2">
+                {[
+                  { name: 'Neural Compressor', ratio: '3:1', color: 'var(--green)', active: true },
+                  { name: 'AI Limiter', level: '-0.1dB', color: 'var(--blue)', active: true },
+                  { name: 'Harmonic Enhancer', amount: '15%', color: 'var(--purple)', active: false }
+                ].map((processor, index) => (
+                  <div
+                    key={processor.name}
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-300 hover:scale-105 cursor-pointer ${
+                      processor.active 
+                        ? 'bg-gradient-to-r from-[var(--muted)]/40 to-[var(--muted)]/20 border-[var(--primary)]/30' 
+                        : 'bg-[var(--muted)]/20 border-[var(--border)]'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div 
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          processor.active ? 'animate-pulse' : ''
+                        }`}
+                        style={{ backgroundColor: processor.active ? processor.color : 'var(--muted-foreground)' }}
+                      />
+                      <span className="text-xs font-medium">{processor.name}</span>
+                    </div>
+                    <span className="text-xs font-mono">
+                      {processor.ratio || processor.level || processor.amount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Smart Analysis Panel */}
+            <div className="p-4 bg-gradient-to-br from-[var(--secondary)]/20 to-[var(--primary)]/10 rounded-xl border border-[var(--primary)]/20">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3 text-center">Smart Analysis</div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'LUFS', value: '-14.2', status: 'optimal', color: 'var(--green)' },
+                  { label: 'Range', value: '8.3 LU', status: 'good', color: 'var(--blue)' },
+                  { label: 'Peak', value: '-1.2dBFS', status: 'safe', color: 'var(--yellow)' },
+                  { label: 'Phase', value: '0.98', status: 'excellent', color: 'var(--green)' }
+                ].map((metric) => (
+                  <div key={metric.label} className="text-center">
+                    <div className="text-xs text-[var(--muted-foreground)]">{metric.label}</div>
+                    <div 
+                      className="text-sm font-bold font-mono"
+                      style={{ color: metric.color }}
+                    >
+                      {metric.value}
+                    </div>
+                    <div className="text-xs text-[var(--muted-foreground)] capitalize">
+                      {metric.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 p-2 bg-[var(--green)]/10 rounded-md text-center">
+                <div className="text-xs text-[var(--green)] font-medium">✨ Broadcast Ready</div>
               </div>
             </div>
           </div>
