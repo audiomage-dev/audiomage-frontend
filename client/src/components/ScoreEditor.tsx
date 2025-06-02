@@ -893,30 +893,29 @@ export function ScoreEditor({
               </div>
             </div>
           )}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full mt-2"
-              onClick={() => {
-                const newStaff: Staff = {
-                  id: `staff-${Date.now()}`,
-                  clef: 'treble',
-                  keySignature: 'C',
-                  timeSignature: [4, 4],
-                  instrument: 'New Staff',
-                  tempo: 120,
-                  notes: [],
-                  chords: [],
-                  dynamics: []
-                };
-                setStaffs(prev => [...prev, newStaff]);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Staff
-            </Button>
-          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-4"
+            onClick={() => {
+              const newStaff: Staff = {
+                id: `staff-${Date.now()}`,
+                clef: 'treble',
+                keySignature: 'C',
+                timeSignature: [4, 4],
+                instrument: 'New Staff',
+                tempo: 120,
+                notes: [],
+                chords: [],
+                dynamics: []
+              };
+              setStaffs(prev => [...prev, newStaff]);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Staff
+          </Button>
         </div>
       </div>
     </div>

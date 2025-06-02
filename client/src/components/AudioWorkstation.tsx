@@ -5,7 +5,7 @@ import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MidiEditor } from './MidiEditor';
-import { ScoreEditor } from './ScoreEditor';
+import { ScoreEditor } from './ScoreEditor_fixed';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
