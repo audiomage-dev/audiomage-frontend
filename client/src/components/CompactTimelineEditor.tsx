@@ -74,6 +74,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     selectedClips: string[];
   } | null>(null);
 
+  // Fade controls state for hover interactions
+  const [hoveredClip, setHoveredClip] = useState<string | null>(null);
+  const [fadeControls, setFadeControls] = useState<{
+    clipId: string;
+    trackId: string;
+    fadeIn: number;
+    fadeOut: number;
+    isDragging: boolean;
+    dragType: 'in' | 'out' | null;
+  } | null>(null);
+
   // Clip dragging state
   const [draggingClip, setDraggingClip] = useState<{
     clipId: string;
