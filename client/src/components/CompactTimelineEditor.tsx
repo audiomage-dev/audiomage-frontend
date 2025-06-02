@@ -1466,10 +1466,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           >
             {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
               const timeSeconds = i * 60;
-              const hours = Math.floor(timeSeconds / 3600);
-              const minutes = Math.floor((timeSeconds % 3600) / 60);
+              const minutes = Math.floor(timeSeconds / 60);
               const seconds = timeSeconds % 60;
-              const frames = Math.floor((timeSeconds % 1) * 30); // Assuming 30fps
               const position = (timeSeconds / 1200) * 100;
               
               return (
@@ -1478,7 +1476,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                   style={{ left: `${position}%` }}
                 >
-                  {hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}:{frames.toString().padStart(2, '0')}
+                  {minutes}:{seconds.toString().padStart(2, '0')}
                 </div>
               );
             })}
