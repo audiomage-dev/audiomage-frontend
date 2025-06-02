@@ -243,16 +243,16 @@ export function ScoreEditor({
 
     const isDark = document.documentElement.classList.contains('dark');
     const colors = {
-      background: isDark ? '#1f2937' : '#ffffff',
-      staffLines: isDark ? '#9ca3af' : '#374151',
-      notes: isDark ? '#f9fafb' : '#111827',
-      text: isDark ? '#e5e7eb' : '#374151',
-      selectedNote: '#3b82f6',
-      measureLines: isDark ? '#6b7280' : '#d1d5db',
-      ledgerLines: isDark ? '#9ca3af' : '#374151',
-      accidentals: isDark ? '#f3f4f6' : '#1f2937',
-      dynamics: isDark ? '#a78bfa' : '#8b5cf6',
-      tempo: isDark ? '#fbbf24' : '#f59e0b'
+      background: isDark ? '#2e3440' : '#ffffff',
+      staffLines: isDark ? '#81a1c1' : '#2e3440',
+      notes: isDark ? '#eceff4' : '#2e3440',
+      text: isDark ? '#d8dee9' : '#2e3440',
+      selectedNote: '#5e81ac',
+      measureLines: isDark ? '#4c566a' : '#d8dee9',
+      ledgerLines: isDark ? '#81a1c1' : '#2e3440',
+      accidentals: isDark ? '#eceff4' : '#2e3440',
+      dynamics: isDark ? '#b48ead' : '#5e81ac',
+      tempo: isDark ? '#ebcb8b' : '#d08770'
     };
 
     ctx.fillStyle = colors.background;
