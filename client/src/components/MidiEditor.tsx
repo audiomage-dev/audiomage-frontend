@@ -1404,7 +1404,8 @@ export function MidiEditor({
 
           {/* Note Grid - Scrollable Canvas */}
           <div 
-            className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin select-none" 
+            className="flex-1 overflow-y-auto select-none" 
+            style={{ overflowX: 'hidden' }}
             ref={pianoRollRef}
             onScroll={handleScrollSync}
           >
