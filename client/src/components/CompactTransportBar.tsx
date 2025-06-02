@@ -395,12 +395,18 @@ export function CompactTransportBar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Play button clicked! ViewMode:', viewMode, 'SelectedTrack:', selectedTrack, 'IsMidiPlaying:', isMidiPlaying);
+            
             if (viewMode === 'midi') {
               // MIDI mode: handle MIDI playback
               if (isMidiPlaying) {
+                console.log('Calling onMidiPause');
                 onMidiPause?.();
               } else {
+                console.log('Calling onMidiPlay');
                 onMidiPlay?.();
               }
             } else {
