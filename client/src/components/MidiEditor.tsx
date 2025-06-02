@@ -1570,7 +1570,6 @@ export function MidiEditor({
           }}
           onMouseDown={(e) => handlePianoKeyMouseDown(midiNote, e)}
           onMouseUp={handlePianoKeyMouseUp}
-          onClick={() => handlePianoKeyClick(midiNote)}
         >
           <span className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}>
             {noteName}
