@@ -31,12 +31,26 @@ import {
 interface ProjectItem {
   id: string;
   name: string;
-  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples' | 'file';
+  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples' | 'file' | 'video' | 'image';
   children?: ProjectItem[];
   level: number;
+  url?: string;
+  size?: number;
+  duration?: number;
 }
 
-export function ProjectBrowser() {
+interface ProjectBrowserProps {
+  onFileSelect?: (file: {
+    id: string;
+    name: string;
+    type: 'audio' | 'video' | 'image';
+    url: string;
+    duration?: number;
+    size?: number;
+  }) => void;
+}
+
+export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8', '21']));
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState<{ 

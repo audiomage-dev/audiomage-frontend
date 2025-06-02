@@ -8,6 +8,7 @@ import { MidiEditor } from './MidiEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
+import { MediaPreviewPane } from './MediaPreviewPane';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef } from 'react';
 
@@ -40,6 +41,16 @@ export function AudioWorkstation() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
+  
+  // Media preview state
+  const [selectedMediaFile, setSelectedMediaFile] = useState<{
+    id: string;
+    name: string;
+    type: 'audio' | 'video' | 'image';
+    url: string;
+    duration?: number;
+    size?: number;
+  } | null>(null);
   
   // Lock states for Timeline and MIDI editors
   const [isTimelineLocked, setIsTimelineLocked] = useState(false);
@@ -145,6 +156,13 @@ export function AudioWorkstation() {
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
             />
           </div>
+          
+          {/* Media Preview Pane */}
+          <MediaPreviewPane
+            file={selectedMediaFile}
+            onClose={() => setSelectedMediaFile(null)}
+            isVisible={!!selectedMediaFile}
+          />
           
           {/* Editor Area - Timeline or MIDI */}
           <div className="flex-1 overflow-hidden">

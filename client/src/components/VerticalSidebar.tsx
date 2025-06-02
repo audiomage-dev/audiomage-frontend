@@ -75,7 +75,18 @@ interface SidebarItem {
   component?: React.ReactNode;
 }
 
-export function VerticalSidebar() {
+interface VerticalSidebarProps {
+  onFileSelect?: (file: {
+    id: string;
+    name: string;
+    type: 'audio' | 'video' | 'image';
+    url: string;
+    duration?: number;
+    size?: number;
+  }) => void;
+}
+
+export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
@@ -98,7 +109,7 @@ export function VerticalSidebar() {
       id: 'files',
       icon: <FolderOpen className="w-5 h-5" />,
       label: 'Explorer',
-      component: <ProjectBrowser />
+      component: <ProjectBrowser onFileSelect={onFileSelect} />
     },
     {
       id: 'search',
