@@ -85,8 +85,6 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 90,
           color: '#88C0D0',
-          fadeIn: 1.5,
-          fadeOut: 2.0,
           waveformData: [55, 70, 40, 95, 80, 50, 85, 45, 90, 65, 75, 35, 88, 70, 60, 95, 50, 80, 85, 40, 75, 95, 55, 85, 70, 80, 45, 90, 65, 80, 95, 50, 70, 85, 60, 88, 55, 75, 90, 45]
         }
       ],
@@ -115,8 +113,6 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 80,
           color: '#BF616A',
-          fadeIn: 0.5,
-          fadeOut: 1.0,
           waveformData: [95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70, 50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35, 90, 25, 80, 45, 95, 30]
         }
       ],

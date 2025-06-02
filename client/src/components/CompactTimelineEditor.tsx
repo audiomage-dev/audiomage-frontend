@@ -74,17 +74,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     selectedClips: string[];
   } | null>(null);
 
-  // Fade controls state for hover interactions
-  const [hoveredClip, setHoveredClip] = useState<string | null>(null);
-  const [fadeControls, setFadeControls] = useState<{
-    clipId: string;
-    trackId: string;
-    fadeIn: number;
-    fadeOut: number;
-    isDragging: boolean;
-    dragType: 'in' | 'out' | null;
-  } | null>(null);
-
   // Clip dragging state
   const [draggingClip, setDraggingClip] = useState<{
     clipId: string;
@@ -146,6 +135,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
   const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
+  
+  // Automation mode state
+  const [automationMode, setAutomationMode] = useState<{ clipId: string; type: 'fadeIn' | 'fadeOut' } | null>(null);
+  const [hoveredClip, setHoveredClip] = useState<string | null>(null);
 
   // Virtual extension action handlers
   const handleExtensionAction = useCallback((action: 'blank' | 'ai' | 'stretch') => {
@@ -1608,25 +1601,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           zIndex: draggingClip?.clipId === clip.id ? 50 : 
                                  draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id) ? 40 : 5
                         }}
+                        onMouseEnter={() => setHoveredClip(clip.id)}
+                        onMouseLeave={() => setHoveredClip(null)}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
-                        {/* Clip Header with Fade Controls */}
-                        <div 
-                          className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium relative cursor-pointer transition-all duration-200 hover:bg-black hover:bg-opacity-40"
-                          onMouseEnter={() => setHoveredClip(clip.id)}
-                          onMouseLeave={() => {
-                            if (!fadeControls?.isDragging) {
-                              setHoveredClip(null);
-                              setFadeControls(null);
-                            }
-                          }}
-                        >
+                        {/* Clip Header */}
+                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
                           <span className="truncate flex-1">{clip.name}</span>
                           <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
-                          
-
                         </div>
                         
                         {/* Line Waveform */}
@@ -1657,171 +1641,64 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           )}
                         </div>
                         
-                        {/* Fade In/Out Visual Indicators */}
-                        {(clip.fadeIn && clip.fadeIn > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0) && (
+                        {/* Fade In/Out Indicators */}
+                        {clip.fadeIn && clip.fadeIn > 0 && (
                           <div 
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-black/60 via-black/30 to-transparent pointer-events-none z-10 transition-all duration-150"
-                            style={{ 
-                              width: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0) / clip.duration) * 100}%`,
-                              opacity: fadeControls?.clipId === clip.id && fadeControls.dragType === 'in' ? 0.8 : 0.6
-                            }}
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
+                            style={{ width: `${(clip.fadeIn / clip.duration) * 100}%` }}
                           />
                         )}
-                        {(clip.fadeOut && clip.fadeOut > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0) && (
+                        {clip.fadeOut && clip.fadeOut > 0 && (
                           <div 
-                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-black/60 via-black/30 to-transparent pointer-events-none z-10 transition-all duration-150"
-                            style={{ 
-                              width: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0) / clip.duration) * 100}%`,
-                              opacity: fadeControls?.clipId === clip.id && fadeControls.dragType === 'out' ? 0.8 : 0.6
-                            }}
+                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
+                            style={{ width: `${(clip.fadeOut / clip.duration) * 100}%` }}
                           />
                         )}
-
-                        {/* Fade Handle Lines - draggable fade boundaries */}
+                        
+                        {/* Automation Mode Controls - Show on hover */}
                         {hoveredClip === clip.id && (
                           <>
-                            {/* Fade-in line handle */}
-                            {((clip.fadeIn && clip.fadeIn > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0)) && (
-                              <div 
-                                className="absolute top-0 h-full w-1 bg-[var(--primary)] hover:bg-[var(--primary)]/80 cursor-ew-resize z-30 transition-colors duration-200 flex items-center justify-center group"
-                                style={{ 
-                                  left: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0) / clip.duration) * 100}%`,
-                                  transform: 'translateX(-50%)'
-                                }}
-                                onMouseDown={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  const startX = e.clientX;
-                                  const currentFadeIn = clip.fadeIn || 0;
-                                  
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: currentFadeIn,
-                                    fadeOut: clip.fadeOut || 0,
-                                    isDragging: true,
-                                    dragType: 'in'
-                                  });
-                                  
-                                  const handleMouseMove = (e: MouseEvent) => {
-                                    const deltaX = e.clientX - startX;
-                                    const fadeInDelta = (deltaX / clipWidth) * clip.duration;
-                                    const newFadeIn = Math.max(0, Math.min(clip.duration * 0.4, currentFadeIn + fadeInDelta));
-                                    
-                                    setFadeControls(prev => prev ? { ...prev, fadeIn: newFadeIn } : null);
-                                  };
-                                  
-                                  const handleMouseUp = () => {
-                                    document.removeEventListener('mousemove', handleMouseMove);
-                                    document.removeEventListener('mouseup', handleMouseUp);
-                                    if (fadeControls) {
-                                      console.log(`Applied fade-in to clip ${clip.id}: ${fadeControls.fadeIn.toFixed(2)}s`);
-                                    }
-                                    setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
-                                  };
-                                  
-                                  document.addEventListener('mousemove', handleMouseMove);
-                                  document.addEventListener('mouseup', handleMouseUp);
-                                }}
-                                title={`Drag to adjust fade-in: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0).toFixed(1)}s`}
-                              >
-                                <div className="w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                              </div>
-                            )}
+                            {/* Fade In Control */}
+                            <div 
+                              className="absolute top-0 left-0 w-8 h-full bg-gradient-to-r from-blue-500/40 to-transparent hover:from-blue-500/60 cursor-pointer transition-all duration-200 flex items-center justify-center group"
+                              onMouseEnter={(e) => {
+                                e.stopPropagation();
+                                setAutomationMode({ clipId: clip.id, type: 'fadeIn' });
+                              }}
+                              onMouseLeave={(e) => {
+                                e.stopPropagation();
+                                setAutomationMode(null);
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Apply fade-in to clip:', clip.id);
+                                // Apply fade-in automation
+                              }}
+                              title="Add fade-in"
+                            >
+                              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-white border-b-[6px] border-b-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                             
-                            {/* Fade-out line handle */}
-                            {((clip.fadeOut && clip.fadeOut > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0)) && (
-                              <div 
-                                className="absolute top-0 h-full w-1 bg-[var(--primary)] hover:bg-[var(--primary)]/80 cursor-ew-resize z-30 transition-colors duration-200 flex items-center justify-center group"
-                                style={{ 
-                                  right: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0) / clip.duration) * 100}%`,
-                                  transform: 'translateX(50%)'
-                                }}
-                                onMouseDown={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  const startX = e.clientX;
-                                  const currentFadeOut = clip.fadeOut || 0;
-                                  
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: clip.fadeIn || 0,
-                                    fadeOut: currentFadeOut,
-                                    isDragging: true,
-                                    dragType: 'out'
-                                  });
-                                  
-                                  const handleMouseMove = (e: MouseEvent) => {
-                                    const deltaX = startX - e.clientX; // Reversed for fade-out
-                                    const fadeOutDelta = (deltaX / clipWidth) * clip.duration;
-                                    const newFadeOut = Math.max(0, Math.min(clip.duration * 0.4, currentFadeOut + fadeOutDelta));
-                                    
-                                    setFadeControls(prev => prev ? { ...prev, fadeOut: newFadeOut } : null);
-                                  };
-                                  
-                                  const handleMouseUp = () => {
-                                    document.removeEventListener('mousemove', handleMouseMove);
-                                    document.removeEventListener('mouseup', handleMouseUp);
-                                    if (fadeControls) {
-                                      console.log(`Applied fade-out to clip ${clip.id}: ${fadeControls.fadeOut.toFixed(2)}s`);
-                                    }
-                                    setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
-                                  };
-                                  
-                                  document.addEventListener('mousemove', handleMouseMove);
-                                  document.addEventListener('mouseup', handleMouseUp);
-                                }}
-                                title={`Drag to adjust fade-out: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0).toFixed(1)}s`}
-                              >
-                                <div className="w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                              </div>
-                            )}
-
-                            {/* Quick fade buttons in header for starting fades */}
-                            {!(clip.fadeIn && clip.fadeIn > 0) && !(fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0) && (
-                              <button 
-                                className="absolute left-1 top-0.5 h-4 w-4 bg-[var(--primary)]/70 hover:bg-[var(--primary)] rounded text-xs text-white flex items-center justify-center z-30 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newFadeIn = Math.min(1, clip.duration * 0.1);
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: newFadeIn,
-                                    fadeOut: clip.fadeOut || 0,
-                                    isDragging: false,
-                                    dragType: null
-                                  });
-                                  console.log(`Started fade-in for clip ${clip.id}: ${newFadeIn.toFixed(2)}s`);
-                                }}
-                                title="Add fade-in"
-                              >
-                                ↗
-                              </button>
-                            )}
-                            
-                            {!(clip.fadeOut && clip.fadeOut > 0) && !(fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0) && (
-                              <button 
-                                className="absolute right-1 top-0.5 h-4 w-4 bg-[var(--primary)]/70 hover:bg-[var(--primary)] rounded text-xs text-white flex items-center justify-center z-30 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newFadeOut = Math.min(1, clip.duration * 0.1);
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: clip.fadeIn || 0,
-                                    fadeOut: newFadeOut,
-                                    isDragging: false,
-                                    dragType: null
-                                  });
-                                  console.log(`Started fade-out for clip ${clip.id}: ${newFadeOut.toFixed(2)}s`);
-                                }}
-                                title="Add fade-out"
-                              >
-                                ↘
-                              </button>
-                            )}
+                            {/* Fade Out Control */}
+                            <div 
+                              className="absolute top-0 right-0 w-8 h-full bg-gradient-to-l from-orange-500/40 to-transparent hover:from-orange-500/60 cursor-pointer transition-all duration-200 flex items-center justify-center group"
+                              onMouseEnter={(e) => {
+                                e.stopPropagation();
+                                setAutomationMode({ clipId: clip.id, type: 'fadeOut' });
+                              }}
+                              onMouseLeave={(e) => {
+                                e.stopPropagation();
+                                setAutomationMode(null);
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Apply fade-out to clip:', clip.id);
+                                // Apply fade-out automation
+                              }}
+                              title="Add fade-out"
+                            >
+                              <div className="w-0 h-0 border-r-[6px] border-r-transparent border-l-[6px] border-l-white border-b-[6px] border-b-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                           </>
                         )}
                         
