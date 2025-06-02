@@ -620,9 +620,9 @@ export function MenuBar() {
             </Button>
             
             {showUserMenu && (
-              <div className="absolute right-0 top-10 w-64 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg z-50 opacity-100">
+              <div className="absolute right-0 top-10 w-64 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg z-50">
                 <div className="p-3 border-b border-[var(--border)]">
-                  <div className="text-sm font-medium text-[var(--popover-foreground)]">Switch Workspace</div>
+                  <div className="text-sm font-medium text-[var(--foreground)]">Switch Workspace</div>
                 </div>
                 
                 <div className="py-2">
@@ -631,7 +631,7 @@ export function MenuBar() {
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
                         <User className="h-3 w-3 text-white" />
                       </div>
-                      <span className="text-sm text-[var(--popover-foreground)]">Personal</span>
+                      <span className="text-sm text-[var(--foreground)]">Personal</span>
                     </div>
                   </div>
                   
@@ -643,7 +643,7 @@ export function MenuBar() {
                         className="w-6 h-6 object-contain"
                       />
                       <div className="flex-1">
-                        <span className="text-sm text-[var(--popover-foreground)]">Audiomage BV</span>
+                        <span className="text-sm text-[var(--foreground)]">Audiomage BV</span>
                         <span className="text-xs text-[var(--muted-foreground)] ml-2">Admin</span>
                         <ChevronDown className="h-3 w-3 inline ml-1" />
                       </div>
@@ -655,35 +655,35 @@ export function MenuBar() {
                   <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <Settings className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      <span className="text-sm text-[var(--popover-foreground)]">Account</span>
+                      <span className="text-sm text-[var(--foreground)]">Account</span>
                     </div>
                   </div>
                   
                   <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <User className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      <span className="text-sm text-[var(--popover-foreground)]">Profile</span>
+                      <span className="text-sm text-[var(--foreground)]">Profile</span>
                     </div>
                   </div>
                   
                   <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <UserPlus className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      <span className="text-sm text-[var(--popover-foreground)]">Create Team</span>
+                      <span className="text-sm text-[var(--foreground)]">Create Team</span>
                     </div>
                   </div>
                   
                   <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <Terminal className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      <span className="text-sm text-[var(--popover-foreground)]">CLUI</span>
+                      <span className="text-sm text-[var(--foreground)]">CLUI</span>
                     </div>
                   </div>
                   
                   <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <LogOut className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      <span className="text-sm text-[var(--popover-foreground)]">Log out</span>
+                      <span className="text-sm text-[var(--foreground)]">Log out</span>
                     </div>
                   </div>
                 </div>
