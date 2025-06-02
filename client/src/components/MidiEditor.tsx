@@ -789,21 +789,33 @@ export function MidiEditor({
     
     // Play appropriate sound based on mode
     if (pianoMode === 'instrument') {
-      // Temporarily set the current instrument for this playback
-      const previousInstrument = currentInstrument;
-      setCurrentInstrument(instrumentForSound);
-      
-      const velocity = getInstrumentVelocity(instrumentForSound);
-      const duration = 0.8;
-      playNote(pitch, velocity, duration);
-      
-      // Restore previous instrument after a short delay
-      setTimeout(() => setCurrentInstrument(previousInstrument), 10);
+      // Use direct instrument sound generation instead of relying on state
+      if (audioContext) {
+        const waveType = getInstrumentWaveType(instrumentForSound);
+        const frequency = midiToFrequency(pitch);
+        
+        console.log(`Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave for instrument: ${instrumentForSound}`);
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = waveType;
+        oscillator.frequency.value = frequency;
+        gainNode.gain.value = 0.15;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.8);
+      }
     } else {
       // MIDI mode - direct oscillator
       if (audioContext) {
         const waveType = getInstrumentWaveType(instrumentForSound);
         const frequency = midiToFrequency(pitch);
+        
+        console.log(`Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
         
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
