@@ -99,6 +99,113 @@ export function InteractiveScoreEditor({
     return { y, needsLedger };
   };
 
+  // Audio context for note playback
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize audio context
+  const getAudioContext = useCallback(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return audioContextRef.current;
+  }, []);
+
+  // Play a note using Web Audio API
+  const playNote = useCallback((note: Note) => {
+    try {
+      const audioContext = getAudioContext();
+      
+      // Calculate frequency from MIDI note number
+      const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
+      
+      // Create oscillator for the note
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      // Set up the audio chain
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Configure the oscillator
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      
+      // Configure envelope (attack, decay, sustain, release)
+      const now = audioContext.currentTime;
+      const duration = Math.min(note.duration * 0.5, 2); // Max 2 seconds
+      
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(note.velocity / 127 * 0.3, now + 0.01); // Attack
+      gainNode.gain.exponentialRampToValueAtTime(note.velocity / 127 * 0.2, now + duration * 0.3); // Decay
+      gainNode.gain.setValueAtTime(note.velocity / 127 * 0.2, now + duration * 0.7); // Sustain
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // Release
+      
+      // Start and stop the oscillator
+      oscillator.start(now);
+      oscillator.stop(now + duration);
+      
+      // Visual feedback - briefly highlight the played note
+      setSelectedNotes(prev => new Set([...Array.from(prev), note.id]));
+      setTimeout(() => {
+        setSelectedNotes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(note.id);
+          return newSet;
+        });
+      }, Math.min(duration * 1000, 500));
+      
+    } catch (error) {
+      console.warn('Audio playback failed:', error);
+    }
+  }, [getAudioContext]);
+
+  // Play multiple notes as a chord
+  const playChord = useCallback((notes: Note[]) => {
+    try {
+      const audioContext = getAudioContext();
+      const now = audioContext.currentTime;
+      const maxDuration = Math.max(...notes.map(note => Math.min(note.duration * 0.5, 2)));
+      
+      notes.forEach((note, index) => {
+        const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, now);
+        
+        const volume = (note.velocity / 127 * 0.2) / Math.sqrt(notes.length); // Reduce volume for chords
+        
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(volume, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(volume * 0.7, now + maxDuration * 0.3);
+        gainNode.gain.setValueAtTime(volume * 0.7, now + maxDuration * 0.7);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + maxDuration);
+        
+        oscillator.start(now + index * 0.01); // Slight delay for natural chord sound
+        oscillator.stop(now + maxDuration);
+      });
+      
+      // Visual feedback for all played notes
+      const noteIds = notes.map(note => note.id);
+      setSelectedNotes(prev => new Set([...Array.from(prev), ...noteIds]));
+      setTimeout(() => {
+        setSelectedNotes(prev => {
+          const newSet = new Set(prev);
+          noteIds.forEach(id => newSet.delete(id));
+          return newSet;
+        });
+      }, Math.min(maxDuration * 1000, 1000));
+      
+    } catch (error) {
+      console.warn('Chord playback failed:', error);
+    }
+  }, [getAudioContext]);
+
   // Remove note
   const removeNote = useCallback((noteId: string) => {
     setStaffs(prev => prev.map(staff => ({
@@ -176,6 +283,8 @@ export function InteractiveScoreEditor({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedNote, setDraggedNote] = useState<Note | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [lastClickTime, setLastClickTime] = useState(0);
+  const [lastClickedNote, setLastClickedNote] = useState<string | null>(null);
 
   // Canvas mouse down handler
   const handleCanvasMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -205,13 +314,28 @@ export function InteractiveScoreEditor({
       if (clickedNote) break;
     }
 
+    // Handle double-click detection
+    const currentTime = Date.now();
+    const isDoubleClick = currentTime - lastClickTime < 300 && lastClickedNote === clickedNote?.id;
+    
     if (currentTool === 'note') {
       if (clickedNote) {
-        // Remove existing note
-        removeNote(clickedNote.id);
+        if (isDoubleClick) {
+          // Double-click removes the note
+          removeNote(clickedNote.id);
+          setLastClickTime(0);
+          setLastClickedNote(null);
+        } else {
+          // Single-click plays the note
+          playNote(clickedNote);
+          setLastClickTime(currentTime);
+          setLastClickedNote(clickedNote.id);
+        }
       } else {
         // Add new note
         addNote(x, y, 'staff-1');
+        setLastClickTime(0);
+        setLastClickedNote(null);
       }
     } else if (currentTool === 'select') {
       if (clickedNote) {
