@@ -1826,13 +1826,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             { label: 'AI Separate Stems', icon: Radio, action: 'ai-stems', ai: true },
           ].map((item, index) => {
             if (item.separator) {
-              return <div key={index} className="border-t border-[var(--border)] my-1" />;
+              return <div key={`separator-${index}`} className="border-t border-[var(--border)] my-1" />;
             }
             
             const { label, icon: Icon, action, shortcut, destructive, ai } = item;
             return (
               <button
-                key={label}
+                key={`action-${label}-${index}`}
                 onClick={() => {
                   console.log(`${action} multi-track selection:`, audioContextMenu.selection);
                   setAudioContextMenu(null);
@@ -1883,13 +1883,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             { label: 'Delete', icon: Trash2, action: 'delete', destructive: true, shortcut: 'Del' },
           ].map((item, index) => {
             if (item.type === 'separator') {
-              return <div key={index} className="h-px bg-[var(--border)] my-1" />;
+              return <div key={`clip-separator-${index}`} className="h-px bg-[var(--border)] my-1" />;
             }
             
             const { label, icon: Icon, action, shortcut, destructive, ai } = item;
             return (
               <button
-                key={label}
+                key={`clip-action-${label}-${index}`}
                 onClick={() => {
                   if (action === 'ai-prompt') {
                     const track = tracks.find(t => t.id === clipContextMenu.clip.trackId);
