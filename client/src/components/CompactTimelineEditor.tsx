@@ -1638,13 +1638,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         {/* Fade In/Out Indicators */}
                         {clip.fadeIn && clip.fadeIn > 0 && (
                           <div 
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-black/40 to-transparent pointer-events-none z-10"
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
                             style={{ width: `${(clip.fadeIn / clip.duration) * 100}%` }}
                           />
                         )}
                         {clip.fadeOut && clip.fadeOut > 0 && (
                           <div 
-                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-black/40 to-transparent pointer-events-none z-10"
+                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
                             style={{ width: `${(clip.fadeOut / clip.duration) * 100}%` }}
                           />
                         )}
