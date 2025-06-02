@@ -540,14 +540,7 @@ export function MenuBar() {
             Commands
           </Button>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowMetronome(true)}
-            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-          >
-            {bpm} BPM
-          </Button>
+
         </div>
 
         {/* Right side - Theme toggle */}
