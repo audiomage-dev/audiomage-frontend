@@ -98,6 +98,55 @@ export function ScoreEditor({
     };
   };
 
+  // Get key signature sharps/flats
+  const getKeySignatureAccidentals = (keySignature: string): { type: 'sharp' | 'flat', positions: number[] } => {
+    const sharpKeys: { [key: string]: number[] } = {
+      'G': [5], 'D': [5, 2], 'A': [5, 2, 6], 'E': [5, 2, 6, 3], 
+      'B': [5, 2, 6, 3, 7], 'F#': [5, 2, 6, 3, 7, 4], 'C#': [5, 2, 6, 3, 7, 4, 1]
+    };
+    const flatKeys: { [key: string]: number[] } = {
+      'F': [1], 'Bb': [1, 4], 'Eb': [1, 4, 0], 'Ab': [1, 4, 0, 3], 
+      'Db': [1, 4, 0, 3, 6], 'Gb': [1, 4, 0, 3, 6, 2], 'Cb': [1, 4, 0, 3, 6, 2, 5]
+    };
+    
+    if (sharpKeys[keySignature]) {
+      return { type: 'sharp', positions: sharpKeys[keySignature] };
+    } else if (flatKeys[keySignature]) {
+      return { type: 'flat', positions: flatKeys[keySignature] };
+    }
+    return { type: 'sharp', positions: [] };
+  };
+
+  // Draw ledger lines for notes outside staff
+  const drawLedgerLines = (ctx: CanvasRenderingContext2D, x: number, y: number, staffY: number) => {
+    const staffLines = [0, 1, 2, 3, 4].map(i => staffY + i * lineSpacing);
+    const notePosition = y;
+    
+    // Above staff
+    if (notePosition < staffLines[0]) {
+      let ledgerY = staffLines[0] - lineSpacing;
+      while (ledgerY >= notePosition - lineSpacing/2) {
+        ctx.beginPath();
+        ctx.moveTo(x - 8, ledgerY);
+        ctx.lineTo(x + 8, ledgerY);
+        ctx.stroke();
+        ledgerY -= lineSpacing;
+      }
+    }
+    
+    // Below staff
+    if (notePosition > staffLines[4]) {
+      let ledgerY = staffLines[4] + lineSpacing;
+      while (ledgerY <= notePosition + lineSpacing/2) {
+        ctx.beginPath();
+        ctx.moveTo(x - 8, ledgerY);
+        ctx.lineTo(x + 8, ledgerY);
+        ctx.stroke();
+        ledgerY += lineSpacing;
+      }
+    }
+  };
+
   // Draw the score
   const drawScore = () => {
     const canvas = scoreCanvasRef.current;
@@ -113,70 +162,117 @@ export function ScoreEditor({
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff';
     ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     
     // Draw staffs
     staffs.forEach((staff, staffIndex) => {
-      const yOffset = staffIndex * (staffHeight + 40) + 40;
+      const yOffset = staffIndex * (staffHeight + 60) + 40;
       
       // Draw staff lines
-      ctx.strokeStyle = '#000000';
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
       ctx.lineWidth = 1;
       for (let i = 0; i < 5; i++) {
         const y = yOffset + i * lineSpacing;
         ctx.beginPath();
         ctx.moveTo(40, y);
-        ctx.lineTo(canvas.offsetWidth - 40, y);
+        ctx.lineTo(canvas.offsetWidth - 280, y);
+        ctx.stroke();
+      }
+      
+      // Draw bar lines every 4 beats
+      const beatsPerMeasure = staff.timeSignature[0];
+      for (let beat = beatsPerMeasure; beat * noteWidth * zoomLevel < canvas.offsetWidth - 320; beat += beatsPerMeasure) {
+        const x = 140 + (beat * noteWidth * zoomLevel);
+        ctx.beginPath();
+        ctx.moveTo(x, yOffset);
+        ctx.lineTo(x, yOffset + (4 * lineSpacing));
         ctx.stroke();
       }
       
       // Draw clef
-      ctx.font = '24px serif';
-      ctx.fillStyle = '#000000';
-      ctx.fillText(staff.clef === 'treble' ? '𝄞' : '𝄢', 45, yOffset + 30);
-      
-      // Draw time signature
-      ctx.font = '16px serif';
-      ctx.fillText(staff.timeSignature[0].toString(), 80, yOffset + 20);
-      ctx.fillText(staff.timeSignature[1].toString(), 80, yOffset + 40);
-      
-      // Draw key signature (simplified)
-      if (staff.keySignature !== 'C') {
-        ctx.fillText(`Key: ${staff.keySignature}`, 100, yOffset + 30);
+      ctx.font = 'bold 28px serif';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+      if (staff.clef === 'treble') {
+        ctx.fillText('𝄞', 45, yOffset + 32);
+      } else if (staff.clef === 'bass') {
+        ctx.fillText('𝄢', 45, yOffset + 20);
       }
       
+      // Draw key signature
+      const keyAccidentals = getKeySignatureAccidentals(staff.keySignature);
+      if (keyAccidentals.positions.length > 0) {
+        ctx.font = '16px serif';
+        keyAccidentals.positions.forEach((pos, index) => {
+          const x = 75 + (index * 8);
+          const y = yOffset + (pos * 3) + 20;
+          ctx.fillText(keyAccidentals.type === 'sharp' ? '♯' : '♭', x, y);
+        });
+      }
+      
+      // Draw time signature
+      ctx.font = 'bold 18px serif';
+      const timeSigX = 75 + (keyAccidentals.positions.length * 8) + 10;
+      ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 16);
+      ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 36);
+      
+      // Draw instrument name
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+      ctx.fillText(staff.instrument, 10, yOffset - 10);
+      
       // Draw notes
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
       staff.notes.forEach((note) => {
         const x = 140 + (note.startTime * noteWidth * zoomLevel);
         const { line, accidental } = midiToStaffPosition(note.pitch, staff.clef);
         const y = yOffset + (line * lineSpacing / 2) + 24;
         
+        // Draw ledger lines if needed
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+        ctx.lineWidth = 1;
+        drawLedgerLines(ctx, x, y, yOffset);
+        
         // Draw note head
-        ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : '#000000';
+        ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
         ctx.beginPath();
-        ctx.ellipse(x, y, 6, 4, 0, 0, 2 * Math.PI);
-        ctx.fill();
+        
+        // Different note head shapes based on duration
+        if (note.duration >= 2) {
+          // Whole and half notes - hollow
+          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
+          ctx.stroke();
+        } else {
+          // Quarter notes and shorter - filled
+          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
+          ctx.fill();
+        }
         
         // Draw stem
-        if (note.duration <= 2) { // Half note or shorter
+        if (note.duration <= 2 && note.duration >= 0.25) {
+          ctx.strokeStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(x + 6, y);
-          ctx.lineTo(x + 6, y - 30);
+          const stemDirection = line <= 2 ? 1 : -1; // Stem up for notes below middle line
+          ctx.moveTo(x + (stemDirection > 0 ? 7 : -7), y);
+          ctx.lineTo(x + (stemDirection > 0 ? 7 : -7), y + (stemDirection * -35));
           ctx.stroke();
+          
+          // Draw flags for eighth notes and shorter
+          if (note.duration < 1) {
+            ctx.font = '20px serif';
+            ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+            const flagX = x + (stemDirection > 0 ? 7 : -15);
+            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 5 : -5);
+            ctx.fillText(stemDirection > 0 ? '𝄀' : '𝄁', flagX, flagY);
+          }
         }
         
         // Draw accidental
         if (accidental) {
-          ctx.font = '14px serif';
-          ctx.fillText(accidental === 'sharp' ? '♯' : '♭', x - 15, y + 5);
-        }
-        
-        // Draw duration markers
-        if (note.duration < 1) {
-          // Draw flags for eighth notes and shorter
-          ctx.font = '12px serif';
-          ctx.fillText('♫', x + 8, y - 25);
+          ctx.font = '16px serif';
+          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+          ctx.fillText(accidental === 'sharp' ? '♯' : '♭', x - 20, y + 5);
         }
       });
       
@@ -187,7 +283,7 @@ export function ScoreEditor({
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(cursorX, yOffset - 10);
-        ctx.lineTo(cursorX, yOffset + staffHeight);
+        ctx.lineTo(cursorX, yOffset + staffHeight + 10);
         ctx.stroke();
       }
     });
@@ -208,6 +304,26 @@ export function ScoreEditor({
     drawScore();
   }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition]);
 
+  // Check if click is on a note
+  const getNoteAtPosition = (x: number, y: number, staffIndex: number): Note | null => {
+    const staff = staffs[staffIndex];
+    if (!staff) return null;
+    
+    const staffY = staffIndex * (staffHeight + 60) + 40;
+    
+    for (const note of staff.notes) {
+      const noteX = 140 + (note.startTime * noteWidth * zoomLevel);
+      const { line } = midiToStaffPosition(note.pitch, staff.clef);
+      const noteY = staffY + (line * lineSpacing / 2) + 24;
+      
+      // Check if click is within note bounds
+      if (Math.abs(x - noteX) <= 10 && Math.abs(y - noteY) <= 8) {
+        return note;
+      }
+    }
+    return null;
+  };
+
   // Handle canvas click
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
@@ -220,20 +336,47 @@ export function ScoreEditor({
     const y = e.clientY - rect.top;
     
     // Find which staff was clicked
-    const staffIndex = Math.floor((y - 40) / (staffHeight + 40));
+    const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
     if (staffIndex >= 0 && staffIndex < staffs.length) {
       const staff = staffs[staffIndex];
       setSelectedStaff(staff.id);
       
-      if (currentTool === 'note') {
+      // Check if clicking on an existing note
+      const clickedNote = getNoteAtPosition(x, y, staffIndex);
+      
+      if (clickedNote && currentTool === 'select') {
+        // Select/deselect note
+        if (e.ctrlKey || e.metaKey) {
+          // Multi-select
+          setSelectedNotes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(clickedNote.id)) {
+              newSet.delete(clickedNote.id);
+            } else {
+              newSet.add(clickedNote.id);
+            }
+            return newSet;
+          });
+        } else {
+          // Single select
+          setSelectedNotes(new Set([clickedNote.id]));
+        }
+      } else if (!clickedNote && currentTool === 'note') {
         // Add a new note
         const time = Math.max(0, (x - 140) / (noteWidth * zoomLevel));
-        const staffY = (staffIndex * (staffHeight + 40)) + 40;
+        const staffY = staffIndex * (staffHeight + 60) + 40;
         const relativeY = y - staffY;
         const line = Math.round((relativeY - 24) / (lineSpacing / 2));
         
         // Convert staff position back to MIDI note
-        const midiNote = staff.clef === 'treble' ? 60 + (6 - line) : 60 + (line - 6);
+        let midiNote: number;
+        if (staff.clef === 'treble') {
+          midiNote = 72 - line; // C5 at line 0
+        } else if (staff.clef === 'bass') {
+          midiNote = 50 - line; // D3 at line 0
+        } else {
+          midiNote = 60 - line; // Middle C default
+        }
         
         const newNote: Note = {
           id: `note-${Date.now()}`,
@@ -247,9 +390,36 @@ export function ScoreEditor({
             ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
             : s
         ));
+      } else if (!clickedNote && currentTool === 'select') {
+        // Clear selection when clicking empty space
+        setSelectedNotes(new Set());
       }
     }
   };
+
+  // Handle key presses for note operations
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLocked) return;
+      
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Delete selected notes
+        if (selectedNotes.size > 0) {
+          setStaffs(prev => prev.map(staff => ({
+            ...staff,
+            notes: staff.notes.filter(note => !selectedNotes.has(note.id))
+          })));
+          setSelectedNotes(new Set());
+        }
+      } else if (e.key === 'Escape') {
+        // Clear selection
+        setSelectedNotes(new Set());
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNotes, isLocked]);
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
@@ -290,13 +460,66 @@ export function ScoreEditor({
               onChange={(e) => setNoteValue(Number(e.target.value))}
               className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
             >
-              <option value={4}>Whole</option>
-              <option value={2}>Half</option>
-              <option value={1}>Quarter</option>
-              <option value={0.5}>Eighth</option>
-              <option value={0.25}>Sixteenth</option>
+              <option value={4}>𝅝 Whole</option>
+              <option value={2}>𝅗𝅥 Half</option>
+              <option value={1}>♩ Quarter</option>
+              <option value={0.5}>♫ Eighth</option>
+              <option value={0.25}>♬ Sixteenth</option>
             </select>
           </div>
+
+          {/* Staff Configuration */}
+          {selectedStaff && (
+            <>
+              <div className="flex items-center space-x-1">
+                <span className="text-sm text-[var(--muted-foreground)]">Key:</span>
+                <select
+                  value={staffs.find(s => s.id === selectedStaff)?.keySignature || 'C'}
+                  onChange={(e) => {
+                    setStaffs(prev => prev.map(s => 
+                      s.id === selectedStaff 
+                        ? { ...s, keySignature: e.target.value }
+                        : s
+                    ));
+                  }}
+                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
+                >
+                  <option value="C">C Major</option>
+                  <option value="G">G Major</option>
+                  <option value="D">D Major</option>
+                  <option value="A">A Major</option>
+                  <option value="E">E Major</option>
+                  <option value="B">B Major</option>
+                  <option value="F#">F# Major</option>
+                  <option value="F">F Major</option>
+                  <option value="Bb">Bb Major</option>
+                  <option value="Eb">Eb Major</option>
+                  <option value="Ab">Ab Major</option>
+                  <option value="Db">Db Major</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-1">
+                <span className="text-sm text-[var(--muted-foreground)]">Clef:</span>
+                <select
+                  value={staffs.find(s => s.id === selectedStaff)?.clef || 'treble'}
+                  onChange={(e) => {
+                    setStaffs(prev => prev.map(s => 
+                      s.id === selectedStaff 
+                        ? { ...s, clef: e.target.value as 'treble' | 'bass' | 'alto' | 'tenor' }
+                        : s
+                    ));
+                  }}
+                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
+                >
+                  <option value="treble">𝄞 Treble</option>
+                  <option value="bass">𝄢 Bass</option>
+                  <option value="alto">𝄡 Alto</option>
+                  <option value="tenor">𝄡 Tenor</option>
+                </select>
+              </div>
+            </>
+          )}
 
           <div className="w-px h-6 bg-[var(--border)]"></div>
 
@@ -306,14 +529,54 @@ export function ScoreEditor({
               variant="ghost"
               size="sm"
               className="h-8 px-2"
-              title="Copy Selected"
+              title="Copy Selected Notes"
+              disabled={selectedNotes.size === 0}
               onClick={() => {
                 if (selectedNotes.size > 0) {
                   console.log(`Copied ${selectedNotes.size} notes`);
+                  // Future: implement copy to clipboard
                 }
               }}
             >
               <Copy className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Delete Selected Notes"
+              disabled={selectedNotes.size === 0}
+              onClick={() => {
+                if (selectedNotes.size > 0) {
+                  setStaffs(prev => prev.map(staff => ({
+                    ...staff,
+                    notes: staff.notes.filter(note => !selectedNotes.has(note.id))
+                  })));
+                  setSelectedNotes(new Set());
+                }
+              }}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Clear All Notes"
+              onClick={() => {
+                if (selectedStaff) {
+                  setStaffs(prev => prev.map(staff => 
+                    staff.id === selectedStaff 
+                      ? { ...staff, notes: [] }
+                      : staff
+                  ));
+                  setSelectedNotes(new Set());
+                }
+              }}
+            >
+              <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
         </div>
