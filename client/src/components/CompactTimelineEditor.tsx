@@ -1680,9 +1680,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           {/* Fade Handles - appear when hovering over header */}
                           {hoveredClip === clip.id && (
                             <>
-                              {/* Fade-in handle at beginning of header */}
+                              {/* Fade-in handle - positioned on the left side */}
                               <div 
-                                className="absolute left-0 top-0 h-5 w-3 bg-[var(--primary)]/80 hover:bg-[var(--primary)] cursor-ew-resize transition-all duration-200 flex items-center justify-center group rounded-tl-md"
+                                className="absolute left-0 top-0 h-5 w-6 bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/60 hover:from-[var(--primary)] hover:to-[var(--primary)]/80 cursor-ew-resize transition-all duration-200 flex items-center justify-start pl-1 z-30 rounded-tl-md"
                                 onMouseDown={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
@@ -1718,14 +1718,15 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                   document.addEventListener('mousemove', handleMouseMove);
                                   document.addEventListener('mouseup', handleMouseUp);
                                 }}
-                                title={`Fade-in: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0).toFixed(1)}s`}
+                                title={`Drag to adjust fade-in: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0).toFixed(1)}s`}
                               >
-                                <div className="w-0.5 h-2 bg-white rounded-full group-hover:h-3 transition-all duration-200"></div>
+                                <div className="w-1 h-3 bg-white/90 rounded-full shadow-sm"></div>
+                                <span className="text-xs text-white ml-1 font-medium">IN</span>
                               </div>
                               
-                              {/* Fade-out handle at end of header */}
+                              {/* Fade-out handle - positioned on the right side */}
                               <div 
-                                className="absolute right-0 top-0 h-5 w-3 bg-[var(--primary)]/80 hover:bg-[var(--primary)] cursor-ew-resize transition-all duration-200 flex items-center justify-center group rounded-tr-md"
+                                className="absolute right-0 top-0 h-5 w-6 bg-gradient-to-l from-[var(--primary)] to-[var(--primary)]/60 hover:from-[var(--primary)] hover:to-[var(--primary)]/80 cursor-ew-resize transition-all duration-200 flex items-center justify-end pr-1 z-30 rounded-tr-md"
                                 onMouseDown={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
@@ -1761,9 +1762,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                   document.addEventListener('mousemove', handleMouseMove);
                                   document.addEventListener('mouseup', handleMouseUp);
                                 }}
-                                title={`Fade-out: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0).toFixed(1)}s`}
+                                title={`Drag to adjust fade-out: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0).toFixed(1)}s`}
                               >
-                                <div className="w-0.5 h-2 bg-white rounded-full group-hover:h-3 transition-all duration-200"></div>
+                                <span className="text-xs text-white mr-1 font-medium">OUT</span>
+                                <div className="w-1 h-3 bg-white/90 rounded-full shadow-sm"></div>
                               </div>
                             </>
                           )}
