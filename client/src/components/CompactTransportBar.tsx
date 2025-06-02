@@ -32,6 +32,7 @@ interface CompactTransportBarProps {
   // Metronome functions
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
+  onVideoPlayerToggle?: () => void;
 }
 
 interface MetronomeProps {
@@ -330,7 +331,8 @@ export function CompactTransportBar({
   onTimelineLockToggle,
   onMidiLockToggle,
   onBpmChange,
-  onTimeSignatureChange
+  onTimeSignatureChange,
+  onVideoPlayerToggle
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
@@ -529,10 +531,7 @@ export function CompactTransportBar({
         <button
           className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)] bg-[var(--background)] border border-[var(--border)] rounded"
           title="Video Player"
-          onClick={() => {
-            // Trigger video player modal or functionality
-            console.log('Video player triggered');
-          }}
+          onClick={onVideoPlayerToggle}
         >
           <Video className="w-3 h-3" />
         </button>

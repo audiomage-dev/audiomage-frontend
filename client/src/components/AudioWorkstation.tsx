@@ -10,6 +10,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
 import { MediaPreviewPane } from './MediaPreviewPane';
+import { VideoPlayer } from './VideoPlayer';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect } from 'react';
 import { FileMusic } from 'lucide-react';
@@ -58,6 +59,9 @@ export function AudioWorkstation() {
   // Lock states for Timeline and MIDI editors
   const [isTimelineLocked, setIsTimelineLocked] = useState(false);
   const [isMidiLocked, setIsMidiLocked] = useState(false);
+  
+  // Video player state
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   
   // Global MIDI playback control functions
   const [midiPlaybackFunctions, setMidiPlaybackFunctions] = useState<{
@@ -183,6 +187,7 @@ export function AudioWorkstation() {
               isMidiLocked={isMidiLocked}
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
+              onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
             />
           </div>
           
@@ -289,6 +294,14 @@ export function AudioWorkstation() {
         isOpen={isChatSidebarOpen}
         onToggle={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
         currentSession={sessions.find(s => s.isActive)?.name}
+      />
+
+      {/* Video Player Modal */}
+      <VideoPlayer
+        isOpen={isVideoPlayerOpen}
+        onClose={() => setIsVideoPlayerOpen(false)}
+        transport={transport}
+        onVideoTimeUpdate={seekTo}
       />
     </div>
   );
