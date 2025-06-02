@@ -28,7 +28,8 @@ import {
   Sparkles,
   X,
   Files,
-  Copy
+  Copy,
+  Link
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -931,6 +932,56 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
   }, [zoomLevel, onZoomChange]);
 
+  // Check if selected clips can be glued together
+  const canGlueSelectedClips = useCallback(() => {
+    if (!multiSelection || multiSelection.selectedClips.length < 2) {
+      return false;
+    }
+
+    // Get all selected clips with their track information
+    const selectedClipsWithTracks: Array<{ clip: any; trackId: string }> = [];
+    
+    tracks.forEach(track => {
+      track.clips?.forEach(clip => {
+        if (multiSelection.selectedClips.includes(clip.id)) {
+          selectedClipsWithTracks.push({ clip, trackId: track.id });
+        }
+      });
+    });
+
+    // Group clips by track
+    const clipsByTrack = new Map<string, any[]>();
+    selectedClipsWithTracks.forEach(({ clip, trackId }) => {
+      if (!clipsByTrack.has(trackId)) {
+        clipsByTrack.set(trackId, []);
+      }
+      clipsByTrack.get(trackId)!.push(clip);
+    });
+
+    // Check each track to see if clips are adjacent
+    for (const [trackId, trackClips] of Array.from(clipsByTrack.entries())) {
+      if (trackClips.length < 2) continue;
+      
+      // Sort clips by start time
+      trackClips.sort((a: any, b: any) => a.startTime - b.startTime);
+      
+      // Check if clips are adjacent (within 0.1 seconds tolerance)
+      for (let i = 0; i < trackClips.length - 1; i++) {
+        const currentClip = trackClips[i];
+        const nextClip = trackClips[i + 1];
+        const gap = nextClip.startTime - (currentClip.startTime + currentClip.duration);
+        
+        if (Math.abs(gap) <= 0.1) {
+          return true; // Found at least one set of adjacent clips
+        }
+      }
+    }
+
+    return false;
+  }, [multiSelection, tracks]);
+
+
+
   // Handle timeline scroll and sync with tracks panel
   const handleTimelineScroll = useCallback((e: Event) => {
     const target = e.target as HTMLDivElement;
@@ -968,6 +1019,94 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       };
     }
   }, [handleTimelineScroll, handleTracksScroll]);
+
+  // Handle gluing selected clips together
+  const handleGlueClips = useCallback(() => {
+    if (!multiSelection || multiSelection.selectedClips.length < 2) {
+      return;
+    }
+
+    // Get all selected clips with their track information
+    const selectedClipsWithTracks: Array<{ clip: any; trackId: string }> = [];
+    
+    tracks.forEach(track => {
+      track.clips?.forEach(clip => {
+        if (multiSelection.selectedClips.includes(clip.id)) {
+          selectedClipsWithTracks.push({ clip, trackId: track.id });
+        }
+      });
+    });
+
+    // Group clips by track
+    const clipsByTrack = new Map<string, any[]>();
+    selectedClipsWithTracks.forEach(({ clip, trackId }) => {
+      if (!clipsByTrack.has(trackId)) {
+        clipsByTrack.set(trackId, []);
+      }
+      clipsByTrack.get(trackId)!.push(clip);
+    });
+
+    // Process each track
+    Array.from(clipsByTrack.entries()).forEach(([trackId, trackClips]) => {
+      if (trackClips.length < 2) return;
+      
+      // Sort clips by start time
+      trackClips.sort((a: any, b: any) => a.startTime - b.startTime);
+      
+      // Find groups of adjacent clips
+      const adjacentGroups: any[][] = [];
+      let currentGroup: any[] = [trackClips[0]];
+      
+      for (let i = 1; i < trackClips.length; i++) {
+        const prevClip = trackClips[i - 1];
+        const currentClip = trackClips[i];
+        const gap = currentClip.startTime - (prevClip.startTime + prevClip.duration);
+        
+        if (Math.abs(gap) <= 0.1) {
+          // Adjacent clips - add to current group
+          currentGroup.push(currentClip);
+        } else {
+          // Gap found - finalize current group and start new one
+          if (currentGroup.length > 1) {
+            adjacentGroups.push(currentGroup);
+          }
+          currentGroup = [currentClip];
+        }
+      }
+      
+      // Don't forget the last group
+      if (currentGroup.length > 1) {
+        adjacentGroups.push(currentGroup);
+      }
+      
+      // Glue each group of adjacent clips
+      adjacentGroups.forEach(group => {
+        if (group.length < 2) return;
+        
+        // Calculate combined clip properties
+        const firstClip = group[0];
+        const lastClip = group[group.length - 1];
+        const totalDuration = (lastClip.startTime + lastClip.duration) - firstClip.startTime;
+        
+        // Create new glued clip
+        const gluedClip = {
+          id: `glued-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: `Glued: ${group.map((c: any) => c.name).join(' + ')}`,
+          startTime: firstClip.startTime,
+          duration: totalDuration,
+          color: firstClip.color,
+          type: 'glued',
+          originalClips: group.map((c: any) => c.id)
+        };
+        
+        console.log(`Gluing ${group.length} clips on track ${trackId}:`, group.map((c: any) => c.name).join(', '));
+        console.log('Would create glued clip:', gluedClip);
+      });
+    });
+
+    // Clear selection after gluing
+    setMultiSelection(null);
+  }, [multiSelection, tracks]);
 
   const handleTrackRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
@@ -1387,6 +1526,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 className={`h-5 w-5 p-0 ${currentTool === 'edit' ? 'bg-[var(--accent)]' : ''}`}
               >
                 <Edit3 className="w-3 h-3" />
+              </Button>
+              
+              <div className="w-px h-4 bg-[var(--border)]" />
+              
+              <Button
+                onClick={handleGlueClips}
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0"
+                disabled={!canGlueSelectedClips()}
+                title="Glue selected clips together"
+              >
+                <Link className="w-3 h-3" />
               </Button>
             </div>
           </div>

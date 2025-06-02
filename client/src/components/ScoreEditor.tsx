@@ -1,22 +1,43 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { AudioTrack, TransportState } from '@/types/audio';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { AudioTrack, TransportState } from '../types/audio';
 import { 
-  Play, Pause, Square, Volume2, VolumeX, Edit3, Copy, Settings, 
-  ZoomIn, ZoomOut, RotateCcw, Save, FileMusic, Plus, Minus,
-  Music, Piano, Drum, Guitar, Mic
+  Music,
+  Play,
+  Pause,
+  Square,
+  ZoomIn,
+  ZoomOut,
+  Save,
+  FileDown,
+  Settings,
+  VolumeX,
+  Radio,
+  Plus,
+  MousePointer,
+  Type,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock
 } from 'lucide-react';
 
 interface Note {
   id: string;
-  pitch: number; // MIDI note number (0-127)
-  startTime: number; // Start time in beats
-  duration: number; // Duration in beats (4 = whole note, 2 = half note, 1 = quarter note, etc.)
-  accidental?: 'sharp' | 'flat' | 'natural';
-  tied?: boolean;
-  velocity?: number; // 0-127
-  articulation?: 'staccato' | 'accent' | 'tenuto' | 'marcato' | 'fermata';
-  ornament?: 'trill' | 'turn' | 'mordent' | 'grace';
+  pitch: number;
+  startTime: number;
+  duration: number;
+  velocity: number;
+  accidental?: 'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat';
+  articulation?: string[];
+  tie?: { start: boolean; end: boolean; };
+  slur?: string;
+  beam?: string;
+  tuplet?: { type: number; bracket: boolean; };
+  lyrics?: string;
+  fingering?: string;
 }
 
 interface Chord {
@@ -24,24 +45,68 @@ interface Chord {
   notes: Note[];
   startTime: number;
   duration: number;
+  symbol?: string;
+}
+
+interface Dynamic {
+  id: string;
+  time: number;
+  marking: string;
+  type: 'dynamic' | 'crescendo' | 'diminuendo';
+  endTime?: number;
+}
+
+interface TempoMarking {
+  id: string;
+  time: number;
+  bpm: number;
+  text?: string;
+}
+
+interface RehearsalMark {
+  id: string;
+  time: number;
+  letter: string;
+}
+
+interface Measure {
+  id: string;
+  number: number;
+  timeSignature?: [number, number];
+  keySignature?: string;
+  barlineType: 'single' | 'double' | 'final' | 'repeat-start' | 'repeat-end' | 'invisible';
+  repeatCount?: number;
 }
 
 interface Staff {
   id: string;
-  clef: 'treble' | 'bass' | 'alto' | 'tenor';
-  keySignature: string; // e.g., 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'
-  timeSignature: [number, number]; // [numerator, denominator]
+  clef: 'treble' | 'bass' | 'alto' | 'tenor' | 'percussion';
+  keySignature: string;
+  timeSignature: [number, number];
+  instrument: string;
+  tempo: number;
   notes: Note[];
   chords: Chord[];
-  instrument: string;
-  dynamics: { time: number; marking: string }[];
-  tempo: number;
+  dynamics: Dynamic[];
+  tempoMarkings: TempoMarking[];
+  rehearsalMarks: RehearsalMark[];
+  measures: Measure[];
+  visible: boolean;
+  locked: boolean;
+  volume: number;
+  pan: number;
+  midiChannel: number;
+  transposition: number;
+  capo?: number;
+  tuning?: string[];
 }
 
 interface ScoreEditorProps {
   tracks: AudioTrack[];
   transport: TransportState;
   zoomLevel?: number;
+  bpm?: number;
+  timeSignature?: [number, number];
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -52,6 +117,8 @@ export function ScoreEditor({
   tracks, 
   transport, 
   zoomLevel = 1,
+  bpm = 120,
+  timeSignature = [4, 4],
   onTrackMute,
   onTrackSolo,
   onTrackSelect,
@@ -59,856 +126,869 @@ export function ScoreEditor({
 }: ScoreEditorProps) {
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+  const [selectedPaletteCategory, setSelectedPaletteCategory] = useState<string>('Notation');
+  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics' | 'text'>('select');
+  const [noteValue, setNoteValue] = useState<number>(1);
+  const [currentAccidental, setCurrentAccidental] = useState<'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat' | null>(null);
+  const [currentArticulation, setCurrentArticulation] = useState<string | null>(null);
+  const [currentKeySignature, setCurrentKeySignature] = useState<string>('C');
+  const [currentTimeSignature, setCurrentTimeSignature] = useState<[number, number]>(timeSignature);
+  const [currentTempo, setCurrentTempo] = useState<number>(bpm);
+  const [currentDynamic, setCurrentDynamic] = useState<string>('mf');
+  const [viewMode, setViewMode] = useState<'page' | 'continuous' | 'single'>('page');
+  const [copiedNotes, setCopiedNotes] = useState<Note[]>([]);
+
   const [staffs, setStaffs] = useState<Staff[]>([
     {
       id: 'staff-1',
       clef: 'treble',
       keySignature: 'C',
-      timeSignature: [4, 4],
+      timeSignature: timeSignature,
       instrument: 'Piano',
-      tempo: 120,
+      tempo: bpm,
       notes: [
-        { id: 'note-1', pitch: 60, startTime: 0, duration: 1, velocity: 80 }, // C4 quarter note
-        { id: 'note-2', pitch: 64, startTime: 1, duration: 1, velocity: 85 }, // E4 quarter note
-        { id: 'note-3', pitch: 67, startTime: 2, duration: 1, velocity: 75 }, // G4 quarter note
-        { id: 'note-4', pitch: 72, startTime: 3, duration: 1, velocity: 90 }, // C5 quarter note
+        { id: 'note-1', pitch: 60, startTime: 0, duration: 1, velocity: 80 },
+        { id: 'note-2', pitch: 64, startTime: 1, duration: 1, velocity: 85 },
+        { id: 'note-3', pitch: 67, startTime: 2, duration: 1, velocity: 75 },
+        { id: 'note-4', pitch: 72, startTime: 3, duration: 1, velocity: 90 },
       ],
-      chords: [],
-      dynamics: [
-        { time: 0, marking: 'mp' }
-      ]
+      visible: true,
+      locked: false,
+      volume: 100,
+      pan: 0
     }
   ]);
-  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics'>('select');
-  const [noteValue, setNoteValue] = useState<number>(1); // Quarter note by default
-  const [playbackPosition, setPlaybackPosition] = useState(0);
-  
+
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
-  const staffHeight = 120;
-  const lineSpacing = 12;
-  const noteWidth = 40;
 
-  // Convert MIDI note number to staff position
-  const midiToStaffPosition = (midiNote: number, clef: string): { line: number, accidental?: string } => {
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const octave = Math.floor(midiNote / 12) - 1;
-    const noteIndex = midiNote % 12;
-    const noteName = noteNames[noteIndex];
-    
-    // Treble clef staff positions (middle C = -6)
-    const treblePositions: { [key: string]: number } = {
-      'C': -6, 'D': -5, 'E': -4, 'F': -3, 'G': -2, 'A': -1, 'B': 0
+  // Helper functions
+  const getKeySignatureAccidentals = useCallback((keySignature: string) => {
+    const signatures: Record<string, Array<{symbol: string, line: number}>> = {
+      'C': [],
+      'G': [{ symbol: '♯', line: 5 }],
+      'D': [{ symbol: '♯', line: 5 }, { symbol: '♯', line: 2 }],
+      'F': [{ symbol: '♭', line: 4 }],
+      'Bb': [{ symbol: '♭', line: 4 }, { symbol: '♭', line: 1 }],
     };
-    
-    // Bass clef staff positions (middle C = 6)
-    const bassPositions: { [key: string]: number } = {
-      'C': 6, 'D': 7, 'E': 8, 'F': 9, 'G': 10, 'A': 11, 'B': 12
-    };
-    
-    const baseName = noteName.replace('#', '');
-    const positions = clef === 'treble' ? treblePositions : bassPositions;
-    const basePosition = positions[baseName] || 0;
-    const octaveOffset = (octave - 4) * 7;
-    
-    return {
-      line: basePosition + octaveOffset,
-      accidental: noteName.includes('#') ? 'sharp' : noteName.includes('b') ? 'flat' : undefined
-    };
-  };
+    return signatures[keySignature] || [];
+  }, []);
 
-  // Get key signature sharps/flats
-  const getKeySignatureAccidentals = (keySignature: string): { type: 'sharp' | 'flat', positions: number[] } => {
-    const sharpKeys: { [key: string]: number[] } = {
-      'G': [5], 'D': [5, 2], 'A': [5, 2, 6], 'E': [5, 2, 6, 3], 
-      'B': [5, 2, 6, 3, 7], 'F#': [5, 2, 6, 3, 7, 4], 'C#': [5, 2, 6, 3, 7, 4, 1]
-    };
-    const flatKeys: { [key: string]: number[] } = {
-      'F': [1], 'Bb': [1, 4], 'Eb': [1, 4, 0], 'Ab': [1, 4, 0, 3], 
-      'Db': [1, 4, 0, 3, 6], 'Gb': [1, 4, 0, 3, 6, 2], 'Cb': [1, 4, 0, 3, 6, 2, 5]
-    };
-    
-    if (sharpKeys[keySignature]) {
-      return { type: 'sharp', positions: sharpKeys[keySignature] };
-    } else if (flatKeys[keySignature]) {
-      return { type: 'flat', positions: flatKeys[keySignature] };
+  const getNotePosition = useCallback((pitch: number, clef: string, staffY: number, staffLineSpacing: number) => {
+    let noteY = staffY;
+    const needsLedgerLines: number[] = [];
+
+    if (clef === 'treble') {
+      const g4Position = staffY + staffLineSpacing * 3;
+      const semitoneOffset = pitch - 67;
+      const stepOffset = Math.round(semitoneOffset * 0.5);
+      noteY = g4Position - stepOffset * (staffLineSpacing / 2);
+    } else if (clef === 'bass') {
+      const f3Position = staffY + staffLineSpacing;
+      const semitoneOffset = pitch - 53;
+      const stepOffset = Math.round(semitoneOffset * 0.5);
+      noteY = f3Position - stepOffset * (staffLineSpacing / 2);
     }
-    return { type: 'sharp', positions: [] };
-  };
 
-  // Draw ledger lines for notes outside staff
-  const drawLedgerLines = (ctx: CanvasRenderingContext2D, x: number, y: number, staffY: number) => {
-    const staffLines = [0, 1, 2, 3, 4].map(i => staffY + i * lineSpacing);
-    const notePosition = y;
+    const staffTop = staffY;
+    const staffBottom = staffY + staffLineSpacing * 4;
     
-    // Above staff
-    if (notePosition < staffLines[0]) {
-      let ledgerY = staffLines[0] - lineSpacing;
-      while (ledgerY >= notePosition - lineSpacing/2) {
-        ctx.beginPath();
-        ctx.moveTo(x - 8, ledgerY);
-        ctx.lineTo(x + 8, ledgerY);
-        ctx.stroke();
-        ledgerY -= lineSpacing;
+    if (noteY < staffTop) {
+      for (let y = staffTop - staffLineSpacing; y >= noteY; y -= staffLineSpacing) {
+        needsLedgerLines.push(y);
+      }
+    } else if (noteY > staffBottom) {
+      for (let y = staffBottom + staffLineSpacing; y <= noteY; y += staffLineSpacing) {
+        needsLedgerLines.push(y);
       }
     }
-    
-    // Below staff
-    if (notePosition > staffLines[4]) {
-      let ledgerY = staffLines[4] + lineSpacing;
-      while (ledgerY <= notePosition + lineSpacing/2) {
-        ctx.beginPath();
-        ctx.moveTo(x - 8, ledgerY);
-        ctx.lineTo(x + 8, ledgerY);
-        ctx.stroke();
-        ledgerY += lineSpacing;
-      }
-    }
-  };
 
-  // Draw the score
-  const drawScore = () => {
+    return { noteY, needsLedgerLines };
+  }, []);
+
+  const getNoteSymbol = useCallback((duration: number) => {
+    if (duration >= 4) return '𝅝';
+    if (duration >= 2) return '𝅗𝅥';
+    if (duration >= 1) return '𝅘𝅥';
+    if (duration >= 0.5) return '𝅘𝅥𝅮';
+    return '𝅘𝅥𝅯';
+  }, []);
+
+  const getAccidentalSymbol = useCallback((accidental: string) => {
+    const symbols: Record<string, string> = {
+      'sharp': '♯',
+      'flat': '♭',
+      'natural': '♮',
+      'double-sharp': '𝄪',
+      'double-flat': '𝄫'
+    };
+    return symbols[accidental] || '';
+  }, []);
+
+  // Score rendering function
+  const renderScore = useCallback(() => {
     const canvas = scoreCanvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Set canvas size
-    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff';
-    ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    
-    // Draw staffs
+
+    const canvasWidth = rect.width;
+    const canvasHeight = rect.height;
+
+    const isDark = document.documentElement.classList.contains('nord-dark') || document.documentElement.classList.contains('dark');
+    const colors = {
+      background: isDark ? '#2e3440' : '#eceff4',
+      staffLines: isDark ? '#81a1c1' : '#2e3440',
+      notes: isDark ? '#eceff4' : '#2e3440',
+      text: isDark ? '#d8dee9' : '#2e3440',
+      selectedNote: '#5e81ac',
+      measureLines: isDark ? '#4c566a' : '#d8dee9',
+      ledgerLines: isDark ? '#81a1c1' : '#2e3440',
+      accidentals: isDark ? '#eceff4' : '#2e3440',
+      dynamics: isDark ? '#b48ead' : '#5e81ac',
+      tempo: isDark ? '#ebcb8b' : '#d08770'
+    };
+
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    const pageMargin = 60;
+    const systemSpacing = 120;
+    const staffLineSpacing = 8;
+    const staffHeight = staffLineSpacing * 4;
+    const measureWidth = (canvasWidth - pageMargin * 2 - 200) / 4;
+
+    // Title
+    ctx.fillStyle = colors.text;
+    ctx.font = 'bold 24px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Score Editor', canvasWidth / 2, 40);
+
+    // Render each staff
     staffs.forEach((staff, staffIndex) => {
-      const yOffset = staffIndex * (staffHeight + 60) + 40;
+      if (!staff.visible) return;
+
+      const systemY = 100 + staffIndex * systemSpacing;
+      const staffY = systemY + 20;
       
-      // Draw staff lines
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-      ctx.lineWidth = 1;
+      // Staff lines
+      ctx.strokeStyle = colors.staffLines;
+      ctx.lineWidth = 1.2;
+      
       for (let i = 0; i < 5; i++) {
-        const y = yOffset + i * lineSpacing;
+        const lineY = staffY + i * staffLineSpacing;
         ctx.beginPath();
-        ctx.moveTo(40, y);
-        ctx.lineTo(canvas.offsetWidth - 280, y);
+        ctx.moveTo(pageMargin + 100, lineY);
+        ctx.lineTo(canvasWidth - pageMargin, lineY);
         ctx.stroke();
       }
+
+      // Clef
+      ctx.fillStyle = colors.text;
+      ctx.font = '32px serif';
+      ctx.textAlign = 'center';
       
-      // Draw bar lines every 4 beats
-      const beatsPerMeasure = staff.timeSignature[0];
-      for (let beat = beatsPerMeasure; beat * noteWidth * zoomLevel < canvas.offsetWidth - 320; beat += beatsPerMeasure) {
-        const x = 140 + (beat * noteWidth * zoomLevel);
-        ctx.beginPath();
-        ctx.moveTo(x, yOffset);
-        ctx.lineTo(x, yOffset + (4 * lineSpacing));
-        ctx.stroke();
-      }
+      const clefSymbols = {
+        treble: '𝄞',
+        bass: '𝄢',
+        alto: '𝄡',
+        tenor: '𝄡',
+        percussion: '𝄥'
+      };
       
-      // Draw clef
-      ctx.font = 'bold 28px serif';
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-      if (staff.clef === 'treble') {
-        ctx.fillText('𝄞', 45, yOffset + 32);
-      } else if (staff.clef === 'bass') {
-        ctx.fillText('𝄢', 45, yOffset + 20);
-      }
+      ctx.fillText(clefSymbols[staff.clef], pageMargin + 50, staffY + staffLineSpacing * 2.5);
+
+      // Key signature
+      ctx.font = '20px serif';
+      let keySignatureX = pageMargin + 80;
       
-      // Draw key signature
-      const keyAccidentals = getKeySignatureAccidentals(staff.keySignature);
-      if (keyAccidentals.positions.length > 0) {
-        ctx.font = '16px serif';
-        keyAccidentals.positions.forEach((pos, index) => {
-          const x = 75 + (index * 8);
-          const y = yOffset + (pos * 3) + 20;
-          ctx.fillText(keyAccidentals.type === 'sharp' ? '♯' : '♭', x, y);
-        });
-      }
-      
-      // Draw time signature
-      ctx.font = 'bold 18px serif';
-      const timeSigX = 75 + (keyAccidentals.positions.length * 8) + 10;
-      ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 16);
-      ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 36);
-      
-      // Draw instrument name
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
-      ctx.fillText(staff.instrument, 10, yOffset - 10);
-      
-      // Draw tempo marking
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-      ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
-      
-      // Draw dynamics markings
-      staff.dynamics.forEach((dynamic) => {
-        const x = 140 + (dynamic.time * noteWidth * zoomLevel);
-        ctx.font = 'italic 14px serif';
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-        ctx.fillText(dynamic.marking, x, yOffset + staffHeight + 25);
+      const keySignatureAccidentals = getKeySignatureAccidentals(staff.keySignature);
+      keySignatureAccidentals.forEach((accidental, index) => {
+        const accidentalY = staffY + accidental.line * (staffLineSpacing / 2);
+        ctx.fillText(accidental.symbol, keySignatureX + index * 12, accidentalY);
       });
+
+      // Time signature
+      ctx.font = 'bold 24px serif';
+      const timeSignatureX = keySignatureX + (keySignatureAccidentals.length * 12) + 20;
+      ctx.fillText(staff.timeSignature[0].toString(), timeSignatureX, staffY + staffLineSpacing);
+      ctx.fillText(staff.timeSignature[1].toString(), timeSignatureX, staffY + staffLineSpacing * 3);
+
+      // Measure lines
+      const firstMeasureX = timeSignatureX + 30;
       
-      // Draw notes
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-      staff.notes.forEach((note) => {
-        const x = 140 + (note.startTime * noteWidth * zoomLevel);
-        const { line, accidental } = midiToStaffPosition(note.pitch, staff.clef);
-        const y = yOffset + (line * lineSpacing / 2) + 24;
-        
-        // Draw ledger lines if needed
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-        ctx.lineWidth = 1;
-        drawLedgerLines(ctx, x, y, yOffset);
-        
-        // Draw note head
-        ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
+      for (let i = 0; i <= 4; i++) {
+        const measureX = firstMeasureX + i * measureWidth;
+        ctx.strokeStyle = i === 4 ? colors.staffLines : colors.measureLines;
+        ctx.lineWidth = i === 4 ? 3 : 1;
         ctx.beginPath();
+        ctx.moveTo(measureX, staffY);
+        ctx.lineTo(measureX, staffY + staffHeight);
+        ctx.stroke();
+      }
+
+      // Notes
+      staff.notes.forEach(note => {
+        const measureNumber = Math.floor(note.startTime / staff.timeSignature[0]);
+        const beatInMeasure = note.startTime % staff.timeSignature[0];
+        const noteX = firstMeasureX + measureNumber * measureWidth + (beatInMeasure / staff.timeSignature[0]) * measureWidth;
         
-        // Different note head shapes based on duration
-        if (note.duration >= 2) {
-          // Whole and half notes - hollow
-          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
-          ctx.stroke();
-        } else {
-          // Quarter notes and shorter - filled
-          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
-          ctx.fill();
+        const { noteY, needsLedgerLines } = getNotePosition(note.pitch, staff.clef, staffY, staffLineSpacing);
+        
+        ctx.fillStyle = selectedNotes.has(note.id) ? colors.selectedNote : colors.notes;
+        
+        // Ledger lines
+        if (needsLedgerLines.length > 0) {
+          ctx.strokeStyle = colors.ledgerLines;
+          ctx.lineWidth = 1;
+          needsLedgerLines.forEach(ledgerY => {
+            ctx.beginPath();
+            ctx.moveTo(noteX - 15, ledgerY);
+            ctx.lineTo(noteX + 15, ledgerY);
+            ctx.stroke();
+          });
         }
         
-        // Draw stem
-        if (note.duration <= 2 && note.duration >= 0.25) {
-          ctx.strokeStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
-          ctx.lineWidth = 2;
+        // Note head
+        const noteSymbol = getNoteSymbol(note.duration);
+        ctx.font = '24px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(noteSymbol, noteX, noteY);
+
+        // Stem
+        if (note.duration < 4) {
+          const stemDirection = noteY < staffY + staffLineSpacing * 2.5 ? 1 : -1;
+          const stemLength = staffLineSpacing * 3.5;
+          const stemX = noteX + (stemDirection > 0 ? 8 : -8);
+          
+          ctx.strokeStyle = colors.notes;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          const stemDirection = line <= 2 ? 1 : -1; // Stem up for notes below middle line
-          ctx.moveTo(x + (stemDirection > 0 ? 7 : -7), y);
-          ctx.lineTo(x + (stemDirection > 0 ? 7 : -7), y + (stemDirection * -35));
+          ctx.moveTo(stemX, noteY - 2);
+          ctx.lineTo(stemX, noteY - (stemLength * stemDirection));
           ctx.stroke();
-          
-          // Draw flags for eighth notes and shorter
-          if (note.duration < 1) {
-            ctx.font = '20px serif';
-            ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
-            const flagX = x + (stemDirection > 0 ? 7 : -15);
-            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 5 : -5);
-            ctx.fillText(stemDirection > 0 ? '𝄀' : '𝄁', flagX, flagY);
-          }
         }
-        
-        // Draw accidental
-        if (accidental) {
-          ctx.font = '16px serif';
-          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
-          ctx.fillText(accidental === 'sharp' ? '♯' : '♭', x - 20, y + 5);
-        }
-        
-        // Draw articulations
-        if (note.articulation) {
-          ctx.font = '12px serif';
-          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
-          const articulationY = line <= 2 ? y + 20 : y - 15;
-          
-          switch (note.articulation) {
-            case 'staccato':
-              ctx.fillText('•', x, articulationY);
-              break;
-            case 'accent':
-              ctx.fillText('>', x, articulationY);
-              break;
-            case 'tenuto':
-              ctx.fillText('_', x, articulationY);
-              break;
-            case 'marcato':
-              ctx.fillText('^', x, articulationY);
-              break;
-            case 'fermata':
-              ctx.fillText('𝄐', x, articulationY);
-              break;
-          }
-        }
-        
-        // Draw ornaments
-        if (note.ornament) {
-          ctx.font = '10px serif';
-          ctx.fillStyle = selectedNotes.has(note.id) ? '#3b82f6' : (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000');
-          const ornamentY = line <= 2 ? y - 25 : y + 30;
-          
-          switch (note.ornament) {
-            case 'trill':
-              ctx.fillText('tr', x - 5, ornamentY);
-              break;
-            case 'turn':
-              ctx.fillText('∽', x, ornamentY);
-              break;
-            case 'mordent':
-              ctx.fillText('𝄘', x, ornamentY);
-              break;
-            case 'grace':
-              ctx.fillText('♮', x - 10, ornamentY);
-              break;
-          }
+
+        // Accidental
+        if (note.accidental) {
+          const accidentalSymbol = getAccidentalSymbol(note.accidental);
+          ctx.font = '18px serif';
+          ctx.fillText(accidentalSymbol, noteX - 25, noteY);
         }
       });
-      
-      // Draw chord symbols
-      staff.chords.forEach((chord) => {
-        const x = 140 + (chord.startTime * noteWidth * zoomLevel);
-        
-        // Generate chord name based on notes
-        if (chord.notes.length > 0) {
-          const rootNote = chord.notes[0];
-          const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-          const chordName = noteNames[rootNote.pitch % 12];
-          
-          ctx.font = 'bold 14px serif';
-          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-          ctx.fillText(chordName, x, yOffset - 15);
-        }
-      });
-      
-      // Draw playback cursor
-      if (transport.isPlaying) {
-        const cursorX = 140 + (playbackPosition * noteWidth * zoomLevel);
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(cursorX, yOffset - 10);
-        ctx.lineTo(cursorX, yOffset + staffHeight + 10);
-        ctx.stroke();
-      }
+
+      // Instrument name
+      ctx.fillStyle = colors.text;
+      ctx.font = '14px serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(staff.instrument, pageMargin + 40, staffY + staffLineSpacing * 2);
     });
-  };
+  }, [staffs, selectedNotes, getKeySignatureAccidentals, getNotePosition, getNoteSymbol, getAccidentalSymbol]);
 
-  // Update playback position
   useEffect(() => {
-    if (transport.isPlaying) {
-      const interval = setInterval(() => {
-        setPlaybackPosition(prev => prev + 0.1);
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [transport.isPlaying]);
-
-  // Redraw when state changes
-  useEffect(() => {
-    drawScore();
-  }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition]);
-
-  // Check if click is on a note
-  const getNoteAtPosition = (x: number, y: number, staffIndex: number): Note | null => {
-    const staff = staffs[staffIndex];
-    if (!staff) return null;
+    renderScore();
     
-    const staffY = staffIndex * (staffHeight + 60) + 40;
+    // Listen for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          setTimeout(renderScore, 0); // Small delay to ensure class changes are applied
+        }
+      });
+    });
     
-    for (const note of staff.notes) {
-      const noteX = 140 + (note.startTime * noteWidth * zoomLevel);
-      const { line } = midiToStaffPosition(note.pitch, staff.clef);
-      const noteY = staffY + (line * lineSpacing / 2) + 24;
-      
-      // Check if click is within note bounds
-      if (Math.abs(x - noteX) <= 10 && Math.abs(y - noteY) <= 8) {
-        return note;
-      }
-    }
-    return null;
-  };
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, [renderScore]);
 
-  // Handle canvas click
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Professional note input and editing system
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
-    
+
     const canvas = scoreCanvasRef.current;
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+
+    // Calculate staff and position with high precision
+    const staffHeight = 120;
+    const staffIndex = Math.floor((y - 80) / staffHeight);
+    const staff = staffs[staffIndex];
     
-    // Find which staff was clicked
-    const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
-    if (staffIndex >= 0 && staffIndex < staffs.length) {
-      const staff = staffs[staffIndex];
-      setSelectedStaff(staff.id);
+    if (!staff || !staff.visible) return;
+
+    const staffY = 80 + staffIndex * staffHeight + 40;
+    const staffLineSpacing = 8;
+    
+    // Precise time calculation based on measure divisions
+    const leftMargin = 190;
+    const measureWidth = (rect.width - leftMargin - 100) / 4;
+    const relativeX = x - leftMargin;
+    const measureIndex = Math.floor(relativeX / measureWidth);
+    const positionInMeasure = (relativeX % measureWidth) / measureWidth;
+    
+    // Quantize to musical subdivisions based on current note value
+    const subdivision = noteValue / 4; // Convert to beat subdivision
+    const beatPosition = Math.round(positionInMeasure * staff.timeSignature[0] / subdivision) * subdivision;
+    const startTime = measureIndex * staff.timeSignature[0] + beatPosition;
+
+    if (currentTool === 'note') {
+      // Calculate pitch from staff position with proper music theory
+      const { pitch, needsAccidental } = calculatePitchFromPosition(y, staffY, staff.clef, staff.keySignature);
       
-      // Check if clicking on an existing note
-      const clickedNote = getNoteAtPosition(x, y, staffIndex);
+      // Check for existing note at this position (within tolerance)
+      const existingNoteIndex = staff.notes.findIndex((note: Note) => 
+        Math.abs(note.startTime - startTime) < 0.05 && Math.abs(note.pitch - pitch) < 0.5
+      );
+
+      if (existingNoteIndex >= 0) {
+        // Remove existing note if clicking on it
+        setStaffs(prev => prev.map(s => 
+          s.id === staff.id 
+            ? {...s, notes: s.notes.filter((_, i) => i !== existingNoteIndex)}
+            : s
+        ));
+        setSelectedNotes(new Set()); // Clear selection
+      } else {
+        // Add new note with proper musical context
+        const newNote: Note = {
+          id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          pitch: pitch,
+          startTime: Math.max(0, startTime),
+          duration: noteValue,
+          velocity: 80,
+          accidental: needsAccidental ? currentAccidental : undefined,
+          articulation: currentArticulation ? [currentArticulation] : [],
+          tie: undefined,
+          slur: undefined,
+          beam: undefined,
+          tuplet: undefined,
+          lyrics: undefined,
+          fingering: undefined
+        };
+
+        setStaffs(prev => prev.map(s => 
+          s.id === staff.id 
+            ? {...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime)}
+            : s
+        ));
+        
+        // Auto-select the new note
+        setSelectedNotes(new Set([newNote.id]));
+      }
+    } else if (currentTool === 'select') {
+      // Select notes for editing
+      const { pitch } = calculatePitchFromPosition(y, staffY, staff.clef, staff.keySignature);
+      const clickedNote = findNoteAtPosition(staff, startTime, pitch);
       
-      if (clickedNote && currentTool === 'select') {
-        // Select/deselect note
-        if (e.ctrlKey || e.metaKey) {
-          // Multi-select
+      if (clickedNote) {
+        if (e.shiftKey) {
+          // Multi-select with Shift key
           setSelectedNotes(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(clickedNote.id)) {
-              newSet.delete(clickedNote.id);
+            const newSelection = new Set(prev);
+            if (newSelection.has(clickedNote.id)) {
+              newSelection.delete(clickedNote.id);
             } else {
-              newSet.add(clickedNote.id);
+              newSelection.add(clickedNote.id);
             }
-            return newSet;
+            return newSelection;
           });
         } else {
           // Single select
           setSelectedNotes(new Set([clickedNote.id]));
         }
-      } else if (!clickedNote && currentTool === 'note') {
-        // Add a new note
-        const time = Math.max(0, (x - 140) / (noteWidth * zoomLevel));
-        const staffY = staffIndex * (staffHeight + 60) + 40;
-        const relativeY = y - staffY;
-        const line = Math.round((relativeY - 24) / (lineSpacing / 2));
-        
-        // Convert staff position back to MIDI note
-        let midiNote: number;
-        if (staff.clef === 'treble') {
-          midiNote = 72 - line; // C5 at line 0
-        } else if (staff.clef === 'bass') {
-          midiNote = 50 - line; // D3 at line 0
-        } else {
-          midiNote = 60 - line; // Middle C default
+      } else {
+        // Clear selection if clicking empty space
+        if (!e.shiftKey) {
+          setSelectedNotes(new Set());
         }
-        
-        const newNote: Note = {
-          id: `note-${Date.now()}`,
-          pitch: Math.max(0, Math.min(127, midiNote)),
-          startTime: Math.round(time * 4) / 4, // Quantize to 16th notes
-          duration: noteValue,
-          velocity: 80
-        };
-        
-        setStaffs(prev => prev.map(s => 
-          s.id === staff.id 
-            ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
-            : s
-        ));
-      } else if (!clickedNote && currentTool === 'select') {
-        // Clear selection when clicking empty space
-        setSelectedNotes(new Set());
       }
     }
-  };
+  }, [isLocked, currentTool, noteValue, currentAccidental, currentArticulation, staffs, selectedNotes]);
 
-  // Handle key presses for note operations
+  // Calculate pitch from staff position with proper music theory
+  const calculatePitchFromPosition = useCallback((y: number, staffY: number, clef: string, keySignature: string) => {
+    const lineSpacing = 8;
+    const relativeY = y - staffY;
+    
+    // Staff line positions (center of staff = 0)
+    const linePosition = (32 - relativeY) / (lineSpacing / 2);
+    
+    // Convert to pitch based on clef
+    let basePitch: number;
+    let baseLinePosition: number;
+    
+    if (clef === 'treble') {
+      // Treble clef: G4 (67) on second line from bottom
+      basePitch = 67; // G4
+      baseLinePosition = 2; // Second line from bottom
+    } else {
+      // Bass clef: F3 (53) on second line from top  
+      basePitch = 53; // F3
+      baseLinePosition = 6; // Second line from top
+    }
+    
+    // Calculate pitch based on staff position
+    const steps = Math.round(linePosition - baseLinePosition);
+    const pitch = basePitch + steps;
+    
+    // Determine if accidental is needed based on key signature and current accidental setting
+    const keyAccidentals = getKeySignatureAccidentals(keySignature);
+    const noteName = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][pitch % 12];
+    const needsAccidental = currentAccidental !== null;
+    
+    return { pitch: Math.max(0, Math.min(127, pitch)), needsAccidental };
+  }, [currentAccidental, getKeySignatureAccidentals]);
+
+  // Find note at specific position with tolerance
+  const findNoteAtPosition = useCallback((staff: any, time: number, pitch: number) => {
+    return staff.notes.find((note: Note) => 
+      Math.abs(note.startTime - time) < 0.1 && Math.abs(note.pitch - pitch) < 1
+    );
+  }, []);
+
+  // Advanced keyboard shortcuts for professional music editing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLocked) return;
-      
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        // Delete selected notes
-        if (selectedNotes.size > 0) {
-          setStaffs(prev => prev.map(staff => ({
-            ...staff,
-            notes: staff.notes.filter(note => !selectedNotes.has(note.id))
-          })));
+
+      // Prevent default browser behavior for music editor shortcuts
+      const musicShortcuts = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'n', 's', 'Delete', 'Backspace', 'Escape'];
+      if (musicShortcuts.includes(e.key) || (e.key === 'a' && e.ctrlKey)) {
+        e.preventDefault();
+      }
+
+      // Note duration shortcuts (1-8 for different note values)
+      if (e.key >= '1' && e.key <= '8') {
+        const durations = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625, 0.03125]; // whole to 128th
+        const index = parseInt(e.key) - 1;
+        setNoteValue(durations[index]);
+        return;
+      }
+
+      // Tool shortcuts
+      switch (e.key.toLowerCase()) {
+        case 'n':
+          if (!e.ctrlKey) setCurrentTool('note');
+          break;
+        case 's':
+          if (!e.ctrlKey) setCurrentTool('select');
+          break;
+        case 'delete':
+        case 'backspace':
+          // Delete selected notes
+          if (selectedNotes.size > 0) {
+            setStaffs(prev => prev.map(staff => ({
+              ...staff,
+              notes: staff.notes.filter(note => !selectedNotes.has(note.id))
+            })));
+            setSelectedNotes(new Set());
+          }
+          break;
+        case 'escape':
           setSelectedNotes(new Set());
+          setCurrentTool('select');
+          break;
+        case 'a':
+          if (e.ctrlKey) {
+            // Select all notes in current staff
+            const currentStaff = staffs.find(s => s.id === selectedStaff);
+            if (currentStaff) {
+              setSelectedNotes(new Set(currentStaff.notes.map(note => note.id)));
+            }
+          }
+          break;
+      }
+
+      // Accidental shortcuts
+      if (e.shiftKey) {
+        switch (e.key) {
+          case '3': // Shift + 3 = #
+            setCurrentAccidental(currentAccidental === 'sharp' ? null : 'sharp');
+            break;
+          case 'B': // Shift + B = flat symbol
+            setCurrentAccidental(currentAccidental === 'flat' ? null : 'flat');
+            break;
         }
-      } else if (e.key === 'Escape') {
-        // Clear selection
-        setSelectedNotes(new Set());
+      }
+
+      // Natural accidental with 'n' + modifier
+      if (e.key === '=' && currentAccidental !== 'natural') {
+        setCurrentAccidental('natural');
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNotes, isLocked]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLocked, selectedNotes, staffs, selectedStaff, currentAccidental]);
+
+  // Note manipulation functions
+  const moveSelectedNotes = useCallback((direction: 'up' | 'down' | 'left' | 'right', amount: number = 1) => {
+    if (selectedNotes.size === 0) return;
+
+    setStaffs(prev => prev.map(staff => ({
+      ...staff,
+      notes: staff.notes.map(note => {
+        if (!selectedNotes.has(note.id)) return note;
+
+        switch (direction) {
+          case 'up':
+            return { ...note, pitch: Math.min(127, note.pitch + amount) };
+          case 'down':
+            return { ...note, pitch: Math.max(0, note.pitch - amount) };
+          case 'left':
+            return { ...note, startTime: Math.max(0, note.startTime - (amount * 0.25)) };
+          case 'right':
+            return { ...note, startTime: note.startTime + (amount * 0.25) };
+          default:
+            return note;
+        }
+      })
+    })));
+  }, [selectedNotes]);
+
+  // Copy and paste functionality
+  const copySelectedNotes = useCallback(() => {
+    const notesToCopy: Note[] = [];
+    staffs.forEach(staff => {
+      staff.notes.forEach(note => {
+        if (selectedNotes.has(note.id)) {
+          notesToCopy.push(note);
+        }
+      });
+    });
+    setCopiedNotes(notesToCopy);
+  }, [selectedNotes, staffs]);
+
+  const pasteNotes = useCallback((targetTime: number, targetStaffId: string) => {
+    if (copiedNotes.length === 0) return;
+
+    const earliestTime = Math.min(...copiedNotes.map(note => note.startTime));
+    const timeOffset = targetTime - earliestTime;
+
+    const newNotes = copiedNotes.map(note => ({
+      ...note,
+      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      startTime: note.startTime + timeOffset
+    }));
+
+    setStaffs(prev => prev.map(staff => 
+      staff.id === targetStaffId
+        ? { ...staff, notes: [...staff.notes, ...newNotes].sort((a, b) => a.startTime - b.startTime) }
+        : staff
+    ));
+
+    // Select the newly pasted notes
+    setSelectedNotes(new Set(newNotes.map(note => note.id)));
+  }, [copiedNotes]);
+
+  // Control palette categories
+  const paletteCategories = {
+    'Notation': [
+      { id: 'whole', icon: '𝅝', label: 'Whole Note', action: () => setNoteValue(4) },
+      { id: 'half', icon: '𝅗𝅥', label: 'Half Note', action: () => setNoteValue(2) },
+      { id: 'quarter', icon: '𝅘𝅥', label: 'Quarter Note', action: () => setNoteValue(1) },
+      { id: 'eighth', icon: '𝅘𝅥𝅮', label: 'Eighth Note', action: () => setNoteValue(0.5) },
+      { id: 'sixteenth', icon: '𝅘𝅥𝅯', label: 'Sixteenth Note', action: () => setNoteValue(0.25) },
+    ],
+    'Accidentals & Pitch': [
+      { id: 'sharp', icon: '♯', label: 'Sharp', action: () => setCurrentAccidental('sharp') },
+      { id: 'flat', icon: '♭', label: 'Flat', action: () => setCurrentAccidental('flat') },
+      { id: 'natural', icon: '♮', label: 'Natural', action: () => setCurrentAccidental('natural') },
+      { id: 'clear', icon: '✕', label: 'Clear', action: () => setCurrentAccidental(null) }
+    ],
+    'Clefs & Signatures': [
+      { id: 'treble-clef', icon: '𝄞', label: 'Treble Clef', action: () => {} },
+      { id: 'bass-clef', icon: '𝄢', label: 'Bass Clef', action: () => {} },
+    ],
+    'Dynamics & Expression': [
+      { id: 'pp', icon: 'pp', label: 'Piano', action: () => setCurrentDynamic('pp') },
+      { id: 'mf', icon: 'mf', label: 'Mezzo Forte', action: () => setCurrentDynamic('mf') },
+      { id: 'ff', icon: 'ff', label: 'Fortissimo', action: () => setCurrentDynamic('ff') },
+    ],
+    'Structure & Layout': [
+      { id: 'barline', icon: '|', label: 'Barline', action: () => {} },
+      { id: 'double-barline', icon: '||', label: 'Double Barline', action: () => {} },
+    ]
+  };
 
   return (
-    <div className="h-full flex flex-col bg-[var(--background)]">
-      {/* Score Toolbar */}
-      <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* Tool Selection */}
-          <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
-            <button
+    <div className="h-full flex bg-[var(--background)]">
+      {/* Left Control Palette */}
+      <div className="w-64 bg-[var(--muted)] border-r border-[var(--border)] flex flex-col">
+        <div className="border-b border-[var(--border)]">
+          <Select value={selectedPaletteCategory} onValueChange={setSelectedPaletteCategory}>
+            <SelectTrigger className="w-full border-0 rounded-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(paletteCategories).map(category => (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 p-2 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-1">
+            {paletteCategories[selectedPaletteCategory as keyof typeof paletteCategories]?.map(item => (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="sm"
+                className="h-12 p-1 flex flex-col items-center justify-center text-xs hover:bg-[var(--accent)] text-[var(--foreground)]"
+                onClick={item.action}
+                title={item.label}
+              >
+                <span className="text-lg font-serif leading-none">{item.icon}</span>
+                <span className="text-[10px] mt-1 leading-none">{item.label.split(' ')[0]}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+          <div className="grid grid-cols-3 gap-1">
+            <Button
+              variant={currentTool === 'select' ? 'default' : 'ghost'}
+              size="sm"
               onClick={() => setCurrentTool('select')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'select' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
               title="Select Tool"
             >
-              <Edit3 className="h-4 w-4" />
-            </button>
-            <button
+              <MousePointer className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={currentTool === 'note' ? 'default' : 'ghost'}
+              size="sm"
               onClick={() => setCurrentTool('note')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'note' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
               title="Note Tool"
             >
               <Music className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setCurrentTool('chord')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'chord' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
-              title="Chord Tool"
-            >
-              <Piano className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setCurrentTool('dynamics')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'dynamics' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
-              title="Dynamics Tool"
-            >
-              <Volume2 className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Note Duration */}
-          <div className="flex items-center space-x-1">
-            <span className="text-sm text-[var(--muted-foreground)]">Duration:</span>
-            <select
-              value={noteValue}
-              onChange={(e) => setNoteValue(Number(e.target.value))}
-              className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
-            >
-              <option value={4}>𝅝 Whole</option>
-              <option value={2}>𝅗𝅥 Half</option>
-              <option value={1}>♩ Quarter</option>
-              <option value={0.5}>♫ Eighth</option>
-              <option value={0.25}>♬ Sixteenth</option>
-            </select>
-          </div>
-
-          {/* Staff Configuration */}
-          {selectedStaff && (
-            <>
-              <div className="flex items-center space-x-1">
-                <span className="text-sm text-[var(--muted-foreground)]">Key:</span>
-                <select
-                  value={staffs.find(s => s.id === selectedStaff)?.keySignature || 'C'}
-                  onChange={(e) => {
-                    setStaffs(prev => prev.map(s => 
-                      s.id === selectedStaff 
-                        ? { ...s, keySignature: e.target.value }
-                        : s
-                    ));
-                  }}
-                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
-                >
-                  <option value="C">C Major</option>
-                  <option value="G">G Major</option>
-                  <option value="D">D Major</option>
-                  <option value="A">A Major</option>
-                  <option value="E">E Major</option>
-                  <option value="B">B Major</option>
-                  <option value="F#">F# Major</option>
-                  <option value="F">F Major</option>
-                  <option value="Bb">Bb Major</option>
-                  <option value="Eb">Eb Major</option>
-                  <option value="Ab">Ab Major</option>
-                  <option value="Db">Db Major</option>
-                </select>
-              </div>
-
-              <div className="flex items-center space-x-1">
-                <span className="text-sm text-[var(--muted-foreground)]">Clef:</span>
-                <select
-                  value={staffs.find(s => s.id === selectedStaff)?.clef || 'treble'}
-                  onChange={(e) => {
-                    setStaffs(prev => prev.map(s => 
-                      s.id === selectedStaff 
-                        ? { ...s, clef: e.target.value as 'treble' | 'bass' | 'alto' | 'tenor' }
-                        : s
-                    ));
-                  }}
-                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
-                >
-                  <option value="treble">𝄞 Treble</option>
-                  <option value="bass">𝄢 Bass</option>
-                  <option value="alto">𝄡 Alto</option>
-                  <option value="tenor">𝄡 Tenor</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          <div className="w-px h-6 bg-[var(--border)]"></div>
-
-          {/* Copy/Edit Tools */}
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2"
-              title="Copy Selected Notes"
-              disabled={selectedNotes.size === 0}
-              onClick={() => {
-                if (selectedNotes.size > 0) {
-                  console.log(`Copied ${selectedNotes.size} notes`);
-                  // Future: implement copy to clipboard
-                }
-              }}
-            >
-              <Copy className="h-4 w-4" />
             </Button>
-            
             <Button
-              variant="ghost"
+              variant={currentTool === 'text' ? 'default' : 'ghost'}
               size="sm"
-              className="h-8 px-2"
-              title="Delete Selected Notes"
-              disabled={selectedNotes.size === 0}
-              onClick={() => {
-                if (selectedNotes.size > 0) {
-                  setStaffs(prev => prev.map(staff => ({
-                    ...staff,
-                    notes: staff.notes.filter(note => !selectedNotes.has(note.id))
-                  })));
-                  setSelectedNotes(new Set());
-                }
-              }}
+              onClick={() => setCurrentTool('text')}
+              title="Text Tool"
             >
-              <Settings className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2"
-              title="Clear All Notes"
-              onClick={() => {
-                if (selectedStaff) {
-                  setStaffs(prev => prev.map(staff => 
-                    staff.id === selectedStaff 
-                      ? { ...staff, notes: [] }
-                      : staff
-                  ));
-                  setSelectedNotes(new Set());
-                }
-              }}
-            >
-              <RotateCcw className="h-4 w-4" />
+              <Type className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {/* Zoom Controls */}
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              title="Zoom Out"
-            >
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-            <span className="text-xs text-[var(--foreground)] min-w-[3rem] text-center font-mono">
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              title="Zoom In"
-            >
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Lock indicator */}
-          {isLocked && (
-            <div className="text-xs text-[var(--muted-foreground)] bg-[var(--muted)] px-2 py-1 rounded">
-              LOCKED
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Main content area with sidebar */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Score Canvas */}
-        <div className="flex-1 overflow-auto">
-          <canvas
-            ref={scoreCanvasRef}
-            className="w-full h-full cursor-crosshair"
-            style={{ minHeight: '600px' }}
-            onClick={handleCanvasClick}
-          />
-        </div>
-
-        {/* Staff List Sidebar */}
-        <div className="w-64 border-l border-[var(--border)] bg-[var(--muted)] p-4 overflow-y-auto">
-          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Score Properties</h3>
-          
-          {/* Staff List */}
-          <div className="space-y-2 mb-4">
-            <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">Staffs</h4>
-            {staffs.map((staff) => (
-              <div
-                key={staff.id}
-                className={`p-3 rounded border cursor-pointer transition-colors ${
-                  selectedStaff === staff.id
-                    ? 'border-[var(--primary)] bg-[var(--primary)]/10'
-                    : 'border-[var(--border)] hover:bg-[var(--accent)]'
-                }`}
-                onClick={() => setSelectedStaff(staff.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{staff.instrument}</div>
-                    <div className="text-xs text-[var(--muted-foreground)]">
-                      {staff.clef} • {staff.keySignature} • {staff.timeSignature[0]}/{staff.timeSignature[1]}
-                    </div>
-                    <div className="text-xs text-[var(--muted-foreground)] mt-1">
-                      {staff.notes.length} notes • ♩ = {staff.tempo}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTrackMute(staff.id);
-                      }}
-                      title="Mute"
-                    >
-                      <VolumeX className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTrackSolo(staff.id);
-                      }}
-                      title="Solo"
-                    >
-                      <Volume2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* Main Score Area */}
+      <div className="flex-1 flex flex-col">
+        <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" title="Play">
+              <Play className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" title="Pause">
+              <Pause className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" title="Stop">
+              <Square className="h-4 w-4" />
+            </Button>
+            
+            <div className="w-px h-6 bg-[var(--border)] mx-2" />
+            
+            <Button variant="ghost" size="sm" title="Zoom In">
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" title="Zoom Out">
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            
+            <Select value={viewMode} onValueChange={(value: 'page' | 'continuous' | 'single') => setViewMode(value)}>
+              <SelectTrigger className="w-32 border-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="page">Page View</SelectItem>
+                <SelectItem value="continuous">Continuous</SelectItem>
+                <SelectItem value="single">Single Line</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Selected Staff Properties */}
-          {selectedStaff && (
-            <div className="space-y-3 border-t border-[var(--border)] pt-4">
-              <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">Staff Properties</h4>
-              
-              <div className="space-y-2">
-                <div>
-                  <label className="text-xs text-[var(--muted-foreground)]">Instrument Name</label>
-                  <input
-                    type="text"
-                    value={staffs.find(s => s.id === selectedStaff)?.instrument || ''}
-                    onChange={(e) => {
-                      setStaffs(prev => prev.map(s => 
-                        s.id === selectedStaff 
-                          ? { ...s, instrument: e.target.value }
-                          : s
-                      ));
-                    }}
-                    className="w-full h-7 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
-                  />
-                </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-[var(--muted-foreground)]">♩ = {currentTempo}</span>
+            <span className="text-sm text-[var(--muted-foreground)]">{currentTimeSignature[0]}/{currentTimeSignature[1]}</span>
+            
+            <div className="w-px h-6 bg-[var(--border)] mx-2" />
+            
+            <Button variant="ghost" size="sm" title="Save">
+              <Save className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" title="Export">
+              <FileDown className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" title="Settings">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
 
-                <div>
-                  <label className="text-xs text-[var(--muted-foreground)]">Tempo (BPM)</label>
-                  <input
-                    type="number"
-                    min="40"
-                    max="200"
-                    value={staffs.find(s => s.id === selectedStaff)?.tempo || 120}
-                    onChange={(e) => {
-                      setStaffs(prev => prev.map(s => 
-                        s.id === selectedStaff 
-                          ? { ...s, tempo: parseInt(e.target.value) || 120 }
-                          : s
-                      ));
-                    }}
-                    className="w-full h-7 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
-                  />
-                </div>
+        <div className="flex-1 overflow-auto p-4 bg-[var(--background)] text-[var(--foreground)]">
+          <canvas
+            ref={scoreCanvasRef}
+            className="w-full h-full border border-[var(--border)] rounded cursor-pointer bg-[var(--background)]"
+            onClick={handleCanvasClick}
+            style={{ 
+              minHeight: '600px'
+            }}
+          />
+        </div>
+      </div>
 
-                <div>
-                  <label className="text-xs text-[var(--muted-foreground)]">Time Signature</label>
-                  <div className="flex space-x-1">
-                    <select
-                      value={staffs.find(s => s.id === selectedStaff)?.timeSignature[0] || 4}
-                      onChange={(e) => {
-                        const staff = staffs.find(s => s.id === selectedStaff);
-                        if (staff) {
-                          setStaffs(prev => prev.map(s => 
-                            s.id === selectedStaff 
-                              ? { ...s, timeSignature: [parseInt(e.target.value), staff.timeSignature[1]] as [number, number] }
-                              : s
-                          ));
-                        }
-                      }}
-                      className="flex-1 h-7 px-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
-                    >
-                      <option value={2}>2</option>
-                      <option value={3}>3</option>
-                      <option value={4}>4</option>
-                      <option value={5}>5</option>
-                      <option value={6}>6</option>
-                      <option value={7}>7</option>
-                      <option value={9}>9</option>
-                      <option value={12}>12</option>
-                    </select>
-                    <span className="text-xs flex items-center">/</span>
-                    <select
-                      value={staffs.find(s => s.id === selectedStaff)?.timeSignature[1] || 4}
-                      onChange={(e) => {
-                        const staff = staffs.find(s => s.id === selectedStaff);
-                        if (staff) {
-                          setStaffs(prev => prev.map(s => 
-                            s.id === selectedStaff 
-                              ? { ...s, timeSignature: [staff.timeSignature[0], parseInt(e.target.value)] as [number, number] }
-                              : s
-                          ));
-                        }
-                      }}
-                      className="flex-1 h-7 px-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs"
-                    >
-                      <option value={1}>1</option>
-                      <option value={2}>2</option>
-                      <option value={4}>4</option>
-                      <option value={8}>8</option>
-                      <option value={16}>16</option>
-                    </select>
-                  </div>
+      {/* Right Sidebar */}
+      <div className="w-64 bg-[var(--muted)] border-l border-[var(--border)] flex flex-col">
+        <div className="p-4 border-b border-[var(--border)]">
+          <h3 className="font-semibold text-sm mb-2 text-[var(--foreground)]">Staff Controls</h3>
+          
+          <div className="mb-3">
+            <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Key Signature</label>
+            <Select value={currentKeySignature} onValueChange={setCurrentKeySignature}>
+              <SelectTrigger className="w-full h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="C">C Major</SelectItem>
+                <SelectItem value="G">G Major</SelectItem>
+                <SelectItem value="D">D Major</SelectItem>
+                <SelectItem value="F">F Major</SelectItem>
+                <SelectItem value="Bb">Bb Major</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="mb-3">
+            <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Tempo (BPM)</label>
+            <div className="flex items-center space-x-2">
+              <Slider
+                value={[currentTempo]}
+                onValueChange={(value) => setCurrentTempo(value[0])}
+                min={60}
+                max={200}
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-xs w-8 text-center">{currentTempo}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {staffs.map((staff, index) => (
+            <div
+              key={staff.id}
+              className={`p-3 border-b border-[var(--border)] cursor-pointer hover:bg-[var(--accent)] ${
+                selectedStaff === staff.id ? 'bg-[var(--accent)]' : ''
+              }`}
+              onClick={() => setSelectedStaff(staff.id)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium text-sm">{staff.instrument}</span>
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStaffs(prev => prev.map(s => s.id === staff.id ? {...s, visible: !s.visible} : s));
+                    }}
+                  >
+                    {staff.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStaffs(prev => prev.map(s => s.id === staff.id ? {...s, locked: !s.locked} : s));
+                    }}
+                  >
+                    {staff.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                  </Button>
                 </div>
               </div>
+              
+              <div className="text-xs text-[var(--muted-foreground)] mb-2">
+                {staff.clef === 'treble' ? '𝄞' : '𝄢'} {staff.keySignature} {staff.timeSignature[0]}/{staff.timeSignature[1]}
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTrackMute(staff.id);
+                  }}
+                >
+                  <VolumeX className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTrackSolo(staff.id);
+                  }}
+                >
+                  <Radio className="h-3 w-3" />
+                </Button>
+                <Slider
+                  value={[staff.volume]}
+                  onValueChange={(value) => {
+                    setStaffs(prev => prev.map(s => s.id === staff.id ? {...s, volume: value[0]} : s));
+                  }}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="flex-1"
+                />
+              </div>
             </div>
-          )}
-          
+          ))}
+        </div>
+
+        <div className="p-2 border-t border-[var(--border)]">
           <Button
             variant="outline"
             size="sm"
-            className="w-full mt-4"
+            className="w-full"
             onClick={() => {
               const newStaff: Staff = {
                 id: `staff-${Date.now()}`,
                 clef: 'treble',
                 keySignature: 'C',
                 timeSignature: [4, 4],
-                instrument: 'New Staff',
+                instrument: 'Piano',
                 tempo: 120,
                 notes: [],
-                chords: [],
-                dynamics: []
+                visible: true,
+                locked: false,
+                volume: 100,
+                pan: 0
               };
               setStaffs(prev => [...prev, newStaff]);
             }}

@@ -5,7 +5,7 @@ import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
 import { MidiEditor } from './MidiEditor';
-import { ScoreEditor } from './ScoreEditor_fixed';
+import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
@@ -188,6 +188,8 @@ export function AudioWorkstation() {
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
+              onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
+              onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
           </div>
           
@@ -223,13 +225,11 @@ export function AudioWorkstation() {
                 isLocked={isMidiLocked}
               />
             ) : (
-              <ScoreEditor
+              <InteractiveScoreEditor
                 tracks={tracks}
                 transport={transport}
-                zoomLevel={zoomLevel}
                 onTrackMute={toggleTrackMute}
                 onTrackSolo={toggleTrackSolo}
-                onTrackSelect={setSelectedTrack}
                 isLocked={isTimelineLocked}
               />
             )}
