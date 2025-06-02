@@ -50,6 +50,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
   const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [currentTool, setCurrentTool] = useState<'select' | 'hand' | 'edit'>('select');
   const [isDragging, setIsDragging] = useState(false);
@@ -181,6 +182,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   }, []);
   
   const timelineRef = useRef<HTMLDivElement>(null);
+  const tracksRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -921,6 +923,44 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
   }, [zoomLevel, onZoomChange]);
 
+  // Handle timeline scroll and sync with tracks panel
+  const handleTimelineScroll = useCallback((e: Event) => {
+    const target = e.target as HTMLDivElement;
+    if (target && tracksRef.current) {
+      const newScrollY = target.scrollTop;
+      setScrollY(newScrollY);
+      // Sync tracks panel scroll
+      tracksRef.current.scrollTop = newScrollY;
+    }
+  }, []);
+
+  // Handle tracks panel scroll and sync with timeline
+  const handleTracksScroll = useCallback((e: Event) => {
+    const target = e.target as HTMLDivElement;
+    if (target && timelineRef.current) {
+      const newScrollY = target.scrollTop;
+      setScrollY(newScrollY);
+      // Sync timeline scroll
+      timelineRef.current.scrollTop = newScrollY;
+    }
+  }, []);
+
+  // Add scroll event listeners for synchronization
+  useEffect(() => {
+    const timelineElement = timelineRef.current;
+    const tracksElement = tracksRef.current;
+
+    if (timelineElement && tracksElement) {
+      timelineElement.addEventListener('scroll', handleTimelineScroll);
+      tracksElement.addEventListener('scroll', handleTracksScroll);
+
+      return () => {
+        timelineElement.removeEventListener('scroll', handleTimelineScroll);
+        tracksElement.removeEventListener('scroll', handleTracksScroll);
+      };
+    }
+  }, [handleTimelineScroll, handleTracksScroll]);
+
   const handleTrackRightClick = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1346,7 +1386,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
         </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto scrollbar-thin" ref={tracksRef}>
           {tracks.map((track, index) => (
             <div
               key={track.id}
