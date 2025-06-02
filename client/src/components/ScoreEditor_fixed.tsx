@@ -321,16 +321,58 @@ export function ScoreEditor({
       
       const yOffset = staffIndex * (staffHeight + 60) + 40;
       
-      // Draw staff lines
+      // Draw staff lines with enhanced precision
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.2;
+      
       for (let i = 0; i < 5; i++) {
-        const y = yOffset + i * lineSpacing;
+        const y = Math.floor(yOffset + i * lineSpacing) + 0.5; // Anti-aliasing
         ctx.beginPath();
         ctx.moveTo(40, y);
         ctx.lineTo(canvas.offsetWidth - 280, y);
         ctx.stroke();
       }
+      
+      // Draw ledger lines for notes outside staff
+      staff.notes.forEach((note) => {
+        const x = 140 + (note.startTime * noteWidth * zoomLevel);
+        const midiToLine = (pitch: number) => {
+          if (staff.clef === 'treble') {
+            return 6 - (pitch - 60) / 2;
+          } else {
+            return 10 - (pitch - 48) / 2;
+          }
+        };
+        
+        const line = midiToLine(note.pitch);
+        const noteY = yOffset + (line - 2) * (lineSpacing / 2);
+        
+        // Draw ledger lines above staff
+        if (line < 0) {
+          for (let ledger = -1; ledger >= line; ledger -= 2) {
+            if (ledger % 2 === 1) {
+              const ledgerY = Math.floor(yOffset + (ledger - 2) * (lineSpacing / 2)) + 0.5;
+              ctx.beginPath();
+              ctx.moveTo(x - 8, ledgerY);
+              ctx.lineTo(x + 8, ledgerY);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        // Draw ledger lines below staff
+        if (line > 8) {
+          for (let ledger = 9; ledger <= line; ledger += 2) {
+            if (ledger % 2 === 1) {
+              const ledgerY = Math.floor(yOffset + (ledger - 2) * (lineSpacing / 2)) + 0.5;
+              ctx.beginPath();
+              ctx.moveTo(x - 8, ledgerY);
+              ctx.lineTo(x + 8, ledgerY);
+              ctx.stroke();
+            }
+          }
+        }
+      });
       
       // Draw measure lines and grid
       const measureWidth = noteWidth * 4 * zoomLevel;
@@ -436,20 +478,29 @@ export function ScoreEditor({
           ctx.shadowBlur = 0;
         }
         
-        // Professional note head rendering
-        const noteHeadWidth = 7;
-        const noteHeadHeight = 5;
+        // Professional note head rendering with proper proportions
+        const noteHeadWidth = 8;
+        const noteHeadHeight = 6;
+        
+        // Apply subtle rotation for more natural appearance
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-0.2); // Slight slant like real notation
         
         if (note.duration >= 2) {
-          // Whole and half notes (hollow)
-          ctx.ellipse(x, y, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
-          ctx.lineWidth = 1.5;
+          // Whole and half notes (hollow with thicker outline)
+          ctx.beginPath();
+          ctx.ellipse(0, 0, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
+          ctx.lineWidth = 1.8;
           ctx.stroke();
         } else {
-          // Quarter notes and shorter (filled)
-          ctx.ellipse(x, y, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
+          // Quarter notes and shorter (filled with smooth edges)
+          ctx.beginPath();
+          ctx.ellipse(0, 0, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
           ctx.fill();
         }
+        
+        ctx.restore();
         
         // Draw accidentals
         if (note.accidental) {
@@ -469,29 +520,53 @@ export function ScoreEditor({
         // Reset shadow
         ctx.shadowBlur = 0;
         
-        // Draw stem for quarter notes and shorter
+        // Draw stem with professional proportions
         if (note.duration <= 2 && note.duration >= 0.25) {
           ctx.strokeStyle = noteColor;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
+          ctx.lineWidth = 2.2;
+          ctx.lineCap = 'round';
+          
           const stemDirection = line <= 2 ? 1 : -1;
-          ctx.moveTo(x + (stemDirection > 0 ? 7 : -7), y);
-          ctx.lineTo(x + (stemDirection > 0 ? 7 : -7), y + (stemDirection * -35));
+          const stemLength = 32;
+          const stemX = x + (stemDirection > 0 ? 8 : -8);
+          
+          ctx.beginPath();
+          ctx.moveTo(stemX, y);
+          ctx.lineTo(stemX, y + (stemDirection * -stemLength));
           ctx.stroke();
           
-          // Professional flag rendering for eighth notes and shorter
+          // Enhanced beam/flag rendering
           if (note.duration < 1) {
-            ctx.font = '18px serif';
-            ctx.fillStyle = noteColor;
-            const flagX = x + (stemDirection > 0 ? 8 : -16);
-            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 4 : -4);
+            ctx.lineWidth = 3;
+            const beamY = y + (stemDirection * -stemLength) + (stemDirection > 0 ? 3 : -3);
             
             if (note.duration === 0.5) {
-              // Eighth note flag
-              ctx.fillText(stemDirection > 0 ? '𝄪' : '𝄫', flagX, flagY);
+              // Eighth note beam
+              ctx.beginPath();
+              ctx.moveTo(stemX, beamY);
+              ctx.lineTo(stemX + 16, beamY + 2);
+              ctx.lineTo(stemX + 16, beamY + 6);
+              ctx.lineTo(stemX, beamY + 4);
+              ctx.closePath();
+              ctx.fill();
             } else if (note.duration === 0.25) {
-              // Sixteenth note double flag
-              ctx.fillText(stemDirection > 0 ? '𝄪𝄪' : '𝄫𝄫', flagX, flagY);
+              // Sixteenth note double beam
+              ctx.beginPath();
+              ctx.moveTo(stemX, beamY);
+              ctx.lineTo(stemX + 16, beamY + 2);
+              ctx.lineTo(stemX + 16, beamY + 5);
+              ctx.lineTo(stemX, beamY + 3);
+              ctx.closePath();
+              ctx.fill();
+              
+              // Second beam
+              ctx.beginPath();
+              ctx.moveTo(stemX, beamY + 6);
+              ctx.lineTo(stemX + 16, beamY + 8);
+              ctx.lineTo(stemX + 16, beamY + 11);
+              ctx.lineTo(stemX, beamY + 9);
+              ctx.closePath();
+              ctx.fill();
             }
           }
         }
