@@ -71,6 +71,7 @@ export function MidiEditor({
   const [activeOscillators, setActiveOscillators] = useState<Set<OscillatorNode>>(new Set());
   const activeOscillatorsRef = useRef<Set<OscillatorNode>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -351,6 +352,11 @@ export function MidiEditor({
   const playNote = async (pitch: number, velocity: number = 100, duration: number = 0.5) => {
     if (!audioContext) {
       console.warn('Audio context not available');
+      return;
+    }
+    
+    // Don't play new notes if paused using ref for immediate detection
+    if (isPausedRef.current) {
       return;
     }
     
@@ -940,6 +946,7 @@ export function MidiEditor({
     const activeTrack = trackToPlay;
     
     console.log('Starting MIDI playback...');
+    isPausedRef.current = false;
     setIsPaused(false);
     onMidiPlayingChange?.(true);
     setMidiPlaybackTime(0);
@@ -950,8 +957,8 @@ export function MidiEditor({
     const playedNotes = new Set<string>(); // Track which notes have been played
     
     const interval = setInterval(() => {
-      // Check if playback is paused
-      if (isPaused) {
+      // Check if playback is paused using ref for immediate detection
+      if (isPausedRef.current) {
         return;
       }
       
@@ -989,6 +996,9 @@ export function MidiEditor({
 
   const pauseMidiPlayback = () => {
     console.log('Pausing MIDI playback - stopping', activeOscillatorsRef.current.size, 'active notes');
+    
+    // Set pause state immediately in both state and ref
+    isPausedRef.current = true;
     setIsPaused(true);
     
     // Clear the playback interval
