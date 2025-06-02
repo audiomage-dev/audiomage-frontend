@@ -96,7 +96,7 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
   };
   return (
     <>
-      <div className="bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
+      <div className="bg-[hsl(var(--muted))] px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
         {sessions.map((session) => (
           <div
             key={session.id}
