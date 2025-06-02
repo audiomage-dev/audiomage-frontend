@@ -1,0 +1,63 @@
+Warning: Encountered two children with the same key, &#x60;11&#x60;. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at div
+    at div
+    at div
+    at CompactTimelineEditor (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/components/CompactTimelineEditor.tsx:43:41)
+    at div
+    at div
+    at div
+    at div
+    at AudioWorkstation (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/components/AudioWorkstation.tsx:52:7)
+    at div
+    at Studio
+    at Route (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=08c0262e:323:16)
+    at Switch (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=08c0262e:379:17)
+    at Router
+    at Provider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YNVQRCZ5.js?v=08c0262e:39:15)
+    at TooltipProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=08c0262e:2249:5)
+    at ThemeProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/contexts/ThemeContext.tsx:20:33)
+    at QueryClientProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=08c0262e:2805:3)
+    at App
+at div
+at div
+at div
+at div
+at CompactTimelineEditor (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/components/CompactTimelineEditor.tsx:43:41)
+at div
+at div
+at div
+at div
+at AudioWorkstation (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/components/AudioWorkstation.tsx:52:7)
+at div
+at Studio
+at Route (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=08c0262e:323:16)
+at Switch (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=08c0262e:379:17)
+at Router
+at Provider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YNVQRCZ5.js?v=08c0262e:39:15)
+at TooltipProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=08c0262e:2249:5)
+at ThemeProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/src/contexts/ThemeContext.tsx:20:33)
+at QueryClientProvider (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=08c0262e:2805:3)
+at App
+at t.value (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://9600d5f9-3519-440b-a1b3-55fed5db3e3c-00-2vcilzhnipbuj.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Rendering 0 notes for track "Piano"
+Generating MIDI notes for track: "Piano" (type: midi)
+Generated 47 MIDI notes for "Piano"
+Generating MIDI notes for track: "Strings Section" (type: midi)
+Generated 16 MIDI notes for "Strings Section"
+Generating MIDI notes for track: "Synth Lead" (type: midi)
+No specific pattern found for "Synth Lead", generating default MIDI notes
+Generated 8 MIDI notes for "Synth Lead"
+Generating MIDI notes for track: "Synth Bass" (type: midi)
+Generated 16 MIDI notes for "Synth Bass"
+Generating MIDI notes for track: "Strings" (type: midi)
+Generated 16 MIDI notes for "Strings"
+Rendering 47 notes for track "Piano"
+Play button clicked! ViewMode: midi SelectedTrack: 6 IsMidiPlaying: false
+Calling onMidiPlay
+Play button clicked! ViewMode: midi SelectedTrack: 6 IsMidiPlaying: false
+Calling onMidiPlay
+Rendering 47 notes for track "Piano"
