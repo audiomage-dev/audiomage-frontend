@@ -135,10 +135,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
   const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
-  
-  // Automation mode state
-  const [automationMode, setAutomationMode] = useState<{ clipId: string; type: 'fadeIn' | 'fadeOut' } | null>(null);
-  const [hoveredClip, setHoveredClip] = useState<string | null>(null);
 
   // Virtual extension action handlers
   const handleExtensionAction = useCallback((action: 'blank' | 'ai' | 'stretch') => {
@@ -1601,8 +1597,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           zIndex: draggingClip?.clipId === clip.id ? 50 : 
                                  draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id) ? 40 : 5
                         }}
-                        onMouseEnter={() => setHoveredClip(clip.id)}
-                        onMouseLeave={() => setHoveredClip(null)}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
@@ -1644,62 +1638,15 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         {/* Fade In/Out Indicators */}
                         {clip.fadeIn && clip.fadeIn > 0 && (
                           <div 
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-black/40 to-transparent pointer-events-none z-10"
                             style={{ width: `${(clip.fadeIn / clip.duration) * 100}%` }}
                           />
                         )}
                         {clip.fadeOut && clip.fadeOut > 0 && (
                           <div 
-                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
+                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-black/40 to-transparent pointer-events-none z-10"
                             style={{ width: `${(clip.fadeOut / clip.duration) * 100}%` }}
                           />
-                        )}
-                        
-                        {/* Automation Mode Controls - Show on hover */}
-                        {hoveredClip === clip.id && (
-                          <>
-                            {/* Fade In Control */}
-                            <div 
-                              className="absolute top-0 left-0 w-8 h-full bg-gradient-to-r from-blue-500/40 to-transparent hover:from-blue-500/60 cursor-pointer transition-all duration-200 flex items-center justify-center group"
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setAutomationMode({ clipId: clip.id, type: 'fadeIn' });
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                setAutomationMode(null);
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log('Apply fade-in to clip:', clip.id);
-                                // Apply fade-in automation
-                              }}
-                              title="Add fade-in"
-                            >
-                              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-white border-b-[6px] border-b-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            
-                            {/* Fade Out Control */}
-                            <div 
-                              className="absolute top-0 right-0 w-8 h-full bg-gradient-to-l from-orange-500/40 to-transparent hover:from-orange-500/60 cursor-pointer transition-all duration-200 flex items-center justify-center group"
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setAutomationMode({ clipId: clip.id, type: 'fadeOut' });
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                setAutomationMode(null);
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log('Apply fade-out to clip:', clip.id);
-                                // Apply fade-out automation
-                              }}
-                              title="Add fade-out"
-                            >
-                              <div className="w-0 h-0 border-r-[6px] border-r-transparent border-l-[6px] border-l-white border-b-[6px] border-b-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          </>
                         )}
                         
                         {/* Resize Handles */}
