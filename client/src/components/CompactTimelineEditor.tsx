@@ -1806,25 +1806,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               style={{ 
                 left: `${(transport.currentTime / (getTimelineWidth() / zoomLevel)) * getTimelineWidth()}px` 
               }}
-            >
-              {/* Measure indicator on playhead */}
-              <div 
-                className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-[var(--primary)] text-white px-2 py-1 rounded text-xs font-mono font-semibold whitespace-nowrap"
-                style={{ minWidth: '40px' }}
-              >
-                {(() => {
-                  // Calculate current measure from playhead position
-                  const beatsPerMinute = bpm;
-                  const beatsPerMeasure = timeSignature[0];
-                  const secondsPerBeat = 60 / beatsPerMinute;
-                  const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
-                  const currentMeasure = Math.floor(transport.currentTime / secondsPerMeasure) + 1;
-                  const beatInMeasure = Math.floor((transport.currentTime % secondsPerMeasure) / secondsPerBeat) + 1;
-                  
-                  return `${currentMeasure}.${beatInMeasure}`;
-                })()}
-              </div>
-            </div>
+            />
           </div>
         </div>
       </div>
