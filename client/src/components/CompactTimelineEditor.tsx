@@ -45,6 +45,8 @@ interface CompactTimelineEditorProps {
 }
 
 export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+  // Generate unique component ID to prevent key conflicts
+  const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
   const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
@@ -1956,7 +1958,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
                   {getPresetPrompts(selectedClipForLLM.trackType, selectedClipForLLM.name).map((preset, index) => (
                     <button
-                      key={index}
+                      key={`preset-${index}-${preset.substring(0, 10)}`}
                       onClick={() => setLLMPrompt(preset)}
                       className="text-left text-xs p-2 rounded-md bg-[var(--muted)]/20 hover:bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:border-[var(--border)] transition-colors"
                     >
