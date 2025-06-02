@@ -553,7 +553,7 @@ export function ScoreEditor({
 
       {/* Main Score Area */}
       <div className="flex-1 flex flex-col">
-        <div className="h-12 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between">
+        <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" title="Play">
               <Play className="h-4 w-4" />
@@ -565,7 +565,7 @@ export function ScoreEditor({
               <Square className="h-4 w-4" />
             </Button>
             
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
+            <div className="w-px h-6 bg-[var(--border)] mx-2" />
             
             <Button variant="ghost" size="sm" title="Zoom In">
               <ZoomIn className="h-4 w-4" />
@@ -587,10 +587,10 @@ export function ScoreEditor({
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">♩ = {currentTempo}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-400">{currentTimeSignature[0]}/{currentTimeSignature[1]}</span>
+            <span className="text-sm text-[var(--muted-foreground)]">♩ = {currentTempo}</span>
+            <span className="text-sm text-[var(--muted-foreground)]">{currentTimeSignature[0]}/{currentTimeSignature[1]}</span>
             
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
+            <div className="w-px h-6 bg-[var(--border)] mx-2" />
             
             <Button variant="ghost" size="sm" title="Save">
               <Save className="h-4 w-4" />
@@ -658,8 +658,8 @@ export function ScoreEditor({
           {staffs.map((staff, index) => (
             <div
               key={staff.id}
-              className={`p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                selectedStaff === staff.id ? 'bg-blue-50 dark:bg-blue-900' : ''
+              className={`p-3 border-b border-[var(--border)] cursor-pointer hover:bg-[var(--accent)] ${
+                selectedStaff === staff.id ? 'bg-[var(--accent)]' : ''
               }`}
               onClick={() => setSelectedStaff(staff.id)}
             >
@@ -691,7 +691,7 @@ export function ScoreEditor({
                 </div>
               </div>
               
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <div className="text-xs text-[var(--muted-foreground)] mb-2">
                 {staff.clef === 'treble' ? '𝄞' : '𝄢'} {staff.keySignature} {staff.timeSignature[0]}/{staff.timeSignature[1]}
               </div>
               
@@ -733,7 +733,7 @@ export function ScoreEditor({
           ))}
         </div>
 
-        <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-2 border-t border-[var(--border)]">
           <Button
             variant="outline"
             size="sm"
