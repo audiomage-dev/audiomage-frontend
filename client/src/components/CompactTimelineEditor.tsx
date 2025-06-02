@@ -1466,31 +1466,34 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               transform: `translateX(-${scrollX}px)`
             }}
           >
-            {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
-              const timeSeconds = i * 60;
-              // Calculate measure number based on actual BPM and time signature
+            {(() => {
+              // Calculate measure markers based on actual BPM and time signature
               const beatsPerMinute = bpm;
               const beatsPerMeasure = timeSignature[0]; // numerator of time signature
               const secondsPerBeat = 60 / beatsPerMinute;
               const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
-              const measureNumber = Math.floor(timeSeconds / secondsPerMeasure) + 1;
-              const position = (timeSeconds / 1200) * 100;
+              const totalTimelineSeconds = 1200; // 20 minutes
+              const totalMeasures = Math.ceil(totalTimelineSeconds / secondsPerMeasure);
               
-              // Only show markers at measure boundaries
-              const isAtMeasureBoundary = (timeSeconds % secondsPerMeasure) === 0;
-              
-              if (!isAtMeasureBoundary) return null;
-              
-              return (
-                <div
-                  key={`${componentId}-timeline-marker-${i}-${timeSeconds}`}
-                  className="absolute text-xs text-[var(--muted-foreground)] font-mono"
-                  style={{ left: `${position}%` }}
-                >
-                  {measureNumber}
-                </div>
-              );
-            }).filter(Boolean)}
+              return Array.from({ length: totalMeasures + 1 }).map((_, measureIndex) => {
+                const measureStartTime = measureIndex * secondsPerMeasure;
+                const position = (measureStartTime / totalTimelineSeconds) * 100;
+                const measureNumber = measureIndex + 1;
+                
+                // Skip if position is beyond our timeline
+                if (measureStartTime > totalTimelineSeconds) return null;
+                
+                return (
+                  <div
+                    key={`${componentId}-measure-marker-${measureIndex}`}
+                    className="absolute text-xs text-[var(--muted-foreground)] font-mono"
+                    style={{ left: `${position}%` }}
+                  >
+                    {measureNumber}
+                  </div>
+                );
+              }).filter(Boolean);
+            })()}
           </div>
         </div>
 
