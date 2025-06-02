@@ -69,6 +69,7 @@ export function MidiEditor({
     trackId: string;
   } | null>(null);
   const [activeOscillators, setActiveOscillators] = useState<Set<OscillatorNode>>(new Set());
+  const [isPaused, setIsPaused] = useState(false);
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -930,6 +931,7 @@ export function MidiEditor({
     const activeTrack = trackToPlay;
     
     console.log('Starting MIDI playback...');
+    setIsPaused(false);
     onMidiPlayingChange?.(true);
     setMidiPlaybackTime(0);
     
@@ -939,6 +941,11 @@ export function MidiEditor({
     const playedNotes = new Set<string>(); // Track which notes have been played
     
     const interval = setInterval(() => {
+      // Check if playback is paused
+      if (isPaused) {
+        return;
+      }
+      
       const elapsed = (Date.now() - startTime) / 1000;
       const currentBeat = elapsed * beatsPerSecond;
       setMidiPlaybackTime(currentBeat);
@@ -972,10 +979,7 @@ export function MidiEditor({
   };
 
   const pauseMidiPlayback = () => {
-    if (midiPlaybackInterval) {
-      clearInterval(midiPlaybackInterval);
-      setMidiPlaybackInterval(null);
-    }
+    setIsPaused(true);
     
     // Stop all active oscillators
     activeOscillators.forEach(oscillator => {
@@ -992,6 +996,7 @@ export function MidiEditor({
   };
 
   const stopMidiPlayback = () => {
+    setIsPaused(false);
     if (midiPlaybackInterval) {
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
