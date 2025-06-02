@@ -916,7 +916,7 @@ export function MidiEditor({
   // MIDI-specific playback controls
   const playMidiTrack = () => {
     // If paused and same track, resume playback from pause position
-    if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current === selectedTrack) {
+    if (isPaused && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       
       // Adjust the start time to account for the pause
@@ -934,7 +934,7 @@ export function MidiEditor({
     }
     
     // If paused but different track, stop current and start new
-    if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current !== selectedTrack) {
+    if (isPaused && currentPlayingTrackRef.current !== selectedTrack) {
       console.log('Switching tracks during pause, stopping current playback...');
       stopMidiPlayback();
       // Continue to start new track
@@ -1037,11 +1037,8 @@ export function MidiEditor({
     isPausedRef.current = true;
     setIsPaused(true);
     
-    // Clear the playback interval
-    if (midiPlaybackInterval) {
-      clearInterval(midiPlaybackInterval);
-      setMidiPlaybackInterval(null);
-    }
+    // Don't clear the interval during pause - we need it for resume
+    // The interval will check isPausedRef.current and skip execution
     
     // Stop all active oscillators immediately using ref
     const oscillatorsToStop = Array.from(activeOscillatorsRef.current);
