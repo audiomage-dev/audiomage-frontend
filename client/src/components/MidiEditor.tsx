@@ -985,6 +985,7 @@ export function MidiEditor({
   };
 
   const pauseMidiPlayback = () => {
+    console.log('Pausing MIDI playback - stopping', activeOscillators.size, 'active notes');
     setIsPaused(true);
     
     // Clear the playback interval
@@ -993,18 +994,20 @@ export function MidiEditor({
       setMidiPlaybackInterval(null);
     }
     
-    // Stop all active oscillators
-    activeOscillators.forEach(oscillator => {
+    // Stop all active oscillators immediately
+    const oscillatorsToStop = Array.from(activeOscillators);
+    oscillatorsToStop.forEach(oscillator => {
       try {
-        oscillator.stop();
+        oscillator.stop(0); // Stop immediately
+        console.log('Stopped oscillator');
       } catch (error) {
-        // Oscillator might already be stopped
+        console.log('Error stopping oscillator:', error);
       }
     });
     setActiveOscillators(new Set());
     
     onMidiPlayingChange?.(false);
-    console.log('MIDI playback paused - stopped', activeOscillators.size, 'active notes');
+    console.log('MIDI playback paused - all audio stopped');
   };
 
   const stopMidiPlayback = () => {
