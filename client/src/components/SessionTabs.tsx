@@ -102,16 +102,11 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
             key={session.id}
             className={`flex items-center px-4 py-2 relative min-w-max cursor-pointer transition-all duration-200 ${
               session.isActive
-                ? 'text-[hsl(var(--foreground))] z-10'
+                ? 'text-[hsl(var(--foreground))] z-10 border-b-2 border-slate-400'
                 : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'
             }`}
             style={{
-              backgroundColor: session.isActive ? '#e5e9f0' : undefined,
-              clipPath: session.isActive 
-                ? 'polygon(12px 0%, calc(100% - 12px) 0%, calc(100% - 6px) 50%, calc(100% - 2px) 100%, 2px 100%, 6px 50%)'
-                : 'polygon(8px 0%, calc(100% - 8px) 0%, calc(100% - 4px) 50%, calc(100% - 1px) 100%, 1px 100%, 4px 50%)',
-              marginLeft: session.isActive ? '0' : '-4px',
-              marginRight: session.isActive ? '0' : '-4px'
+              backgroundColor: session.isActive ? '#e5e9f0' : undefined
             }}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
