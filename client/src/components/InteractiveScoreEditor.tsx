@@ -99,42 +99,6 @@ export function InteractiveScoreEditor({
     return { y, needsLedger };
   };
 
-  // Add note at position
-  const addNote = useCallback((x: number, y: number, staffId: string) => {
-    const staff = staffs.find(s => s.id === staffId);
-    if (!staff || staff.locked) return;
-
-    // Calculate time position
-    const measureWidth = 200;
-    const startX = 150;
-    const relativeX = x - startX;
-    const beat = Math.max(0, (relativeX / measureWidth) * 4);
-    
-    // Calculate pitch from y position
-    const staffY = 80;
-    const lineSpacing = 10;
-    const relativePitch = Math.round((staffY + 40 - y) / (lineSpacing / 2));
-    const basePitch = staff.clef === 'treble' ? 67 : 53;
-    const pitch = basePitch + relativePitch;
-
-    // Create new note
-    const newNote: Note = {
-      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      pitch: Math.max(21, Math.min(108, pitch)), // Piano range
-      startTime: Math.round(beat * 4) / 4, // Quantize to 16th notes
-      duration: noteValue,
-      velocity: 80,
-      x,
-      y
-    };
-
-    setStaffs(prev => prev.map(s => 
-      s.id === staffId 
-        ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
-        : s
-    ));
-  }, [staffs, noteValue]);
-
   // Remove note
   const removeNote = useCallback((noteId: string) => {
     setStaffs(prev => prev.map(staff => ({
@@ -148,8 +112,73 @@ export function InteractiveScoreEditor({
     });
   }, []);
 
-  // Canvas click handler
-  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Add note at position with smart snapping
+  const addNote = useCallback((x: number, y: number, staffId: string) => {
+    const staff = staffs.find(s => s.id === staffId);
+    if (!staff || staff.locked) return;
+
+    // Calculate time position with grid snapping
+    const measureWidth = 200;
+    const startX = 150;
+    const relativeX = x - startX;
+    const beat = Math.max(0, (relativeX / measureWidth) * 4);
+    
+    // Smart quantization based on note value
+    const quantization = noteValue >= 1 ? 0.25 : noteValue; // Quarter note or smaller
+    const quantizedBeat = Math.round(beat / quantization) * quantization;
+    
+    // Calculate pitch from y position with staff line snapping
+    const staffY = 80;
+    const lineSpacing = 10;
+    const relativeY = y - (staffY + 20); // Center of staff
+    
+    // Snap to staff lines and spaces
+    const staffStep = Math.round(relativeY / (lineSpacing / 2));
+    const snappedY = staffY + 20 - (staffStep * (lineSpacing / 2));
+    
+    const basePitch = staff.clef === 'treble' ? 67 : 53; // G4 or F3
+    const pitch = basePitch + staffStep;
+
+    // Check for existing note at this position
+    const existingNote = staff.notes.find(note => 
+      Math.abs(note.startTime - quantizedBeat) < 0.01 && 
+      Math.abs(note.pitch - pitch) < 0.5
+    );
+
+    if (existingNote) {
+      // Remove existing note instead of adding duplicate
+      removeNote(existingNote.id);
+      return;
+    }
+
+    // Create new note with snapped positions
+    const newNote: Note = {
+      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      pitch: Math.max(21, Math.min(108, pitch)),
+      startTime: quantizedBeat,
+      duration: noteValue,
+      velocity: 80,
+      x: startX + (quantizedBeat / 4) * measureWidth,
+      y: snappedY
+    };
+
+    setStaffs(prev => prev.map(s => 
+      s.id === staffId 
+        ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
+        : s
+    ));
+
+    // Auto-select the new note
+    setSelectedNotes(new Set([newNote.id]));
+  }, [staffs, noteValue, removeNote]);
+
+  // Enhanced canvas interaction with drag support
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedNote, setDraggedNote] = useState<Note | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  // Canvas mouse down handler
+  const handleCanvasMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isLocked) return;
 
     const canvas = scoreCanvasRef.current;
@@ -159,20 +188,24 @@ export function InteractiveScoreEditor({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    if (currentTool === 'note') {
-      // Check if clicking on existing note first
-      let clickedNote: Note | null = null;
-      for (const staff of staffs) {
-        for (const note of staff.notes) {
-          if (note.x && note.y && 
-              Math.abs(x - note.x) < 15 && 
-              Math.abs(y - note.y) < 10) {
-            clickedNote = note;
-            break;
-          }
+    // Find clicked note
+    let clickedNote: Note | null = null;
+    let clickedStaff: Staff | null = null;
+    
+    for (const staff of staffs) {
+      for (const note of staff.notes) {
+        if (note.x && note.y && 
+            Math.abs(x - note.x) < 15 && 
+            Math.abs(y - note.y) < 10) {
+          clickedNote = note;
+          clickedStaff = staff;
+          break;
         }
       }
+      if (clickedNote) break;
+    }
 
+    if (currentTool === 'note') {
       if (clickedNote) {
         // Remove existing note
         removeNote(clickedNote.id);
@@ -181,38 +214,103 @@ export function InteractiveScoreEditor({
         addNote(x, y, 'staff-1');
       }
     } else if (currentTool === 'select') {
-      // Select notes
-      let selectedNote: Note | null = null;
-      for (const staff of staffs) {
-        for (const note of staff.notes) {
-          if (note.x && note.y && 
-              Math.abs(x - note.x) < 15 && 
-              Math.abs(y - note.y) < 10) {
-            selectedNote = note;
-            break;
-          }
-        }
-      }
-
-      if (selectedNote) {
+      if (clickedNote) {
+        // Handle selection
         if (e.shiftKey) {
           setSelectedNotes(prev => {
             const newSet = new Set(prev);
-            if (newSet.has(selectedNote.id)) {
-              newSet.delete(selectedNote.id);
+            if (newSet.has(clickedNote.id)) {
+              newSet.delete(clickedNote.id);
             } else {
-              newSet.add(selectedNote.id);
+              newSet.add(clickedNote.id);
             }
             return newSet;
           });
         } else {
-          setSelectedNotes(new Set([selectedNote.id]));
+          setSelectedNotes(new Set([clickedNote.id]));
+        }
+
+        // Start drag if note is selected
+        if (selectedNotes.has(clickedNote.id) || !e.shiftKey) {
+          setIsDragging(true);
+          setDraggedNote(clickedNote);
+          setDragOffset({
+            x: x - (clickedNote.x || 0),
+            y: y - (clickedNote.y || 0)
+          });
         }
       } else {
-        setSelectedNotes(new Set());
+        // Clear selection when clicking empty space
+        if (!e.shiftKey) {
+          setSelectedNotes(new Set());
+        }
       }
     }
-  }, [isLocked, currentTool, addNote, removeNote, staffs]);
+  }, [isLocked, currentTool, addNote, removeNote, staffs, selectedNotes]);
+
+  // Canvas mouse move handler for dragging
+  const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !draggedNote) return;
+
+    const canvas = scoreCanvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Calculate new position
+    const newX = x - dragOffset.x;
+    const newY = y - dragOffset.y;
+
+    // Update note positions for all selected notes
+    const selectedIds = selectedNotes.has(draggedNote.id) ? selectedNotes : new Set([draggedNote.id]);
+    const deltaX = newX - (draggedNote.x || 0);
+    const deltaY = newY - (draggedNote.y || 0);
+
+    setStaffs(prev => prev.map(staff => ({
+      ...staff,
+      notes: staff.notes.map(note => {
+        if (selectedIds.has(note.id)) {
+          const newNoteX = (note.x || 0) + deltaX;
+          const newNoteY = (note.y || 0) + deltaY;
+          
+          // Convert back to musical parameters
+          const measureWidth = 200;
+          const startX = 150;
+          const relativeX = newNoteX - startX;
+          const beat = Math.max(0, (relativeX / measureWidth) * 4);
+          const quantization = noteValue >= 1 ? 0.25 : noteValue;
+          const quantizedBeat = Math.round(beat / quantization) * quantization;
+
+          // Calculate pitch from y position
+          const staffY = 80;
+          const lineSpacing = 10;
+          const relativeY = newNoteY - (staffY + 20);
+          const staffStep = Math.round(relativeY / (lineSpacing / 2));
+          const snappedY = staffY + 20 - (staffStep * (lineSpacing / 2));
+          const basePitch = staff.clef === 'treble' ? 67 : 53;
+          const pitch = Math.max(21, Math.min(108, basePitch + staffStep));
+
+          return {
+            ...note,
+            x: startX + (quantizedBeat / 4) * measureWidth,
+            y: snappedY,
+            startTime: quantizedBeat,
+            pitch: pitch
+          };
+        }
+        return note;
+      })
+    })));
+  }, [isDragging, draggedNote, dragOffset, selectedNotes, noteValue]);
+
+  // Canvas mouse up handler
+  const handleCanvasMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setDraggedNote(null);
+    setDragOffset({ x: 0, y: 0 });
+  }, []);
 
   // Render score
   const renderScore = useCallback(() => {
@@ -230,12 +328,16 @@ export function InteractiveScoreEditor({
     // Clear canvas
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = document.documentElement.classList.contains('dark') || 
+                   document.documentElement.classList.contains('nord-dark');
+    
+    console.log('Theme detection - isDark:', isDark, 'classes:', document.documentElement.className);
+    
     const colors = {
-      staff: isDark ? '#d8dee9' : '#2e3440',
-      notes: isDark ? '#eceff4' : '#2e3440',
-      selected: '#88c0d0',
-      text: isDark ? '#eceff4' : '#2e3440'
+      staff: isDark ? '#e5e7eb' : '#374151',
+      notes: isDark ? '#f9fafb' : '#1f2937',
+      selected: isDark ? '#60a5fa' : '#3b82f6',
+      text: isDark ? '#f3f4f6' : '#111827'
     };
 
     // Draw each staff
@@ -484,7 +586,9 @@ export function InteractiveScoreEditor({
           <canvas
             ref={scoreCanvasRef}
             className="w-full border border-[var(--border)] rounded cursor-pointer bg-[var(--background)]"
-            onClick={handleCanvasClick}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
             style={{ 
               minHeight: '400px',
               height: '600px'
