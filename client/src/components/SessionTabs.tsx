@@ -102,12 +102,9 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
             key={session.id}
             className={`flex items-center px-4 py-2 relative min-w-max cursor-pointer transition-all duration-200 ${
               session.isActive
-                ? 'text-[hsl(var(--foreground))] z-10 border-b-2 border-slate-400'
-                : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'
+                ? 'bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] z-10 border-b-2 border-slate-400'
+                : 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50 hover:text-[hsl(var(--accent-foreground))]'
             }`}
-            style={{
-              backgroundColor: session.isActive ? '#e5e9f0' : undefined
-            }}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
           >

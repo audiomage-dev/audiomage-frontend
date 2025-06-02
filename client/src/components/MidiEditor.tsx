@@ -886,8 +886,14 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
+    console.log('Debug playMidiTrack:', { 
+      selectedTrack, 
+      midiNotesKeys: Object.keys(midiNotes),
+      selectedTrackNotes: midiNotes[selectedTrack || '']?.length || 0
+    });
+    
     if (!selectedTrack || !midiNotes[selectedTrack]) {
-      console.log('No selected track or no MIDI notes');
+      console.log('No selected track or no MIDI notes - selectedTrack:', selectedTrack, 'midiNotes available:', Object.keys(midiNotes));
       return;
     }
     
