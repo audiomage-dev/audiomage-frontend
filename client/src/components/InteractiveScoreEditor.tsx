@@ -232,10 +232,10 @@ export function InteractiveScoreEditor({
 
     const isDark = document.documentElement.classList.contains('dark');
     const colors = {
-      staff: isDark ? '#81a1c1' : '#2e3440',
+      staff: isDark ? '#d8dee9' : '#2e3440',
       notes: isDark ? '#eceff4' : '#2e3440',
-      selected: '#5e81ac',
-      text: isDark ? '#d8dee9' : '#2e3440'
+      selected: '#88c0d0',
+      text: isDark ? '#eceff4' : '#2e3440'
     };
 
     // Draw each staff
