@@ -1065,6 +1065,10 @@ export function MidiEditor({
     if (isPausedRef.current && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       
+      // Clear pause state
+      isPausedRef.current = false;
+      setIsPaused(false);
+      
       // Adjust the start time to account for the pause
       const bpm = 120;
       const beatsPerSecond = bpm / 60;
@@ -1072,10 +1076,88 @@ export function MidiEditor({
       const pausedSeconds = pausedBeats / beatsPerSecond;
       playbackStartTimeRef.current = Date.now() - (pausedSeconds * 1000);
       
-      isPausedRef.current = false;
-      setIsPaused(false);
+      // Restart the playback interval if it doesn't exist
+      if (!midiPlaybackInterval) {
+        const trackToPlay = selectedTrack;
+        if (!trackToPlay || !midiNotes[trackToPlay]) return;
+        
+        console.log('Restarting playback interval for resume');
+        const interval = setInterval(() => {
+          if (isPausedRef.current) {
+            console.log('Playback is paused, skipping interval execution');
+            return;
+          }
+          
+          const currentTime = Date.now();
+          const elapsedSeconds = (currentTime - playbackStartTimeRef.current) / 1000;
+          const currentBeat = elapsedSeconds * beatsPerSecond;
+          
+          setMidiPlaybackTime(currentBeat);
+          onMidiTimeChange?.(currentBeat);
+          
+          // Play notes at current beat
+          const trackNotes = midiNotes[trackToPlay] || [];
+          trackNotes.forEach((note: MidiNote) => {
+            const noteKey = `${trackToPlay}_${note.id}`;
+            if (currentBeat >= note.startTime && 
+                currentBeat <= note.startTime + note.duration && 
+                !playedNotesRef.current.has(noteKey)) {
+              
+              playedNotesRef.current.add(noteKey);
+              const waveType = getInstrumentWaveType(currentInstrument);
+              const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
+              
+              console.log(`Playing note: ${getNoteNameFromMidi(note.pitch)} (${note.pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+              console.log(`Playing note at beat ${currentBeat.toFixed(2)}: ${getNoteNameFromMidi(note.pitch)}`);
+              
+              if (audioContext) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = waveType;
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                
+                const velocity = note.velocity / 127;
+                gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.duration * 0.5);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + note.duration * 0.5);
+                
+                activeOscillatorsRef.current.add(oscillator);
+                setActiveOscillators(new Set(activeOscillatorsRef.current));
+                
+                oscillator.onended = () => {
+                  activeOscillatorsRef.current.delete(oscillator);
+                  setActiveOscillators(new Set(activeOscillatorsRef.current));
+                };
+              }
+            }
+          });
+          
+          // Stop when we reach the end
+          const maxEndTime = Math.max(...trackNotes.map(note => note.startTime + note.duration));
+          if (currentBeat >= maxEndTime) {
+            console.log('MIDI playback reached end, stopping...');
+            clearInterval(interval);
+            setMidiPlaybackInterval(null);
+            setMidiPlaybackTime(0);
+            onMidiPlayingChange?.(false);
+            onMidiTimeChange?.(0);
+            playedNotesRef.current.clear();
+            playbackStartTimeRef.current = 0;
+          }
+        }, 16);
+        
+        setMidiPlaybackInterval(interval);
+      }
+      
       setMidiPlaybackTime(pauseTimeRef.current);
       onMidiPlayingChange?.(true);
+      onMidiTimeChange?.(pauseTimeRef.current);
       return;
     }
     
