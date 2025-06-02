@@ -1468,17 +1468,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           <div 
             className="absolute inset-0 flex items-center"
             style={{ 
-              width: `${Math.max(1200, 1200 * zoomLevel)}px`,
+              width: `${getTimelineWidth()}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
             {(() => {
-              // Calculate measure markers based on actual BPM and time signature
+              // Calculate measure markers based on actual timeline width and longest clip
               const beatsPerMinute = bpm;
               const beatsPerMeasure = timeSignature[0]; // numerator of time signature
               const secondsPerBeat = 60 / beatsPerMinute;
               const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
-              const totalTimelineSeconds = 1200; // 20 minutes
+              
+              // Get actual timeline width and convert to time
+              const timelineWidthPx = getTimelineWidth();
+              const pixelsPerSecond = Math.max(2, 4 * zoomLevel);
+              const totalTimelineSeconds = timelineWidthPx / pixelsPerSecond;
+              
+              // Calculate measures to fit the actual timeline
               const totalMeasures = Math.ceil(totalTimelineSeconds / secondsPerMeasure);
               
               return Array.from({ length: totalMeasures + 1 }).map((_, measureIndex) => {
