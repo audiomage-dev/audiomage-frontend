@@ -902,10 +902,10 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    // Stop any existing playback first
-    if (midiPlaybackInterval) {
-      clearInterval(midiPlaybackInterval);
-      setMidiPlaybackInterval(null);
+    // If already playing, pause instead
+    if (midiPlaybackInterval || isMidiPlaying) {
+      pauseMidiPlayback();
+      return;
     }
     
     console.log('Debug playMidiTrack:', { 
