@@ -136,6 +136,7 @@ export function ScoreEditor({
   const [currentTempo, setCurrentTempo] = useState<number>(bpm);
   const [currentDynamic, setCurrentDynamic] = useState<string>('mf');
   const [viewMode, setViewMode] = useState<'page' | 'continuous' | 'single'>('page');
+  const [copiedNotes, setCopiedNotes] = useState<Note[]>([]);
 
   const [staffs, setStaffs] = useState<Staff[]>([
     {
@@ -411,9 +412,9 @@ export function ScoreEditor({
     return () => observer.disconnect();
   }, [renderScore]);
 
-  // Handle canvas click
+  // Professional note input and editing system
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isLocked || currentTool !== 'note') return;
+    if (isLocked) return;
 
     const canvas = scoreCanvasRef.current;
     if (!canvas) return;
@@ -422,39 +423,277 @@ export function ScoreEditor({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const staffIndex = Math.floor((y - 120) / 120);
+    // Calculate staff and position with high precision
+    const staffHeight = 120;
+    const staffIndex = Math.floor((y - 80) / staffHeight);
     const staff = staffs[staffIndex];
     
     if (!staff || !staff.visible) return;
 
-    const measureWidth = (rect.width - 260) / 4;
-    const clickTime = Math.max(0, ((x - 190) / measureWidth) * staff.timeSignature[0]);
+    const staffY = 80 + staffIndex * staffHeight + 40;
+    const staffLineSpacing = 8;
     
-    if (clickTime >= 0) {
-      const staffY = 120 + staffIndex * 120;
-      const relativeY = y - staffY;
-      const pitchOffset = Math.round((32 - relativeY) / 4);
-      const pitch = 60 + pitchOffset;
+    // Precise time calculation based on measure divisions
+    const leftMargin = 190;
+    const measureWidth = (rect.width - leftMargin - 100) / 4;
+    const relativeX = x - leftMargin;
+    const measureIndex = Math.floor(relativeX / measureWidth);
+    const positionInMeasure = (relativeX % measureWidth) / measureWidth;
+    
+    // Quantize to musical subdivisions based on current note value
+    const subdivision = noteValue / 4; // Convert to beat subdivision
+    const beatPosition = Math.round(positionInMeasure * staff.timeSignature[0] / subdivision) * subdivision;
+    const startTime = measureIndex * staff.timeSignature[0] + beatPosition;
 
-      const newNote: Note = {
-        id: `note-${Date.now()}`,
-        pitch: pitch,
-        startTime: Math.round(clickTime * 4) / 4,
-        duration: noteValue,
-        velocity: 80,
-        accidental: currentAccidental || undefined,
-        articulation: currentArticulation ? [currentArticulation] : undefined
-      };
-
-      setStaffs(prevStaffs => 
-        prevStaffs.map((s, i) => 
-          i === staffIndex 
-            ? { ...s, notes: [...s.notes, newNote] }
-            : s
-        )
+    if (currentTool === 'note') {
+      // Calculate pitch from staff position with proper music theory
+      const { pitch, needsAccidental } = calculatePitchFromPosition(y, staffY, staff.clef, staff.keySignature);
+      
+      // Check for existing note at this position (within tolerance)
+      const existingNoteIndex = staff.notes.findIndex((note: Note) => 
+        Math.abs(note.startTime - startTime) < 0.05 && Math.abs(note.pitch - pitch) < 0.5
       );
+
+      if (existingNoteIndex >= 0) {
+        // Remove existing note if clicking on it
+        setStaffs(prev => prev.map(s => 
+          s.id === staff.id 
+            ? {...s, notes: s.notes.filter((_, i) => i !== existingNoteIndex)}
+            : s
+        ));
+        setSelectedNotes(new Set()); // Clear selection
+      } else {
+        // Add new note with proper musical context
+        const newNote: Note = {
+          id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          pitch: pitch,
+          startTime: Math.max(0, startTime),
+          duration: noteValue,
+          velocity: 80,
+          accidental: needsAccidental ? currentAccidental : undefined,
+          articulation: currentArticulation ? [currentArticulation] : [],
+          tie: undefined,
+          slur: undefined,
+          beam: undefined,
+          tuplet: undefined,
+          lyrics: undefined,
+          fingering: undefined
+        };
+
+        setStaffs(prev => prev.map(s => 
+          s.id === staff.id 
+            ? {...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime)}
+            : s
+        ));
+        
+        // Auto-select the new note
+        setSelectedNotes(new Set([newNote.id]));
+      }
+    } else if (currentTool === 'select') {
+      // Select notes for editing
+      const { pitch } = calculatePitchFromPosition(y, staffY, staff.clef, staff.keySignature);
+      const clickedNote = findNoteAtPosition(staff, startTime, pitch);
+      
+      if (clickedNote) {
+        if (e.shiftKey) {
+          // Multi-select with Shift key
+          setSelectedNotes(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(clickedNote.id)) {
+              newSelection.delete(clickedNote.id);
+            } else {
+              newSelection.add(clickedNote.id);
+            }
+            return newSelection;
+          });
+        } else {
+          // Single select
+          setSelectedNotes(new Set([clickedNote.id]));
+        }
+      } else {
+        // Clear selection if clicking empty space
+        if (!e.shiftKey) {
+          setSelectedNotes(new Set());
+        }
+      }
     }
-  }, [isLocked, currentTool, noteValue, currentAccidental, currentArticulation, staffs]);
+  }, [isLocked, currentTool, noteValue, currentAccidental, currentArticulation, staffs, selectedNotes]);
+
+  // Calculate pitch from staff position with proper music theory
+  const calculatePitchFromPosition = useCallback((y: number, staffY: number, clef: string, keySignature: string) => {
+    const lineSpacing = 8;
+    const relativeY = y - staffY;
+    
+    // Staff line positions (center of staff = 0)
+    const linePosition = (32 - relativeY) / (lineSpacing / 2);
+    
+    // Convert to pitch based on clef
+    let basePitch: number;
+    let baseLinePosition: number;
+    
+    if (clef === 'treble') {
+      // Treble clef: G4 (67) on second line from bottom
+      basePitch = 67; // G4
+      baseLinePosition = 2; // Second line from bottom
+    } else {
+      // Bass clef: F3 (53) on second line from top  
+      basePitch = 53; // F3
+      baseLinePosition = 6; // Second line from top
+    }
+    
+    // Calculate pitch based on staff position
+    const steps = Math.round(linePosition - baseLinePosition);
+    const pitch = basePitch + steps;
+    
+    // Determine if accidental is needed based on key signature and current accidental setting
+    const keyAccidentals = getKeySignatureAccidentals(keySignature);
+    const noteName = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][pitch % 12];
+    const needsAccidental = currentAccidental !== null;
+    
+    return { pitch: Math.max(0, Math.min(127, pitch)), needsAccidental };
+  }, [currentAccidental, getKeySignatureAccidentals]);
+
+  // Find note at specific position with tolerance
+  const findNoteAtPosition = useCallback((staff: any, time: number, pitch: number) => {
+    return staff.notes.find((note: Note) => 
+      Math.abs(note.startTime - time) < 0.1 && Math.abs(note.pitch - pitch) < 1
+    );
+  }, []);
+
+  // Advanced keyboard shortcuts for professional music editing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLocked) return;
+
+      // Prevent default browser behavior for music editor shortcuts
+      const musicShortcuts = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'n', 's', 'Delete', 'Backspace', 'Escape'];
+      if (musicShortcuts.includes(e.key) || (e.key === 'a' && e.ctrlKey)) {
+        e.preventDefault();
+      }
+
+      // Note duration shortcuts (1-8 for different note values)
+      if (e.key >= '1' && e.key <= '8') {
+        const durations = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625, 0.03125]; // whole to 128th
+        const index = parseInt(e.key) - 1;
+        setNoteValue(durations[index]);
+        return;
+      }
+
+      // Tool shortcuts
+      switch (e.key.toLowerCase()) {
+        case 'n':
+          if (!e.ctrlKey) setCurrentTool('note');
+          break;
+        case 's':
+          if (!e.ctrlKey) setCurrentTool('select');
+          break;
+        case 'delete':
+        case 'backspace':
+          // Delete selected notes
+          if (selectedNotes.size > 0) {
+            setStaffs(prev => prev.map(staff => ({
+              ...staff,
+              notes: staff.notes.filter(note => !selectedNotes.has(note.id))
+            })));
+            setSelectedNotes(new Set());
+          }
+          break;
+        case 'escape':
+          setSelectedNotes(new Set());
+          setCurrentTool('select');
+          break;
+        case 'a':
+          if (e.ctrlKey) {
+            // Select all notes in current staff
+            const currentStaff = staffs.find(s => s.id === selectedStaff);
+            if (currentStaff) {
+              setSelectedNotes(new Set(currentStaff.notes.map(note => note.id)));
+            }
+          }
+          break;
+      }
+
+      // Accidental shortcuts
+      if (e.shiftKey) {
+        switch (e.key) {
+          case '3': // Shift + 3 = #
+            setCurrentAccidental(currentAccidental === 'sharp' ? null : 'sharp');
+            break;
+          case 'B': // Shift + B = flat symbol
+            setCurrentAccidental(currentAccidental === 'flat' ? null : 'flat');
+            break;
+        }
+      }
+
+      // Natural accidental with 'n' + modifier
+      if (e.key === '=' && currentAccidental !== 'natural') {
+        setCurrentAccidental('natural');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLocked, selectedNotes, staffs, selectedStaff, currentAccidental]);
+
+  // Note manipulation functions
+  const moveSelectedNotes = useCallback((direction: 'up' | 'down' | 'left' | 'right', amount: number = 1) => {
+    if (selectedNotes.size === 0) return;
+
+    setStaffs(prev => prev.map(staff => ({
+      ...staff,
+      notes: staff.notes.map(note => {
+        if (!selectedNotes.has(note.id)) return note;
+
+        switch (direction) {
+          case 'up':
+            return { ...note, pitch: Math.min(127, note.pitch + amount) };
+          case 'down':
+            return { ...note, pitch: Math.max(0, note.pitch - amount) };
+          case 'left':
+            return { ...note, startTime: Math.max(0, note.startTime - (amount * 0.25)) };
+          case 'right':
+            return { ...note, startTime: note.startTime + (amount * 0.25) };
+          default:
+            return note;
+        }
+      })
+    })));
+  }, [selectedNotes]);
+
+  // Copy and paste functionality
+  const copySelectedNotes = useCallback(() => {
+    const notesToCopy: Note[] = [];
+    staffs.forEach(staff => {
+      staff.notes.forEach(note => {
+        if (selectedNotes.has(note.id)) {
+          notesToCopy.push(note);
+        }
+      });
+    });
+    setCopiedNotes(notesToCopy);
+  }, [selectedNotes, staffs]);
+
+  const pasteNotes = useCallback((targetTime: number, targetStaffId: string) => {
+    if (copiedNotes.length === 0) return;
+
+    const earliestTime = Math.min(...copiedNotes.map(note => note.startTime));
+    const timeOffset = targetTime - earliestTime;
+
+    const newNotes = copiedNotes.map(note => ({
+      ...note,
+      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      startTime: note.startTime + timeOffset
+    }));
+
+    setStaffs(prev => prev.map(staff => 
+      staff.id === targetStaffId
+        ? { ...staff, notes: [...staff.notes, ...newNotes].sort((a, b) => a.startTime - b.startTime) }
+        : staff
+    ));
+
+    // Select the newly pasted notes
+    setSelectedNotes(new Set(newNotes.map(note => note.id)));
+  }, [copiedNotes]);
 
   // Control palette categories
   const paletteCategories = {
@@ -575,7 +814,7 @@ export function ScoreEditor({
             </Button>
             
             <Select value={viewMode} onValueChange={(value: 'page' | 'continuous' | 'single') => setViewMode(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-32 border-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
