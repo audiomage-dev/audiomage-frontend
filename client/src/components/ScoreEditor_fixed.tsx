@@ -141,11 +141,32 @@ export function ScoreEditor({
   const [undoHistory, setUndoHistory] = useState<Staff[][]>([]);
   const [redoHistory, setRedoHistory] = useState<Staff[][]>([]);
   const [clipboard, setClipboard] = useState<Note[]>([]);
+  const [currentTheme, setCurrentTheme] = useState<string>('light');
   
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const staffHeight = 120;
   const lineSpacing = 12;
   const noteWidth = 40;
+
+  // Theme change detection
+  useEffect(() => {
+    const updateTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const theme = isDark ? 'dark' : 'light';
+      setCurrentTheme(theme);
+    };
+    
+    updateTheme();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['class'] 
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   // Update staffs when BPM or time signature changes from metronome
   useEffect(() => {
@@ -884,10 +905,10 @@ export function ScoreEditor({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedNotes, isLocked, selectedStaff, staffs]);
 
-  // Redraw when state changes
+  // Redraw when state changes (including theme)
   useEffect(() => {
     drawScore();
-  }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition, isDragging, dragState]);
+  }, [staffs, selectedNotes, zoomLevel, transport.isPlaying, playbackPosition, isDragging, dragState, currentTheme]);
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
