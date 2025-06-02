@@ -142,6 +142,7 @@ export function ScoreEditor({
   const [redoHistory, setRedoHistory] = useState<Staff[][]>([]);
   const [clipboard, setClipboard] = useState<Note[]>([]);
   const [currentTheme, setCurrentTheme] = useState<string>('light');
+  const [selectedPaletteCategory, setSelectedPaletteCategory] = useState<string>('Notation');
   
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const staffHeight = 120;
@@ -918,45 +919,366 @@ export function ScoreEditor({
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
-      {/* Professional MuseScore-style Toolbar */}
+      {/* Professional Comprehensive Control Palette */}
       <div className="border-b border-[var(--border)] bg-[var(--background)]">
-        {/* Main Toolbar Row */}
-        <div className="h-12 px-3 flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            {/* File Operations */}
-            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="New Score">
-                <FileMusic className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Open">
-                <Upload className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Save">
-                <Save className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Print">
-                <Printer className="h-4 w-4" />
-              </Button>
-            </div>
+        {/* Category Tabs */}
+        <div className="h-10 px-3 flex items-center border-b border-[var(--border)]">
+          {['Notation', 'Symbols', 'Dynamics', 'Structure', 'Playback'].map((category) => (
+            <Button
+              key={category}
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-3 rounded-t-md rounded-b-none ${
+                selectedPaletteCategory === category 
+                  ? 'bg-[var(--accent)] border-b-2 border-[var(--primary)]' 
+                  : 'hover:bg-[var(--accent)]'
+              }`}
+              onClick={() => setSelectedPaletteCategory(category)}
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
 
-            {/* Edit Operations */}
-            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 w-8 p-0"
-                title="Undo"
-                disabled={undoHistory.length === 0}
-                onClick={() => {
-                  if (undoHistory.length > 0) {
-                    setRedoHistory(prev => [staffs, ...prev]);
-                    const previousState = undoHistory[undoHistory.length - 1];
-                    setStaffs(previousState);
-                    setUndoHistory(prev => prev.slice(0, -1));
-                  }
-                }}
-              >
-                <Undo className="h-4 w-4" />
+        {/* Control Palette Content */}
+        <div className="h-16 px-3 flex items-center overflow-x-auto">
+          {selectedPaletteCategory === 'Notation' && (
+            <div className="flex items-center space-x-2">
+              {/* Clef Selection */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Clef:</span>
+                {[
+                  { type: 'treble', symbol: '𝄞', name: 'Treble' },
+                  { type: 'bass', symbol: '𝄢', name: 'Bass' },
+                  { type: 'alto', symbol: '𝄡', name: 'Alto' },
+                  { type: 'tenor', symbol: '𝄡', name: 'Tenor' }
+                ].map((clef) => (
+                  <Button
+                    key={clef.type}
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 p-0 text-lg"
+                    title={clef.name}
+                    onClick={() => {
+                      if (selectedStaff) {
+                        setStaffs(prev => prev.map(s => 
+                          s.id === selectedStaff ? { ...s, clef: clef.type as any } : s
+                        ));
+                      }
+                    }}
+                  >
+                    {clef.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Key Signatures */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Key:</span>
+                <select
+                  value={selectedStaff ? staffs.find(s => s.id === selectedStaff)?.keySignature || 'C' : 'C'}
+                  onChange={(e) => {
+                    if (selectedStaff) {
+                      setStaffs(prev => prev.map(s => 
+                        s.id === selectedStaff ? { ...s, keySignature: e.target.value } : s
+                      ));
+                    }
+                  }}
+                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
+                >
+                  <option value="C">C Major</option>
+                  <option value="G">G Major</option>
+                  <option value="D">D Major</option>
+                  <option value="A">A Major</option>
+                  <option value="E">E Major</option>
+                  <option value="B">B Major</option>
+                  <option value="F#">F# Major</option>
+                  <option value="C#">C# Major</option>
+                  <option value="F">F Major</option>
+                  <option value="Bb">Bb Major</option>
+                  <option value="Eb">Eb Major</option>
+                  <option value="Ab">Ab Major</option>
+                  <option value="Db">Db Major</option>
+                  <option value="Gb">Gb Major</option>
+                  <option value="Cb">Cb Major</option>
+                </select>
+              </div>
+
+              {/* Time Signatures */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Time:</span>
+                {[
+                  [4, 4], [3, 4], [2, 4], [6, 8], [9, 8], [12, 8]
+                ].map((timeSig) => (
+                  <Button
+                    key={`${timeSig[0]}-${timeSig[1]}`}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-xs"
+                    title={`${timeSig[0]}/${timeSig[1]}`}
+                    onClick={() => {
+                      if (selectedStaff) {
+                        setStaffs(prev => prev.map(s => 
+                          s.id === selectedStaff ? { ...s, timeSignature: timeSig as [number, number] } : s
+                        ));
+                      }
+                    }}
+                  >
+                    <div className="text-center leading-tight">
+                      <div>{timeSig[0]}</div>
+                      <div>{timeSig[1]}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Symbols' && (
+            <div className="flex items-center space-x-2">
+              {/* Note Values */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Notes:</span>
+                {[
+                  { value: 4, symbol: '𝅝', name: 'Whole Note' },
+                  { value: 2, symbol: '𝅗𝅥', name: 'Half Note' },
+                  { value: 1, symbol: '♩', name: 'Quarter Note' },
+                  { value: 0.5, symbol: '♪', name: 'Eighth Note' },
+                  { value: 0.25, symbol: '♬', name: 'Sixteenth Note' }
+                ].map((note) => (
+                  <Button
+                    key={note.value}
+                    variant="ghost"
+                    size="sm"
+                    className={`h-10 w-10 p-0 text-lg ${noteValue === note.value ? 'bg-[var(--accent)]' : ''}`}
+                    title={note.name}
+                    onClick={() => setNoteValue(note.value)}
+                  >
+                    {note.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Accidentals */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Accidentals:</span>
+                {[
+                  { type: 'sharp', symbol: '♯', name: 'Sharp' },
+                  { type: 'flat', symbol: '♭', name: 'Flat' },
+                  { type: 'natural', symbol: '♮', name: 'Natural' }
+                ].map((acc) => (
+                  <Button
+                    key={acc.type}
+                    variant="ghost"
+                    size="sm"
+                    className={`h-10 w-10 p-0 text-lg ${currentAccidental === acc.type ? 'bg-[var(--accent)]' : ''}`}
+                    title={acc.name}
+                    onClick={() => setCurrentAccidental(acc.type as any)}
+                  >
+                    {acc.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Rests */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Rests:</span>
+                {[
+                  { value: 4, symbol: '𝄻', name: 'Whole Rest' },
+                  { value: 2, symbol: '𝄼', name: 'Half Rest' },
+                  { value: 1, symbol: '𝄽', name: 'Quarter Rest' },
+                  { value: 0.5, symbol: '𝄾', name: 'Eighth Rest' }
+                ].map((rest) => (
+                  <Button
+                    key={rest.value}
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 p-0 text-lg"
+                    title={rest.name}
+                    onClick={() => setCurrentTool('rest')}
+                  >
+                    {rest.symbol}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Dynamics' && (
+            <div className="flex items-center space-x-2">
+              {/* Dynamic Markings */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Dynamics:</span>
+                {[
+                  { symbol: 'ppp', name: 'Pianississimo' },
+                  { symbol: 'pp', name: 'Pianissimo' },
+                  { symbol: 'p', name: 'Piano' },
+                  { symbol: 'mp', name: 'Mezzo Piano' },
+                  { symbol: 'mf', name: 'Mezzo Forte' },
+                  { symbol: 'f', name: 'Forte' },
+                  { symbol: 'ff', name: 'Fortissimo' },
+                  { symbol: 'fff', name: 'Fortississimo' }
+                ].map((dynamic) => (
+                  <Button
+                    key={dynamic.symbol}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-sm font-italic"
+                    title={dynamic.name}
+                    onClick={() => setCurrentTool('dynamics')}
+                  >
+                    {dynamic.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Articulations */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Articulation:</span>
+                {[
+                  { type: 'staccato', symbol: '·', name: 'Staccato' },
+                  { type: 'accent', symbol: '>', name: 'Accent' },
+                  { type: 'tenuto', symbol: '−', name: 'Tenuto' },
+                  { type: 'marcato', symbol: '^', name: 'Marcato' }
+                ].map((art) => (
+                  <Button
+                    key={art.type}
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 w-8 p-0 ${currentArticulation === art.type ? 'bg-[var(--accent)]' : ''}`}
+                    title={art.name}
+                    onClick={() => setCurrentArticulation(art.type)}
+                  >
+                    {art.symbol}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Structure' && (
+            <div className="flex items-center space-x-2">
+              {/* Barlines */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Barlines:</span>
+                {[
+                  { type: 'single', symbol: '|', name: 'Single Bar' },
+                  { type: 'double', symbol: '||', name: 'Double Bar' },
+                  { type: 'final', symbol: '|||', name: 'Final Bar' },
+                  { type: 'repeat-start', symbol: '|:', name: 'Repeat Start' },
+                  { type: 'repeat-end', symbol: ':|', name: 'Repeat End' }
+                ].map((bar) => (
+                  <Button
+                    key={bar.type}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-sm"
+                    title={bar.name}
+                  >
+                    {bar.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Text Elements */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Text:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => setCurrentTool('text')}
+                >
+                  Lyrics
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => setCurrentTool('text')}
+                >
+                  Chord
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Playback' && (
+            <div className="flex items-center space-x-2">
+              {/* Virtual Instruments */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Instruments:</span>
+                <select
+                  value={selectedStaff ? staffs.find(s => s.id === selectedStaff)?.instrument || 'Piano' : 'Piano'}
+                  onChange={(e) => {
+                    if (selectedStaff) {
+                      setStaffs(prev => prev.map(s => 
+                        s.id === selectedStaff ? { ...s, instrument: e.target.value } : s
+                      ));
+                    }
+                  }}
+                  className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
+                >
+                  <optgroup label="Piano">
+                    <option value="Piano">Grand Piano</option>
+                    <option value="Electric Piano">Electric Piano</option>
+                    <option value="Harpsichord">Harpsichord</option>
+                  </optgroup>
+                  <optgroup label="Strings">
+                    <option value="Violin">Violin</option>
+                    <option value="Viola">Viola</option>
+                    <option value="Cello">Cello</option>
+                    <option value="Double Bass">Double Bass</option>
+                    <option value="Guitar">Guitar</option>
+                    <option value="Electric Guitar">Electric Guitar</option>
+                  </optgroup>
+                  <optgroup label="Woodwinds">
+                    <option value="Flute">Flute</option>
+                    <option value="Piccolo">Piccolo</option>
+                    <option value="Clarinet">Clarinet</option>
+                    <option value="Oboe">Oboe</option>
+                    <option value="Saxophone">Saxophone</option>
+                    <option value="Bassoon">Bassoon</option>
+                  </optgroup>
+                  <optgroup label="Brass">
+                    <option value="Trumpet">Trumpet</option>
+                    <option value="French Horn">French Horn</option>
+                    <option value="Trombone">Trombone</option>
+                    <option value="Tuba">Tuba</option>
+                  </optgroup>
+                  <optgroup label="Choir">
+                    <option value="Soprano">Soprano</option>
+                    <option value="Alto">Alto</option>
+                    <option value="Tenor">Tenor</option>
+                    <option value="Bass">Bass</option>
+                    <option value="Mixed Choir">Mixed Choir</option>
+                  </optgroup>
+                  <optgroup label="Percussion">
+                    <option value="Timpani">Timpani</option>
+                    <option value="Snare Drum">Snare Drum</option>
+                    <option value="Cymbals">Cymbals</option>
+                    <option value="Xylophone">Xylophone</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Tempo Controls */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-[var(--muted-foreground)]">Tempo:</span>
+                <input
+                  type="number"
+                  min="40"
+                  max="200"
+                  value={bpm}
+                  className="w-16 h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
+                  readOnly
+                  title="BPM (controlled by metronome)"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
               </Button>
               <Button 
                 variant="ghost" 
