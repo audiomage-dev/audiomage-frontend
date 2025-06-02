@@ -79,7 +79,7 @@ export function ChannelStrip({ channel, onVolumeChange, onMuteToggle, onSoloTogg
         <div className="text-xs text-[hsl(var(--nord-3))] mb-1">Plugin Chain:</div>
         <div className="space-y-1">
           {channel.effects.map((effect: AudioEffect) => (
-            <div key={effect.id} className="plugin-slot p-1 rounded text-xs flex items-center justify-between">
+            <div key={`channel-${channel.id}-effect-${effect.id}`} className="plugin-slot p-1 rounded text-xs flex items-center justify-between">
               <span className={effect.type === 'ai-enhancement' || effect.type === 'noise-reduction' ? 'text-[hsl(var(--frost-1))]' : ''}>
                 {effect.name}
               </span>

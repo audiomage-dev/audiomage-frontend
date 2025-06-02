@@ -268,7 +268,7 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
             <div className="space-y-2">
               {track.effects?.length > 0 ? (
                 track.effects.map((effect) => (
-                  <div key={effect.id} className="border border-[var(--border)] rounded-md">
+                  <div key={`track-${track.id}-effect-${effect.id}`} className="border border-[var(--border)] rounded-md">
                     <div 
                       className="p-3 cursor-pointer hover:bg-[var(--accent)] flex items-center justify-between"
                       onClick={() => toggleEffect(effect.id)}
