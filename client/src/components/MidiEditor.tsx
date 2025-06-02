@@ -786,9 +786,16 @@ export function MidiEditor({
     
     // Play appropriate sound based on mode
     if (pianoMode === 'instrument') {
+      // Temporarily set the current instrument for this playback
+      const previousInstrument = currentInstrument;
+      setCurrentInstrument(instrumentForSound);
+      
       const velocity = getInstrumentVelocity(instrumentForSound);
       const duration = 0.8;
       playNote(pitch, velocity, duration);
+      
+      // Restore previous instrument after a short delay
+      setTimeout(() => setCurrentInstrument(previousInstrument), 10);
     } else {
       // MIDI mode - direct oscillator
       if (audioContext) {
@@ -874,8 +881,14 @@ export function MidiEditor({
       heldOscillatorRef.current = oscillator;
     } else {
       // Instrument mode - use longer duration for hold effect
+      const previousInstrument = currentInstrument;
+      setCurrentInstrument(instrumentForSound);
+      
       const velocity = getInstrumentVelocity(instrumentForSound);
       playNote(pitch, velocity, 2.0);
+      
+      // Restore previous instrument after a short delay
+      setTimeout(() => setCurrentInstrument(previousInstrument), 10);
     }
     
     setHeldPianoKey(pitch);
