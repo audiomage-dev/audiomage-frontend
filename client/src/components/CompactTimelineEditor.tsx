@@ -1612,10 +1612,52 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
-                        {/* Clip Header */}
-                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
+                        {/* Clip Header with Fade Controls */}
+                        <div 
+                          className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium relative cursor-pointer transition-all duration-200 hover:bg-black hover:bg-opacity-40"
+                          onMouseEnter={() => setHoveredClip(clip.id)}
+                          onMouseLeave={() => {
+                            if (!fadeControls?.isDragging) {
+                              setHoveredClip(null);
+                              setFadeControls(null);
+                            }
+                          }}
+                        >
                           <span className="truncate flex-1">{clip.name}</span>
                           <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
+                          
+                          {/* Fade Controls - appear on hover */}
+                          {hoveredClip === clip.id && (
+                            <div className="absolute inset-0 flex items-center justify-between px-1 bg-black bg-opacity-60 rounded-t-md">
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  className="px-1 py-0.5 text-xs bg-[var(--primary)] text-white rounded hover:bg-[var(--primary)]/80 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const currentFadeIn = clip.fadeIn || 0;
+                                    const newFadeIn = currentFadeIn > 0 ? 0 : Math.min(1, clip.duration * 0.1);
+                                    console.log(`Apply fade-in to clip: ${clip.id} - ${newFadeIn}s`);
+                                    // This would typically call an onClipFadeChange callback
+                                  }}
+                                >
+                                  ↗ In
+                                </button>
+                                <button
+                                  className="px-1 py-0.5 text-xs bg-[var(--primary)] text-white rounded hover:bg-[var(--primary)]/80 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const currentFadeOut = clip.fadeOut || 0;
+                                    const newFadeOut = currentFadeOut > 0 ? 0 : Math.min(1, clip.duration * 0.1);
+                                    console.log(`Apply fade-out to clip: ${clip.id} - ${newFadeOut}s`);
+                                    // This would typically call an onClipFadeChange callback
+                                  }}
+                                >
+                                  Out ↘
+                                </button>
+                              </div>
+                              <span className="text-xs opacity-90">Fade Controls</span>
+                            </div>
+                          )}
                         </div>
                         
                         {/* Line Waveform */}
