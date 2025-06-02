@@ -11,6 +11,7 @@ import { TrackInspector } from './TrackInspector';
 import { MediaPreviewPane } from './MediaPreviewPane';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect } from 'react';
+import { FileMusic } from 'lucide-react';
 
 export function AudioWorkstation() {
   const {
@@ -39,7 +40,7 @@ export function AudioWorkstation() {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
+  const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   
@@ -184,7 +185,7 @@ export function AudioWorkstation() {
             />
           </div>
           
-          {/* Editor Area - Timeline or MIDI */}
+          {/* Editor Area - Timeline, MIDI, or Score */}
           <div className="flex-1 overflow-hidden">
             {viewMode === 'timeline' ? (
               <CompactTimelineEditor
@@ -199,7 +200,7 @@ export function AudioWorkstation() {
                 onZoomChange={handleZoomChange}
                 isLocked={isTimelineLocked}
               />
-            ) : (
+            ) : viewMode === 'midi' ? (
               <MidiEditor
                 tracks={tracks}
                 transport={transport}
@@ -213,6 +214,16 @@ export function AudioWorkstation() {
                 isMidiPlaying={isMidiPlaying}
                 isLocked={isMidiLocked}
               />
+            ) : (
+              <div className="h-full bg-[var(--background)] flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <FileMusic className="w-16 h-16 mx-auto text-[var(--muted-foreground)]" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-[var(--foreground)]">Score Editor</h3>
+                    <p className="text-[var(--muted-foreground)]">Musical notation and score editing interface</p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

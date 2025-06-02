@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -8,7 +8,7 @@ interface CompactTransportBarProps {
   bpm: number;
   timeSignature: [number, number];
   zoomLevel?: number;
-  viewMode?: 'timeline' | 'midi';
+  viewMode?: 'timeline' | 'midi' | 'score';
   midiPlaybackTime?: number;
   onPlay: () => void;
   onPause: () => void;
@@ -17,7 +17,7 @@ interface CompactTransportBarProps {
   onSeek?: (time: number) => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
-  onViewModeChange?: (mode: 'timeline' | 'midi') => void;
+  onViewModeChange?: (mode: 'timeline' | 'midi' | 'score') => void;
   // MIDI-specific playback functions
   onMidiPlay?: () => void;
   onMidiPause?: () => void;
@@ -544,6 +544,17 @@ export function CompactTransportBar({
             title="MIDI Editor"
           >
             <Piano className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => onViewModeChange?.('score')}
+            className={`h-7 px-2 flex items-center justify-center transition-colors ${
+              viewMode === 'score' 
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
+            }`}
+            title="Score Editor"
+          >
+            <FileMusic className="w-3 h-3" />
           </button>
         </div>
 
