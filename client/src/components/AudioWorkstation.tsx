@@ -163,28 +163,14 @@ export function AudioWorkstation() {
               onZoomOut={handleZoomOut}
               onViewModeChange={setViewMode}
               onMidiPlay={() => {
-                console.log('onMidiPlay called, functions:', midiPlaybackFunctions);
-                if (midiPlaybackFunctions.playMidiTrack) {
-                  midiPlaybackFunctions.playMidiTrack();
-                } else {
-                  console.log('playMidiTrack function not available');
-                }
+                console.log('onMidiPlay called, functions available:', !!midiPlaybackFunctions.playMidiTrack);
+                midiPlaybackFunctions.playMidiTrack?.();
               }}
               onMidiPause={() => {
-                console.log('onMidiPause called, functions:', midiPlaybackFunctions);
-                if (midiPlaybackFunctions.pauseMidiPlayback) {
-                  midiPlaybackFunctions.pauseMidiPlayback();
-                } else {
-                  console.log('pauseMidiPlayback function not available');
-                }
+                midiPlaybackFunctions.pauseMidiPlayback?.();
               }}
               onMidiStop={() => {
-                console.log('onMidiStop called, functions:', midiPlaybackFunctions);
-                if (midiPlaybackFunctions.stopMidiPlayback) {
-                  midiPlaybackFunctions.stopMidiPlayback();
-                } else {
-                  console.log('stopMidiPlayback function not available');
-                }
+                midiPlaybackFunctions.stopMidiPlayback?.();
               }}
               isMidiPlaying={isMidiPlaying}
               selectedTrack={selectedTrack}
