@@ -589,15 +589,7 @@ export function MenuBar() {
             Access
           </Button>
 
-          {/* Deploy Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-          >
-            <Globe className="h-4 w-4 mr-1" />
-            Deploy
-          </Button>
+
 
           {/* Notification Bell */}
           <Button
