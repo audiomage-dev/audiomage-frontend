@@ -69,6 +69,8 @@ interface ScoreEditorProps {
   tracks: AudioTrack[];
   transport: TransportState;
   zoomLevel?: number;
+  bpm?: number;
+  timeSignature?: [number, number];
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -79,6 +81,8 @@ export function ScoreEditor({
   tracks, 
   transport, 
   zoomLevel = 1,
+  bpm = 120,
+  timeSignature = [4, 4],
   onTrackMute,
   onTrackSolo,
   onTrackSelect,
@@ -99,9 +103,9 @@ export function ScoreEditor({
       id: 'staff-1',
       clef: 'treble',
       keySignature: 'C',
-      timeSignature: [4, 4],
+      timeSignature: timeSignature,
       instrument: 'Piano',
-      tempo: 120,
+      tempo: bpm,
       notes: [
         { id: 'note-1', pitch: 60, startTime: 0, duration: 1, velocity: 80 },
         { id: 'note-2', pitch: 64, startTime: 1, duration: 1, velocity: 85 },
