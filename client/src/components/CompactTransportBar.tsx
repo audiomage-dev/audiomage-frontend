@@ -337,9 +337,11 @@ export function CompactTransportBar({
   const [editTimeValue, setEditTimeValue] = useState('');
   const timeInputRef = useRef<HTMLInputElement>(null);
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const frames = Math.floor((seconds % 1) * 30); // Using 30fps for SMPTE
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
   };
 
   const formatMidiTime = (beats: number) => {
@@ -358,7 +360,15 @@ export function CompactTransportBar({
 
   const parseTimeString = (timeStr: string): number => {
     const parts = timeStr.split(':');
-    if (parts.length === 2) {
+    if (parts.length === 4) {
+      // SMPTE format: HH:MM:SS:FF
+      const hours = parseInt(parts[0]) || 0;
+      const mins = parseInt(parts[1]) || 0;
+      const secs = parseInt(parts[2]) || 0;
+      const frames = parseInt(parts[3]) || 0;
+      return hours * 3600 + mins * 60 + secs + (frames / 30);
+    } else if (parts.length === 2) {
+      // Legacy MM:SS format for backward compatibility
       const mins = parseInt(parts[0]) || 0;
       const secs = parseInt(parts[1]) || 0;
       return mins * 60 + secs;
@@ -497,8 +507,8 @@ export function CompactTransportBar({
             onChange={(e) => setEditTimeValue(e.target.value)}
             onKeyDown={handleTimeKeyDown}
             onBlur={handleTimeSubmit}
-            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-16 text-center focus:outline-none"
-            placeholder="MM:SS"
+            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-24 text-center focus:outline-none"
+            placeholder="HH:MM:SS:FF"
           />
         ) : (
           <div 
