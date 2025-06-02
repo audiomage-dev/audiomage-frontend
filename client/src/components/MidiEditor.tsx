@@ -891,13 +891,30 @@ export function MidiEditor({
     console.log('Debug playMidiTrack:', { 
       selectedTrack, 
       midiNotesKeys: Object.keys(midiNotes),
-      selectedTrackNotes: midiNotes[selectedTrack || '']?.length || 0
+      selectedTrackNotes: midiNotes[selectedTrack || '']?.length || 0,
+      allMidiNotes: midiNotes
     });
     
-    if (!selectedTrack || !midiNotes[selectedTrack]) {
-      console.log('No selected track or no MIDI notes - selectedTrack:', selectedTrack, 'midiNotes available:', Object.keys(midiNotes));
+    // If no selected track, use the first available MIDI track
+    let trackToPlay: string | null = selectedTrack;
+    if (!trackToPlay || !midiNotes[trackToPlay]) {
+      const availableTracks = Object.keys(midiNotes).filter(trackId => midiNotes[trackId]?.length > 0);
+      if (availableTracks.length > 0) {
+        trackToPlay = availableTracks[0];
+        console.log('Using first available track:', trackToPlay);
+      } else {
+        console.log('No MIDI tracks with notes available');
+        return;
+      }
+    }
+    
+    if (!trackToPlay) {
+      console.log('No valid track to play');
       return;
     }
+    
+    // Ensure trackToPlay is non-null for the rest of the function
+    const activeTrack = trackToPlay;
     
     console.log('Starting MIDI playback...');
     onMidiPlayingChange?.(true);
@@ -915,8 +932,8 @@ export function MidiEditor({
       onMidiTimeChange?.(currentBeat);
       
       // Play notes that should be triggered at this time
-      const trackNotes = midiNotes[selectedTrack] || [];
-      trackNotes.forEach(note => {
+      const trackNotes = midiNotes[activeTrack] || [];
+      trackNotes.forEach((note: MidiNote) => {
         const noteStartTime = note.startTime;
         const noteKey = `${note.id}-${noteStartTime}`;
         
@@ -938,7 +955,7 @@ export function MidiEditor({
     }, 25); // Update every 25ms for smoother playback
     
     setMidiPlaybackInterval(interval);
-    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === selectedTrack)?.name}" with ${midiNotes[selectedTrack]?.length || 0} notes`);
+    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === activeTrack)?.name}" with ${midiNotes[activeTrack]?.length || 0} notes`);
   };
 
   const pauseMidiPlayback = () => {
@@ -969,7 +986,7 @@ export function MidiEditor({
         stopMidiPlayback,
       });
     }
-  }, [onMidiControlsRegister]);
+  }, [onMidiControlsRegister, selectedTrack, midiNotes]);
 
   // Handle simple click (when not dragging)
   const handleGridClick = (event: React.MouseEvent) => {
