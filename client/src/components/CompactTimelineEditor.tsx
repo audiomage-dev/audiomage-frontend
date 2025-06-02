@@ -1464,32 +1464,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               transform: `translateX(-${scrollX}px)`
             }}
           >
-            {Array.from({ length: Math.ceil(40) }).map((_, i) => {
-              // Calculate measures - showing every measure (assuming 4/4 time signature)
-              const measureNumber = i + 1;
-              const beatsPerMeasure = 4; // 4/4 time signature
-              const bpm = 120; // Default BPM, could be passed as prop
-              const secondsPerBeat = 60 / bpm;
-              const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
-              const measureTimeInSeconds = (measureNumber - 1) * secondsPerMeasure;
+            {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
+              const timeSeconds = i * 60;
+              const minutes = Math.floor(timeSeconds / 60);
+              const seconds = timeSeconds % 60;
+              const position = (timeSeconds / 1200) * 100;
               
-              // Calculate position as percentage of 1200 seconds (20 minutes)
-              const totalTimelineSeconds = 1200;
-              const position = (measureTimeInSeconds / totalTimelineSeconds) * 100;
-              
-              // Only show if within reasonable bounds
-              if (measureTimeInSeconds <= totalTimelineSeconds && position >= 0) {
-                return (
-                  <div
-                    key={`${componentId}-measure-marker-${measureNumber}`}
-                    className="absolute text-xs text-[var(--muted-foreground)] font-mono"
-                    style={{ left: `${position}%` }}
-                  >
-                    {measureNumber}
-                  </div>
-                );
-              }
-              return null;
+              return (
+                <div
+                  key={`${componentId}-timeline-marker-${i}-${timeSeconds}`}
+                  className="absolute text-xs text-[var(--muted-foreground)] font-mono"
+                  style={{ left: `${position}%` }}
+                >
+                  {minutes}:{seconds.toString().padStart(2, '0')}
+                </div>
+              );
             })}
           </div>
         </div>
