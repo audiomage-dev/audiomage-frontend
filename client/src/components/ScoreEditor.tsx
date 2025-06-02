@@ -14,6 +14,14 @@ interface Note {
   duration: number; // Duration in beats (4 = whole note, 2 = half note, 1 = quarter note, etc.)
   accidental?: 'sharp' | 'flat' | 'natural';
   tied?: boolean;
+  velocity?: number; // 0-127
+}
+
+interface Chord {
+  id: string;
+  notes: Note[];
+  startTime: number;
+  duration: number;
 }
 
 interface Staff {
@@ -22,7 +30,10 @@ interface Staff {
   keySignature: string; // e.g., 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'
   timeSignature: [number, number]; // [numerator, denominator]
   notes: Note[];
+  chords: Chord[];
   instrument: string;
+  dynamics: { time: number; marking: string }[];
+  tempo: number;
 }
 
 interface ScoreEditorProps {
@@ -53,15 +64,20 @@ export function ScoreEditor({
       keySignature: 'C',
       timeSignature: [4, 4],
       instrument: 'Piano',
+      tempo: 120,
       notes: [
-        { id: 'note-1', pitch: 60, startTime: 0, duration: 1 }, // C4 quarter note
-        { id: 'note-2', pitch: 64, startTime: 1, duration: 1 }, // E4 quarter note
-        { id: 'note-3', pitch: 67, startTime: 2, duration: 1 }, // G4 quarter note
-        { id: 'note-4', pitch: 72, startTime: 3, duration: 1 }, // C5 quarter note
+        { id: 'note-1', pitch: 60, startTime: 0, duration: 1, velocity: 80 }, // C4 quarter note
+        { id: 'note-2', pitch: 64, startTime: 1, duration: 1, velocity: 85 }, // E4 quarter note
+        { id: 'note-3', pitch: 67, startTime: 2, duration: 1, velocity: 75 }, // G4 quarter note
+        { id: 'note-4', pitch: 72, startTime: 3, duration: 1, velocity: 90 }, // C5 quarter note
+      ],
+      chords: [],
+      dynamics: [
+        { time: 0, marking: 'mp' }
       ]
     }
   ]);
-  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'beam'>('select');
+  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics'>('select');
   const [noteValue, setNoteValue] = useState<number>(1); // Quarter note by default
   const [playbackPosition, setPlaybackPosition] = useState(0);
   
@@ -220,6 +236,19 @@ export function ScoreEditor({
       ctx.font = '12px sans-serif';
       ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
       ctx.fillText(staff.instrument, 10, yOffset - 10);
+      
+      // Draw tempo marking
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+      ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
+      
+      // Draw dynamics markings
+      staff.dynamics.forEach((dynamic) => {
+        const x = 140 + (dynamic.time * noteWidth * zoomLevel);
+        ctx.font = 'italic 14px serif';
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+        ctx.fillText(dynamic.marking, x, yOffset + staffHeight + 25);
+      });
       
       // Draw notes
       ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
@@ -382,7 +411,8 @@ export function ScoreEditor({
           id: `note-${Date.now()}`,
           pitch: Math.max(0, Math.min(127, midiNote)),
           startTime: Math.round(time * 4) / 4, // Quantize to 16th notes
-          duration: noteValue
+          duration: noteValue,
+          velocity: 80
         };
         
         setStaffs(prev => prev.map(s => 
@@ -688,7 +718,10 @@ export function ScoreEditor({
                   keySignature: 'C',
                   timeSignature: [4, 4],
                   instrument: 'New Staff',
-                  notes: []
+                  tempo: 120,
+                  notes: [],
+                  chords: [],
+                  dynamics: []
                 };
                 setStaffs(prev => [...prev, newStaff]);
               }}
