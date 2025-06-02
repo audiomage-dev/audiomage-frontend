@@ -289,20 +289,36 @@ export function ScoreEditor({
         ctx.stroke();
       }
 
+      // Draw measure lines
+      const totalMeasures = Math.ceil(Math.max(8, ...staff.notes.map(n => n.startTime + n.duration)));
+      for (let m = 0; m <= totalMeasures; m++) {
+        const measureX = 140 + (m * staff.timeSignature[0] * noteWidth * zoomLevel);
+        if (measureX > canvas.width - 40) break;
+        
+        ctx.strokeStyle = foregroundColor;
+        ctx.lineWidth = m === 0 ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(measureX, yOffset + 24);
+        ctx.lineTo(measureX, yOffset + 24 + (4 * lineSpacing));
+        ctx.stroke();
+      }
+
       // Draw clef
       ctx.font = 'bold 28px serif';
       ctx.fillStyle = foregroundColor;
       if (staff.clef === 'treble') {
-        ctx.fillText('𝄞', 45, yOffset + 32);
+        ctx.fillText('𝄞', 45, yOffset + 44);
       } else if (staff.clef === 'bass') {
-        ctx.fillText('𝄢', 45, yOffset + 20);
+        ctx.fillText('𝄢', 45, yOffset + 32);
+      } else if (staff.clef === 'alto') {
+        ctx.fillText('𝄡', 45, yOffset + 38);
       }
 
       // Draw time signature
       ctx.font = 'bold 18px serif';
       const timeSigX = 85;
-      ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 16);
-      ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 36);
+      ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 32);
+      ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 48);
 
       // Draw notes
       staff.notes.forEach((note) => {
@@ -310,8 +326,10 @@ export function ScoreEditor({
         const midiToLine = (pitch: number) => {
           if (staff.clef === 'treble') {
             return 6 - (pitch - 60) / 2;
+          } else if (staff.clef === 'bass') {
+            return 6 - (pitch - 40) / 2;
           } else {
-            return (pitch - 40) / 2;
+            return 6 - (pitch - 50) / 2; // Alto clef
           }
         };
         const line = midiToLine(note.pitch);
@@ -321,52 +339,131 @@ export function ScoreEditor({
         let noteColor = foregroundColor;
         if (selectedNotes.has(note.id)) {
           noteColor = '#3b82f6';
+        } else if (isDragging && dragState?.noteId === note.id) {
+          noteColor = '#ef4444';
         }
 
         ctx.fillStyle = noteColor;
         ctx.strokeStyle = noteColor;
 
+        // Draw ledger lines if needed
+        if (line < 0 || line > 4) {
+          ctx.strokeStyle = foregroundColor;
+          ctx.lineWidth = 1;
+          const ledgerLines = [];
+          if (line < 0) {
+            for (let l = -1; l >= line; l -= 2) {
+              ledgerLines.push(l);
+            }
+          } else if (line > 4) {
+            for (let l = 5; l <= line; l += 2) {
+              ledgerLines.push(l);
+            }
+          }
+          ledgerLines.forEach(l => {
+            const ledgerY = yOffset + (l * lineSpacing / 2) + 24;
+            ctx.beginPath();
+            ctx.moveTo(x - 12, ledgerY);
+            ctx.lineTo(x + 12, ledgerY);
+            ctx.stroke();
+          });
+        }
+
+        // Draw accidentals
+        if (note.accidental) {
+          ctx.font = '16px serif';
+          ctx.fillStyle = noteColor;
+          const accSymbol = note.accidental === 'sharp' ? '♯' : 
+                           note.accidental === 'flat' ? '♭' : '♮';
+          ctx.fillText(accSymbol, x - 20, y + 4);
+        }
+
         // Draw note head
+        ctx.fillStyle = noteColor;
+        ctx.strokeStyle = noteColor;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.ellipse(x, y, 6, 4, 0, 0, 2 * Math.PI);
+        ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
         if (note.duration >= 2) {
-          ctx.stroke();
+          ctx.stroke(); // Whole and half notes are hollow
         } else {
-          ctx.fill();
+          ctx.fill(); // Quarter notes and shorter are filled
         }
 
         // Draw stem
         if (note.duration < 4) {
           ctx.lineWidth = 2;
           ctx.beginPath();
-          const stemHeight = 24;
+          const stemHeight = 28;
           const stemUp = line <= 2;
           if (stemUp) {
-            ctx.moveTo(x + 6, y);
-            ctx.lineTo(x + 6, y - stemHeight);
+            ctx.moveTo(x + 7, y);
+            ctx.lineTo(x + 7, y - stemHeight);
+            // Draw flags for eighth notes and shorter
+            if (note.duration <= 0.5) {
+              ctx.moveTo(x + 7, y - stemHeight);
+              ctx.quadraticCurveTo(x + 15, y - stemHeight + 8, x + 7, y - stemHeight + 12);
+            }
           } else {
-            ctx.moveTo(x - 6, y);
-            ctx.lineTo(x - 6, y + stemHeight);
+            ctx.moveTo(x - 7, y);
+            ctx.lineTo(x - 7, y + stemHeight);
+            // Draw flags for eighth notes and shorter
+            if (note.duration <= 0.5) {
+              ctx.moveTo(x - 7, y + stemHeight);
+              ctx.quadraticCurveTo(x - 15, y + stemHeight - 8, x - 7, y + stemHeight - 12);
+            }
           }
           ctx.stroke();
         }
 
-        // Draw accidentals
-        if (note.accidental) {
-          ctx.font = '16px serif';
-          const accSymbol = note.accidental === 'sharp' ? '♯' : 
-                           note.accidental === 'flat' ? '♭' : '♮';
-          ctx.fillText(accSymbol, x - 20, y + 4);
+        // Draw articulations
+        if (note.articulation) {
+          ctx.font = '12px serif';
+          ctx.fillStyle = noteColor;
+          let artSymbol = '';
+          let artY = y;
+          switch (note.articulation) {
+            case 'staccato':
+              artSymbol = '·';
+              artY = line <= 2 ? y + 15 : y - 15;
+              break;
+            case 'accent':
+              artSymbol = '>';
+              artY = line <= 2 ? y + 15 : y - 15;
+              break;
+            case 'tenuto':
+              artSymbol = '−';
+              artY = line <= 2 ? y + 15 : y - 15;
+              break;
+          }
+          if (artSymbol) {
+            ctx.fillText(artSymbol, x - 3, artY);
+          }
         }
       });
 
-      // Draw instrument name
+      // Draw instrument name and tempo
       ctx.font = '12px sans-serif';
       ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
       ctx.fillText(staff.instrument, 10, yOffset - 10);
       ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
     });
-  }, [staffs, selectedNotes, zoomLevel, currentTheme, bpm]);
+
+    // Draw playback cursor
+    if (isPlaying && playbackTime !== null) {
+      const cursorX = 140 + (playbackTime * noteWidth * zoomLevel);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 3;
+      staffs.forEach((staff, staffIndex) => {
+        if (!staff.visible) return;
+        const yOffset = staffIndex * (staffHeight + 60) + 40;
+        ctx.beginPath();
+        ctx.moveTo(cursorX, yOffset + 10);
+        ctx.lineTo(cursorX, yOffset + staffHeight + 20);
+        ctx.stroke();
+      });
+    }
+  }, [staffs, selectedNotes, zoomLevel, currentTheme, bpm, isDragging, dragState, isPlaying, playbackTime]);
 
   // Redraw when state changes
   useEffect(() => {
@@ -714,6 +811,20 @@ export function ScoreEditor({
 
           {selectedPaletteCategory === 'Symbols' && (
             <div className="flex items-center space-x-2">
+              {/* Tools */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Tools:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 w-8 p-0 ${currentTool === 'select' ? 'bg-[var(--accent)]' : ''}`}
+                  title="Select Tool"
+                  onClick={() => setCurrentTool('select')}
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              </div>
+
               {/* Note Values */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
                 <span className="text-xs text-[var(--muted-foreground)]">Notes:</span>
@@ -728,7 +839,7 @@ export function ScoreEditor({
                     key={note.value}
                     variant="ghost"
                     size="sm"
-                    className={`h-10 w-10 p-0 text-lg ${noteValue === note.value ? 'bg-[var(--accent)]' : ''}`}
+                    className={`h-10 w-10 p-0 text-lg ${noteValue === note.value && currentTool === 'note' ? 'bg-[var(--accent)]' : ''}`}
                     title={note.name}
                     onClick={() => {
                       setNoteValue(note.value);
@@ -759,6 +870,112 @@ export function ScoreEditor({
                     {acc.symbol}
                   </Button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Dynamics' && (
+            <div className="flex items-center space-x-2">
+              {/* Dynamic Markings */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Dynamics:</span>
+                {['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff'].map((dynamic) => (
+                  <Button
+                    key={dynamic}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs font-bold"
+                    title={`${dynamic} - ${dynamic === 'ppp' ? 'pianississimo' : dynamic === 'pp' ? 'pianissimo' : dynamic === 'p' ? 'piano' : dynamic === 'mp' ? 'mezzo-piano' : dynamic === 'mf' ? 'mezzo-forte' : dynamic === 'f' ? 'forte' : dynamic === 'ff' ? 'fortissimo' : 'fortississimo'}`}
+                    onClick={() => {
+                      if (selectedStaff) {
+                        const time = editCursor?.time || 0;
+                        setStaffs(prev => prev.map(s => 
+                          s.id === selectedStaff 
+                            ? { ...s, dynamics: [...s.dynamics, { time, marking: dynamic }].sort((a, b) => a.time - b.time) }
+                            : s
+                        ));
+                      }
+                    }}
+                  >
+                    {dynamic}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Articulations */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Articulations:</span>
+                {[
+                  { type: 'staccato', symbol: '·', name: 'Staccato' },
+                  { type: 'accent', symbol: '>', name: 'Accent' },
+                  { type: 'tenuto', symbol: '−', name: 'Tenuto' },
+                  { type: 'marcato', symbol: '^', name: 'Marcato' },
+                  { type: 'fermata', symbol: '𝄐', name: 'Fermata' }
+                ].map((art) => (
+                  <Button
+                    key={art.type}
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 w-8 p-0 text-lg ${currentArticulation === art.type ? 'bg-[var(--accent)]' : ''}`}
+                    title={art.name}
+                    onClick={() => setCurrentArticulation(art.type)}
+                  >
+                    {art.symbol}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPaletteCategory === 'Structure' && (
+            <div className="flex items-center space-x-2">
+              {/* Barlines */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Barlines:</span>
+                {[
+                  { type: 'single', symbol: '|', name: 'Single Bar' },
+                  { type: 'double', symbol: '||', name: 'Double Bar' },
+                  { type: 'final', symbol: '|||', name: 'Final Bar' },
+                  { type: 'repeat-start', symbol: '|:', name: 'Repeat Start' },
+                  { type: 'repeat-end', symbol: ':|', name: 'Repeat End' }
+                ].map((bar) => (
+                  <Button
+                    key={bar.type}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-sm font-mono"
+                    title={bar.name}
+                    onClick={() => {
+                      if (selectedStaff) {
+                        // Add barline functionality here
+                        console.log(`Adding ${bar.name} barline`);
+                      }
+                    }}
+                  >
+                    {bar.symbol}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Text Elements */}
+              <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+                <span className="text-xs text-[var(--muted-foreground)]">Text:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => setCurrentTool('text')}
+                >
+                  Lyrics
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => setCurrentTool('text')}
+                >
+                  Chord
+                </Button>
               </div>
             </div>
           )}
