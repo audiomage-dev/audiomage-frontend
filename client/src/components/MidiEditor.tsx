@@ -759,12 +759,35 @@ export function MidiEditor({
 
   // Handle piano key click to play note
   const handlePianoKeyClick = (pitch: number) => {
-    // Play the exact MIDI note with instrument-specific characteristics
-    const velocity = getInstrumentVelocity(currentInstrument);
-    const duration = getInstrumentDuration(currentInstrument);
+    // Get instrument type from selected track
+    let instrumentForSound = currentInstrument;
+    if (selectedTrack) {
+      const track = tracks.find(t => t.id === selectedTrack);
+      if (track) {
+        const trackName = track.name.toLowerCase();
+        if (trackName.includes('piano')) instrumentForSound = 'piano';
+        else if (trackName.includes('bass')) instrumentForSound = 'bass';
+        else if (trackName.includes('string')) instrumentForSound = 'strings';
+        else if (trackName.includes('synth')) {
+          if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
+          else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
+          else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
+          else instrumentForSound = 'synth_lead';
+        }
+        else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+        else if (trackName.includes('organ')) instrumentForSound = 'organ';
+        else if (trackName.includes('brass')) instrumentForSound = 'brass';
+        else if (trackName.includes('drum')) instrumentForSound = 'drums';
+        else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
+      }
+    }
+    
+    // Play the exact MIDI note with track-specific instrument characteristics
+    const velocity = getInstrumentVelocity(instrumentForSound);
+    const duration = getInstrumentDuration(instrumentForSound);
     
     playNote(pitch, velocity, duration);
-    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz`);
+    console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${midiToFrequency(pitch).toFixed(1)}Hz with ${instrumentForSound}`);
   };
 
   const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
@@ -780,11 +803,34 @@ export function MidiEditor({
       }
     }
     
-    const waveType = getInstrumentWaveType(currentInstrument);
-    const frequency = midiToFrequency(pitch);
-    const velocity = getInstrumentVelocity(currentInstrument);
+    // Get instrument type from selected track
+    let instrumentForSound = currentInstrument;
+    if (selectedTrack) {
+      const track = tracks.find(t => t.id === selectedTrack);
+      if (track) {
+        const trackName = track.name.toLowerCase();
+        if (trackName.includes('piano')) instrumentForSound = 'piano';
+        else if (trackName.includes('bass')) instrumentForSound = 'bass';
+        else if (trackName.includes('string')) instrumentForSound = 'strings';
+        else if (trackName.includes('synth')) {
+          if (trackName.includes('lead')) instrumentForSound = 'synth_lead';
+          else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
+          else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
+          else instrumentForSound = 'synth_lead';
+        }
+        else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+        else if (trackName.includes('organ')) instrumentForSound = 'organ';
+        else if (trackName.includes('brass')) instrumentForSound = 'brass';
+        else if (trackName.includes('drum')) instrumentForSound = 'drums';
+        else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
+      }
+    }
     
-    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
+    const waveType = getInstrumentWaveType(instrumentForSound);
+    const frequency = midiToFrequency(pitch);
+    const velocity = getInstrumentVelocity(instrumentForSound);
+    
+    console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${instrumentForSound} (${waveType})`);
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
