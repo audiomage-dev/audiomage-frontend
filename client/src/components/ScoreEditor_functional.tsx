@@ -156,37 +156,7 @@ export function ScoreEditor({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Toolbar */}
-      <div className="border-b p-2 flex items-center space-x-2">
-        <Button
-          variant={currentTool === 'select' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setCurrentTool('select')}
-        >
-          <Edit3 className="h-4 w-4 mr-1" />
-          Select
-        </Button>
-        
-        {[
-          { value: 4, name: 'Whole', symbol: '𝅝' },
-          { value: 2, name: 'Half', symbol: '𝅗𝅥' },
-          { value: 1, name: 'Quarter', symbol: '♩' },
-          { value: 0.5, name: 'Eighth', symbol: '♪' }
-        ].map((note) => (
-          <Button
-            key={note.value}
-            variant={currentTool === 'note' && noteValue === note.value ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setNoteValue(note.value);
-              setCurrentTool('note');
-            }}
-            title={note.name}
-          >
-            <span className="text-lg">{note.symbol}</span>
-          </Button>
-        ))}
-      </div>
+
 
       {/* Main content */}
       <div className="flex-1 flex">
@@ -194,78 +164,7 @@ export function ScoreEditor({
           <canvas className="w-full h-full bg-white" />
         </div>
 
-        {/* Staff sidebar */}
-        <div className="w-64 border-l p-4 overflow-y-auto">
-          <h3 className="text-sm font-semibold mb-3">Staffs</h3>
-          
-          {staffs.map((staff) => (
-            <div
-              key={staff.id}
-              className={`p-3 rounded border cursor-pointer mb-2 ${
-                selectedStaff === staff.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-              }`}
-              onClick={() => setSelectedStaff(staff.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium">{staff.instrument}</div>
-                  <div className="text-xs text-gray-500">
-                    {staff.clef} • {staff.keySignature} • {staff.timeSignature[0]}/{staff.timeSignature[1]}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {staff.notes.length} notes
-                  </div>
-                </div>
-                <div className="flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackMute(staff.id);
-                    }}
-                  >
-                    <VolumeX className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackSolo(staff.id);
-                    }}
-                  >
-                    <Volume2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => {
-              const newStaff: Staff = {
-                id: `staff-${Date.now()}`,
-                clef: 'treble',
-                keySignature: 'C',
-                timeSignature: timeSignature,
-                instrument: 'New Staff',
-                tempo: bpm,
-                notes: [],
-                visible: true
-              };
-              setStaffs(prev => [...prev, newStaff]);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Staff
-          </Button>
-        </div>
+
       </div>
     </div>
   );
