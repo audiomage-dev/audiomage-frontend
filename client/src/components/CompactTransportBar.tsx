@@ -514,7 +514,7 @@ export function CompactTransportBar({
                 ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
                 : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
             }`}
-            title="Timeline View"
+            title="Audio Editor"
           >
             <Music className="w-3 h-3" />
           </button>
