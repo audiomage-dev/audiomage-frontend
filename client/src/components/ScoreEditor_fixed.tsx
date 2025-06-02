@@ -4,7 +4,10 @@ import { AudioTrack, TransportState } from '@/types/audio';
 import { 
   Play, Pause, Square, Volume2, VolumeX, Edit3, Copy, Settings, 
   ZoomIn, ZoomOut, RotateCcw, Save, FileMusic, Plus, Minus,
-  Music, Piano, Drum, Guitar, Mic
+  Music, Piano, Drum, Guitar, Mic, Download, Upload, Printer,
+  Undo, Redo, Type, MousePointer, Hand, Scissors, MoreHorizontal,
+  AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline,
+  Palette, Layout, Grid, Eye, EyeOff, Lock, Unlock
 } from 'lucide-react';
 
 interface Note {
@@ -12,11 +15,16 @@ interface Note {
   pitch: number; // MIDI note number (0-127)
   startTime: number; // Start time in beats
   duration: number; // Duration in beats (4 = whole note, 2 = half note, 1 = quarter note, etc.)
-  accidental?: 'sharp' | 'flat' | 'natural';
+  accidental?: 'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat';
   tied?: boolean;
   velocity?: number; // 0-127
-  articulation?: 'staccato' | 'accent' | 'tenuto' | 'marcato' | 'fermata';
-  ornament?: 'trill' | 'turn' | 'mordent' | 'grace';
+  articulation?: 'staccato' | 'accent' | 'tenuto' | 'marcato' | 'fermata' | 'staccatissimo' | 'sforzando';
+  ornament?: 'trill' | 'turn' | 'mordent' | 'grace' | 'appoggiatura' | 'acciaccatura';
+  stem?: 'up' | 'down' | 'auto';
+  beaming?: 'start' | 'continue' | 'end' | 'none';
+  lyrics?: string[];
+  color?: string;
+  hidden?: boolean;
 }
 
 interface Chord {
@@ -26,9 +34,21 @@ interface Chord {
   duration: number;
 }
 
+interface Measure {
+  id: string;
+  number: number;
+  timeSignature?: [number, number];
+  keySignature?: string;
+  tempo?: number;
+  repeatStart?: boolean;
+  repeatEnd?: boolean;
+  repeatCount?: number;
+  barline?: 'single' | 'double' | 'final' | 'repeat-start' | 'repeat-end';
+}
+
 interface Staff {
   id: string;
-  clef: 'treble' | 'bass' | 'alto' | 'tenor';
+  clef: 'treble' | 'bass' | 'alto' | 'tenor' | 'percussion';
   keySignature: string;
   timeSignature: [number, number];
   notes: Note[];
@@ -36,6 +56,13 @@ interface Staff {
   instrument: string;
   dynamics: { time: number; marking: string }[];
   tempo: number;
+  measures: Measure[];
+  visible: boolean;
+  locked: boolean;
+  color?: string;
+  transpose?: number;
+  volume?: number;
+  pan?: number;
 }
 
 interface ScoreEditorProps {
@@ -84,13 +111,32 @@ export function ScoreEditor({
       chords: [],
       dynamics: [
         { time: 0, marking: 'mp' }
-      ]
+      ],
+      measures: [
+        { id: 'measure-1', number: 1, barline: 'single' },
+        { id: 'measure-2', number: 2, barline: 'single' },
+        { id: 'measure-3', number: 3, barline: 'single' },
+        { id: 'measure-4', number: 4, barline: 'final' }
+      ],
+      visible: true,
+      locked: false,
+      volume: 100,
+      pan: 0
     }
   ]);
-  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics'>('select');
+  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics' | 'text' | 'slur' | 'tie' | 'beam'>('select');
   const [noteValue, setNoteValue] = useState<number>(1);
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [viewMode, setViewMode] = useState<'page' | 'continuous' | 'single'>('page');
+  const [showGrid, setShowGrid] = useState(false);
+  const [showMeasureNumbers, setShowMeasureNumbers] = useState(true);
+  const [showInstrumentNames, setShowInstrumentNames] = useState(true);
+  const [currentAccidental, setCurrentAccidental] = useState<'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat' | null>(null);
+  const [currentArticulation, setCurrentArticulation] = useState<string | null>(null);
+  const [undoHistory, setUndoHistory] = useState<Staff[][]>([]);
+  const [redoHistory, setRedoHistory] = useState<Staff[][]>([]);
+  const [clipboard, setClipboard] = useState<Note[]>([]);
   
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const staffHeight = 120;
@@ -827,7 +873,14 @@ export function ScoreEditor({
                 tempo: 120,
                 notes: [],
                 chords: [],
-                dynamics: []
+                dynamics: [],
+                measures: [
+                  { id: `measure-${Date.now()}-1`, number: 1, barline: 'single' }
+                ],
+                visible: true,
+                locked: false,
+                volume: 100,
+                pan: 0
               };
               setStaffs(prev => [...prev, newStaff]);
             }}
