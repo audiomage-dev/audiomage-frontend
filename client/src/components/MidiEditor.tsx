@@ -61,6 +61,7 @@ export function MidiEditor({
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
+  const pauseTimeRef = useRef(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [noteContextMenu, setNoteContextMenu] = useState<{
     x: number;
@@ -912,9 +913,9 @@ export function MidiEditor({
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    // If paused and same track, resume playback
+    // If paused and same track, resume playback from pause position
     if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current === selectedTrack) {
-      console.log('Resuming MIDI playback from pause...');
+      console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       isPausedRef.current = false;
       setIsPaused(false);
       onMidiPlayingChange?.(true);
@@ -967,7 +968,10 @@ export function MidiEditor({
     isPausedRef.current = false;
     setIsPaused(false);
     onMidiPlayingChange?.(true);
+    
+    // Reset playback time and pause time for new tracks
     setMidiPlaybackTime(0);
+    pauseTimeRef.current = 0;
     
     const startTime = Date.now();
     const bpm = 120; // Default BPM for MIDI playback
@@ -1014,6 +1018,9 @@ export function MidiEditor({
 
   const pauseMidiPlayback = () => {
     console.log('Pausing MIDI playback - stopping', activeOscillatorsRef.current.size, 'active notes');
+    
+    // Save current playback time for resume
+    pauseTimeRef.current = midiPlaybackTime;
     
     // Set pause state immediately in both state and ref
     isPausedRef.current = true;
