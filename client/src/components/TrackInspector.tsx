@@ -619,16 +619,35 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
             {/* Waveform/Spectrogram Display */}
             <div className="flex-1 p-4">
               <div className="flex items-center justify-between mb-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1"
-                  onClick={() => setVisualizationMode(prev => prev === 'waveform' ? 'spectrogram' : 'waveform')}
-                >
-                  <BarChart3 className="w-3 h-3" />
-                  <span>{visualizationMode === 'waveform' ? 'Waveform' : 'Spectrogram'}</span>
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1"
+                    onClick={() => setVisualizationMode(prev => prev === 'waveform' ? 'spectrogram' : 'waveform')}
+                  >
+                    <BarChart3 className="w-3 h-3" />
+                    <span>{visualizationMode === 'waveform' ? 'Waveform' : 'Spectrogram'}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs font-medium hover:bg-[var(--accent)] flex items-center space-x-1"
+                    onClick={() => {
+                      console.log('Extracting wavelets for track:', track.name);
+                      // TODO: Implement wavelet extraction
+                    }}
+                    disabled={track.type !== 'audio' || !track.clips || track.clips.length === 0}
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 12h6l3-9 6 18 3-9h3" />
+                    </svg>
+                    <span>Extract Wavelets</span>
+                  </Button>
+                </div>
+                
                 <div className="text-xs text-[var(--muted-foreground)]">
                   {visualizationMode === 'waveform' ? 'Time Domain' : 'Frequency Domain'}
                 </div>
