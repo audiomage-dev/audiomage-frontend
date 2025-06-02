@@ -783,15 +783,15 @@ export function MidiEditor({
       else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
     }
     
-    // Play sound based on current mode
+    // Play sound based on current mode - only one sound type
     if (pianoMode === 'instrument') {
-      // Play instrument sound
+      // Play instrument sound only
       const velocity = getInstrumentVelocity(instrumentForSound);
       const duration = getInstrumentDuration(instrumentForSound);
       playNote(pitch, velocity, duration);
-      console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
+      console.log(`Playing ${instrumentForSound} note: ${getNoteNameFromMidi(pitch)} (${pitch})`);
     } else {
-      // Play MIDI oscillator sound
+      // Play MIDI oscillator sound only
       if (audioContext) {
         const waveType = getInstrumentWaveType(instrumentForSound);
         const frequency = midiToFrequency(pitch);
@@ -812,7 +812,7 @@ export function MidiEditor({
         oscillator.start();
         oscillator.stop(audioContext.currentTime + 0.5);
         
-        console.log(`Playing MIDI note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+        console.log(`Playing MIDI ${waveType}: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
       }
     }
     
@@ -876,7 +876,7 @@ export function MidiEditor({
       const velocity = getInstrumentVelocity(instrumentForSound);
       const duration = 2.0; // Longer duration for hold
       
-      console.log(`Holding note: ${getNoteNameFromMidi(pitch)} (${pitch}) with ${instrumentForSound} instrument`);
+      console.log(`Holding ${instrumentForSound}: ${getNoteNameFromMidi(pitch)} (${pitch})`);
       playNote(pitch, velocity, duration);
     } else {
       // Use MIDI oscillator for sustained hold
@@ -885,7 +885,7 @@ export function MidiEditor({
         const frequency = midiToFrequency(pitch);
         const velocity = getInstrumentVelocity(instrumentForSound);
         
-        console.log(`Holding MIDI note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+        console.log(`Holding MIDI ${waveType}: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz`);
         
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
