@@ -1473,35 +1473,30 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             }}
           >
             {(() => {
-              // Calculate measure markers based on actual timeline width and longest clip
-              const beatsPerMinute = bpm;
-              const beatsPerMeasure = timeSignature[0]; // numerator of time signature
-              const secondsPerBeat = 60 / beatsPerMinute;
-              const secondsPerMeasure = secondsPerBeat * beatsPerMeasure;
-              
-              // Get actual timeline width and convert to time
+              // Calculate minute markers based on actual timeline width
               const timelineWidthPx = getTimelineWidth();
               const pixelsPerSecond = Math.max(2, 4 * zoomLevel);
               const totalTimelineSeconds = timelineWidthPx / pixelsPerSecond;
+              const totalMinutes = Math.ceil(totalTimelineSeconds / 60);
               
-              // Calculate measures to fit the actual timeline
-              const totalMeasures = Math.ceil(totalTimelineSeconds / secondsPerMeasure);
-              
-              return Array.from({ length: totalMeasures + 1 }).map((_, measureIndex) => {
-                const measureStartTime = measureIndex * secondsPerMeasure;
-                const position = (measureStartTime / totalTimelineSeconds) * 100;
-                const measureNumber = measureIndex + 1;
+              return Array.from({ length: totalMinutes + 1 }).map((_, minuteIndex) => {
+                const minuteStartTime = minuteIndex * 60; // 60 seconds per minute
+                const position = (minuteStartTime / totalTimelineSeconds) * 100;
                 
                 // Skip if position is beyond our timeline
-                if (measureStartTime > totalTimelineSeconds) return null;
+                if (minuteStartTime > totalTimelineSeconds) return null;
+                
+                // Format time as minutes
+                const minutes = Math.floor(minuteStartTime / 60);
+                const timeLabel = `${minutes}:00`;
                 
                 return (
                   <div
-                    key={`${componentId}-measure-marker-${measureIndex}`}
+                    key={`${componentId}-minute-marker-${minuteIndex}`}
                     className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                     style={{ left: `${position}%` }}
                   >
-                    {measureNumber}
+                    {timeLabel}
                   </div>
                 );
               }).filter(Boolean);
@@ -1562,7 +1557,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 >
                   {track.clips?.map((clip) => {
                     const timelineWidth = getTimelineWidth();
-                    const totalTime = timelineWidth / zoomLevel;
+                    const pixelsPerSecond = Math.max(2, 4 * zoomLevel);
+                    const totalTime = timelineWidth / pixelsPerSecond;
                     const clipStartX = (clip.startTime / totalTime) * timelineWidth;
                     const clipWidth = (clip.duration / totalTime) * timelineWidth;
                     
