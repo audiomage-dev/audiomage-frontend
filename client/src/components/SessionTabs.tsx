@@ -107,10 +107,10 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
             }`}
             style={{
               clipPath: session.isActive 
-                ? 'polygon(8px 0%, calc(100% - 8px) 0%, 100% 100%, 0% 100%)'
-                : 'polygon(4px 0%, calc(100% - 4px) 0%, calc(100% - 2px) 100%, 2px 100%)',
-              marginLeft: session.isActive ? '0' : '-2px',
-              marginRight: session.isActive ? '0' : '-2px'
+                ? 'polygon(12px 0%, calc(100% - 12px) 0%, calc(100% - 6px) 50%, calc(100% - 2px) 100%, 2px 100%, 6px 50%)'
+                : 'polygon(8px 0%, calc(100% - 8px) 0%, calc(100% - 4px) 50%, calc(100% - 1px) 100%, 1px 100%, 4px 50%)',
+              marginLeft: session.isActive ? '0' : '-4px',
+              marginRight: session.isActive ? '0' : '-4px'
             }}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
