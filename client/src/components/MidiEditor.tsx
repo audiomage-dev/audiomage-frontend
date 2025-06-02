@@ -62,6 +62,7 @@ export function MidiEditor({
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
   const pauseTimeRef = useRef(0);
+  const playbackStartTimeRef = useRef(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [noteContextMenu, setNoteContextMenu] = useState<{
     x: number;
@@ -917,9 +918,17 @@ export function MidiEditor({
     // If paused and same track, resume playback from pause position
     if (isPaused && midiPlaybackInterval && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
+      
+      // Adjust the start time to account for the pause
+      const bpm = 120;
+      const beatsPerSecond = bpm / 60;
+      const pausedBeats = pauseTimeRef.current;
+      const pausedSeconds = pausedBeats / beatsPerSecond;
+      playbackStartTimeRef.current = Date.now() - (pausedSeconds * 1000);
+      
       isPausedRef.current = false;
       setIsPaused(false);
-      setMidiPlaybackTime(pauseTimeRef.current); // Restore the pause position
+      setMidiPlaybackTime(pauseTimeRef.current);
       onMidiPlayingChange?.(true);
       return;
     }
@@ -976,8 +985,8 @@ export function MidiEditor({
     pauseTimeRef.current = 0;
     playedNotesRef.current.clear();
     
-    const startTime = Date.now();
-    const bpm = 120; // Default BPM for MIDI playbook
+    playbackStartTimeRef.current = Date.now();
+    const bpm = 120; // Default BPM for MIDI playback
     const beatsPerSecond = bpm / 60;
     
     const interval = setInterval(() => {
@@ -986,7 +995,7 @@ export function MidiEditor({
         return;
       }
       
-      const elapsed = (Date.now() - startTime) / 1000;
+      const elapsed = (Date.now() - playbackStartTimeRef.current) / 1000;
       const currentBeat = elapsed * beatsPerSecond;
       setMidiPlaybackTime(currentBeat);
       onMidiTimeChange?.(currentBeat);
