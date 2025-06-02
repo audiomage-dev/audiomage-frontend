@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -525,6 +525,18 @@ export function CompactTransportBar({
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
+        {/* Video Player Button */}
+        <button
+          className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)] bg-[var(--background)] border border-[var(--border)] rounded"
+          title="Video Player"
+          onClick={() => {
+            // Trigger video player modal or functionality
+            console.log('Video player triggered');
+          }}
+        >
+          <Video className="w-3 h-3" />
+        </button>
+
         {/* View Mode Toggle */}
         <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
           <button
