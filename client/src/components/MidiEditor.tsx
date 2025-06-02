@@ -22,6 +22,7 @@ interface MidiEditorProps {
   onNoteEdit?: (trackId: string, noteId: string, note: Partial<MidiNote>) => void;
   onNoteDelete?: (trackId: string, noteId: string) => void;
   onMidiPlayingChange?: (isPlaying: boolean) => void;
+  onMidiTimeChange?: (time: number) => void;
   onMidiControlsRegister?: (functions: {
     playMidiTrack: () => void;
     pauseMidiPlayback: () => void;
@@ -42,6 +43,7 @@ export function MidiEditor({
   onNoteEdit,
   onNoteDelete,
   onMidiPlayingChange,
+  onMidiTimeChange,
   onMidiControlsRegister,
   isMidiPlaying = false,
   isLocked = false
@@ -910,6 +912,7 @@ export function MidiEditor({
       const elapsed = (Date.now() - startTime) / 1000;
       const currentBeat = elapsed * beatsPerSecond;
       setMidiPlaybackTime(currentBeat);
+      onMidiTimeChange?.(currentBeat);
       
       // Play notes that should be triggered at this time
       const trackNotes = midiNotes[selectedTrack] || [];

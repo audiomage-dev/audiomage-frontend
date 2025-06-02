@@ -41,6 +41,7 @@ export function AudioWorkstation() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
+  const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
   
   // Media preview state
   const [selectedMediaFile, setSelectedMediaFile] = useState<{
@@ -154,6 +155,7 @@ export function AudioWorkstation() {
               timeSignature={currentProject.timeSignature}
               zoomLevel={zoomLevel}
               viewMode={viewMode}
+              midiPlaybackTime={midiPlaybackTime}
               onPlay={play}
               onPause={pause}
               onStop={stop}
@@ -206,6 +208,7 @@ export function AudioWorkstation() {
                 onTrackSelect={setSelectedTrack}
                 onMidiPlayingChange={setIsMidiPlaying}
                 onMidiControlsRegister={setMidiPlaybackFunctions}
+                onMidiTimeChange={setMidiPlaybackTime}
                 isMidiPlaying={isMidiPlaying}
                 isLocked={isMidiLocked}
               />
