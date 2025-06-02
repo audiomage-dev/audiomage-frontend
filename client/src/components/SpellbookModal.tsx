@@ -143,7 +143,7 @@ export function SpellbookModal({ isOpen, onClose }: SpellbookModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg w-[90vw] max-w-4xl h-[80vh] flex flex-col">
+      <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg w-[90vw] max-w-4xl h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
           <div className="flex items-center space-x-3">
