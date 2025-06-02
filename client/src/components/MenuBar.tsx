@@ -716,7 +716,7 @@ export function MenuBar() {
       {/* Access Modal */}
       {showAccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--popover)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden opacity-100">
+          <div className="bg-[var(--popover)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
               <div className="flex items-center space-x-2">
