@@ -1142,6 +1142,13 @@ export function MidiEditor({
     if (isPausedRef.current && currentPlayingTrackRef.current === selectedTrack) {
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       
+      // Reset playback start time to continue from exact pause position
+      const bpm = 120;
+      const beatsPerSecond = bpm / 60;
+      const pausedSeconds = pauseTimeRef.current / beatsPerSecond;
+      playbackStartTimeRef.current = Date.now() - (pausedSeconds * 1000);
+      console.log('Reset playback timing to continue from pause position:', pauseTimeRef.current);
+      
       // Clear pause state immediately
       isPausedRef.current = false;
       setIsPaused(false);
