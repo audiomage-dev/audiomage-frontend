@@ -1505,7 +1505,7 @@ export function MidiEditor({
               >
                 {renderGrid()}
                 {renderNotes()}
-                {isMidiPlaying && renderPlayhead()}
+                {(isMidiPlaying || midiPlaybackTime > 0) && renderPlayhead()}
               </svg>
             </div>
           </div>
