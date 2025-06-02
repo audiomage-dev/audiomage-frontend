@@ -74,6 +74,7 @@ export function MidiEditor({
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
   const currentPlayingTrackRef = useRef<string | null>(null);
+  const playedNotesRef = useRef<Set<string>>(new Set());
   const pianoRollRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pianoKeysRef = useRef<HTMLDivElement>(null);
@@ -918,6 +919,7 @@ export function MidiEditor({
       console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
       isPausedRef.current = false;
       setIsPaused(false);
+      setMidiPlaybackTime(pauseTimeRef.current); // Restore the pause position
       onMidiPlayingChange?.(true);
       return;
     }
@@ -969,14 +971,14 @@ export function MidiEditor({
     setIsPaused(false);
     onMidiPlayingChange?.(true);
     
-    // Reset playback time and pause time for new tracks
+    // Reset playback time, pause time, and played notes for new tracks
     setMidiPlaybackTime(0);
     pauseTimeRef.current = 0;
+    playedNotesRef.current.clear();
     
     const startTime = Date.now();
-    const bpm = 120; // Default BPM for MIDI playback
+    const bpm = 120; // Default BPM for MIDI playbook
     const beatsPerSecond = bpm / 60;
-    const playedNotes = new Set<string>(); // Track which notes have been played
     
     const interval = setInterval(() => {
       // Check if playback is paused using ref for immediate detection
@@ -996,8 +998,8 @@ export function MidiEditor({
         const noteKey = `${note.id}-${noteStartTime}`;
         
         // If we've reached this note's start time and haven't played it yet
-        if (currentBeat >= noteStartTime && !playedNotes.has(noteKey)) {
-          playedNotes.add(noteKey);
+        if (currentBeat >= noteStartTime && !playedNotesRef.current.has(noteKey)) {
+          playedNotesRef.current.add(noteKey);
           const velocity = note.velocity || getInstrumentVelocity(currentInstrument);
           const duration = note.duration * 0.4 || getInstrumentDuration(currentInstrument);
           playNote(note.pitch, velocity, duration);
