@@ -13,7 +13,16 @@ import {
   Play, 
   Pause, 
   Minus, 
-  Plus 
+  Plus,
+  Shield,
+  Bell,
+  User,
+  ChevronDown,
+  Globe,
+  UserPlus,
+  Terminal,
+  LogOut,
+  Settings
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -461,6 +470,8 @@ export function MenuBar() {
 
   const [projectName, setProjectName] = useState("Untitled Project");
   const [isEditingName, setIsEditingName] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleCommand = (commandId: string) => {
     console.log('Executing command:', commandId);
@@ -496,6 +507,23 @@ export function MenuBar() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   return (
     <>
@@ -549,8 +577,122 @@ export function MenuBar() {
 
         </div>
 
-        {/* Right side - Theme toggle */}
+        {/* Right side - Controls */}
         <div className="flex items-center space-x-2">
+          {/* Access Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            <Shield className="h-4 w-4 mr-1" />
+            Access
+          </Button>
+
+          {/* Deploy Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            <Globe className="h-4 w-4 mr-1" />
+            Deploy
+          </Button>
+
+          {/* Notification Bell */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 relative"
+          >
+            <Bell className="h-4 w-4" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-2 w-2"></span>
+          </Button>
+
+          {/* User Avatar Menu */}
+          <div className="relative" ref={userMenuRef}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700"
+            >
+              <User className="h-4 w-4 text-white" />
+            </Button>
+            
+            {showUserMenu && (
+              <div className="absolute right-0 top-10 w-64 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg z-50">
+                <div className="p-3 border-b border-[var(--border)]">
+                  <div className="text-sm font-medium text-[var(--popover-foreground)]">Switch Workspace</div>
+                </div>
+                
+                <div className="py-2">
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                        <User className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="text-sm text-[var(--popover-foreground)]">Personal</span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <img 
+                        src={audiomageLogoPath} 
+                        alt="A" 
+                        className="w-6 h-6 object-contain"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm text-[var(--popover-foreground)]">Audiomage BV</span>
+                        <span className="text-xs text-[var(--muted-foreground)] ml-2">Admin</span>
+                        <ChevronDown className="h-3 w-3 inline ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-[var(--border)] py-2">
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <Settings className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <span className="text-sm text-[var(--popover-foreground)]">Account</span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <User className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <span className="text-sm text-[var(--popover-foreground)]">Profile</span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <UserPlus className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <span className="text-sm text-[var(--popover-foreground)]">Create Team</span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <Terminal className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <span className="text-sm text-[var(--popover-foreground)]">CLUI</span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 py-2 hover:bg-[var(--muted)] cursor-pointer">
+                    <div className="flex items-center space-x-3">
+                      <LogOut className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <span className="text-sm text-[var(--popover-foreground)]">Log out</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="sm"
