@@ -552,9 +552,9 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
   ];
 
   return (
-    <div className="h-64 bg-[var(--background)] border-t border-[var(--border)] flex flex-col">
+    <div className="min-h-64 bg-[var(--background)] border-t border-[var(--border)] flex flex-col">
       {/* Header */}
-      <div className="h-10 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
+      <div className="flex-none h-10 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div 
             className="w-3 h-3 rounded-sm"
@@ -595,11 +595,11 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {activeTab === 'mixer' && (
-          <div className="h-full flex">
+          <div className="flex flex-col lg:flex-row min-h-full">
             {/* Channel Strip */}
-            <div className="w-80 border-r border-[var(--border)] p-4">
+            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-[var(--border)] p-4 flex-shrink-0">
               <div className="space-y-4">
                 {/* Input Section */}
                 <div>
@@ -685,7 +685,7 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
             </div>
 
             {/* Level Meters */}
-            <div className="w-20 border-r border-[var(--border)] p-2">
+            <div className="w-full lg:w-20 border-b lg:border-b-0 lg:border-r border-[var(--border)] p-2 flex-shrink-0">
               <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2 text-center">Levels</h4>
               <div className="flex justify-center space-x-1">
                 <div className="flex flex-col items-center">
@@ -706,7 +706,7 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
             </div>
 
             {/* Waveform/Spectrogram Display */}
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-4 min-w-0">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Button

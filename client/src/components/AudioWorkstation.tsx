@@ -258,7 +258,7 @@ export function AudioWorkstation() {
                 }}
               />
               
-              <div className="h-full overflow-hidden">
+              <div className="h-full overflow-y-auto overflow-x-hidden">
                 <TrackInspector
                   track={tracks.find(t => t.id === selectedTrack)!}
                   onTrackMute={toggleTrackMute}
