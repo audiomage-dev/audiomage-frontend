@@ -212,8 +212,8 @@ export function AudioWorkstation() {
             )}
           </div>
 
-          {/* Track Inspector Bottom Pane */}
-          {selectedTrack && (
+          {/* Track Inspector Bottom Pane - Only show in timeline view */}
+          {selectedTrack && viewMode === 'timeline' && (
             <div 
               className="flex-none relative border-t border-[var(--border)]"
               style={{ height: `${inspectorHeight}px` }}
