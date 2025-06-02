@@ -443,11 +443,13 @@ interface TrackInspectorProps {
 }
 
 export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: TrackInspectorProps) {
-  const [activeTab, setActiveTab] = useState<'mixer' | 'effects' | 'eq' | 'sends'>('mixer');
+  const [activeTab, setActiveTab] = useState<'mixer' | 'effects' | 'eq' | 'sends' | 'wavelets'>('mixer');
   const [expandedEffects, setExpandedEffects] = useState<string[]>([]);
   const [visualizationMode, setVisualizationMode] = useState<'waveform' | 'spectrogram'>('waveform');
   const [waveletData, setWaveletData] = useState<any>(null);
   const [isExtractingWavelets, setIsExtractingWavelets] = useState(false);
+  const [allWavelets, setAllWavelets] = useState<any[]>([]);
+  const [playingWavelet, setPlayingWavelet] = useState<string | null>(null);
 
   const toggleEffect = (effectId: string) => {
     setExpandedEffects(prev => 
@@ -535,6 +537,17 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
       };
       
       setWaveletData(waveletResults);
+      
+      // Add to all wavelets collection
+      const waveletEntry = {
+        id: `wavelet_${Date.now()}`,
+        trackName: track.name,
+        trackId: track.id,
+        extractionTime: waveletResults.extractionTime,
+        data: waveletResults
+      };
+      
+      setAllWavelets(prev => [waveletEntry, ...prev]);
       console.log('Wavelet extraction completed:', waveletResults);
       
     } catch (error) {
@@ -544,11 +557,76 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
     }
   };
 
+  // Function to play wavelet reconstruction
+  const playWaveletAudio = async (waveletEntry: any) => {
+    setPlayingWavelet(waveletEntry.id);
+    
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Reconstruct audio from wavelet coefficients
+      const coefficients = waveletEntry.data.coefficients;
+      const sampleRate = waveletEntry.data.sampleRate;
+      const duration = waveletEntry.data.duration;
+      const samples = sampleRate * duration;
+      
+      // Inverse wavelet transform (simplified reconstruction)
+      let reconstructed = new Float32Array(samples);
+      
+      // Start with the final approximation coefficients
+      let currentLevel = coefficients[coefficients.length - 1].approximation;
+      
+      // Reconstruct level by level
+      for (let level = coefficients.length - 1; level >= 0; level--) {
+        const detail = coefficients[level].detail;
+        const newLength = Math.min(currentLevel.length * 2, samples);
+        const newLevel = new Float32Array(newLength);
+        
+        // Inverse Haar transform
+        for (let i = 0; i < Math.floor(newLength / 2); i++) {
+          const approx = currentLevel[i] || 0;
+          const det = detail[i] || 0;
+          
+          newLevel[2 * i] = (approx + det) / Math.sqrt(2);
+          newLevel[2 * i + 1] = (approx - det) / Math.sqrt(2);
+        }
+        
+        currentLevel = newLevel;
+      }
+      
+      // Copy to final buffer
+      for (let i = 0; i < Math.min(reconstructed.length, currentLevel.length); i++) {
+        reconstructed[i] = currentLevel[i] * 0.3; // Reduce volume
+      }
+      
+      // Create audio buffer
+      const audioBuffer = audioContext.createBuffer(1, reconstructed.length, sampleRate);
+      audioBuffer.copyToChannel(reconstructed, 0);
+      
+      // Play the audio
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+      
+      // Stop playing indicator after duration
+      setTimeout(() => {
+        setPlayingWavelet(null);
+      }, duration * 1000);
+      
+    } catch (error) {
+      console.error('Error playing wavelet audio:', error);
+      setPlayingWavelet(null);
+    }
+  };
+
   const tabs = [
     { id: 'mixer', label: 'Mixer', icon: Sliders },
     { id: 'effects', label: 'Effects', icon: Zap },
     { id: 'eq', label: 'EQ', icon: BarChart3 },
-    { id: 'sends', label: 'Sends', icon: Radio }
+    { id: 'sends', label: 'Sends', icon: Radio },
+    { id: 'wavelets', label: 'Wavelets', icon: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h6l3-9 6 18 3-9h3" /></svg> }
   ];
 
   return (
@@ -1216,6 +1294,123 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'wavelets' && (
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-medium">Extracted Wavelets</h4>
+              <div className="text-xs text-[var(--muted-foreground)]">
+                {allWavelets.length} analysis{allWavelets.length !== 1 ? 'es' : ''}
+              </div>
+            </div>
+            
+            {allWavelets.length > 0 ? (
+              <div className="space-y-3">
+                {allWavelets.map((waveletEntry) => (
+                  <div key={waveletEntry.id} className="p-3 bg-[var(--muted)] rounded-md">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: track.color }}
+                        />
+                        <span className="text-sm font-medium">{waveletEntry.trackName}</span>
+                        <span className="text-xs text-[var(--muted-foreground)]">
+                          {new Date(waveletEntry.extractionTime).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => playWaveletAudio(waveletEntry)}
+                          disabled={playingWavelet === waveletEntry.id}
+                        >
+                          {playingWavelet === waveletEntry.id ? (
+                            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 12a9 9 0 11-6.219-8.56" />
+                            </svg>
+                          ) : (
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          )}
+                          <span className="ml-1">{playingWavelet === waveletEntry.id ? 'Playing' : 'Play'}</span>
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => {
+                            setAllWavelets(prev => prev.filter(w => w.id !== waveletEntry.id));
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Statistics */}
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-3">
+                      <div>
+                        <div className="text-[var(--muted-foreground)]">Total Energy</div>
+                        <div className="font-mono">{waveletEntry.data.statistics.totalEnergy}</div>
+                      </div>
+                      <div>
+                        <div className="text-[var(--muted-foreground)]">Dominant Level</div>
+                        <div className="font-mono">Level {waveletEntry.data.statistics.dominantLevel}</div>
+                      </div>
+                      <div>
+                        <div className="text-[var(--muted-foreground)]">Dominant Freq</div>
+                        <div className="font-mono">{waveletEntry.data.statistics.dominantFrequency}</div>
+                      </div>
+                      <div>
+                        <div className="text-[var(--muted-foreground)]">Compression</div>
+                        <div className="font-mono">{waveletEntry.data.statistics.compressionRatio}%</div>
+                      </div>
+                    </div>
+                    
+                    {/* Compact Coefficient Visualization */}
+                    <div className="space-y-1">
+                      <div className="text-xs text-[var(--muted-foreground)] mb-1">Coefficient Levels</div>
+                      {waveletEntry.data.coefficients.slice(0, 4).map((level: any, index: number) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <div className="w-6 text-xs font-mono">L{level.level}</div>
+                          <div className="flex-1 h-1.5 bg-[var(--background)] rounded-sm overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm"
+                              style={{ 
+                                width: `${Math.min(100, (level.energy / Math.max(...waveletEntry.data.coefficients.map((c: any) => c.energy))) * 100)}%` 
+                              }}
+                            />
+                          </div>
+                          <div className="w-12 text-xs font-mono text-right">{level.frequency}</div>
+                        </div>
+                      ))}
+                      {waveletEntry.data.coefficients.length > 4 && (
+                        <div className="text-xs text-[var(--muted-foreground)] pl-8">
+                          +{waveletEntry.data.coefficients.length - 4} more levels
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-[var(--muted-foreground)]">
+                <svg className="w-8 h-8 mx-auto mb-2 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 12h6l3-9 6 18 3-9h3" />
+                </svg>
+                <div className="text-sm">No wavelets extracted</div>
+                <div className="text-xs opacity-70">Extract wavelets from audio tracks to see them here</div>
+              </div>
+            )}
           </div>
         )}
       </div>
