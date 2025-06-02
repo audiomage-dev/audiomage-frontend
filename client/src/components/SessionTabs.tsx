@@ -96,23 +96,30 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
   };
   return (
     <>
-      <div className="bg-[hsl(var(--muted))] px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
+      <div className="bg-[hsl(var(--background))] px-1 flex items-end space-x-0 text-xs overflow-x-auto scrollbar-thin">
         {sessions.map((session) => (
           <div
             key={session.id}
-            className={`flex items-center px-3 py-1 rounded-t border-t-2 min-w-max cursor-pointer ${
+            className={`flex items-center px-4 py-2 relative min-w-max cursor-pointer transition-all duration-200 ${
               session.isActive
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--frost-2))]'
-                : 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--accent))] border-transparent'
+                ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] z-10'
+                : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]'
             }`}
+            style={{
+              clipPath: session.isActive 
+                ? 'polygon(8px 0%, calc(100% - 8px) 0%, 100% 100%, 0% 100%)'
+                : 'polygon(4px 0%, calc(100% - 4px) 0%, calc(100% - 2px) 100%, 2px 100%)',
+              marginLeft: session.isActive ? '0' : '-2px',
+              marginRight: session.isActive ? '0' : '-2px'
+            }}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
           >
-            <span className="font-mono">{session.name}</span>
+            <span className="font-mono text-xs truncate max-w-[120px]">{session.name}</span>
             <Button
               variant="ghost"
               size="sm"
-              className="ml-2 hover:text-[hsl(var(--aurora-red))] h-auto p-0"
+              className="ml-2 hover:text-[hsl(var(--aurora-red))] h-auto p-0 opacity-60 hover:opacity-100"
             >
               <X className="w-3 h-3" />
             </Button>
