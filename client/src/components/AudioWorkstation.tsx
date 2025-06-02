@@ -129,6 +129,13 @@ export function AudioWorkstation() {
         
         {/* Center Panel - Timeline */}
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Media Preview Pane */}
+          <MediaPreviewPane
+            file={selectedMediaFile}
+            onClose={() => setSelectedMediaFile(null)}
+            isVisible={!!selectedMediaFile}
+          />
+          
           {/* Transport Bar */}
           <div className="flex-none">
             <CompactTransportBar
@@ -156,13 +163,6 @@ export function AudioWorkstation() {
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
             />
           </div>
-          
-          {/* Media Preview Pane */}
-          <MediaPreviewPane
-            file={selectedMediaFile}
-            onClose={() => setSelectedMediaFile(null)}
-            isVisible={!!selectedMediaFile}
-          />
           
           {/* Editor Area - Timeline or MIDI */}
           <div className="flex-1 overflow-hidden">
