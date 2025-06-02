@@ -621,7 +621,7 @@ export function MenuBar() {
             </Button>
             
             {showUserMenu && (
-              <div className="absolute right-0 top-10 w-64 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 top-10 w-64 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg z-50 opacity-100">
                 <div className="p-3 border-b border-[var(--border)]">
                   <div className="text-sm font-medium text-[var(--popover-foreground)]">Switch Workspace</div>
                 </div>
