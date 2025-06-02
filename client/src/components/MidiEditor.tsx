@@ -1122,8 +1122,8 @@ export function MidiEditor({
               key={track.id}
               className={`p-3 border-b border-[var(--border)] cursor-pointer transition-colors ${
                 selectedTrack === track.id 
-                  ? 'bg-[var(--accent)] border-l-4 border-l-[var(--primary)]' 
-                  : 'hover:bg-[var(--accent)]'
+                  ? 'bg-[var(--muted)] border-l-4 border-l-[var(--primary)]' 
+                  : 'hover:bg-[var(--muted)]/50'
               }`}
               onClick={() => {
                 setSelectedTrack(track.id);
