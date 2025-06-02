@@ -27,7 +27,15 @@ import {
   UserCheck,
   Eye,
   Edit,
-  Crown
+  Crown,
+  Zap,
+  Music,
+  Mic,
+  Volume,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Clock
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -477,7 +485,9 @@ export function MenuBar() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   const handleCommand = (commandId: string) => {
     console.log('Executing command:', commandId);
@@ -514,22 +524,25 @@ export function MenuBar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close user menu when clicking outside
+  // Close user menu and notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
     };
 
-    if (showUserMenu) {
+    if (showUserMenu || showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showUserMenu]);
+  }, [showUserMenu, showNotifications]);
 
   return (
     <>
@@ -599,14 +612,217 @@ export function MenuBar() {
 
 
           {/* Notification Bell */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 relative"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-2 w-2"></span>
-          </Button>
+          <div className="relative" ref={notificationsRef}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="h-8 w-8 p-0 relative"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-2 w-2"></span>
+            </Button>
+            
+            {showNotifications && (
+              <div className="absolute right-0 top-10 w-80 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg z-50">
+                {/* Header */}
+                <div className="p-4 border-b border-[var(--border)]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-[var(--foreground)]">Notifications</h3>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                      >
+                        Mark all read
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowNotifications(false)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notification Categories */}
+                <div className="p-2 border-b border-[var(--border)] bg-[var(--muted)]/20">
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" className="h-7 px-3 text-xs bg-[var(--primary)] text-[var(--primary-foreground)]">
+                      All
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                      AI
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                      System
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                      Collaboration
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Notifications List */}
+                <div className="max-h-96 overflow-y-auto">
+                  {/* AI Processing Complete */}
+                  <div className="p-3 border-b border-[var(--border)] hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">AI Master Processing Complete</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Your track "Ambient Journey" has been enhanced with AI mastering. Ready for review.
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                            Listen
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-[var(--muted-foreground)]">
+                            Dismiss
+                          </Button>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">2 minutes ago</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Collaboration */}
+                  <div className="p-3 border-b border-[var(--border)] hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">Sarah joined your session</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Sound Engineer Sarah is now collaborating on "Electronic Dreams"
+                        </div>
+                        <div className="flex items-center space-x-1 mt-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-xs text-green-600 dark:text-green-400">Currently active</span>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">5 minutes ago</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audio Export Ready */}
+                  <div className="p-3 border-b border-[var(--border)] hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
+                        <Music className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">Export Complete</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          "Synthwave Sunset" exported as 24-bit WAV (47.2 MB)
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                            Download
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-[var(--muted-foreground)]">
+                            Share
+                          </Button>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">12 minutes ago</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audio Analysis Alert */}
+                  <div className="p-3 border-b border-[var(--border)] hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
+                        <AlertCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">Audio Quality Warning</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Peak levels detected in "Drum Track 1" at 2:34. Consider reducing gain.
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                            Fix Auto
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-[var(--muted-foreground)]">
+                            Ignore
+                          </Button>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">18 minutes ago</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Suggestion */}
+                  <div className="p-3 border-b border-[var(--border)] hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                        <Zap className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">AI Enhancement Suggestion</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Try adding reverb to "Vocal Track" for more atmospheric depth
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                            Apply
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-[var(--muted-foreground)]">
+                            Later
+                          </Button>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">25 minutes ago</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* System Update */}
+                  <div className="p-3 hover:bg-[var(--muted)]/30 cursor-pointer">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0">
+                        <Info className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--foreground)]">System Update Available</div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                          New AI audio enhancement features and bug fixes available
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                            Update Now
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-[var(--muted-foreground)]">
+                            Later
+                          </Button>
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-1">1 hour ago</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)]/20">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-8 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  >
+                    View all notifications
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* User Avatar Menu */}
           <div className="relative" ref={userMenuRef}>
