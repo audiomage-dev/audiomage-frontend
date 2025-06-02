@@ -9,6 +9,7 @@ interface CompactTransportBarProps {
   timeSignature: [number, number];
   zoomLevel?: number;
   viewMode?: 'timeline' | 'midi';
+  midiPlaybackTime?: number;
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
@@ -310,6 +311,7 @@ export function CompactTransportBar({
   timeSignature,
   zoomLevel = 1,
   viewMode = 'timeline',
+  midiPlaybackTime = 0,
   onPlay,
   onPause,
   onStop,
@@ -340,6 +342,20 @@ export function CompactTransportBar({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatMidiTime = (beats: number) => {
+    const measure = Math.floor(beats / 4) + 1;
+    const beat = Math.floor(beats % 4) + 1;
+    const subBeat = Math.floor((beats % 1) * 16) + 1;
+    return `${measure}.${beat}.${subBeat.toString().padStart(2, '0')}`;
+  };
+
+  const getCurrentDisplayTime = () => {
+    if (viewMode === 'midi') {
+      return formatMidiTime(midiPlaybackTime);
+    }
+    return formatTime(transport.currentTime);
+  };
+
   const parseTimeString = (timeStr: string): number => {
     const parts = timeStr.split(':');
     if (parts.length === 2) {
@@ -352,7 +368,7 @@ export function CompactTransportBar({
 
   const handleTimeClick = () => {
     setIsTimeEditing(true);
-    setEditTimeValue(formatTime(transport.currentTime));
+    setEditTimeValue(getCurrentDisplayTime());
   };
 
   const handleTimeSubmit = () => {
@@ -490,7 +506,7 @@ export function CompactTransportBar({
             onClick={handleTimeClick}
             title="Click to edit time position"
           >
-            {formatTime(transport.currentTime)}
+            {getCurrentDisplayTime()}
           </div>
         )}
         <div className="w-px h-4 bg-[var(--border)]"></div>
