@@ -373,7 +373,7 @@ export function ScoreEditor({
           noteColor = '#ef4444'; // Red during drag
         }
         
-        // Draw note head with proper styling and hover effect
+        // Enhanced note head rendering with professional styling
         ctx.fillStyle = noteColor;
         ctx.strokeStyle = noteColor;
         ctx.beginPath();
@@ -386,13 +386,34 @@ export function ScoreEditor({
           ctx.shadowBlur = 0;
         }
         
+        // Professional note head rendering
+        const noteHeadWidth = 7;
+        const noteHeadHeight = 5;
+        
         if (note.duration >= 2) {
-          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
-          ctx.lineWidth = 2;
+          // Whole and half notes (hollow)
+          ctx.ellipse(x, y, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
+          ctx.lineWidth = 1.5;
           ctx.stroke();
         } else {
-          ctx.ellipse(x, y, 7, 5, 0, 0, 2 * Math.PI);
+          // Quarter notes and shorter (filled)
+          ctx.ellipse(x, y, noteHeadWidth, noteHeadHeight, 0, 0, 2 * Math.PI);
           ctx.fill();
+        }
+        
+        // Draw accidentals
+        if (note.accidental) {
+          ctx.font = '16px serif';
+          ctx.fillStyle = noteColor;
+          let accSymbol = '';
+          switch (note.accidental) {
+            case 'sharp': accSymbol = '♯'; break;
+            case 'flat': accSymbol = '♭'; break;
+            case 'natural': accSymbol = '♮'; break;
+            case 'double-sharp': accSymbol = '𝄪'; break;
+            case 'double-flat': accSymbol = '𝄫'; break;
+          }
+          ctx.fillText(accSymbol, x - 20, y + 4);
         }
         
         // Reset shadow
@@ -408,22 +429,50 @@ export function ScoreEditor({
           ctx.lineTo(x + (stemDirection > 0 ? 7 : -7), y + (stemDirection * -35));
           ctx.stroke();
           
-          // Draw flags for eighth notes and shorter
+          // Professional flag rendering for eighth notes and shorter
           if (note.duration < 1) {
-            ctx.font = '20px serif';
+            ctx.font = '18px serif';
             ctx.fillStyle = noteColor;
-            const flagX = x + (stemDirection > 0 ? 7 : -15);
-            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 5 : -5);
-            ctx.fillText(stemDirection > 0 ? '𝄀' : '𝄁', flagX, flagY);
+            const flagX = x + (stemDirection > 0 ? 8 : -16);
+            const flagY = y + (stemDirection * -35) + (stemDirection > 0 ? 4 : -4);
+            
+            if (note.duration === 0.5) {
+              // Eighth note flag
+              ctx.fillText(stemDirection > 0 ? '𝄪' : '𝄫', flagX, flagY);
+            } else if (note.duration === 0.25) {
+              // Sixteenth note double flag
+              ctx.fillText(stemDirection > 0 ? '𝄪𝄪' : '𝄫𝄫', flagX, flagY);
+            }
           }
+        }
+        
+        // Draw articulations
+        if (note.articulation) {
+          ctx.font = '12px serif';
+          ctx.fillStyle = noteColor;
+          const artY = line <= 2 ? y + 20 : y - 15;
+          let artSymbol = '';
+          
+          switch (note.articulation) {
+            case 'staccato': artSymbol = '·'; break;
+            case 'accent': artSymbol = '>'; break;
+            case 'tenuto': artSymbol = '—'; break;
+            case 'marcato': artSymbol = '^'; break;
+            case 'fermata': artSymbol = '𝄐'; break;
+            case 'staccatissimo': artSymbol = '▼'; break;
+            case 'sforzando': artSymbol = 'sf'; break;
+          }
+          
+          const artWidth = ctx.measureText(artSymbol).width;
+          ctx.fillText(artSymbol, x - artWidth / 2, artY);
         }
         
         // Draw selection outline for selected notes
         if (selectedNotes.has(note.id)) {
           ctx.strokeStyle = '#3b82f6';
-          ctx.lineWidth = 1;
-          ctx.setLineDash([2, 2]);
-          ctx.strokeRect(x - 12, y - 12, 24, 24);
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 3]);
+          ctx.strokeRect(x - 14, y - 14, 28, 28);
           ctx.setLineDash([]);
         }
       });
@@ -494,15 +543,22 @@ export function ScoreEditor({
           setSelectedNotes(new Set([clickedNote.note.id]));
         }
       } else if (!clickedNote && currentTool === 'note') {
-        // Add a new note
+        // Add a new note with enhanced properties
         const musicalPos = pixelToMusicalPosition(x, y, staffIndex, staff.id);
         if (musicalPos) {
+          // Add to undo history before making changes
+          setUndoHistory(prev => [...prev, staffs]);
+          setRedoHistory([]);
+          
           const newNote: Note = {
             id: `note-${Date.now()}`,
             pitch: musicalPos.pitch,
             startTime: musicalPos.time,
             duration: noteValue,
-            velocity: 80
+            velocity: 80,
+            accidental: currentAccidental || undefined,
+            articulation: currentArticulation as any || undefined,
+            stem: 'auto'
           };
           
           // Play the newly created note for its actual duration
@@ -690,33 +746,170 @@ export function ScoreEditor({
 
   return (
     <div className="h-full flex flex-col bg-[var(--background)]">
-      {/* Enhanced Score Toolbar */}
-      <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* Tool Selection */}
-          <div className="flex items-center space-x-1 bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
-            <button
-              onClick={() => setCurrentTool('select')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'select' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
-              title="Select Tool"
-            >
-              <Edit3 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setCurrentTool('note')}
-              className={`h-8 px-2 flex items-center justify-center transition-colors ${
-                currentTool === 'note' 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
-              }`}
-              title="Note Tool"
-            >
-              <Music className="h-4 w-4" />
-            </button>
+      {/* Professional MuseScore-style Toolbar */}
+      <div className="border-b border-[var(--border)] bg-[var(--background)]">
+        {/* Main Toolbar Row */}
+        <div className="h-12 px-3 flex items-center justify-between">
+          <div className="flex items-center space-x-1">
+            {/* File Operations */}
+            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="New Score">
+                <FileMusic className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Open">
+                <Upload className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Save">
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Print">
+                <Printer className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Edit Operations */}
+            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0"
+                title="Undo"
+                disabled={undoHistory.length === 0}
+                onClick={() => {
+                  if (undoHistory.length > 0) {
+                    setRedoHistory(prev => [staffs, ...prev]);
+                    const previousState = undoHistory[undoHistory.length - 1];
+                    setStaffs(previousState);
+                    setUndoHistory(prev => prev.slice(0, -1));
+                  }
+                }}
+              >
+                <Undo className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0"
+                title="Redo"
+                disabled={redoHistory.length === 0}
+                onClick={() => {
+                  if (redoHistory.length > 0) {
+                    setUndoHistory(prev => [...prev, staffs]);
+                    const nextState = redoHistory[0];
+                    setStaffs(nextState);
+                    setRedoHistory(prev => prev.slice(1));
+                  }
+                }}
+              >
+                <Redo className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Input Tools */}
+            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+              <Button
+                variant={currentTool === 'select' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setCurrentTool('select')}
+                title="Selection Tool"
+              >
+                <MousePointer className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={currentTool === 'note' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setCurrentTool('note')}
+                title="Note Input Mode"
+              >
+                <Music className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={currentTool === 'text' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setCurrentTool('text')}
+                title="Text Tool"
+              >
+                <Type className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={currentTool === 'slur' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 px-2"
+                onClick={() => setCurrentTool('slur')}
+                title="Add Slur"
+              >
+                <span className="text-xs font-bold">⌒</span>
+              </Button>
+            </div>
+
+            {/* Note Values */}
+            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+              <span className="text-xs text-[var(--muted-foreground)] mr-1">Note:</span>
+              {[
+                { value: 4, symbol: '𝅝', name: 'Whole' },
+                { value: 2, symbol: '𝅗𝅥', name: 'Half' },
+                { value: 1, symbol: '♩', name: 'Quarter' },
+                { value: 0.5, symbol: '♫', name: 'Eighth' },
+                { value: 0.25, symbol: '♬', name: 'Sixteenth' }
+              ].map(note => (
+                <Button
+                  key={note.value}
+                  variant={noteValue === note.value ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 w-8 p-0 text-lg"
+                  onClick={() => setNoteValue(note.value)}
+                  title={note.name}
+                >
+                  {note.symbol}
+                </Button>
+              ))}
+            </div>
+
+            {/* Accidentals */}
+            <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
+              <span className="text-xs text-[var(--muted-foreground)] mr-1">Acc:</span>
+              {[
+                { type: 'flat', symbol: '♭' },
+                { type: 'natural', symbol: '♮' },
+                { type: 'sharp', symbol: '♯' }
+              ].map(acc => (
+                <Button
+                  key={acc.type}
+                  variant={currentAccidental === acc.type ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 w-8 p-0 text-lg"
+                  onClick={() => setCurrentAccidental(currentAccidental === acc.type ? null : acc.type as any)}
+                  title={acc.type.charAt(0).toUpperCase() + acc.type.slice(1)}
+                >
+                  {acc.symbol}
+                </Button>
+              ))}
+            </div>
+
+            {/* View Options */}
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setShowGrid(!showGrid)}
+                title="Toggle Grid"
+              >
+                <Grid className={`h-4 w-4 ${showGrid ? 'text-[var(--primary)]' : ''}`} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setShowMeasureNumbers(!showMeasureNumbers)}
+                title="Toggle Measure Numbers"
+              >
+                <span className={`text-xs font-bold ${showMeasureNumbers ? 'text-[var(--primary)]' : ''}`}>123</span>
+              </Button>
+            </div>
           </div>
 
           {/* Note Duration */}
