@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '../contexts/ThemeContext';
-import logoRoughPath from '@assets/logo_rough.png';
+import audiomageLogoPath from '@assets/audiomage-logo-transparent.png';
 import { 
   Search, 
   Command, 
@@ -503,7 +503,7 @@ export function MenuBar() {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <img 
-              src={logoRoughPath} 
+              src={audiomageLogoPath} 
               alt="Audiomage Logo" 
               className="w-8 h-8 object-contain"
             />
