@@ -313,7 +313,14 @@ export function ScoreEditor({
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     
     ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff';
+    
+    // Dynamic background based on theme
+    const backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff';
+    const foregroundColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+    const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+    const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e5e5e5';
+    
+    ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     
     staffs.forEach((staff, staffIndex) => {
@@ -321,8 +328,8 @@ export function ScoreEditor({
       
       const yOffset = staffIndex * (staffHeight + 60) + 40;
       
-      // Draw staff lines with enhanced precision
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+      // Draw staff lines with theme-aware colors
+      ctx.strokeStyle = foregroundColor;
       ctx.lineWidth = 1.2;
       
       for (let i = 0; i < 5; i++) {
@@ -382,10 +389,8 @@ export function ScoreEditor({
         const measureX = 140 + (m * measureWidth);
         if (measureX > canvas.offsetWidth - 280) break;
         
-        // Draw measure line
-        ctx.strokeStyle = m === 0 ? 
-          (getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000') :
-          (getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#cccccc');
+        // Draw measure line with theme colors
+        ctx.strokeStyle = m === 0 ? foregroundColor : borderColor;
         ctx.lineWidth = m === 0 ? 2 : 1;
         ctx.beginPath();
         ctx.moveTo(measureX, yOffset);
@@ -394,15 +399,15 @@ export function ScoreEditor({
         
         // Draw measure numbers if enabled
         if (showMeasureNumbers && m > 0 && staffIndex === 0) {
-          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+          ctx.fillStyle = mutedColor;
           ctx.font = '11px sans-serif';
           ctx.fillText(m.toString(), measureX + 4, yOffset - 8);
         }
       }
       
-      // Draw grid if enabled
+      // Draw grid if enabled with theme awareness
       if (showGrid) {
-        ctx.strokeStyle = (getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#cccccc') + '40';
+        ctx.strokeStyle = borderColor + '40'; // Semi-transparent
         ctx.lineWidth = 0.5;
         ctx.setLineDash([1, 2]);
         
@@ -420,9 +425,9 @@ export function ScoreEditor({
         ctx.setLineDash([]);
       }
       
-      // Draw clef
+      // Draw clef with theme colors
       ctx.font = 'bold 28px serif';
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+      ctx.fillStyle = foregroundColor;
       if (staff.clef === 'treble') {
         ctx.fillText('𝄞', 45, yOffset + 32);
       } else if (staff.clef === 'bass') {
@@ -431,6 +436,7 @@ export function ScoreEditor({
       
       // Draw time signature
       ctx.font = 'bold 18px serif';
+      ctx.fillStyle = foregroundColor;
       const timeSigX = 85;
       ctx.fillText(staff.timeSignature[0].toString(), timeSigX, yOffset + 16);
       ctx.fillText(staff.timeSignature[1].toString(), timeSigX, yOffset + 36);
@@ -438,13 +444,12 @@ export function ScoreEditor({
       // Draw instrument name and tempo if enabled
       if (showInstrumentNames) {
         ctx.font = '12px sans-serif';
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || '#666666';
+        ctx.fillStyle = mutedColor;
         ctx.fillText(staff.instrument, 10, yOffset - 10);
         ctx.fillText(`♩ = ${staff.tempo}`, 10, yOffset - 25);
       }
       
-      // Draw notes with enhanced styling
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+      // Draw notes with theme-aware styling
       staff.notes.forEach((note) => {
         const x = 140 + (note.startTime * noteWidth * zoomLevel);
         const midiToLine = (pitch: number) => {
@@ -457,10 +462,10 @@ export function ScoreEditor({
         const line = midiToLine(note.pitch);
         const y = yOffset + (line * lineSpacing / 2) + 24;
         
-        // Determine note color based on state
-        let noteColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() || '#000000';
+        // Determine note color based on state with theme awareness
+        let noteColor = foregroundColor;
         if (selectedNotes.has(note.id)) {
-          noteColor = '#3b82f6';
+          noteColor = '#3b82f6'; // Blue for selected notes
         } else if (dragState && dragState.noteId === note.id) {
           noteColor = '#ef4444'; // Red during drag
         }
