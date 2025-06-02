@@ -760,7 +760,7 @@ export function MenuBar() {
             {/* Content */}
             <div className="max-h-[400px] overflow-y-auto">
               {/* Groups with access */}
-              <div className="p-4">
+              <div className="p-4 bg-[var(--popover)]">
                 <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">Groups with access</h3>
                 
                 {/* Audio Production Team */}
@@ -843,7 +843,7 @@ export function MenuBar() {
               </div>
 
               {/* People with access */}
-              <div className="p-4 border-t border-[var(--border)]">
+              <div className="p-4 border-t border-[var(--border)] bg-[var(--popover)]">
                 <h3 className="text-sm font-medium text-[var(--popover-foreground)] mb-3">People with access</h3>
                 
                 <div className="flex items-center justify-between py-2">
@@ -867,7 +867,7 @@ export function MenuBar() {
               </div>
 
               {/* Info Banner */}
-              <div className="p-4 border-t border-[var(--border)]">
+              <div className="p-4 border-t border-[var(--border)] bg-[var(--popover)]">
                 <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs">i</span>
