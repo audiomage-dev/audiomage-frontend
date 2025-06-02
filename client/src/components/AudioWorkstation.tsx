@@ -10,7 +10,7 @@ import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
 import { MediaPreviewPane } from './MediaPreviewPane';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export function AudioWorkstation() {
   const {
@@ -102,6 +102,16 @@ export function AudioWorkstation() {
     // Toggle channel solo logic
     console.log(`Toggle solo for channel: ${channelId}`);
   };
+
+  // Auto-select first MIDI track when switching to MIDI mode
+  useEffect(() => {
+    if (viewMode === 'midi' && !selectedTrack) {
+      const midiTracks = tracks.filter(track => track.type === 'midi');
+      if (midiTracks.length > 0) {
+        setSelectedTrack(midiTracks[0].id);
+      }
+    }
+  }, [viewMode, selectedTrack, tracks]);
 
 
 
