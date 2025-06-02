@@ -133,6 +133,113 @@ function WaveformDisplay({ track }: WaveformDisplayProps) {
   );
 }
 
+// SpectrogramDisplay component for frequency domain visualization
+interface SpectrogramDisplayProps {
+  track: AudioTrack;
+}
+
+function SpectrogramDisplay({ track }: SpectrogramDisplayProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !track.clips || track.clips.length === 0) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    
+    // Create spectrogram visualization
+    const timeSlices = 150;
+    const frequencyBins = 64;
+    const sliceWidth = width / timeSlices;
+    const binHeight = height / frequencyBins;
+
+    // Generate frequency spectrum data based on track characteristics
+    for (let t = 0; t < timeSlices; t++) {
+      for (let f = 0; f < frequencyBins; f++) {
+        const x = t * sliceWidth;
+        const y = height - (f * binHeight);
+        
+        // Generate frequency magnitude based on track content and frequency
+        const trackVolume = (track.volume || 80) / 100;
+        const frequency = (f / frequencyBins) * 22050; // Map to 0-22kHz
+        
+        // Simulate different frequency content based on track characteristics
+        let magnitude = 0;
+        
+        // Low frequencies (bass content)
+        if (frequency < 250) {
+          magnitude = trackVolume * (0.8 + Math.sin(t * 0.1) * 0.3);
+        }
+        // Mid frequencies (vocals, instruments)
+        else if (frequency < 4000) {
+          magnitude = trackVolume * (0.6 + Math.sin(t * 0.05 + f * 0.02) * 0.4);
+        }
+        // High frequencies (cymbals, harmonics)
+        else {
+          magnitude = trackVolume * (0.3 + Math.sin(t * 0.08 + f * 0.01) * 0.2) * (1 - frequency / 22050);
+        }
+        
+        // Add temporal variation
+        magnitude *= (0.7 + Math.sin(t * 0.03) * 0.3);
+        
+        // Add some randomness for realistic look
+        magnitude += (Math.random() - 0.5) * 0.1;
+        magnitude = Math.max(0, Math.min(1, magnitude));
+        
+        // Color mapping based on magnitude
+        const hue = 240 - (magnitude * 60); // Blue to cyan to yellow
+        const saturation = 70 + (magnitude * 30);
+        const lightness = 20 + (magnitude * 60);
+        
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        ctx.fillRect(x, y, sliceWidth + 1, binHeight + 1);
+      }
+    }
+
+    // Add frequency scale labels
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '8px monospace';
+    const freqLabels = ['20kHz', '10kHz', '5kHz', '2kHz', '1kHz', '500Hz', '250Hz', '100Hz', '50Hz'];
+    freqLabels.forEach((label, i) => {
+      const y = (i / (freqLabels.length - 1)) * height;
+      ctx.fillText(label, 4, y + 3);
+    });
+
+    // Add time scale
+    const timeLabels = ['0s', '1s', '2s', '3s'];
+    timeLabels.forEach((label, i) => {
+      const x = (i / (timeLabels.length - 1)) * (width - 30) + 15;
+      ctx.fillText(label, x, height - 4);
+    });
+
+  }, [track]);
+
+  return (
+    <div className="w-full h-full relative">
+      <canvas 
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
+      />
+      <div className="absolute top-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
+        Spectrogram
+      </div>
+    </div>
+  );
+}
+
 interface TrackInspectorProps {
   track: AudioTrack;
   onTrackMute: (trackId: string) => void;
@@ -143,6 +250,7 @@ interface TrackInspectorProps {
 export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: TrackInspectorProps) {
   const [activeTab, setActiveTab] = useState<'mixer' | 'effects' | 'eq' | 'sends'>('mixer');
   const [expandedEffects, setExpandedEffects] = useState<string[]>([]);
+  const [visualizationMode, setVisualizationMode] = useState<'waveform' | 'spectrogram'>('waveform');
 
   const toggleEffect = (effectId: string) => {
     setExpandedEffects(prev => 
@@ -313,17 +421,35 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
               </div>
             </div>
 
-            {/* Waveform Display */}
+            {/* Waveform/Spectrogram Display */}
             <div className="flex-1 p-4">
-              <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Waveform</h4>
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1"
+                  onClick={() => setVisualizationMode(prev => prev === 'waveform' ? 'spectrogram' : 'waveform')}
+                >
+                  <BarChart3 className="w-3 h-3" />
+                  <span>{visualizationMode === 'waveform' ? 'Waveform' : 'Spectrogram'}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+                <div className="text-xs text-[var(--muted-foreground)]">
+                  {visualizationMode === 'waveform' ? 'Time Domain' : 'Frequency Domain'}
+                </div>
+              </div>
               <div className="h-32 bg-[var(--muted)] rounded-md flex items-center justify-center relative overflow-hidden">
                 {track.type === 'audio' && track.clips && track.clips.length > 0 ? (
-                  <WaveformDisplay track={track} />
+                  visualizationMode === 'waveform' ? (
+                    <WaveformDisplay track={track} />
+                  ) : (
+                    <SpectrogramDisplay track={track} />
+                  )
                 ) : track.type === 'midi' ? (
                   <div className="text-center text-[var(--muted-foreground)]">
                     <Music className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <div className="text-xs">MIDI Track</div>
-                    <div className="text-xs opacity-70">No waveform for MIDI</div>
+                    <div className="text-xs opacity-70">No {visualizationMode} for MIDI</div>
                   </div>
                 ) : (
                   <div className="text-center text-[var(--muted-foreground)]">
