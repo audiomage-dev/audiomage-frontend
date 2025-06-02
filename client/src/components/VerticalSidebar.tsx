@@ -6,6 +6,7 @@ import { AudioChangemapsPanel } from './AudioChangemapsPanel';
 import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
+import { SpellbookModal } from './SpellbookModal';
 import { 
   FolderOpen, 
   Search, 
@@ -65,7 +66,8 @@ import {
   MessageSquare,
   FileAudio,
   BarChart3,
-  Target
+  Target,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -92,6 +94,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -784,6 +787,15 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             variant="ghost"
             size="sm"
             className="w-full h-10 p-0 mb-1 rounded-none hover:bg-[var(--accent)]"
+            title="Spellbook"
+            onClick={() => setIsSpellbookModalOpen(true)}
+          >
+            <BookOpen className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-10 p-0 mb-1 rounded-none hover:bg-[var(--accent)]"
             title="Settings"
             onClick={() => setIsSettingsModalOpen(true)}
           >
@@ -830,6 +842,12 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         isOpen={isAIToolsModalOpen}
         onClose={() => setIsAIToolsModalOpen(false)}
         initialTool={selectedAITool}
+      />
+
+      {/* Spellbook Modal */}
+      <SpellbookModal 
+        isOpen={isSpellbookModalOpen}
+        onClose={() => setIsSpellbookModalOpen(false)}
       />
 
       {/* Settings Modal */}
