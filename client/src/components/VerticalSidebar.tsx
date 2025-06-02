@@ -167,7 +167,7 @@ export function VerticalSidebar() {
             <div className="text-xs text-[var(--muted-foreground)]">Real-time processing active</div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
             {/* Revolutionary Circular Master Volume */}
             <div className="relative">
               <div className="text-xs font-medium text-[var(--foreground)] mb-3 text-center">Master Volume</div>
