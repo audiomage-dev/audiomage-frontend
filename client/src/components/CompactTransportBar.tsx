@@ -495,10 +495,9 @@ export function CompactTransportBar({
         >
           <SkipForward className="w-4 h-4" />
         </Button>
-      </div>
-
-      {/* Center: Time Display */}
-      <div className="flex items-center space-x-4">
+        
+        {/* Time Display - moved next to transport controls */}
+        <div className="w-px h-4 bg-[var(--border)] ml-2"></div>
         {isTimeEditing ? (
           <input
             ref={timeInputRef}
@@ -507,12 +506,12 @@ export function CompactTransportBar({
             onChange={(e) => setEditTimeValue(e.target.value)}
             onKeyDown={handleTimeKeyDown}
             onBlur={handleTimeSubmit}
-            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-24 text-center focus:outline-none"
+            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-24 text-center focus:outline-none ml-2"
             placeholder="HH:MM:SS:FF"
           />
         ) : (
           <div 
-            className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
+            className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors ml-2"
             onClick={handleTimeClick}
             title="Click to edit time position"
           >
@@ -520,6 +519,9 @@ export function CompactTransportBar({
           </div>
         )}
       </div>
+
+      {/* Center: Spacer */}
+      <div className="flex-1"></div>
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
