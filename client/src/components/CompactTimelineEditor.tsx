@@ -1626,104 +1626,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <span className="truncate flex-1">{clip.name}</span>
                           <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
                           
-                          {/* Fade Handles - appear on hover */}
-                          {hoveredClip === clip.id && (
-                            <>
-                              {/* Fade-in handle */}
-                              <div 
-                                className="absolute left-0 top-0 w-4 h-full bg-gradient-to-r from-[var(--primary)] to-transparent cursor-ew-resize opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center"
-                                onMouseDown={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  const startX = e.clientX;
-                                  const currentFadeIn = clip.fadeIn || 0;
-                                  
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: currentFadeIn,
-                                    fadeOut: clip.fadeOut || 0,
-                                    isDragging: true,
-                                    dragType: 'in'
-                                  });
-                                  
-                                  const handleMouseMove = (e: MouseEvent) => {
-                                    const deltaX = e.clientX - startX;
-                                    const fadeInDelta = (deltaX / clipWidth) * clip.duration;
-                                    const newFadeIn = Math.max(0, Math.min(clip.duration * 0.5, currentFadeIn + fadeInDelta));
-                                    
-                                    setFadeControls(prev => prev ? { ...prev, fadeIn: newFadeIn } : null);
-                                    console.log(`Adjusting fade-in for ${clip.id}: ${newFadeIn.toFixed(2)}s`);
-                                  };
-                                  
-                                  const handleMouseUp = () => {
-                                    document.removeEventListener('mousemove', handleMouseMove);
-                                    document.removeEventListener('mouseup', handleMouseUp);
-                                    setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
-                                    console.log(`Applied fade-in to clip: ${clip.id}`);
-                                  };
-                                  
-                                  document.addEventListener('mousemove', handleMouseMove);
-                                  document.addEventListener('mouseup', handleMouseUp);
-                                }}
-                                title="Drag to adjust fade-in"
-                              >
-                                <div className="w-1 h-3 bg-white rounded-full opacity-80"></div>
-                              </div>
-                              
-                              {/* Fade-out handle */}
-                              <div 
-                                className="absolute right-0 top-0 w-4 h-full bg-gradient-to-l from-[var(--primary)] to-transparent cursor-ew-resize opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center"
-                                onMouseDown={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  const startX = e.clientX;
-                                  const currentFadeOut = clip.fadeOut || 0;
-                                  
-                                  setFadeControls({
-                                    clipId: clip.id,
-                                    trackId: track.id,
-                                    fadeIn: clip.fadeIn || 0,
-                                    fadeOut: currentFadeOut,
-                                    isDragging: true,
-                                    dragType: 'out'
-                                  });
-                                  
-                                  const handleMouseMove = (e: MouseEvent) => {
-                                    const deltaX = startX - e.clientX; // Reversed for fade-out
-                                    const fadeOutDelta = (deltaX / clipWidth) * clip.duration;
-                                    const newFadeOut = Math.max(0, Math.min(clip.duration * 0.5, currentFadeOut + fadeOutDelta));
-                                    
-                                    setFadeControls(prev => prev ? { ...prev, fadeOut: newFadeOut } : null);
-                                    console.log(`Adjusting fade-out for ${clip.id}: ${newFadeOut.toFixed(2)}s`);
-                                  };
-                                  
-                                  const handleMouseUp = () => {
-                                    document.removeEventListener('mousemove', handleMouseMove);
-                                    document.removeEventListener('mouseup', handleMouseUp);
-                                    setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
-                                    console.log(`Applied fade-out to clip: ${clip.id}`);
-                                  };
-                                  
-                                  document.addEventListener('mousemove', handleMouseMove);
-                                  document.addEventListener('mouseup', handleMouseUp);
-                                }}
-                                title="Drag to adjust fade-out"
-                              >
-                                <div className="w-1 h-3 bg-white rounded-full opacity-80"></div>
-                              </div>
-                              
-                              {/* Fade status indicator */}
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className="text-xs opacity-75 bg-black bg-opacity-50 px-1 rounded">
-                                  {fadeControls?.isDragging && fadeControls.clipId === clip.id 
-                                    ? `${fadeControls.dragType === 'in' ? 'In' : 'Out'}: ${(fadeControls.dragType === 'in' ? fadeControls.fadeIn : fadeControls.fadeOut).toFixed(1)}s`
-                                    : 'Drag handles to fade'
-                                  }
-                                </span>
-                              </div>
-                            </>
-                          )}
+
                         </div>
                         
                         {/* Line Waveform */}
@@ -1754,18 +1657,129 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           )}
                         </div>
                         
-                        {/* Fade In/Out Indicators */}
-                        {clip.fadeIn && clip.fadeIn > 0 && (
+                        {/* Fade In/Out Visual Indicators */}
+                        {(clip.fadeIn && clip.fadeIn > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeIn > 0) && (
                           <div 
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-black/40 to-transparent pointer-events-none z-10"
-                            style={{ width: `${(clip.fadeIn / clip.duration) * 100}%` }}
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-black/60 via-black/30 to-transparent pointer-events-none z-10 transition-all duration-150"
+                            style={{ 
+                              width: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0) / clip.duration) * 100}%`,
+                              opacity: fadeControls?.clipId === clip.id && fadeControls.dragType === 'in' ? 0.8 : 0.6
+                            }}
                           />
                         )}
-                        {clip.fadeOut && clip.fadeOut > 0 && (
+                        {(clip.fadeOut && clip.fadeOut > 0) || (fadeControls?.clipId === clip.id && fadeControls.fadeOut > 0) && (
                           <div 
-                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-black/40 to-transparent pointer-events-none z-10"
-                            style={{ width: `${(clip.fadeOut / clip.duration) * 100}%` }}
+                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-black/60 via-black/30 to-transparent pointer-events-none z-10 transition-all duration-150"
+                            style={{ 
+                              width: `${((fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0) / clip.duration) * 100}%`,
+                              opacity: fadeControls?.clipId === clip.id && fadeControls.dragType === 'out' ? 0.8 : 0.6
+                            }}
                           />
+                        )}
+
+                        {/* Fade Handles positioned at clip edges */}
+                        {hoveredClip === clip.id && (
+                          <>
+                            {/* Fade-in handle at beginning of clip */}
+                            <div 
+                              className="absolute left-0 top-0 bottom-0 w-2 bg-[var(--primary)]/80 hover:bg-[var(--primary)] cursor-ew-resize transition-all duration-200 flex items-center justify-center group"
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const startX = e.clientX;
+                                const currentFadeIn = clip.fadeIn || 0;
+                                
+                                setFadeControls({
+                                  clipId: clip.id,
+                                  trackId: track.id,
+                                  fadeIn: currentFadeIn,
+                                  fadeOut: clip.fadeOut || 0,
+                                  isDragging: true,
+                                  dragType: 'in'
+                                });
+                                
+                                const handleMouseMove = (e: MouseEvent) => {
+                                  const deltaX = e.clientX - startX;
+                                  const fadeInDelta = (deltaX / clipWidth) * clip.duration;
+                                  const newFadeIn = Math.max(0, Math.min(clip.duration * 0.4, currentFadeIn + fadeInDelta));
+                                  
+                                  setFadeControls(prev => prev ? { ...prev, fadeIn: newFadeIn } : null);
+                                };
+                                
+                                const handleMouseUp = () => {
+                                  document.removeEventListener('mousemove', handleMouseMove);
+                                  document.removeEventListener('mouseup', handleMouseUp);
+                                  if (fadeControls) {
+                                    console.log(`Applied fade-in to clip ${clip.id}: ${fadeControls.fadeIn.toFixed(2)}s`);
+                                  }
+                                  setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
+                                };
+                                
+                                document.addEventListener('mousemove', handleMouseMove);
+                                document.addEventListener('mouseup', handleMouseUp);
+                              }}
+                              title={`Fade-in: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0).toFixed(1)}s`}
+                            >
+                              <div className="w-0.5 h-4 bg-white rounded-full group-hover:h-6 transition-all duration-200"></div>
+                              {/* Fade-in extension visual */}
+                              <div 
+                                className="absolute left-2 top-0 bottom-0 bg-gradient-to-r from-[var(--primary)]/40 to-transparent pointer-events-none transition-all duration-200"
+                                style={{ 
+                                  width: `${Math.max(20, ((fadeControls?.clipId === clip.id ? fadeControls.fadeIn : clip.fadeIn || 0) / clip.duration) * clipWidth)}px`
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Fade-out handle at end of clip */}
+                            <div 
+                              className="absolute right-0 top-0 bottom-0 w-2 bg-[var(--primary)]/80 hover:bg-[var(--primary)] cursor-ew-resize transition-all duration-200 flex items-center justify-center group"
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const startX = e.clientX;
+                                const currentFadeOut = clip.fadeOut || 0;
+                                
+                                setFadeControls({
+                                  clipId: clip.id,
+                                  trackId: track.id,
+                                  fadeIn: clip.fadeIn || 0,
+                                  fadeOut: currentFadeOut,
+                                  isDragging: true,
+                                  dragType: 'out'
+                                });
+                                
+                                const handleMouseMove = (e: MouseEvent) => {
+                                  const deltaX = startX - e.clientX; // Reversed for fade-out
+                                  const fadeOutDelta = (deltaX / clipWidth) * clip.duration;
+                                  const newFadeOut = Math.max(0, Math.min(clip.duration * 0.4, currentFadeOut + fadeOutDelta));
+                                  
+                                  setFadeControls(prev => prev ? { ...prev, fadeOut: newFadeOut } : null);
+                                };
+                                
+                                const handleMouseUp = () => {
+                                  document.removeEventListener('mousemove', handleMouseMove);
+                                  document.removeEventListener('mouseup', handleMouseUp);
+                                  if (fadeControls) {
+                                    console.log(`Applied fade-out to clip ${clip.id}: ${fadeControls.fadeOut.toFixed(2)}s`);
+                                  }
+                                  setFadeControls(prev => prev ? { ...prev, isDragging: false } : null);
+                                };
+                                
+                                document.addEventListener('mousemove', handleMouseMove);
+                                document.addEventListener('mouseup', handleMouseUp);
+                              }}
+                              title={`Fade-out: ${(fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0).toFixed(1)}s`}
+                            >
+                              <div className="w-0.5 h-4 bg-white rounded-full group-hover:h-6 transition-all duration-200"></div>
+                              {/* Fade-out extension visual */}
+                              <div 
+                                className="absolute right-2 top-0 bottom-0 bg-gradient-to-l from-[var(--primary)]/40 to-transparent pointer-events-none transition-all duration-200"
+                                style={{ 
+                                  width: `${Math.max(20, ((fadeControls?.clipId === clip.id ? fadeControls.fadeOut : clip.fadeOut || 0) / clip.duration) * clipWidth)}px`
+                                }}
+                              />
+                            </div>
+                          </>
                         )}
                         
                         {/* Resize Handles */}
