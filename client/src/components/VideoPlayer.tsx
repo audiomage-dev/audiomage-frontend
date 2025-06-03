@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize2, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize2, SkipBack, SkipForward, ChevronUp, ChevronDown, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface VideoPlayerProps {
@@ -9,6 +9,8 @@ interface VideoPlayerProps {
   onTimeUpdate?: (currentTime: number) => void;
   onDurationChange?: (duration: number) => void;
   isVisible?: boolean;
+  onSizeChange?: (width: number, height: number) => void;
+  onPositionChange?: (x: number, y: number) => void;
 }
 
 export function VideoPlayer({ 
