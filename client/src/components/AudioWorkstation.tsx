@@ -10,7 +10,6 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
-import { MovableVideoWindow } from './MovableVideoWindow';
 
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect } from 'react';
@@ -60,9 +59,6 @@ export function AudioWorkstation() {
   // Lock states for Timeline and MIDI editors
   const [isTimelineLocked, setIsTimelineLocked] = useState(false);
   const [isMidiLocked, setIsMidiLocked] = useState(false);
-  
-  // Video player state
-  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(true);
   
 
   
@@ -222,7 +218,6 @@ export function AudioWorkstation() {
 
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
-              onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
             />
           </div>
           
@@ -291,11 +286,7 @@ export function AudioWorkstation() {
         currentSession={sessions.find(s => s.isActive)?.name}
       />
 
-      {/* Movable Video Window */}
-      <MovableVideoWindow
-        isOpen={isVideoPlayerOpen}
-        onClose={() => setIsVideoPlayerOpen(false)}
-      />
+
 
     </div>
   );
