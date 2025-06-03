@@ -1,5 +1,5 @@
 import { MenuBar } from './MenuBar';
-
+import { SessionTabs } from './SessionTabs';
 import { VerticalSidebar } from './VerticalSidebar';
 import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
@@ -132,6 +132,14 @@ export function AudioWorkstation() {
       {/* Top Menu Bar */}
       <div className="flex-none">
         <MenuBar />
+      </div>
+      
+      {/* Session Tabs */}
+      <div className="flex-none h-10 border-b border-[var(--border)]">
+        <SessionTabs 
+          sessions={sessions} 
+          onSwitchSession={switchSession} 
+        />
       </div>
       
       {/* Main Content */}
