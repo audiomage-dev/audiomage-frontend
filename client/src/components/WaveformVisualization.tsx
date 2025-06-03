@@ -15,9 +15,9 @@ export function WaveformVisualization({ data, color, fileName, isPlaying }: Wave
         return '#C53030';
       case '#718096': // Gray (Music) - use light waveform
         return '#E2E8F0';
-      case '#38A169': // Green (Foley) - use dark green waveform
+      case '#48BB78': // Bright green (Foley) - use darker green waveform
         return '#2F855A';
-      case '#3182CE': // Blue (Sound Design) - use dark blue waveform
+      case '#4299E1': // Bright blue (Sound Design) - use darker blue waveform
         return '#2B6CB0';
       case '#FF9FF3': // Pink (Ambiance) - use dark pink waveform
         return '#D53F8C';
