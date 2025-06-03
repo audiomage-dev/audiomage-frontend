@@ -137,39 +137,29 @@ export function VideoPlayer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        {/* Header - Only Title */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">SampleVideo_1280x720_1mb.mp4</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className="w-full h-full flex flex-col">
+      {/* Title */}
+      <div className="p-3 bg-[var(--background)] border-b border-[var(--border)]">
+        <h2 className="text-sm font-medium text-[var(--foreground)]">SampleVideo_1280x720_1mb.mp4</h2>
+      </div>
 
-        {/* Video Container - Clean, no controls */}
-        <div className="relative bg-black">
-          <video
-            ref={videoRef}
-            className="w-full h-auto max-h-[70vh] object-contain"
-            onTimeUpdate={handleVideoTimeUpdate}
-            onLoadedMetadata={handleVideoLoadedMetadata}
-            onPlay={handleVideoPlay}
-            onPause={handleVideoPause}
-            controls={false}
-            preload="metadata"
-          >
-            <source src={videoUrl} type="video/mp4" />
-            <div className="flex items-center justify-center h-64 text-[var(--muted-foreground)]">
-              Video not supported in this browser
-            </div>
-          </video>
-        </div>
+      {/* Video Only */}
+      <div className="flex-1 bg-black flex items-center justify-center">
+        <video
+          ref={videoRef}
+          className="max-w-full max-h-full object-contain"
+          onTimeUpdate={handleVideoTimeUpdate}
+          onLoadedMetadata={handleVideoLoadedMetadata}
+          onPlay={handleVideoPlay}
+          onPause={handleVideoPause}
+          controls={false}
+          preload="metadata"
+        >
+          <source src={videoUrl} type="video/mp4" />
+          <div className="flex items-center justify-center h-64 text-gray-400">
+            Video not supported in this browser
+          </div>
+        </video>
       </div>
     </div>
   );
