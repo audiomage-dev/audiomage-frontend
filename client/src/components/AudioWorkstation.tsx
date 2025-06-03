@@ -280,13 +280,7 @@ export function AudioWorkstation() {
         currentSession={sessions.find(s => s.isActive)?.name}
       />
 
-      {/* Video Player Modal */}
-      <VideoPlayer
-        isOpen={isVideoPlayerOpen}
-        onClose={() => setIsVideoPlayerOpen(false)}
-        transport={transport}
-        onVideoTimeUpdate={seekTo}
-      />
+
 
 
     </div>
