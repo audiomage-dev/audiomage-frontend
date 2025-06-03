@@ -592,7 +592,7 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
           {sessions.length > 0 && (
             <div className="flex items-center">
               <span className="text-xs text-[var(--muted-foreground)] mr-2">|</span>
-              <div className="bg-[var(--muted)]/30 rounded-lg border border-[var(--border)]/50 p-1 shadow-sm">
+              <div className="bg-[var(--muted)]/30 rounded-lg p-1">
                 <SessionTabs 
                   sessions={sessions} 
                   onSwitchSession={onSwitchSession}
