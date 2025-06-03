@@ -11,9 +11,7 @@ import { StatusBar } from './StatusBar';
 import { TrackInspector } from './TrackInspector';
 import { MediaPreviewPane } from './MediaPreviewPane';
 import { VideoPlayer } from './VideoPlayer';
-import { CrossFadePanel } from './CrossFadePanel';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
-import { useCrossFade } from '../hooks/useCrossFade';
 import { useState, useRef, useEffect } from 'react';
 import { FileMusic } from 'lucide-react';
 
@@ -65,18 +63,7 @@ export function AudioWorkstation() {
   // Video player state
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   
-  // Cross-fade state
-  const [isCrossFadePanelOpen, setIsCrossFadePanelOpen] = useState(false);
-  const [selectedTracksForCrossFade, setSelectedTracksForCrossFade] = useState<string[]>([]);
-  
-  // Initialize cross-fade functionality
-  const {
-    addCrossFade,
-    removeCrossFade,
-    activeCrossFades,
-    crossFadeConfigs,
-    resetAllGains
-  } = useCrossFade(transport, tracks);
+
   
   // Global MIDI playback control functions
   const [midiPlaybackFunctions, setMidiPlaybackFunctions] = useState<{
@@ -203,7 +190,6 @@ export function AudioWorkstation() {
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
-              onCrossFadeToggle={() => setIsCrossFadePanelOpen(!isCrossFadePanelOpen)}
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
@@ -320,15 +306,7 @@ export function AudioWorkstation() {
         onVideoTimeUpdate={seekTo}
       />
 
-      {/* Cross Fade Panel */}
-      <CrossFadePanel
-        isOpen={isCrossFadePanelOpen}
-        onClose={() => setIsCrossFadePanelOpen(false)}
-        tracks={tracks}
-        transport={transport}
-        onApplyCrossFade={addCrossFade}
-        selectedTracks={selectedTracksForCrossFade}
-      />
+
     </div>
   );
 }
