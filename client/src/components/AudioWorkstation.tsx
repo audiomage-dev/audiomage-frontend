@@ -10,7 +10,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
-import { VideoPlayer } from './VideoPlayer';
+import { MovableVideoWindow } from './MovableVideoWindow';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect } from 'react';
 import { FileMusic } from 'lucide-react';
@@ -158,20 +158,7 @@ export function AudioWorkstation() {
             isVisible={!!selectedMediaFile}
           />
           
-          {/* Video Player */}
-          {isVideoPlayerOpen && (
-            <VideoPlayer
-              title="Project Video"
-              isVisible={isVideoPlayerOpen}
-              className="mb-4"
-              onTimeUpdate={(time) => {
-                // Sync video time with audio timeline
-                if (transport.isPlaying) {
-                  console.log('Video time:', time);
-                }
-              }}
-            />
-          )}
+
           
           {/* Transport Bar */}
           <div className="flex-none">
@@ -280,8 +267,20 @@ export function AudioWorkstation() {
         currentSession={sessions.find(s => s.isActive)?.name}
       />
 
-
-
+      {/* Movable Video Window */}
+      <MovableVideoWindow
+        title="Project Video"
+        isOpen={isVideoPlayerOpen}
+        onClose={() => setIsVideoPlayerOpen(false)}
+        onTimeUpdate={(time: number) => {
+          // Sync video time with audio timeline
+          if (transport.isPlaying) {
+            console.log('Video time:', time);
+          }
+        }}
+        initialPosition={{ x: 200, y: 150 }}
+        initialSize={{ width: 480, height: 320 }}
+      />
 
     </div>
   );
