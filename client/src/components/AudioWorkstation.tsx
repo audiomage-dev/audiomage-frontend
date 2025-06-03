@@ -8,7 +8,7 @@ import { MidiEditor } from './MidiEditor';
 import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
-import { TrackInspector } from './TrackInspector';
+
 import { MediaPreviewPane } from './MediaPreviewPane';
 import { VideoPlayer } from './VideoPlayer';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
@@ -40,7 +40,7 @@ export function AudioWorkstation() {
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
-  const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
+
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
@@ -243,46 +243,7 @@ export function AudioWorkstation() {
             )}
           </div>
 
-          {/* Track Inspector Bottom Pane - Only show in timeline view */}
-          {selectedTrack && viewMode === 'timeline' && (
-            <div 
-              className="flex-none relative border-t border-[var(--border)]"
-              style={{ height: `${inspectorHeight}px` }}
-            >
-              {/* Resize Handle */}
-              <div
-                className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-[var(--primary)] transition-colors z-10"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const startY = e.clientY;
-                  const startHeight = inspectorHeight;
-                  
-                  const handleMouseMove = (e: MouseEvent) => {
-                    const deltaY = startY - e.clientY;
-                    const newHeight = Math.max(200, Math.min(600, startHeight + deltaY));
-                    setInspectorHeight(newHeight);
-                  };
-                  
-                  const handleMouseUp = () => {
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
-                  };
-                  
-                  document.addEventListener('mousemove', handleMouseMove);
-                  document.addEventListener('mouseup', handleMouseUp);
-                }}
-              />
-              
-              <div className="h-full overflow-y-auto overflow-x-hidden">
-                <TrackInspector
-                  track={tracks.find(t => t.id === selectedTrack)!}
-                  onTrackMute={toggleTrackMute}
-                  onTrackSolo={toggleTrackSolo}
-                  onClose={() => setSelectedTrack(null)}
-                />
-              </div>
-            </div>
-          )}
+
 
         </div>
       </div>
