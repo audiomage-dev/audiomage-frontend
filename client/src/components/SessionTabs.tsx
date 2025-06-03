@@ -96,34 +96,68 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
   };
   return (
     <>
-      <div className="bg-[hsl(var(--background))] px-1 flex items-end space-x-0 text-xs overflow-x-auto scrollbar-thin">
+      <div className="bg-transparent px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
         {sessions.map((session) => (
           <div
             key={session.id}
-            className={`flex items-center px-4 py-2 relative min-w-max cursor-pointer transition-all duration-200 ${
+            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-300 rounded-lg overflow-hidden ${
               session.isActive
-                ? 'bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] z-10 border-b-2 border-slate-400'
-                : 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50 hover:text-[hsl(var(--accent-foreground))]'
+                ? 'active bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 text-[var(--foreground)] shadow-sm border border-[var(--primary)]/20'
+                : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]/80 hover:text-[var(--foreground)] border border-transparent hover:border-[var(--border)]'
             }`}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
           >
-            <span className="font-mono text-xs truncate max-w-[120px]">{session.name}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-2 hover:text-[hsl(var(--aurora-red))] h-auto p-0 opacity-60 hover:opacity-100"
-            >
-              <X className="w-3 h-3" />
-            </Button>
+            {/* Active indicator */}
+            {session.isActive && (
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/60" />
+            )}
+            
+            <div className="flex items-center px-3 py-2 gap-2">
+              {/* Session status indicator */}
+              <div className={`w-2 h-2 rounded-full transition-colors status-indicator ${
+                session.isActive 
+                  ? 'active bg-[var(--primary)] shadow-sm' 
+                  : 'bg-[var(--muted-foreground)]/40 group-hover:bg-[var(--muted-foreground)]/60'
+              }`} />
+              
+              <span className="font-medium text-xs truncate max-w-[100px] select-none">
+                {session.name}
+              </span>
+              
+              {/* Close button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`ml-1 h-4 w-4 p-0 rounded-full tab-close-btn ${
+                  session.isActive
+                    ? 'opacity-70 hover:opacity-100 hover:bg-[var(--destructive)]/10 hover:text-[var(--destructive)]'
+                    : 'opacity-0 group-hover:opacity-70 hover:opacity-100 hover:bg-[var(--destructive)]/10 hover:text-[var(--destructive)]'
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleContextAction('close', session.id);
+                }}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+            
+            {/* Hover effect overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
           </div>
         ))}
+        {/* Add new session button */}
         <Button
           variant="ghost"
           size="sm"
-          className="p-1 hover:bg-[hsl(var(--accent))] rounded h-auto"
+          className="group new-tab-btn flex items-center gap-2 px-3 py-2 h-auto rounded-lg border border-dashed border-[var(--border)] hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] ml-2"
+          onClick={() => console.log('Add new session')}
         >
-          <i className="fas fa-plus text-[hsl(var(--foreground))]"></i>
+          <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center group-hover:border-[var(--primary)] transition-colors">
+            <span className="text-xs font-bold leading-none">+</span>
+          </div>
+          <span className="text-xs font-medium hidden sm:block">New</span>
         </Button>
       </div>
 

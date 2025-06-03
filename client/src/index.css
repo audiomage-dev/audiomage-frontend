@@ -325,3 +325,79 @@ html.nord-light, .nord-light {
 .resize-handle:hover {
   background: linear-gradient(135deg, hsl(var(--primary))/40% 0%, hsl(var(--primary))/60% 100%);
 }
+
+/* Enhanced Session Tab Animations */
+@keyframes tabPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes tabSlideIn {
+  from { 
+    opacity: 0; 
+    transform: translateX(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes activeTabGlow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1); }
+}
+
+.session-tab {
+  animation: tabSlideIn 0.3s ease-out;
+}
+
+.session-tab.active {
+  animation: activeTabGlow 2s ease-in-out infinite;
+}
+
+.session-tab:hover {
+  animation: tabPulse 0.6s ease-in-out;
+}
+
+/* Tab close button enhancement */
+.tab-close-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.8);
+}
+
+.tab-close-btn:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Status indicator animation */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.status-indicator.active {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* New tab button enhancement */
+.new-tab-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.new-tab-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.new-tab-btn:hover::before {
+  left: 100%;
+}
