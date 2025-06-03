@@ -449,27 +449,34 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         console.log('Mouse up - finalizing clip drag for:', dragState.clipId);
         
-        // Finalize clip dragging and persist position
-        const deltaX = e.clientX - dragState.startX;
-        const deltaY = e.clientY - dragState.startY;
+        // Get timeline container and calculate exact position
+        const timelineContainer = document.querySelector('[data-timeline-container]');
+        if (!timelineContainer) {
+          console.error('Timeline container not found');
+          setDraggingClip(null);
+          setIsDragging(false);
+          return;
+        }
         
-        console.log('Delta movement:', { deltaX, deltaY });
+        const containerRect = timelineContainer.getBoundingClientRect();
+        const scrollLeft = timelineContainer.scrollLeft || 0;
+        const relativeX = e.clientX - containerRect.left + scrollLeft;
         
-        const timelineWidth = getTimelineWidth();
-        const totalTime = timelineWidth / zoomLevel;
-        const deltaTime = (deltaX / timelineWidth) * totalTime;
-        const rawNewStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
+        // Calculate exact time position - use consistent pixel-to-time conversion
+        const pixelsPerSecond = 60 * zoomLevel;
+        const rawNewStartTime = Math.max(0, relativeX / pixelsPerSecond);
         const newStartTime = calculateSnappedTime(rawNewStartTime);
         
-        console.log(`Drag calculation: raw=${rawNewStartTime.toFixed(3)}s, snapped=${newStartTime.toFixed(3)}s, snapMode=${snapMode}`);
+        console.log(`Exact position calculation:
+          Mouse clientX: ${e.clientX}
+          Container left: ${containerRect.left}
+          Scroll left: ${scrollLeft}
+          Relative X: ${relativeX}
+          Pixels per second: ${pixelsPerSecond}
+          Raw time: ${rawNewStartTime.toFixed(3)}s
+          Snapped time: ${newStartTime.toFixed(3)}s`);
         
-        console.log('Time calculation:', { 
-          timelineWidth, 
-          totalTime, 
-          deltaTime, 
-          originalStartTime: dragState.originalStartTime, 
-          newStartTime 
-        });
+        const deltaY = e.clientY - dragState.startY;
         
         const trackHeight = 96;
         const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
@@ -490,10 +497,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           console.log(`Group moving ${dragState.selectedClips.length} clips`);
           
           // Calculate the primary clip's movement (the one being dragged)
-          const rawDeltaTime = (deltaX / timelineWidth) * totalTime;
-          const rawNewStartTime = dragState.originalStartTime + rawDeltaTime;
-          const snappedNewStartTime = calculateSnappedTime(rawNewStartTime);
-          const primaryClipDeltaTime = snappedNewStartTime - dragState.originalStartTime;
+          const primaryClipDeltaTime = newStartTime - dragState.originalStartTime;
           const primaryClipTrackDelta = Math.round(deltaY / trackHeight);
           
           // Check if all clips can move to their new positions without conflicts
@@ -1741,6 +1745,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         <div 
           className="flex-1 overflow-auto scrollbar-thin select-none" 
           ref={timelineRef}
+          data-timeline-container
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
