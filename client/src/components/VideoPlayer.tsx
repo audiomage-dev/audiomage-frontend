@@ -19,6 +19,8 @@ export function VideoPlayer({
   className = "",
   onTimeUpdate,
   onDurationChange,
+  onSizeChange,
+  onPositionChange,
   isVisible = true 
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,6 +29,12 @@ export function VideoPlayer({
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [size, setSize] = useState({ width: 400, height: 300 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,6 +69,42 @@ export function VideoPlayer({
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
   }, [onTimeUpdate, onDurationChange]);
+
+  // Handle mouse events for dragging and resizing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newPosition = {
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y
+        };
+        setPosition(newPosition);
+        onPositionChange?.(newPosition.x, newPosition.y);
+      } else if (isResizing) {
+        const newSize = {
+          width: Math.max(200, e.clientX - position.x),
+          height: Math.max(150, e.clientY - position.y)
+        };
+        setSize(newSize);
+        onSizeChange?.(newSize.width, newSize.height);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragOffset, position, onPositionChange, onSizeChange]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -138,111 +182,168 @@ export function VideoPlayer({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+      setIsDragging(true);
+    }
+  };
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+  };
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   if (!isVisible) return null;
 
   return (
     <div 
       ref={containerRef}
-      className={`bg-[var(--background)] border border-[var(--border)] rounded-lg overflow-hidden ${className}`}
+      className={`fixed z-50 bg-[var(--background)] border border-[var(--border)] rounded-lg overflow-hidden shadow-lg ${className} ${isDragging ? 'cursor-grabbing' : ''}`}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: `${size.width}px`,
+        height: isCollapsed ? 'auto' : `${size.height}px`,
+        transition: isDragging || isResizing ? 'none' : 'all 0.2s ease'
+      }}
     >
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-[var(--border)]">
-        <h3 className="text-sm font-medium text-[var(--foreground)]">{title}</h3>
+      {/* Header with collapse toggle and drag handle */}
+      <div 
+        className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between bg-[var(--muted)] cursor-grab active:cursor-grabbing"
+        onMouseDown={handleDragStart}
+      >
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={toggleCollapse}
+            className="p-1 h-6 w-6"
+          >
+            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          </Button>
+          <h3 className="text-sm font-medium text-[var(--foreground)]">{title}</h3>
+        </div>
+        
+        <Move className="w-4 h-4 text-[var(--muted-foreground)]" />
       </div>
 
-      {/* Video Container */}
-      <div className="relative bg-black">
-        <video
-          ref={videoRef}
-          src={src}
-          className="w-full h-auto max-h-96"
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-        />
+      {/* Video Container - only show when not collapsed */}
+      {!isCollapsed && (
+        <div className="relative bg-black" style={{ height: `${size.height - 60}px` }}>
+          <video
+            ref={videoRef}
+            src={src}
+            className="w-full h-full object-contain"
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => setIsPlaying(false)}
+          />
 
-        {/* Video Controls Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          {/* Progress Bar */}
-          <div 
-            className="w-full h-1 bg-white/20 rounded-full mb-3 cursor-pointer"
-            onClick={handleSeek}
-          >
+          {/* Video Controls Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+            {/* Progress Bar */}
             <div 
-              className="h-full bg-[var(--primary)] rounded-full transition-all"
-              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-            />
-          </div>
+              className="w-full h-1 bg-white/20 rounded-full mb-2 cursor-pointer"
+              onClick={handleSeek}
+            >
+              <div 
+                className="h-full bg-[var(--primary)] rounded-full transition-all"
+                style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+              />
+            </div>
 
-          {/* Control Buttons */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => skipTime(-10)}
-                className="text-white hover:bg-white/20"
-              >
-                <SkipBack className="w-4 h-4" />
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={togglePlay}
-                className="text-white hover:bg-white/20"
-              >
-                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => skipTime(10)}
-                className="text-white hover:bg-white/20"
-              >
-                <SkipForward className="w-4 h-4" />
-              </Button>
-
-              <div className="flex items-center space-x-2 ml-4">
+            {/* Control Buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-1">
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={toggleMute}
-                  className="text-white hover:bg-white/20"
+                  onClick={() => skipTime(-10)}
+                  className="text-white hover:bg-white/20 p-1 h-7 w-7"
                 >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  <SkipBack className="w-3 h-3" />
                 </Button>
-                
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-white/20 rounded-lg appearance-none slider"
-                />
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={togglePlay}
+                  className="text-white hover:bg-white/20 p-1 h-7 w-7"
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => skipTime(10)}
+                  className="text-white hover:bg-white/20 p-1 h-7 w-7"
+                >
+                  <SkipForward className="w-3 h-3" />
+                </Button>
+
+                <div className="flex items-center space-x-1 ml-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={toggleMute}
+                    className="text-white hover:bg-white/20 p-1 h-7 w-7"
+                  >
+                    {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                  </Button>
+                  
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-16 h-1 bg-white/20 rounded-lg appearance-none slider"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-white text-xs font-mono">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={toggleFullscreen}
+                  className="text-white hover:bg-white/20 p-1 h-7 w-7"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center space-x-4">
-              <span className="text-white text-sm font-mono">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={toggleFullscreen}
-                className="text-white hover:bg-white/20"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </Button>
+          {/* Resize Handle - bottom right corner */}
+          <div
+            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-[var(--muted)]/50 hover:bg-[var(--muted)] border-l border-t border-[var(--border)] rounded-tl-md"
+            onMouseDown={handleResizeStart}
+          >
+            <div className="absolute bottom-1 right-1 w-2 h-2">
+              <div className="w-full h-0.5 bg-[var(--muted-foreground)] mb-0.5"></div>
+              <div className="w-full h-0.5 bg-[var(--muted-foreground)]"></div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
