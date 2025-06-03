@@ -1923,7 +1923,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           
                           return (
                             <div
-                              key={`selection-${track.id}-${clip.id}`}
+                              key={`selection-${clip.id}`}
                               className="absolute top-0 bottom-0 bg-[var(--primary)]/30 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
                               style={{
                                 left: `${leftPosition}px`,
