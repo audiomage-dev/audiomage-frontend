@@ -1656,19 +1656,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               onClick={(e) => handleTrackSelect(track.id, e)}
               onContextMenu={(e) => handleTrackRightClick(e, track.id)}
             >
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center space-x-2 min-w-0">
-                  <div 
-                    className="w-2 h-2 rounded-sm flex-shrink-0" 
-                    style={{ backgroundColor: track.color }}
-                  ></div>
-                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                    {track.name}
-                  </span>
-                  {track.type === 'ai-generated' && (
-                    <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                  )}
-                </div>
+              <div className="flex items-center space-x-2 min-w-0 mb-2">
+                <div 
+                  className="w-2 h-2 rounded-sm flex-shrink-0" 
+                  style={{ backgroundColor: track.color }}
+                ></div>
+                <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                  {track.name}
+                </span>
+                {track.type === 'ai-generated' && (
+                  <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
                   <Button
                     onClick={(e) => {
@@ -1701,10 +1701,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     S
                   </Button>
                 </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
-                <span>{track.type}</span>
-                <span>{track.clips?.length || 0} clips</span>
+                <span className="text-xs text-[var(--muted-foreground)]">{track.clips?.length || 0} clips</span>
               </div>
             </div>
           ))}
