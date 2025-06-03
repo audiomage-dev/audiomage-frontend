@@ -1668,7 +1668,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                 )}
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col space-y-1">
                 <div className="flex items-center space-x-1">
                   <Button
                     onClick={(e) => {
@@ -1677,9 +1677,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     }}
                     variant="ghost"
                     size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs ${
+                    className={`h-5 w-5 p-0 rounded text-xs border border-white/20 ${
                       track.muted 
-                        ? 'bg-[var(--red)] text-white' 
+                        ? 'bg-[var(--red)] text-white border-white/40' 
                         : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
                     }`}
                   >
@@ -1692,9 +1692,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     }}
                     variant="ghost"
                     size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs ${
+                    className={`h-5 w-5 p-0 rounded text-xs border border-white/20 ${
                       track.soloed 
-                        ? 'bg-[var(--yellow)] text-black' 
+                        ? 'bg-[var(--yellow)] text-black border-white/40' 
                         : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
                     }`}
                   >
