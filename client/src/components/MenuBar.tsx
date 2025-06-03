@@ -36,7 +36,8 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  Clock
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -491,6 +492,7 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
   const [isEditingName, setIsEditingName] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -629,6 +631,17 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
           </Button>
 
 
+
+          {/* Help Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHelpModal(true)}
+            className="h-8 w-8 p-0"
+            title="Help"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Button>
 
           {/* Notification Bell */}
           <div className="relative" ref={notificationsRef}>

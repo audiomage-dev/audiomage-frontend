@@ -302,22 +302,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         </div>
       )
     },
-    {
-      id: 'help',
-      icon: <HelpCircle className="w-5 h-5" />,
-      label: 'Help & Tips',
-      component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Quick Help</h3>
-          <div className="space-y-2 text-xs text-[var(--muted-foreground)]">
-            <div>• Press Space to play/pause</div>
-            <div>• Ctrl+Z to undo</div>
-            <div>• Ctrl+S to save project</div>
-            <div>• Right-click for context menus</div>
-          </div>
-        </div>
-      )
-    }
+
   ];
 
   return (
