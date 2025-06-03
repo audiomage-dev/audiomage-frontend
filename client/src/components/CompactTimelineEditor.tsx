@@ -87,6 +87,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     currentTrackIndex: number;
     currentOffsetX: number;
     currentOffsetY: number;
+    initialGrabOffset: number; // Where within the clip the mouse grabbed it
     selectedClips?: Array<{
       clipId: string;
       trackId: string;
@@ -408,6 +409,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         console.log('Group dragging selected clips:', selectedClips.length);
       }
       
+      // Calculate where within the clip the mouse grabbed it
+      const clipElement = e.currentTarget as HTMLElement;
+      const clipRect = clipElement.getBoundingClientRect();
+      const initialGrabOffset = e.clientX - clipRect.left;
+      
       const dragState = {
         clipId,
         trackId,
@@ -418,6 +424,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         currentTrackIndex: trackIndex,
         currentOffsetX: 0,
         currentOffsetY: 0,
+        initialGrabOffset: initialGrabOffset, // Store where mouse grabbed within clip
         selectedClips: selectedClips.length > 0 ? selectedClips : undefined
       };
       
@@ -460,18 +467,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         const containerRect = timelineContainer.getBoundingClientRect();
         const scrollLeft = timelineContainer.scrollLeft || 0;
+        
+        // Calculate exact position compensating for initial grab offset
         const relativeX = e.clientX - containerRect.left + scrollLeft;
+        const adjustedX = relativeX - dragState.initialGrabOffset; // Subtract where mouse grabbed within clip
         
         // Calculate exact time position - use consistent pixel-to-time conversion
         const pixelsPerSecond = 60 * zoomLevel;
-        const rawNewStartTime = Math.max(0, relativeX / pixelsPerSecond);
+        const rawNewStartTime = Math.max(0, adjustedX / pixelsPerSecond);
         const newStartTime = calculateSnappedTime(rawNewStartTime);
         
-        console.log(`Exact position calculation:
+        console.log(`Precise position calculation:
           Mouse clientX: ${e.clientX}
           Container left: ${containerRect.left}
           Scroll left: ${scrollLeft}
           Relative X: ${relativeX}
+          Initial grab offset: ${dragState.initialGrabOffset}
+          Adjusted X: ${adjustedX}
           Pixels per second: ${pixelsPerSecond}
           Raw time: ${rawNewStartTime.toFixed(3)}s
           Snapped time: ${newStartTime.toFixed(3)}s`);
@@ -1272,6 +1284,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       currentTrackIndex: referenceClip.originalTrackIndex,
       currentOffsetX: 0,
       currentOffsetY: 0,
+      initialGrabOffset: 0, // For multi-selection, use 0 as reference
       selectedClips
     };
     
