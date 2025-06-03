@@ -1742,7 +1742,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 
                 return (
                   <div
-                    key={`${componentId}-minute-marker-${minuteIndex}`}
+                    key={`minute-marker-${minuteIndex}-${minuteStartTime}`}
                     className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                     style={{ left: `${position}%` }}
                   >
