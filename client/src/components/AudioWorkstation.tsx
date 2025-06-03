@@ -129,16 +129,11 @@ export function AudioWorkstation() {
 
   return (
     <div className="h-screen flex flex-col select-none bg-[var(--background)]">
-      {/* Top Menu Bar */}
+      {/* Top Menu Bar with Session Tabs */}
       <div className="flex-none">
-        <MenuBar />
-      </div>
-      
-      {/* Session Tabs */}
-      <div className="flex-none h-10 border-b border-[var(--border)]">
-        <SessionTabs 
-          sessions={sessions} 
-          onSwitchSession={switchSession} 
+        <MenuBar 
+          sessions={sessions}
+          onSwitchSession={switchSession}
         />
       </div>
       

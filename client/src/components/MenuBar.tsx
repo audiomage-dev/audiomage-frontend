@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'wouter';
 import { useTheme } from '../contexts/ThemeContext';
+import { SessionTabs } from './SessionTabs';
 import audiomageLogoPath from '@assets/audiomage-logo-transparent.png';
 import { 
   Search, 
@@ -477,7 +478,12 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
   );
 }
 
-export function MenuBar() {
+interface MenuBarProps {
+  sessions?: any[];
+  onSwitchSession?: (sessionId: string) => void;
+}
+
+export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
@@ -547,7 +553,7 @@ export function MenuBar() {
   return (
     <>
       <div className="h-12 bg-gradient-to-r from-[var(--background)] via-[var(--muted)] to-[var(--background)] border-b border-[var(--border)] px-6 flex items-center justify-between shadow-lg">
-        {/* Left side - Project Info */}
+        {/* Left side - Project Info & Session Tabs */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Link href="/home">
@@ -579,6 +585,19 @@ export function MenuBar() {
             <span className="text-xs text-[var(--muted-foreground)]">•</span>
             <span className="text-xs text-[var(--muted-foreground)]">Saved</span>
           </div>
+          
+          {/* Session Tabs */}
+          {sessions.length > 0 && (
+            <div className="flex items-center">
+              <span className="text-xs text-[var(--muted-foreground)] mr-2">|</span>
+              <div className="max-w-md">
+                <SessionTabs 
+                  sessions={sessions} 
+                  onSwitchSession={onSwitchSession}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Center - Quick Actions */}
