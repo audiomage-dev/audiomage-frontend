@@ -235,9 +235,9 @@ export function MovableVideoWindow({
         left: position.x,
         top: position.y,
         width: size.width,
-        height: size.height,
+        height: isCollapsed ? 'auto' : size.height,
         minWidth: 320,
-        minHeight: 240
+        minHeight: isCollapsed ? 'auto' : 240
       }}
       onMouseDown={handleMouseDown}
     >
