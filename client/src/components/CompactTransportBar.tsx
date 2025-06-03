@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video, Shuffle } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video, Shuffle, Grid3x3, Target, Move } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -29,6 +29,9 @@ interface CompactTransportBarProps {
   isMidiLocked?: boolean;
   onTimelineLockToggle?: () => void;
   onMidiLockToggle?: () => void;
+  // Snap mode management
+  snapMode?: 'free' | 'grid' | 'beat' | 'measure';
+  onSnapModeChange?: (mode: 'free' | 'grid' | 'beat' | 'measure') => void;
   // Metronome functions
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
@@ -330,10 +333,11 @@ export function CompactTransportBar({
   isMidiLocked = false,
   onTimelineLockToggle,
   onMidiLockToggle,
+  snapMode = 'grid',
+  onSnapModeChange,
   onBpmChange,
   onTimeSignatureChange,
-  onVideoPlayerToggle,
-  onCrossFadeToggle
+  onVideoPlayerToggle
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
@@ -622,6 +626,36 @@ export function CompactTransportBar({
             (isMidiLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />)
           }
         </Button>
+
+        {/* Snap Mode Toggle */}
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-6 w-6 p-0 hover:bg-[var(--muted)] transition-colors ${
+              snapMode !== 'free' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' : ''
+            }`}
+            onClick={() => {
+              const modes: ('free' | 'grid' | 'beat' | 'measure')[] = ['free', 'grid', 'beat', 'measure'];
+              const currentIndex = modes.indexOf(snapMode);
+              const nextMode = modes[(currentIndex + 1) % modes.length];
+              onSnapModeChange?.(nextMode);
+            }}
+            title={`Snap: ${snapMode.toUpperCase()} (Click to cycle)`}
+          >
+            {snapMode === 'free' && <Move className="w-3 h-3" />}
+            {snapMode === 'grid' && <Grid3x3 className="w-3 h-3" />}
+            {snapMode === 'beat' && <Target className="w-3 h-3" />}
+            {snapMode === 'measure' && <Music className="w-3 h-3" />}
+          </Button>
+          
+          {/* Snap Mode Indicator */}
+          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+            <span className="text-[8px] text-[var(--muted-foreground)] font-mono uppercase">
+              {snapMode}
+            </span>
+          </div>
+        </div>
 
         {transport.isRecording && (
           <div className="flex items-center space-x-1">

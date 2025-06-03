@@ -38,6 +38,7 @@ interface CompactTimelineEditorProps {
   zoomLevel?: number;
   bpm?: number;
   timeSignature?: [number, number];
+  snapMode?: 'free' | 'grid' | 'beat' | 'measure';
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;

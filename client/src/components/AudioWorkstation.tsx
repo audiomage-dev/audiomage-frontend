@@ -63,6 +63,9 @@ export function AudioWorkstation() {
   // Video player state
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   
+  // Snap mode state
+  const [snapMode, setSnapMode] = useState<'free' | 'grid' | 'beat' | 'measure'>('grid');
+  
 
   
   // Global MIDI playback control functions
@@ -189,6 +192,8 @@ export function AudioWorkstation() {
               isMidiLocked={isMidiLocked}
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
+              snapMode={snapMode}
+              onSnapModeChange={setSnapMode}
               onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
