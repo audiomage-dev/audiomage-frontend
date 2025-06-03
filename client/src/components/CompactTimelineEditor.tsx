@@ -260,8 +260,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const bufferTime = Math.max(maxTime * 0.2, 60);
     const totalTime = maxTime + bufferTime;
     
-    // Scale based on zoom level with better pixel-per-second ratio
-    const pixelsPerSecond = Math.max(2, 4 * zoomLevel); // Better scaling
+    // Use same pixel-per-second ratio as clip rendering for consistency
+    const pixelsPerSecond = 60 * zoomLevel; // Match clip rendering calculation
     const calculatedWidth = totalTime * pixelsPerSecond;
     
     // Ensure minimum width for usability
@@ -1725,7 +1725,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {(() => {
               // Calculate minute markers based on actual timeline width
               const timelineWidthPx = getTimelineWidth();
-              const pixelsPerSecond = Math.max(2, 4 * zoomLevel);
+              const pixelsPerSecond = 60 * zoomLevel; // Match timeline width calculation
               const totalTimelineSeconds = timelineWidthPx / pixelsPerSecond;
               const totalMinutes = Math.ceil(totalTimelineSeconds / 60);
               
