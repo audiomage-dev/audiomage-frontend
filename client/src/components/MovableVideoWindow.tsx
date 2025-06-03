@@ -230,7 +230,7 @@ export function MovableVideoWindow({
       {/* Window Header */}
       <div
         ref={headerRef}
-        className="flex items-center justify-between p-2 bg-[var(--muted)] border-b border-[var(--border)] cursor-move select-none"
+        className="flex items-center justify-between p-2 bg-[var(--muted)] border-b border-[var(--border)] cursor-move select-none video-window-header"
       >
         <div className="flex items-center gap-2">
           <Move className="w-4 h-4 text-[var(--muted-foreground)]" />
@@ -339,7 +339,7 @@ export function MovableVideoWindow({
       {/* Resize Handle */}
       <div
         ref={resizeHandleRef}
-        className="absolute bottom-0 right-0 w-4 h-4 bg-[var(--muted)] cursor-se-resize"
+        className="absolute bottom-0 right-0 w-4 h-4 bg-[var(--muted)] cursor-se-resize resize-handle"
         onMouseDown={handleResizeMouseDown}
         style={{
           clipPath: 'polygon(100% 0%, 0% 100%, 100% 100%)'
