@@ -209,6 +209,7 @@ export function AudioWorkstation() {
                 zoomLevel={zoomLevel}
                 bpm={currentProject.bpm}
                 timeSignature={currentProject.timeSignature}
+                snapMode={snapMode}
                 onTrackMute={toggleTrackMute}
                 onTrackSolo={toggleTrackSolo}
                 onTrackSelect={setSelectedTrack}

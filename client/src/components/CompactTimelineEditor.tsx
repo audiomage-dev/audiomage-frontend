@@ -48,7 +48,7 @@ interface CompactTimelineEditorProps {
   isLocked?: boolean;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
@@ -137,6 +137,37 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
   const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
+
+  // Snap calculation function
+  const calculateSnappedTime = useCallback((timeInSeconds: number): number => {
+    if (snapMode === 'free') {
+      return timeInSeconds;
+    }
+    
+    const pixelsPerSecond = 60 * zoomLevel;
+    
+    switch (snapMode) {
+      case 'grid': {
+        // Snap to 1-second grid
+        const gridSize = 1; // 1 second
+        return Math.round(timeInSeconds / gridSize) * gridSize;
+      }
+      case 'beat': {
+        // Snap to beat (quarter note) - 60 seconds per minute / BPM = seconds per beat
+        const secondsPerBeat = 60 / bpm;
+        return Math.round(timeInSeconds / secondsPerBeat) * secondsPerBeat;
+      }
+      case 'measure': {
+        // Snap to measure - 4 beats per measure (assuming 4/4 time signature)
+        const beatsPerMeasure = timeSignature[0];
+        const secondsPerBeat = 60 / bpm;
+        const secondsPerMeasure = beatsPerMeasure * secondsPerBeat;
+        return Math.round(timeInSeconds / secondsPerMeasure) * secondsPerMeasure;
+      }
+      default:
+        return timeInSeconds;
+    }
+  }, [snapMode, zoomLevel, bpm, timeSignature]);
 
   // Virtual extension action handlers
   const handleExtensionAction = useCallback((action: 'blank' | 'ai' | 'stretch') => {
@@ -413,7 +444,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           console.log(`Group moving ${dragState.selectedClips.length} clips`);
           
           // Calculate the primary clip's movement (the one being dragged)
-          const primaryClipDeltaTime = (deltaX / timelineWidth) * totalTime;
+          const rawDeltaTime = (deltaX / timelineWidth) * totalTime;
+          const rawNewStartTime = dragState.originalStartTime + rawDeltaTime;
+          const snappedNewStartTime = calculateSnappedTime(rawNewStartTime);
+          const primaryClipDeltaTime = snappedNewStartTime - dragState.originalStartTime;
           const primaryClipTrackDelta = Math.round(deltaY / trackHeight);
           
           // Check if all clips can move to their new positions without conflicts
