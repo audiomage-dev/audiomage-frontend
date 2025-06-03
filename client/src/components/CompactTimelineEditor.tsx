@@ -1598,8 +1598,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       <div className="w-64 border-r border-[var(--border)] flex flex-col">
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
-          <div className="flex items-center justify-between px-3 h-full">
-            <span className="text-xs font-medium text-[var(--muted-foreground)]">TRACKS</span>
+          <div className="flex items-center justify-end px-3 h-full">
             <div className="flex items-center space-x-1">
               <Button
                 onClick={() => setCurrentTool('select')}
