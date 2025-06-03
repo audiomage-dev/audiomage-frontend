@@ -415,7 +415,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const timelineWidth = getTimelineWidth();
         const totalTime = timelineWidth / zoomLevel;
         const deltaTime = (deltaX / timelineWidth) * totalTime;
-        const newStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
+        const rawNewStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
+        const newStartTime = calculateSnappedTime(rawNewStartTime);
         
         console.log('Time calculation:', { 
           timelineWidth, 
