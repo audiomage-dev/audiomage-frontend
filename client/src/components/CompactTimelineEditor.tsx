@@ -141,32 +141,41 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   // Snap calculation function
   const calculateSnappedTime = useCallback((timeInSeconds: number): number => {
     if (snapMode === 'free') {
+      console.log('Snap: FREE mode - no snapping applied');
       return timeInSeconds;
     }
     
-    const pixelsPerSecond = 60 * zoomLevel;
+    let snappedTime = timeInSeconds;
     
     switch (snapMode) {
       case 'grid': {
-        // Snap to 1-second grid
-        const gridSize = 1; // 1 second
-        return Math.round(timeInSeconds / gridSize) * gridSize;
+        // Snap to 0.5-second grid for more noticeable effect
+        const gridSize = 0.5; // 0.5 seconds
+        snappedTime = Math.round(timeInSeconds / gridSize) * gridSize;
+        console.log(`Snap: GRID mode - ${timeInSeconds.toFixed(3)}s -> ${snappedTime.toFixed(3)}s (${gridSize}s grid)`);
+        break;
       }
       case 'beat': {
         // Snap to beat (quarter note) - 60 seconds per minute / BPM = seconds per beat
         const secondsPerBeat = 60 / bpm;
-        return Math.round(timeInSeconds / secondsPerBeat) * secondsPerBeat;
+        snappedTime = Math.round(timeInSeconds / secondsPerBeat) * secondsPerBeat;
+        console.log(`Snap: BEAT mode - ${timeInSeconds.toFixed(3)}s -> ${snappedTime.toFixed(3)}s (${secondsPerBeat.toFixed(3)}s per beat)`);
+        break;
       }
       case 'measure': {
         // Snap to measure - 4 beats per measure (assuming 4/4 time signature)
         const beatsPerMeasure = timeSignature[0];
         const secondsPerBeat = 60 / bpm;
         const secondsPerMeasure = beatsPerMeasure * secondsPerBeat;
-        return Math.round(timeInSeconds / secondsPerMeasure) * secondsPerMeasure;
+        snappedTime = Math.round(timeInSeconds / secondsPerMeasure) * secondsPerMeasure;
+        console.log(`Snap: MEASURE mode - ${timeInSeconds.toFixed(3)}s -> ${snappedTime.toFixed(3)}s (${secondsPerMeasure.toFixed(3)}s per measure)`);
+        break;
       }
       default:
-        return timeInSeconds;
+        snappedTime = timeInSeconds;
     }
+    
+    return Math.max(0, snappedTime); // Ensure non-negative
   }, [snapMode, zoomLevel, bpm, timeSignature]);
 
   // Virtual extension action handlers
@@ -256,7 +265,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     
     // Ensure minimum width for usability
     return Math.max(800, calculatedWidth);
-  }, [tracks, zoomLevel]);
+  }, [tracks, zoomLevel, snapMode, bpm, timeSignature]);
 
   // Canvas drawing function for grid background
   const drawCanvasGrid = useCallback(() => {
@@ -277,16 +286,50 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     ctx.globalAlpha = 0.3;
     ctx.lineWidth = 1;
 
-    // Vertical grid lines (time markers every 30 seconds)
+    // Draw snap grid lines based on current snap mode
     const timelineWidth = getTimelineWidth();
     const totalTime = timelineWidth / zoomLevel;
-    const gridInterval = (30 / totalTime) * timelineWidth; // 30 seconds
     
-    for (let i = 0; i < width; i += gridInterval) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
-      ctx.stroke();
+    let snapInterval = 30; // Default 30 seconds
+    let snapColor = '#e5e7eb';
+    let snapAlpha = 0.3;
+    
+    switch (snapMode) {
+      case 'grid':
+        snapInterval = 0.5; // 0.5 second intervals
+        snapColor = '#3b82f6'; // Blue for grid snap
+        snapAlpha = 0.4;
+        break;
+      case 'beat':
+        snapInterval = 60 / bpm; // Beat intervals
+        snapColor = '#10b981'; // Green for beat snap
+        snapAlpha = 0.4;
+        break;
+      case 'measure':
+        const beatsPerMeasure = timeSignature[0];
+        snapInterval = (60 / bpm) * beatsPerMeasure; // Measure intervals
+        snapColor = '#f59e0b'; // Orange for measure snap
+        snapAlpha = 0.4;
+        break;
+      default:
+        snapInterval = 30; // Fallback to 30 seconds
+        snapColor = '#e5e7eb';
+        snapAlpha = 0.3;
+    }
+    
+    const gridInterval = (snapInterval / totalTime) * timelineWidth;
+    
+    // Only draw if grid interval is reasonable (not too dense)
+    if (gridInterval > 2) {
+      ctx.strokeStyle = snapColor;
+      ctx.globalAlpha = snapAlpha;
+      
+      for (let i = 0; i < width; i += gridInterval) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+      }
     }
 
     // Horizontal track lines
@@ -299,7 +342,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks, zoomLevel, getTimelineWidth]);
+  }, [tracks, zoomLevel, getTimelineWidth, snapMode, bpm, timeSignature]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
@@ -417,6 +460,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const deltaTime = (deltaX / timelineWidth) * totalTime;
         const rawNewStartTime = Math.max(0, dragState.originalStartTime + deltaTime);
         const newStartTime = calculateSnappedTime(rawNewStartTime);
+        
+        console.log(`Drag calculation: raw=${rawNewStartTime.toFixed(3)}s, snapped=${newStartTime.toFixed(3)}s, snapMode=${snapMode}`);
         
         console.log('Time calculation:', { 
           timelineWidth, 

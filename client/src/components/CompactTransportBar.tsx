@@ -632,29 +632,33 @@ export function CompactTransportBar({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-6 w-6 p-0 hover:bg-[var(--muted)] transition-colors ${
-              snapMode !== 'free' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' : ''
+            className={`h-6 w-8 px-1 hover:bg-[var(--muted)] transition-colors border ${
+              snapMode !== 'free' ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-[var(--primary)]/40' : 'border-[var(--border)]'
             }`}
             onClick={() => {
               const modes: ('free' | 'grid' | 'beat' | 'measure')[] = ['free', 'grid', 'beat', 'measure'];
               const currentIndex = modes.indexOf(snapMode);
               const nextMode = modes[(currentIndex + 1) % modes.length];
+              console.log(`Snap mode changing from ${snapMode} to ${nextMode}`);
               onSnapModeChange?.(nextMode);
             }}
-            title={`Snap: ${snapMode.toUpperCase()} (Click to cycle)`}
+            title={`Snap Mode: ${snapMode.toUpperCase()} - ${
+              snapMode === 'free' ? 'No snapping' :
+              snapMode === 'grid' ? 'Snap to 0.5-second grid' :
+              snapMode === 'beat' ? 'Snap to quarter note beats' :
+              'Snap to measures'
+            } (Click to cycle)`}
           >
-            {snapMode === 'free' && <Move className="w-3 h-3" />}
-            {snapMode === 'grid' && <Grid3x3 className="w-3 h-3" />}
-            {snapMode === 'beat' && <Target className="w-3 h-3" />}
-            {snapMode === 'measure' && <Music className="w-3 h-3" />}
+            <div className="flex flex-col items-center">
+              {snapMode === 'free' && <Move className="w-3 h-3" />}
+              {snapMode === 'grid' && <Grid3x3 className="w-3 h-3" />}
+              {snapMode === 'beat' && <Target className="w-3 h-3" />}
+              {snapMode === 'measure' && <Music className="w-3 h-3" />}
+              <span className="text-[6px] font-mono uppercase leading-none mt-0.5">
+                {snapMode.substring(0, 4)}
+              </span>
+            </div>
           </Button>
-          
-          {/* Snap Mode Indicator */}
-          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-            <span className="text-[8px] text-[var(--muted-foreground)] font-mono uppercase">
-              {snapMode}
-            </span>
-          </div>
         </div>
 
         {transport.isRecording && (
