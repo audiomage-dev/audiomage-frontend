@@ -33,6 +33,7 @@ interface CompactTransportBarProps {
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
   onVideoPlayerToggle?: () => void;
+  onCrossFadeToggle?: () => void;
 }
 
 interface MetronomeProps {
@@ -332,7 +333,8 @@ export function CompactTransportBar({
   onMidiLockToggle,
   onBpmChange,
   onTimeSignatureChange,
-  onVideoPlayerToggle
+  onVideoPlayerToggle,
+  onCrossFadeToggle
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
@@ -534,6 +536,15 @@ export function CompactTransportBar({
           onClick={onVideoPlayerToggle}
         >
           <Video className="w-3 h-3" />
+        </button>
+
+        {/* Cross Fade Button */}
+        <button
+          className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)] bg-[var(--background)] border border-[var(--border)] rounded"
+          title="Cross Fade"
+          onClick={onCrossFadeToggle}
+        >
+          <Shuffle className="w-3 h-3" />
         </button>
 
         {/* View Mode Toggle */}

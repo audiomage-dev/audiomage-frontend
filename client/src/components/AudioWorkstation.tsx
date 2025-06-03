@@ -203,6 +203,7 @@ export function AudioWorkstation() {
               onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
+              onCrossFadeToggle={() => setIsCrossFadePanelOpen(!isCrossFadePanelOpen)}
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
@@ -317,6 +318,16 @@ export function AudioWorkstation() {
         onClose={() => setIsVideoPlayerOpen(false)}
         transport={transport}
         onVideoTimeUpdate={seekTo}
+      />
+
+      {/* Cross Fade Panel */}
+      <CrossFadePanel
+        isOpen={isCrossFadePanelOpen}
+        onClose={() => setIsCrossFadePanelOpen(false)}
+        tracks={tracks}
+        transport={transport}
+        onApplyCrossFade={addCrossFade}
+        selectedTracks={selectedTracksForCrossFade}
       />
     </div>
   );
