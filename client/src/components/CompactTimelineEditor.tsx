@@ -437,7 +437,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const deltaY = e.clientY - dragState.startY;
         
         // Calculate new track position
-        const trackHeight = 96;
+        const trackHeight = 64;
         const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
           dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
         ));
@@ -490,7 +490,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         const deltaY = e.clientY - dragState.startY;
         
-        const trackHeight = 96;
+        const trackHeight = 64;
         const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
           dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
         ));
