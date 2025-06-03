@@ -335,7 +335,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
     // Horizontal track lines
     for (let i = 1; i < tracks.length; i++) {
-      const y = i * 96;
+      const y = i * 64;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
@@ -1648,7 +1648,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           {tracks.map((track, index) => (
             <div
               key={`track-sidebar-${track.id}-${index}`}
-              className={`h-24 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
+              className={`h-16 border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
                 selectedTrackIds.includes(track.id) 
                   ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
                   : 'hover:bg-[var(--accent)]/50'
@@ -1772,7 +1772,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             className="relative" 
             style={{ 
               width: `${getTimelineWidth()}px`, 
-              height: `${tracks.length * 96}px`,
+              height: `${tracks.length * 64}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
@@ -1781,19 +1781,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               ref={canvasRef}
               className="absolute top-0 left-0 pointer-events-none z-0"
               width={getTimelineWidth()}
-              height={tracks.length * 96}
+              height={tracks.length * 64}
             />
             {tracks.map((track, index) => (
               <div
                 key={`track-timeline-${track.id}-${index}`}
-                className={`absolute left-0 right-0 h-24 transition-colors ${
+                className={`absolute left-0 right-0 h-16 transition-colors ${
                   selectedTrackIds.includes(track.id) 
                     ? 'bg-[var(--accent)]/20' 
                     : draggingClip && draggingClip.currentTrackIndex === index
                       ? 'bg-[var(--primary)]/20 border-2 border-[var(--primary)] border-dashed'
                       : 'hover:bg-[var(--muted)]/20'
                 }`}
-                style={{ top: `${index * 96}px` }}
+                style={{ top: `${index * 64}px` }}
                 onClick={(e) => handleTrackSelect(track.id, e)}
                 onContextMenu={(e) => handleTrackRightClick(e, track.id)}
               >
