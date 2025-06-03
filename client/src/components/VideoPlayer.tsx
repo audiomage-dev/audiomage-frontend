@@ -139,15 +139,9 @@ export function VideoPlayer({
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        {/* Header */}
+        {/* Header - Only Title */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 rounded-full bg-[var(--primary)]"></div>
-            <h2 className="text-lg font-semibold text-[var(--foreground)]">Video Player</h2>
-            <div className="text-sm text-[var(--muted-foreground)] font-mono">
-              Synced with Timeline
-            </div>
-          </div>
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">SampleVideo_1280x720_1mb.mp4</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -158,11 +152,11 @@ export function VideoPlayer({
           </Button>
         </div>
 
-        {/* Video Container */}
+        {/* Video Container - Clean, no controls */}
         <div className="relative bg-black">
           <video
             ref={videoRef}
-            className="w-full h-auto max-h-[60vh] object-contain"
+            className="w-full h-auto max-h-[70vh] object-contain"
             onTimeUpdate={handleVideoTimeUpdate}
             onLoadedMetadata={handleVideoLoadedMetadata}
             onPlay={handleVideoPlay}
@@ -175,84 +169,6 @@ export function VideoPlayer({
               Video not supported in this browser
             </div>
           </video>
-
-          {/* Video Controls Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-            <div className="flex items-center space-x-4 text-white">
-              {/* Play/Pause */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-white/20"
-                onClick={() => {
-                  if (isVideoPlaying) {
-                    videoRef.current?.pause();
-                  } else {
-                    videoRef.current?.play();
-                  }
-                }}
-              >
-                {isVideoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-
-              {/* Time Display */}
-              <div className="text-sm font-mono">
-                {formatTime(videoCurrentTime)} / {formatTime(videoDuration)}
-              </div>
-
-              {/* Progress Bar */}
-              <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[var(--primary)] transition-all duration-100"
-                  style={{ width: `${videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0}%` }}
-                />
-              </div>
-
-              {/* Volume Control */}
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-white hover:bg-white/20"
-                  onClick={toggleMute}
-                >
-                  {isVideoMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </Button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={isVideoMuted ? 0 : videoVolume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="w-16 h-1 bg-white/30 rounded-full appearance-none slider"
-                />
-              </div>
-
-              {/* Fullscreen */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-white/20"
-                onClick={toggleFullscreen}
-              >
-                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sync Status */}
-        <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)]/30">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-2 text-[var(--muted-foreground)]">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span>Timeline Sync Active</span>
-            </div>
-            <div className="text-[var(--muted-foreground)] font-mono">
-              Transport: {formatTime(transport.currentTime)}
-            </div>
-          </div>
         </div>
       </div>
     </div>
