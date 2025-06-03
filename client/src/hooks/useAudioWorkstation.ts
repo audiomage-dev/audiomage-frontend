@@ -1,201 +1,148 @@
-import { useState, useEffect, useCallback } from 'react';
-import { AudioTrack, Project, Session, TransportState, AIAnalysis, MixerChannel } from '../types/audio';
+import { useState, useCallback } from 'react';
+import { AudioTrack, AudioClip, TransportState, MixerChannel, AudioEffect } from '../types/audio';
 
 export function useAudioWorkstation() {
   // Transport state
   const [transport, setTransport] = useState<TransportState>({
     isPlaying: false,
-    isPaused: false,
-    isStopped: true,
     isRecording: false,
     currentTime: 0,
-    isLooping: false,
-  });
-
-  // Project data
-  const [currentProject, setCurrentProject] = useState<Project>({
-    id: '1',
-    name: 'Film_Mix_v3.amp',
-    tracks: [],
     bpm: 120,
     timeSignature: [4, 4],
-    sampleRate: 48000,
-    bufferSize: 256,
-    masterVolume: 75,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    isLooping: false,
+    loopStart: 0,
+    loopEnd: 64,
   });
 
-  // Sessions
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: '1',
-      projectId: '1',
-      name: 'Film_Mix_v3.amp',
-      isActive: true,
-      lastAccessed: new Date(),
-    },
-    {
-      id: '2',
-      projectId: '2',
-      name: 'Podcast_Master.amp',
-      isActive: false,
-      lastAccessed: new Date(Date.now() - 3600000),
-    },
-    {
-      id: '3',
-      projectId: '3',
-      name: 'Music_Prod_v1.amp',
-      isActive: false,
-      lastAccessed: new Date(Date.now() - 7200000),
-    },
+  // Current project
+  const [currentProject, setCurrentProject] = useState('Untitled Project');
+
+  // Session tabs
+  const [sessions, setSessions] = useState([
+    { id: '1', name: 'Main Session', isActive: true },
+    { id: '2', name: 'Alternate Mix', isActive: false },
+    { id: '3', name: 'Rough Draft', isActive: false },
   ]);
 
-  // Audio tracks
+  // Audio tracks - 6 categories for video post-production
   const [tracks, setTracks] = useState<AudioTrack[]>([
     {
-      id: '1',
+      id: 'video-input',
       name: 'Video Input',
-      type: 'video',
-      volume: 100,
+      type: 'audio',
+      volume: 75,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#5E81AC',
+      color: '#FF6B6B',
       clips: [
         {
-          id: 'clip-1',
-          name: 'Main_Video_Audio.wav',
-          filePath: 'Main_Video_Audio.wav',
+          id: 'clip-video-1',
+          name: 'Main_Video.mp4',
           startTime: 0,
-          duration: 180.0,
+          duration: 180,
           offset: 0,
-          volume: 100,
-          color: '#5E81AC',
-          waveformData: [50, 45, 60, 55, 70, 40, 65, 50, 75, 45, 60, 55, 70, 40, 65, 50, 75, 45, 60, 55, 70, 40, 65, 50, 75, 45, 60, 55, 70, 40, 65, 50, 75, 45, 60, 55, 70, 40, 65, 50]
+          volume: 75,
+          color: '#FF6B6B',
+          waveformData: [45, 60, 55, 70, 50, 65, 48, 72, 52, 68, 47, 75, 53, 67, 49, 73, 51, 69, 46, 74, 54, 66, 50, 71, 48, 67, 52, 73, 49, 68, 51, 74, 47, 69, 53, 72, 50, 70]
         }
       ],
-      effects: [],
+      effects: [
+        { id: '1', name: 'Noise Gate', type: 'gate', enabled: true, parameters: {} },
+        { id: '2', name: 'EQ - Video', type: 'equalizer', enabled: true, parameters: {} }
+      ],
     },
     {
-      id: '2',
+      id: 'dialogue',
       name: 'Dialogue',
       type: 'audio',
       volume: 85,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#88C0D0',
+      color: '#4ECDC4',
       clips: [
         {
-          id: 'clip-2',
-          name: 'Dialogue_Scene1.wav',
-          filePath: 'Dialogue_Scene1.wav',
-          startTime: 10.5,
-          duration: 45.2,
+          id: 'clip-dialogue-1',
+          name: 'Interview_01.wav',
+          startTime: 5,
+          duration: 45,
           offset: 0,
           volume: 85,
-          color: '#88C0D0',
-          waveformData: [60, 75, 50, 85, 65, 70, 80, 45, 90, 55, 75, 60, 85, 40, 80, 70, 60, 85, 75, 50, 90, 65, 75, 55, 85, 70, 60, 80, 75, 50, 85, 65, 70, 80, 55, 90, 60, 75, 85, 50]
+          color: '#4ECDC4',
+          waveformData: [65, 80, 70, 85, 60, 90, 68, 82, 72, 88, 64, 86, 69, 83, 67, 89, 71, 84, 63, 87, 73, 81, 66, 90, 70, 85, 68, 83, 72, 87, 65, 88, 69, 84, 71, 86, 67, 82]
         },
         {
-          id: 'clip-3',
-          name: 'Dialogue_Scene2.wav',
-          filePath: 'Dialogue_Scene2.wav',
-          startTime: 80.0,
-          duration: 32.8,
+          id: 'clip-dialogue-2',
+          name: 'Interview_02.wav',
+          startTime: 60,
+          duration: 38,
           offset: 0,
-          volume: 88,
-          color: '#88C0D0',
-          waveformData: [70, 80, 55, 90, 70, 75, 85, 50, 95, 60, 80, 65, 90, 45, 85, 75, 65, 90, 80, 55, 95, 70, 80, 60, 90, 75, 65, 85, 80, 55, 90, 70, 75, 85, 60, 95, 65, 80, 90, 55]
+          volume: 82,
+          color: '#4ECDC4',
+          waveformData: [62, 78, 67, 83, 58, 88, 65, 80, 69, 86, 61, 84, 66, 81, 64, 87, 68, 82, 60, 85, 70, 79, 63, 88, 67, 83, 65, 81, 69, 85, 62, 86, 66, 82, 68, 84, 64, 80]
         }
       ],
       effects: [
-        { id: '2', name: 'AI DeNoise Pro', type: 'noise-reduction', enabled: true, parameters: {} },
-        { id: '3', name: 'EQ - Voice', type: 'equalizer', enabled: true, parameters: {} },
-        { id: '4', name: 'Compressor', type: 'dynamics', enabled: true, parameters: {} },
+        { id: '3', name: 'De-esser', type: 'de-esser', enabled: true, parameters: {} },
+        { id: '4', name: 'Compressor', type: 'compressor', enabled: true, parameters: {} }
       ],
     },
     {
-      id: '3',
+      id: 'music',
       name: 'Music',
       type: 'audio',
-      volume: 75,
+      volume: 65,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#A3BE8C',
+      color: '#45B7D1',
       clips: [
         {
-          id: 'clip-4',
-          name: 'Background_Score.wav',
-          filePath: 'Background_Score.wav',
-          startTime: 5.0,
-          duration: 120.0,
+          id: 'clip-music-1',
+          name: 'Background_Music.wav',
+          startTime: 0,
+          duration: 180,
           offset: 0,
-          volume: 75,
-          color: '#A3BE8C',
-          waveformData: [40, 65, 35, 70, 45, 60, 55, 40, 75, 50, 65, 45, 70, 35, 60, 55, 45, 75, 50, 40, 70, 55, 65, 45, 75, 50, 40, 60, 55, 35, 70, 45, 65, 55, 40, 75, 50, 65, 70, 35]
-        },
-        {
-          id: 'clip-5',
-          name: 'Tension_Music.wav',
-          filePath: 'Tension_Music.wav',
-          startTime: 90.0,
-          duration: 45.0,
-          offset: 0,
-          volume: 80,
-          color: '#A3BE8C',
-          waveformData: [55, 80, 45, 85, 60, 75, 70, 50, 90, 65, 80, 55, 85, 45, 75, 70, 60, 90, 65, 50, 85, 70, 80, 60, 90, 65, 50, 75, 70, 45, 85, 60, 80, 70, 50, 90, 65, 80, 85, 45]
+          volume: 65,
+          color: '#45B7D1',
+          waveformData: [35, 50, 40, 55, 30, 60, 38, 52, 42, 58, 34, 56, 39, 53, 37, 59, 41, 54, 33, 57, 43, 51, 36, 60, 40, 55, 38, 53, 42, 57, 35, 58, 39, 54, 41, 56, 37, 52]
         }
       ],
       effects: [
-        { id: '5', name: 'EQ - Musical', type: 'equalizer', enabled: true, parameters: {} },
-        { id: '6', name: 'Limiter', type: 'dynamics', enabled: true, parameters: {} }
+        { id: '5', name: 'EQ - Music', type: 'equalizer', enabled: true, parameters: {} },
+        { id: '6', name: 'Reverb - Hall', type: 'reverb', enabled: true, parameters: {} }
       ],
     },
     {
-      id: '4',
+      id: 'foley',
       name: 'Foley',
       type: 'audio',
       volume: 70,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#EBCB8B',
+      color: '#96CEB4',
       clips: [
         {
-          id: 'clip-6',
-          name: 'Footsteps_Gravel.wav',
-          filePath: 'Footsteps_Gravel.wav',
-          startTime: 25.0,
-          duration: 15.0,
+          id: 'clip-foley-1',
+          name: 'Footsteps.wav',
+          startTime: 15,
+          duration: 8,
           offset: 0,
           volume: 70,
-          color: '#EBCB8B',
-          waveformData: [30, 50, 25, 60, 35, 45, 55, 30, 65, 40, 50, 35, 60, 25, 45, 55, 35, 65, 40, 30, 60, 45, 50, 35, 65, 40, 30, 45, 55, 25, 60, 35, 50, 45, 30, 65, 40, 50, 60, 25]
+          color: '#96CEB4',
+          waveformData: [25, 40, 30, 45, 20, 50, 28, 42, 32, 48, 24, 46, 29, 43, 27, 49, 31, 44, 23, 47, 33, 41, 26, 50, 30, 45, 28, 43, 32, 47, 25, 48, 29, 44, 31, 46, 27, 42]
         },
         {
-          id: 'clip-7',
-          name: 'Door_Creak.wav',
-          filePath: 'Door_Creak.wav',
-          startTime: 60.0,
-          duration: 3.5,
+          id: 'clip-foley-2',
+          name: 'Door_Close.wav',
+          startTime: 75,
+          duration: 2,
           offset: 0,
-          volume: 75,
-          color: '#EBCB8B',
-          waveformData: [20, 40, 15, 50, 25, 35, 45, 20, 55, 30, 40, 25, 50, 15, 35, 45, 25, 55, 30, 20, 50, 35, 40, 25, 55, 30, 20, 35, 45, 15, 50, 25, 40, 35, 20, 55, 30, 40, 50, 15]
-        },
-        {
-          id: 'clip-8',
-          name: 'Glass_Break.wav',
-          filePath: 'Glass_Break.wav',
-          startTime: 95.0,
-          duration: 2.0,
-          offset: 0,
-          volume: 80,
-          color: '#EBCB8B',
-          waveformData: [85, 95, 75, 90, 80, 85, 95, 70, 90, 85, 80, 95, 75, 85, 90, 80, 95, 85, 75, 90, 80, 85, 95, 75, 90, 85, 80, 95, 75, 85, 90, 80, 95, 85, 75, 90, 80, 85, 95, 75]
+          volume: 68,
+          color: '#96CEB4',
+          waveformData: [55, 70, 60, 75, 50, 80, 58, 72, 62, 78, 54, 76, 59, 73, 57, 79, 61, 74, 53, 77, 63, 71, 56, 80, 60, 75, 58, 73, 62, 77, 55, 78, 59, 74, 61, 76, 57, 72]
         }
       ],
       effects: [
@@ -204,85 +151,50 @@ export function useAudioWorkstation() {
       ],
     },
     {
-      id: '5',
+      id: 'sound-design',
       name: 'Sound Design',
       type: 'audio',
-      volume: 65,
+      volume: 60,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#B48EAD',
+      color: '#FECA57',
       clips: [
         {
-          id: 'clip-9',
-          name: 'Impact_Hit.wav',
-          filePath: 'Impact_Hit.wav',
-          startTime: 45.0,
-          duration: 1.5,
-          offset: 0,
-          volume: 85,
-          color: '#B48EAD',
-          waveformData: [90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90, 95, 85, 90]
-        },
-        {
-          id: 'clip-10',
-          name: 'Whoosh_Transition.wav',
-          filePath: 'Whoosh_Transition.wav',
-          startTime: 75.0,
-          duration: 3.0,
-          offset: 0,
-          volume: 70,
-          color: '#B48EAD',
-          waveformData: [20, 40, 60, 80, 90, 85, 75, 60, 45, 30, 20, 35, 50, 65, 80, 85, 75, 60, 45, 30, 20, 35, 50, 65, 80, 85, 75, 60, 45, 30, 20, 35, 50, 65, 80, 85, 75, 60, 45, 30]
-        },
-        {
-          id: 'clip-11',
-          name: 'Drone_Texture.wav',
-          filePath: 'Drone_Texture.wav',
-          startTime: 100.0,
-          duration: 25.0,
+          id: 'clip-sfx-1',
+          name: 'Transition_Whoosh.wav',
+          startTime: 30,
+          duration: 3,
           offset: 0,
           volume: 60,
-          color: '#B48EAD',
-          waveformData: [40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50, 40, 45, 35, 50]
+          color: '#FECA57',
+          waveformData: [40, 75, 50, 80, 35, 85, 45, 77, 55, 82, 38, 78, 48, 79, 42, 83, 52, 76, 37, 81, 58, 74, 43, 85, 49, 80, 44, 78, 54, 82, 40, 84, 47, 77, 53, 79, 41, 75]
         }
       ],
       effects: [
-        { id: '9', name: 'EQ - Creative', type: 'equalizer', enabled: true, parameters: {} },
-        { id: '10', name: 'Distortion', type: 'distortion', enabled: true, parameters: {} }
+        { id: '9', name: 'Distortion', type: 'distortion', enabled: true, parameters: {} },
+        { id: '10', name: 'Delay', type: 'delay', enabled: true, parameters: {} }
       ],
     },
     {
-      id: '6',
+      id: 'ambiance',
       name: 'Ambiance',
       type: 'audio',
-      volume: 50,
+      volume: 45,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#D08770',
+      color: '#FF9FF3',
       clips: [
         {
-          id: 'clip-12',
-          name: 'Forest_Ambience.wav',
-          filePath: 'Forest_Ambience.wav',
+          id: 'clip-ambient-1',
+          name: 'City_Ambience.wav',
           startTime: 0,
-          duration: 180.0,
-          offset: 0,
-          volume: 50,
-          color: '#D08770',
-          waveformData: [25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35, 25, 30, 20, 35]
-        },
-        {
-          id: 'clip-13',
-          name: 'Wind_Atmosphere.wav',
-          filePath: 'Wind_Atmosphere.wav',
-          startTime: 30.0,
-          duration: 90.0,
+          duration: 180,
           offset: 0,
           volume: 45,
-          color: '#D08770',
-          waveformData: [20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30, 20, 25, 15, 30]
+          color: '#FF9FF3',
+          waveformData: [15, 25, 20, 30, 10, 35, 18, 27, 22, 32, 14, 28, 19, 29, 17, 33, 21, 26, 13, 31, 23, 24, 16, 35, 20, 30, 18, 28, 22, 32, 15, 34, 19, 27, 21, 29, 17, 25]
         }
       ],
       effects: [
@@ -291,194 +203,14 @@ export function useAudioWorkstation() {
       ],
     }
   ]);
-          offset: 0,
-          volume: 85,
-          color: '#BF616A',
-          waveformData: [60, 45, 70, 40, 65, 50, 75, 35, 60, 55, 70, 40, 65, 45, 75, 50, 60, 40, 70, 55, 65, 35, 75, 45, 60, 50, 70, 40, 65, 55, 75, 35, 60, 45, 70, 50, 65, 40, 75, 55]
-        }
-      ],
-      effects: [
-        { id: '16', name: 'Bass Compressor', type: 'compressor', enabled: true, parameters: {} },
-        { id: '17', name: 'Sub Bass', type: 'eq', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '10',
-      name: 'Cello',
-      type: 'midi',
-      volume: 70,
-      pan: 70,
-      muted: false,
-      soloed: false,
-      color: '#A3BE8C',
-      clips: [
-        {
-          id: 'clip-strings-1',
-          name: 'String_Pads.mid',
-          startTime: 16.0,
-          duration: 96.0,
-          offset: 0,
-          volume: 72,
-          color: '#A3BE8C',
-          waveformData: [35, 50, 30, 55, 25, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55]
-        }
-      ],
-      effects: [
-        { id: '18', name: 'String Reverb', type: 'reverb', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '11',
-      name: 'Backup Vocals',
-      type: 'audio',
-      volume: 62,
-      pan: 30,
-      muted: false,
-      soloed: false,
-      color: '#BF616A',
-      clips: [
-        {
-          id: 'clip-17',
-          name: 'BVox_Harmony_01.wav',
-          startTime: 32.0,
-          duration: 16.0,
-          offset: 0,
-          volume: 65,
-          color: '#BF616A',
-          waveformData: [50, 75, 45, 80, 40, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80]
-        },
-        {
-          id: 'clip-18',
-          name: 'BVox_Harmony_02.wav',
-          startTime: 80.0,
-          duration: 24.0,
-          offset: 0,
-          volume: 68,
-          color: '#BF616A',
-          waveformData: [45, 80, 40, 85, 35, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85]
-        },
-        {
-          id: 'clip-19',
-          name: 'BVox_Chorus.wav',
-          startTime: 128.0,
-          duration: 32.0,
-          offset: 0,
-          volume: 70,
-          color: '#BF616A',
-          waveformData: [55, 85, 50, 90, 45, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90]
-        }
-      ],
-      effects: [
-        { id: '16', name: 'Vocal Reverb', type: 'reverb', enabled: true, parameters: {} },
-        { id: '17', name: 'De-esser', type: 'de-esser', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '10',
-      name: 'Percussion',
-      type: 'audio',
-      volume: 58,
-      pan: 45,
-      muted: false,
-      soloed: false,
-      color: '#EBCB8B',
-      clips: [
-        {
-          id: 'clip-20',
-          name: 'Tambourine.wav',
-          startTime: 0,
-          duration: 192.0,
-          offset: 0,
-          volume: 60,
-          color: '#EBCB8B',
-          waveformData: [25, 70, 20, 75, 15, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75]
-        },
-        {
-          id: 'clip-21',
-          name: 'Shaker.wav',
-          startTime: 64.0,
-          duration: 128.0,
-          offset: 0,
-          volume: 55,
-          color: '#EBCB8B',
-          waveformData: [15, 55, 10, 60, 5, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60]
-        }
-      ],
-      effects: [
-        { id: '18', name: 'EQ - High Boost', type: 'eq', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '11',
-      name: 'Flute',
-      type: 'midi',
-      volume: 58,
-      pan: 40,
-      muted: false,
-      soloed: false,
-      color: '#81A1C1',
-      clips: [
-        {
-          id: 'clip-22',
-          name: 'Flute_Melody.mid',
-          startTime: 80.0,
-          duration: 64.0,
-          offset: 0,
-          volume: 60,
-          color: '#81A1C1',
-          waveformData: [30, 65, 25, 70, 20, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70]
-        }
-      ],
-      effects: [
-        { id: '19', name: 'Woodwind Reverb', type: 'reverb', enabled: true, parameters: {} },
-        { id: '20', name: 'Breath Controller', type: 'dynamics', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '12',
-      name: 'FX Return',
-      type: 'audio',
-      volume: 35,
-      pan: 50,
-      muted: false,
-      soloed: false,
-      color: '#4C566A',
-      clips: [
-        {
-          id: 'clip-23',
-          name: 'Reverb_Return.wav',
-          startTime: 32.0,
-          duration: 160.0,
-          offset: 0,
-          volume: 38,
-          color: '#4C566A',
-          waveformData: [10, 30, 5, 35, 0, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35]
-        }
-      ],
-      effects: [],
-    },
-  ]);
 
   // Mixer channels
   const [mixerChannels, setMixerChannels] = useState<MixerChannel[]>([
     {
       id: '1',
-      trackId: '1',
-      name: 'Ch 1 - Lead Vocal',
-      volume: 85,
-      pan: 50,
-      muted: false,
-      soloed: false,
-      gain: 0,
-      sends: { reverb: 25 },
-      eq: { highFreq: 2.1, midFreq: -0.5, lowFreq: 1.8 },
-      effects: [],
-    },
-    {
-      id: '2',
-      trackId: '2',
-      name: 'Ch 2 - Drums',
-      volume: 80,
+      trackId: 'video-input',
+      name: 'Ch 1 - Video',
+      volume: 75,
       pan: 50,
       muted: false,
       soloed: false,
@@ -488,177 +220,115 @@ export function useAudioWorkstation() {
       effects: [],
     },
     {
-      id: '3',
-      trackId: '3',
-      name: 'Ch 3 - Bass DI',
-      volume: 70,
-      pan: 45,
-      muted: false,
-      soloed: false,
-      gain: -2,
-      sends: { reverb: 5 },
-      eq: { highFreq: -1.2, midFreq: 0.8, lowFreq: 2.4 },
-      effects: [],
-    },
-    {
-      id: '4',
-      trackId: '4',
-      name: 'Ch 4 - Electric Guitar',
-      volume: 82,
-      pan: 65,
-      muted: false,
-      soloed: false,
-      gain: 1,
-      sends: { reverb: 35 },
-      eq: { highFreq: 1.8, midFreq: 1.2, lowFreq: -0.5 },
-      effects: [],
-    },
-    {
-      id: '5',
-      trackId: '5',
-      name: 'Ch 5 - Acoustic Guitar',
-      volume: 68,
-      pan: 35,
+      id: '2',
+      trackId: 'dialogue',
+      name: 'Ch 2 - Dialogue',
+      volume: 85,
+      pan: 50,
       muted: false,
       soloed: false,
       gain: 0,
       sends: { reverb: 20 },
-      eq: { highFreq: 0.8, midFreq: 0.2, lowFreq: -1.0 },
+      eq: { highFreq: 2.1, midFreq: -0.5, lowFreq: 1.8 },
       effects: [],
     },
     {
-      id: '6',
-      trackId: '6',
-      name: 'Ch 6 - Piano',
-      volume: 75,
-      pan: 50,
-      muted: false,
-      soloed: false,
-      gain: -1,
-      sends: { reverb: 30 },
-      eq: { highFreq: 0.5, midFreq: 0, lowFreq: 0.2 },
-      effects: [],
-    },
-    {
-      id: '7',
-      trackId: '7',
-      name: 'Ch 7 - Strings',
+      id: '3',
+      trackId: 'music',
+      name: 'Ch 3 - Music',
       volume: 65,
       pan: 50,
       muted: false,
       soloed: false,
-      gain: -3,
-      sends: { reverb: 45 },
-      eq: { highFreq: 0.3, midFreq: -0.2, lowFreq: -2.0 },
+      gain: 0,
+      sends: { reverb: 35 },
+      eq: { highFreq: 1.2, midFreq: 0.8, lowFreq: -1.5 },
       effects: [],
     },
     {
-      id: '8',
-      trackId: '8',
-      name: 'Ch 8 - Synth Lead',
-      volume: 78,
-      pan: 60,
+      id: '4',
+      trackId: 'foley',
+      name: 'Ch 4 - Foley',
+      volume: 70,
+      pan: 50,
       muted: false,
       soloed: false,
-      gain: 2,
+      gain: 0,
       sends: { reverb: 25 },
-      eq: { highFreq: 2.0, midFreq: 1.5, lowFreq: -1.5 },
+      eq: { highFreq: 0.8, midFreq: 1.2, lowFreq: 0.5 },
       effects: [],
     },
     {
-      id: '9',
-      trackId: '9',
-      name: 'Ch 9 - Backup Vocals',
-      volume: 62,
-      pan: 30,
+      id: '5',
+      trackId: 'sound-design',
+      name: 'Ch 5 - SFX',
+      volume: 60,
+      pan: 50,
       muted: false,
       soloed: false,
       gain: 0,
       sends: { reverb: 40 },
-      eq: { highFreq: 1.5, midFreq: 0.3, lowFreq: -0.8 },
+      eq: { highFreq: 3.0, midFreq: 1.5, lowFreq: -2.0 },
       effects: [],
     },
     {
-      id: '10',
-      trackId: '10',
-      name: 'Ch 10 - Percussion',
-      volume: 58,
-      pan: 45,
-      muted: false,
-      soloed: false,
-      gain: 1,
-      sends: { reverb: 10 },
-      eq: { highFreq: 3.0, midFreq: 0, lowFreq: -1.0 },
-      effects: [],
-    },
-    {
-      id: '11',
-      trackId: '11',
-      name: 'Ch 11 - Ambient',
+      id: '6',
+      trackId: 'ambiance',
+      name: 'Ch 6 - Ambiance',
       volume: 45,
       pan: 50,
       muted: false,
       soloed: false,
-      gain: -5,
-      sends: { reverb: 60 },
-      eq: { highFreq: -0.5, midFreq: -1.0, lowFreq: 0.5 },
-      effects: [],
-    },
-    {
-      id: '12',
-      trackId: '12',
-      name: 'Ch 12 - FX Return',
-      volume: 35,
-      pan: 50,
-      muted: false,
-      soloed: false,
-      gain: -8,
-      sends: { reverb: 0 },
-      eq: { highFreq: 0, midFreq: 0, lowFreq: 0 },
+      gain: 0,
+      sends: { reverb: 50 },
+      eq: { highFreq: -1.5, midFreq: 0.2, lowFreq: 1.0 },
       effects: [],
     },
   ]);
 
-  // AI Analysis
-  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis>({
-    spectralData: Array.from({ length: 50 }, (_, i) => Math.random() * 100),
-    peakFrequency: 2400,
-    recommendations: [
-      'The dialogue at 01:30 could benefit from noise reduction. Apply DeNoise Pro?',
-      'Apply 3dB cut at 2.4kHz',
-      'Increase reverb send by 15%',
-      'Consider parallel compression',
-    ],
-    lufs: -23.1,
-    peak: -3.2,
-    isProcessing: false,
+  // AI Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState({
+    isAnalyzing: false,
+    results: {
+      peakLevels: { left: -12.5, right: -11.8 },
+      dynamicRange: 18.2,
+      frequencyBalance: { low: 0.85, mid: 0.92, high: 0.78 },
+      suggestedBpm: 120,
+      keyDetection: 'C Major',
+      audioQuality: 'Excellent',
+    }
   });
+
+  // AI Suggestions
+  const [aiSuggestions, setAiSuggestions] = useState([
+    'Consider adding light compression to dialogue tracks',
+    'Music levels could be reduced by 2-3dB for better balance',
+    'Add subtle reverb to foley sounds for spatial depth'
+  ]);
 
   // Transport controls
   const play = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: true, isPaused: false, isStopped: false }));
+    setTransport(prev => ({ ...prev, isPlaying: true }));
   }, []);
 
   const pause = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: false, isPaused: true, isStopped: false }));
+    setTransport(prev => ({ ...prev, isPlaying: false }));
   }, []);
 
   const stop = useCallback(() => {
-    setTransport(prev => ({ 
-      ...prev, 
-      isPlaying: false, 
-      isPaused: false, 
-      isStopped: true, 
-      currentTime: 0 
-    }));
+    setTransport(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
   }, []);
 
   const toggleRecording = useCallback(() => {
-    setTransport(prev => ({ ...prev, isRecording: !prev.isRecording }));
+    setTransport(prev => ({ 
+      ...prev, 
+      isRecording: !prev.isRecording,
+      isPlaying: !prev.isRecording ? true : prev.isPlaying 
+    }));
   }, []);
 
   const seekTo = useCallback((time: number) => {
-    setTransport(prev => ({ ...prev, currentTime: Math.max(0, time) }));
+    setTransport(prev => ({ ...prev, currentTime: time }));
   }, []);
 
   // Track controls
@@ -684,133 +354,70 @@ export function useAudioWorkstation() {
   const switchSession = useCallback((sessionId: string) => {
     setSessions(prev => prev.map(session => ({
       ...session,
-      isActive: session.id === sessionId,
+      isActive: session.id === sessionId
     })));
   }, []);
 
-  // Update clip position function
-  const updateClipPosition = useCallback((clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
-    console.log(`updateClipPosition called: ${clipId} from ${fromTrackId} to ${toTrackId} at ${newStartTime}s`);
-    
-    setTracks(prevTracks => {
-      // Find the clip in the source track
-      const sourceTrack = prevTracks.find(t => t.id === fromTrackId);
-      const clipToMove = sourceTrack?.clips?.find(c => c.id === clipId);
-      
-      if (!clipToMove) {
-        console.error('Clip not found for movement');
-        return prevTracks;
-      }
-
-      console.log(`Moving clip "${clipToMove.name}" from ${clipToMove.startTime}s to ${newStartTime}s`);
-
-      // Update tracks with moved clip
-      const updatedTracks = prevTracks.map(track => {
-        if (track.id === fromTrackId && fromTrackId === toTrackId) {
-          // Same track movement - just update the clip's position
-          const updatedClip = {
-            ...clipToMove,
-            startTime: newStartTime
-          };
-          const updatedTrack = {
-            ...track,
-            clips: track.clips?.map(c => c.id === clipId ? updatedClip : c) || []
-          };
-          console.log(`Updated clip position on same track ${track.name}, total clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
-        } else if (track.id === fromTrackId) {
-          // Remove clip from source track (different track movement)
-          const updatedTrack = {
-            ...track,
-            clips: track.clips?.filter(c => c.id !== clipId) || []
-          };
-          console.log(`Removed clip from track ${track.name}, remaining clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
-        } else if (track.id === toTrackId) {
-          // Add clip to target track with new position (different track movement)
-          const updatedClip = {
-            ...clipToMove,
-            startTime: newStartTime
-          };
-          const updatedTrack = {
-            ...track,
-            clips: [...(track.clips || []), updatedClip]
-          };
-          console.log(`Added clip to track ${track.name}, total clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
-        }
-        return track;
-      });
-      
-      console.log('Updated tracks state:', updatedTracks.map(t => ({ name: t.name, clips: t.clips?.length })));
-      return updatedTracks;
-    });
-  }, []);
-
-  // Update clip properties (for resizing)
-  const updateClipProperties = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration: number) => {
-    console.log(`updateClipProperties called: ${clipId} on ${trackId} - startTime: ${newStartTime}s, duration: ${newDuration}s`);
-    
+  // Clip management
+  const updateClipPosition = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration?: number) => {
     setTracks(prevTracks => {
       return prevTracks.map(track => {
         if (track.id === trackId) {
-          const updatedTrack = {
+          return {
             ...track,
-            clips: track.clips?.map(clip => {
+            clips: track.clips.map(clip => {
               if (clip.id === clipId) {
                 return {
                   ...clip,
                   startTime: newStartTime,
-                  duration: newDuration
+                  ...(newDuration !== undefined && { duration: newDuration })
                 };
               }
               return clip;
-            }) || []
+            })
           };
-          console.log(`Updated clip properties on track ${track.name}`);
-          return updatedTrack;
         }
         return track;
       });
     });
   }, []);
 
-  // AI suggestions
-  const [aiSuggestions] = useState([
-    'The bass track could benefit from low-end enhancement at 80Hz',
-    'Consider applying vintage compression to the vocal for warmth',
-    'Drum reverb tail is too long - reduce decay by 20%',
-    'High frequencies above 10kHz are too bright - apply gentle roll-off',
-    'The mix needs more stereo width - try M/S processing',
-  ]);
+  const updateClipProperties = useCallback((clipId: string, trackId: string, properties: Partial<AudioClip>) => {
+    setTracks(prevTracks => 
+      prevTracks.map(track => 
+        track.id === trackId 
+          ? {
+              ...track,
+              clips: track.clips.map(clip => 
+                clip.id === clipId ? { ...clip, ...properties } : clip
+              )
+            }
+          : track
+      )
+    );
+  }, []);
 
-  // Simulate time updates when playing
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
+  // Simulate playback time updates
+  const updatePlaybackTime = useCallback(() => {
     if (transport.isPlaying) {
-      interval = setInterval(() => {
-        setTransport(prev => ({ 
-          ...prev, 
-          currentTime: prev.currentTime + 0.1 
-        }));
-      }, 100);
+      setTransport(prev => ({
+        ...prev,
+        currentTime: prev.currentTime + 0.1
+      }));
     }
-    return () => clearInterval(interval);
   }, [transport.isPlaying]);
 
-  // Simulate waveform animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (transport.isPlaying) {
-        setTracks(prev => prev.map(track => ({
-          ...track,
-          waveformData: track.waveformData?.map(() => Math.random() * 100 + 20) || [],
-        })));
-      }
-    }, 150);
-
-    return () => clearInterval(interval);
-  }, [transport.isPlaying]);
+  // Auto-stop at end
+  const handleAutoStop = useCallback(() => {
+    const maxDuration = Math.max(...tracks.flatMap(track => 
+      track.clips.map(clip => clip.startTime + clip.duration)
+    ));
+    
+    if (transport.currentTime >= maxDuration) {
+      setTracks(prev => prev.map(track => ({ ...track, soloed: false })));
+      stop();
+    }
+  }, [tracks, transport.currentTime, stop]);
 
   return {
     // State
@@ -821,7 +428,7 @@ export function useAudioWorkstation() {
     mixerChannels,
     aiAnalysis,
     aiSuggestions,
-
+    
     // Actions
     play,
     pause,
@@ -833,8 +440,6 @@ export function useAudioWorkstation() {
     toggleTrackSolo,
     switchSession,
     setCurrentProject,
-    setTracks,
-    setMixerChannels,
     updateClipPosition,
     updateClipProperties,
   };
