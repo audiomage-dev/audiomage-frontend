@@ -302,6 +302,69 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         </div>
       )
     },
+    {
+      id: 'spellbook',
+      icon: <Wand2 className="w-5 h-5" />,
+      label: 'Spellbook',
+      component: (
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">Workflow Automation</h3>
+            <p className="text-xs text-[var(--muted-foreground)]">Pre-built workflows and custom automation templates</p>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Quick Workflow Templates */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Quick Templates</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => setIsSpellbookModalOpen(true)}>
+                <Mic className="w-3 h-3 mr-2 text-[var(--purple)]" />
+                Vocal Chain
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => setIsSpellbookModalOpen(true)}>
+                <Target className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                Drum Mix
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => setIsSpellbookModalOpen(true)}>
+                <Crown className="w-3 h-3 mr-2 text-[var(--yellow)]" />
+                Mix Bus Master
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => setIsSpellbookModalOpen(true)}>
+                <Sparkles className="w-3 h-3 mr-2 text-[var(--green)]" />
+                Creative FX
+              </Button>
+            </div>
+
+            {/* Automation Actions */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Automation</div>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Activity className="w-3 h-3 mr-2 text-[var(--red)]" />
+                Record Macro
+              </Button>
+              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8">
+                <Library className="w-3 h-3 mr-2 text-[var(--blue)]" />
+                My Templates
+              </Button>
+            </div>
+
+            {/* Open Full Spellbook */}
+            <div className="pt-2 border-t border-[var(--border)]">
+              <Button 
+                size="sm" 
+                className="w-full text-xs h-8 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:from-[var(--primary)]/90 hover:to-[var(--secondary)]/90"
+                onClick={() => setIsSpellbookModalOpen(true)}
+              >
+                <Wand2 className="w-3 h-3 mr-2" />
+                Open Spellbook
+              </Button>
+            </div>
+          </div>
+        </div>
+      )
+    },
 
   ];
 
