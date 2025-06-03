@@ -28,13 +28,13 @@ export function useAudioWorkstation() {
   const [tracks, setTracks] = useState<AudioTrack[]>([
     {
       id: 'video-input',
-      name: 'Video Input',
+      name: 'Video',
       type: 'audio',
       volume: 75,
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#FF6B6B',
+      color: '#E5E5E5',
       clips: [
         {
           id: 'clip-video-1',
@@ -43,7 +43,7 @@ export function useAudioWorkstation() {
           duration: 180,
           offset: 0,
           volume: 75,
-          color: '#FF6B6B',
+          color: '#E5E5E5',
           waveformData: [45, 60, 55, 70, 50, 65, 48, 72, 52, 68, 47, 75, 53, 67, 49, 73, 51, 69, 46, 74, 54, 66, 50, 71, 48, 67, 52, 73, 49, 68, 51, 74, 47, 69, 53, 72, 50, 70]
         }
       ],
@@ -60,7 +60,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#4ECDC4',
+      color: '#E53E3E',
       clips: [
         {
           id: 'clip-dialogue-1',
@@ -69,7 +69,7 @@ export function useAudioWorkstation() {
           duration: 45,
           offset: 0,
           volume: 85,
-          color: '#4ECDC4',
+          color: '#E53E3E',
           waveformData: [65, 80, 70, 85, 60, 90, 68, 82, 72, 88, 64, 86, 69, 83, 67, 89, 71, 84, 63, 87, 73, 81, 66, 90, 70, 85, 68, 83, 72, 87, 65, 88, 69, 84, 71, 86, 67, 82]
         },
         {
@@ -79,7 +79,7 @@ export function useAudioWorkstation() {
           duration: 38,
           offset: 0,
           volume: 82,
-          color: '#4ECDC4',
+          color: '#E53E3E',
           waveformData: [62, 78, 67, 83, 58, 88, 65, 80, 69, 86, 61, 84, 66, 81, 64, 87, 68, 82, 60, 85, 70, 79, 63, 88, 67, 83, 65, 81, 69, 85, 62, 86, 66, 82, 68, 84, 64, 80]
         }
       ],
@@ -96,7 +96,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#45B7D1',
+      color: '#718096',
       clips: [
         {
           id: 'clip-music-1',
@@ -105,7 +105,7 @@ export function useAudioWorkstation() {
           duration: 180,
           offset: 0,
           volume: 65,
-          color: '#45B7D1',
+          color: '#718096',
           waveformData: [35, 50, 40, 55, 30, 60, 38, 52, 42, 58, 34, 56, 39, 53, 37, 59, 41, 54, 33, 57, 43, 51, 36, 60, 40, 55, 38, 53, 42, 57, 35, 58, 39, 54, 41, 56, 37, 52]
         }
       ],
@@ -122,7 +122,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#96CEB4',
+      color: '#38A169',
       clips: [
         {
           id: 'clip-foley-1',
@@ -131,7 +131,7 @@ export function useAudioWorkstation() {
           duration: 8,
           offset: 0,
           volume: 70,
-          color: '#96CEB4',
+          color: '#38A169',
           waveformData: [25, 40, 30, 45, 20, 50, 28, 42, 32, 48, 24, 46, 29, 43, 27, 49, 31, 44, 23, 47, 33, 41, 26, 50, 30, 45, 28, 43, 32, 47, 25, 48, 29, 44, 31, 46, 27, 42]
         },
         {
@@ -141,7 +141,7 @@ export function useAudioWorkstation() {
           duration: 2,
           offset: 0,
           volume: 68,
-          color: '#96CEB4',
+          color: '#38A169',
           waveformData: [55, 70, 60, 75, 50, 80, 58, 72, 62, 78, 54, 76, 59, 73, 57, 79, 61, 74, 53, 77, 63, 71, 56, 80, 60, 75, 58, 73, 62, 77, 55, 78, 59, 74, 61, 76, 57, 72]
         }
       ],
@@ -158,7 +158,7 @@ export function useAudioWorkstation() {
       pan: 50,
       muted: false,
       soloed: false,
-      color: '#FECA57',
+      color: '#3182CE',
       clips: [
         {
           id: 'clip-sfx-1',
@@ -167,7 +167,7 @@ export function useAudioWorkstation() {
           duration: 3,
           offset: 0,
           volume: 60,
-          color: '#FECA57',
+          color: '#3182CE',
           waveformData: [40, 75, 50, 80, 35, 85, 45, 77, 55, 82, 38, 78, 48, 79, 42, 83, 52, 76, 37, 81, 58, 74, 43, 85, 49, 80, 44, 78, 54, 82, 40, 84, 47, 77, 53, 79, 41, 75]
         }
       ],
