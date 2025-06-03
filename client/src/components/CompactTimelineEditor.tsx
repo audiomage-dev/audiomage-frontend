@@ -1656,19 +1656,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               onClick={(e) => handleTrackSelect(track.id, e)}
               onContextMenu={(e) => handleTrackRightClick(e, track.id)}
             >
-              <div className="flex items-center space-x-2 min-w-0 mb-2">
-                <div 
-                  className="w-2 h-2 rounded-sm flex-shrink-0" 
-                  style={{ backgroundColor: track.color }}
-                ></div>
-                <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                  {track.name}
-                </span>
-                {track.type === 'ai-generated' && (
-                  <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                )}
+              <div className="flex items-center justify-between min-w-0 mb-1">
+                <div className="flex items-center space-x-2 min-w-0">
+                  <div 
+                    className="w-2 h-2 rounded-sm flex-shrink-0" 
+                    style={{ backgroundColor: track.color }}
+                  ></div>
+                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                    {track.name}
+                  </span>
+                  {track.type === 'ai-generated' && (
+                    <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col space-y-1">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
                   <Button
                     onClick={(e) => {
@@ -1677,7 +1679,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     }}
                     variant="ghost"
                     size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs border border-white/20 ${
+                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
                       track.muted 
                         ? 'bg-[var(--red)] text-white border-white/40' 
                         : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
@@ -1692,7 +1694,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     }}
                     variant="ghost"
                     size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs border border-white/20 ${
+                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
                       track.soloed 
                         ? 'bg-[var(--yellow)] text-black border-white/40' 
                         : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
@@ -1812,7 +1814,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     return (
                       <div
                         key={`${track.id}-clip-${clip.id}`}
-                        className={`absolute top-1 h-[88px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                        className={`absolute top-1 h-[58px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
                             ? 'opacity-60 scale-105 z-50' 
                             : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
@@ -1849,19 +1851,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
                         {/* Clip Header */}
-                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
-                          <span className="truncate flex-1">{clip.name}</span>
+                        <div className="h-4 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
+                          <span className="truncate flex-1 text-xs">{clip.name}</span>
                           <span className="text-xs opacity-75">{clip.duration.toFixed(1)}s</span>
                         </div>
                         
                         {/* Line Waveform */}
-                        <div className="h-16 px-2 py-1 relative">
+                        <div className="h-[50px] px-2 py-1 relative">
                           {clip.waveformData && (
-                            <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} 52`} preserveAspectRatio="none">
+                            <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} 46`} preserveAspectRatio="none">
                               <path
-                                d={`M 0,26 ${clip.waveformData.map((amplitude, i) => {
+                                d={`M 0,23 ${clip.waveformData.map((amplitude, i) => {
                                   const x = (i / (clip.waveformData!.length - 1)) * clipWidth;
-                                  const y = 26 - ((amplitude - 50) / 50) * 25;
+                                  const y = 23 - ((amplitude - 50) / 50) * 22;
                                   return `L ${x},${y}`;
                                 }).join(' ')}`}
                                 stroke="rgba(255,255,255,0.8)"
@@ -1871,9 +1873,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               />
                               <line
                                 x1="0"
-                                y1="26"
+                                y1="23"
                                 x2={clipWidth}
-                                y2="26"
+                                y2="23"
                                 stroke="rgba(255,255,255,0.2)"
                                 strokeWidth="0.5"
                                 vectorEffect="non-scaling-stroke"
