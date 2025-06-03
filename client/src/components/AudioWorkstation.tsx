@@ -10,7 +10,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
-import { MovableVideoWindow } from './MovableVideoWindow';
+
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect } from 'react';
 import { FileMusic } from 'lucide-react';
@@ -60,8 +60,7 @@ export function AudioWorkstation() {
   const [isTimelineLocked, setIsTimelineLocked] = useState(false);
   const [isMidiLocked, setIsMidiLocked] = useState(false);
   
-  // Video player state
-  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
+
   
   // Snap mode state
   const [snapMode, setSnapMode] = useState<'free' | 'grid' | 'beat' | 'measure'>('grid');
@@ -139,9 +138,34 @@ export function AudioWorkstation() {
       
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Vertical Sidebar */}
-        <div className="flex-none">
-          <VerticalSidebar onFileSelect={setSelectedMediaFile} />
+        {/* Left Panel - Integrated Video and Sidebar */}
+        <div className="flex-none flex flex-col">
+          {/* Integrated Video Box */}
+          <div className="w-80 h-48 p-4 bg-[var(--muted)] border-r border-b border-[var(--border)]">
+            <div className="w-full h-full bg-black rounded-lg overflow-hidden shadow-lg">
+              {selectedMediaFile?.type === 'video' ? (
+                <video 
+                  className="w-full h-full object-cover"
+                  controls
+                  src={selectedMediaFile.url}
+                  title={selectedMediaFile.name}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/60">
+                  <div className="text-center">
+                    <FileMusic className="w-8 h-8 mx-auto mb-2" />
+                    <div className="text-sm">No Video Selected</div>
+                    <div className="text-xs opacity-75">Select a video from Explorer</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Vertical Sidebar below video */}
+          <div className="flex-1">
+            <VerticalSidebar onFileSelect={setSelectedMediaFile} />
+          </div>
         </div>
         
         {/* Center Panel - Timeline */}
@@ -191,7 +215,7 @@ export function AudioWorkstation() {
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               snapMode={snapMode}
               onSnapModeChange={setSnapMode}
-              onVideoPlayerToggle={() => setIsVideoPlayerOpen(!isVideoPlayerOpen)}
+
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
@@ -262,20 +286,7 @@ export function AudioWorkstation() {
         currentSession={sessions.find(s => s.isActive)?.name}
       />
 
-      {/* Movable Video Window */}
-      <MovableVideoWindow
-        title="Project Video"
-        isOpen={isVideoPlayerOpen}
-        onClose={() => setIsVideoPlayerOpen(false)}
-        onTimeUpdate={(time: number) => {
-          // Sync video time with audio timeline
-          if (transport.isPlaying) {
-            console.log('Video time:', time);
-          }
-        }}
-        initialPosition={{ x: 200, y: 150 }}
-        initialSize={{ width: 480, height: 320 }}
-      />
+
 
     </div>
   );
