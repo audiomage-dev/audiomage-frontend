@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video } from 'lucide-react';
+import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video, Shuffle } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
