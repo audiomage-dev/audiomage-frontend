@@ -592,7 +592,7 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
           {sessions.length > 0 && (
             <div className="flex items-center">
               <span className="text-xs text-[var(--muted-foreground)] mr-2">|</span>
-              <div className="max-w-md">
+              <div className="bg-[var(--muted)]/30 rounded-lg border border-[var(--border)]/50 p-1 shadow-sm">
                 <SessionTabs 
                   sessions={sessions} 
                   onSwitchSession={onSwitchSession}
@@ -602,8 +602,12 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
           )}
         </div>
 
-        {/* Center - Quick Actions */}
+        {/* Center - Spacer */}
+        <div className="flex-1"></div>
+
+        {/* Right side - Controls */}
         <div className="flex items-center space-x-2">
+          {/* Commands Button */}
           <Button
             variant="ghost"
             size="sm"
@@ -614,11 +618,6 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarPr
             Commands
           </Button>
           
-
-        </div>
-
-        {/* Right side - Controls */}
-        <div className="flex items-center space-x-2">
           {/* Access Button */}
           <Button
             variant="ghost"
