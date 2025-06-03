@@ -2098,7 +2098,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     : 'hover:bg-[var(--accent)]'
               }`}
             >
-              <Icon className="w-3 h-3" />
+              {Icon && <Icon className="w-3 h-3" />}
               <span>{label}</span>
             </button>
           ))}
