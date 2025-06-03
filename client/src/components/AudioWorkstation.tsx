@@ -141,8 +141,8 @@ export function AudioWorkstation() {
         {/* Left Panel - Integrated Video and Sidebar */}
         <div className="flex-none flex flex-col">
           {/* Integrated Video Box */}
-          <div className="w-[656px] h-[496px] p-2 bg-[var(--muted)] border-r border-b border-[var(--border)] flex items-center justify-center">
-            <div className="w-[640px] h-[480px] bg-black rounded-lg overflow-hidden shadow-lg">
+          <div className="w-[528px] h-[400px] p-2 bg-[var(--muted)] border-r border-b border-[var(--border)] flex items-center justify-center">
+            <div className="w-[512px] h-[384px] bg-black rounded-lg overflow-hidden shadow-lg">
               {selectedMediaFile?.type === 'video' ? (
                 <video 
                   className="w-full h-full object-cover"
