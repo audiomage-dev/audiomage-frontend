@@ -289,58 +289,8 @@ export function useAudioWorkstation() {
         { id: '11', name: 'EQ - Ambience', type: 'equalizer', enabled: true, parameters: {} },
         { id: '12', name: 'Reverb - Natural', type: 'reverb', enabled: true, parameters: {} }
       ],
-    },
-    {
-      id: '8',
-      name: 'Synth Lead',
-      type: 'midi',
-      volume: 78,
-      pan: 60,
-      muted: false,
-      soloed: false,
-      color: '#5E81AC',
-      clips: [
-        {
-          id: 'clip-15',
-          name: 'Synth_Lead_01.mid',
-          startTime: 64.0,
-          duration: 32.0,
-          offset: 0,
-          volume: 80,
-          color: '#5E81AC',
-          waveformData: [40, 90, 30, 85, 50, 90, 25, 80, 55, 90, 35, 85, 40, 90, 30, 80, 60, 90, 25, 85, 50, 90, 35, 80, 55, 90, 30, 85, 40, 90, 35, 80, 60, 90, 25, 85, 50, 90, 30, 80]
-        },
-        {
-          id: 'clip-16',
-          name: 'Synth_Lead_02.mid',
-          startTime: 128.0,
-          duration: 48.0,
-          offset: 0,
-          volume: 82,
-          color: '#5E81AC',
-          waveformData: [35, 95, 25, 90, 45, 95, 20, 85, 50, 95, 30, 90, 35, 95, 25, 85, 55, 95, 20, 90, 45, 95, 30, 85, 50, 95, 25, 90, 35, 95, 30, 85, 55, 95, 20, 90, 45, 95, 25, 85]
-        }
-      ],
-      effects: [
-        { id: '14', name: 'Delay', type: 'delay', enabled: true, parameters: {} },
-        { id: '15', name: 'Filter Sweep', type: 'filter', enabled: true, parameters: {} }
-      ],
-    },
-    {
-      id: '9',
-      name: 'Synth Bass',
-      type: 'midi',
-      volume: 82,
-      pan: 50,
-      muted: false,
-      soloed: false,
-      color: '#BF616A',
-      clips: [
-        {
-          id: 'clip-bass-1',
-          name: 'Bass_Line.mid',
-          startTime: 0,
-          duration: 128.0,
+    }
+  ]);
           offset: 0,
           volume: 85,
           color: '#BF616A',
