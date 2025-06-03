@@ -1795,10 +1795,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 >
                   {track.clips?.map((clip) => {
                     const timelineWidth = getTimelineWidth();
-                    const pixelsPerSecond = Math.max(2, 4 * zoomLevel);
-                    const totalTime = timelineWidth / pixelsPerSecond;
-                    const clipStartX = (clip.startTime / totalTime) * timelineWidth;
-                    const clipWidth = (clip.duration / totalTime) * timelineWidth;
+                    const pixelsPerSecond = 60 * zoomLevel; // Use same calculation as drag logic
+                    const clipStartX = clip.startTime * pixelsPerSecond;
+                    const clipWidth = clip.duration * pixelsPerSecond;
                     
                     return (
                       <div
@@ -1905,10 +1904,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     <>
                       {track.clips?.map((clip) => {
                         if (multiSelection.selectedClips.includes(clip.id)) {
-                          const timelineWidth = getTimelineWidth();
-                          const totalTime = timelineWidth / zoomLevel;
-                          const leftPosition = (clip.startTime / totalTime) * timelineWidth;
-                          const clipWidth = (clip.duration / totalTime) * timelineWidth;
+                          const pixelsPerSecond = 60 * zoomLevel; // Use same calculation as main clips
+                          const leftPosition = clip.startTime * pixelsPerSecond;
+                          const clipWidth = clip.duration * pixelsPerSecond;
                           
                           return (
                             <div
