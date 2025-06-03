@@ -2227,7 +2227,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <Icon className="w-3 h-3" />
+                  {Icon && <Icon className="w-3 h-3" />}
                   <span>{label}</span>
                 </div>
                 {shortcut && <span className="text-[var(--muted-foreground)] text-xs">{shortcut}</span>}
@@ -2269,7 +2269,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
                   {getPresetPrompts(selectedClipForLLM.trackType, selectedClipForLLM.name).map((preset, index) => (
                     <button
-                      key={`preset-${selectedClipForLLM.trackId}-${index}-${preset.length}`}
+                      key={`preset-${selectedClipForLLM.id}-${index}-${preset.length}`}
                       onClick={() => setLLMPrompt(preset)}
                       className="text-left text-xs p-2 rounded-md bg-[var(--muted)]/20 hover:bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:border-[var(--border)] transition-colors"
                     >

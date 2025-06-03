@@ -1,256 +1,242 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, Maximize2, SkipBack, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { X, Play, Pause, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
-import { TransportState } from '@/types/audio';
 
 interface VideoPlayerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  transport: TransportState;
-  onVideoTimeUpdate?: (time: number) => void;
-  videoUrl?: string;
+  title?: string;
+  src?: string;
+  className?: string;
+  onTimeUpdate?: (currentTime: number) => void;
+  onDurationChange?: (duration: number) => void;
+  isVisible?: boolean;
 }
 
 export function VideoPlayer({ 
-  isOpen, 
-  onClose, 
-  transport, 
-  onVideoTimeUpdate,
-  videoUrl = "/api/placeholder-video" // Default placeholder for now
+  title = "Project Video", 
+  src = "/api/placeholder-video",
+  className = "",
+  onTimeUpdate,
+  onDurationChange,
+  isVisible = true 
 }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [videoVolume, setVideoVolume] = useState(1);
-  const [isVideoMuted, setIsVideoMuted] = useState(false);
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sync video with transport
   useEffect(() => {
-    if (!videoRef.current) return;
-
     const video = videoRef.current;
-    
-    // Sync playback state
-    if (transport.isPlaying && !isVideoPlaying) {
-      video.play().then(() => {
-        setIsVideoPlaying(true);
-      }).catch(console.error);
-    } else if (!transport.isPlaying && isVideoPlaying) {
-      video.pause();
-      setIsVideoPlaying(false);
-    }
+    if (!video) return;
 
-    // Sync time position (with tolerance to avoid constant seeking)
-    const timeDifference = Math.abs(transport.currentTime - video.currentTime);
-    if (timeDifference > 0.5) { // Only sync if difference is > 0.5 seconds
-      video.currentTime = transport.currentTime;
-      setVideoCurrentTime(transport.currentTime);
-      setLastSyncTime(Date.now());
-    }
-  }, [transport.isPlaying, transport.currentTime, isVideoPlaying]);
-
-  // Handle video events
-  const handleVideoTimeUpdate = useCallback(() => {
-    if (!videoRef.current) return;
-    
-    const currentTime = videoRef.current.currentTime;
-    setVideoCurrentTime(currentTime);
-    
-    // Only update transport if we're not currently syncing from transport
-    // to avoid feedback loops
-    const timeSinceLastSync = Date.now() - lastSyncTime;
-    if (timeSinceLastSync > 1000) { // 1 second buffer
-      onVideoTimeUpdate?.(currentTime);
-    }
-  }, [onVideoTimeUpdate, lastSyncTime]);
-
-  const handleVideoLoadedMetadata = useCallback(() => {
-    if (!videoRef.current) return;
-    setVideoDuration(videoRef.current.duration);
-  }, []);
-
-  const handleVideoPlay = useCallback(() => {
-    setIsVideoPlaying(true);
-  }, []);
-
-  const handleVideoPause = useCallback(() => {
-    setIsVideoPlaying(false);
-  }, []);
-
-  const handleVolumeChange = useCallback((newVolume: number) => {
-    if (!videoRef.current) return;
-    videoRef.current.volume = newVolume;
-    setVideoVolume(newVolume);
-    setIsVideoMuted(newVolume === 0);
-  }, []);
-
-  const toggleMute = useCallback(() => {
-    if (!videoRef.current) return;
-    
-    if (isVideoMuted) {
-      videoRef.current.volume = videoVolume > 0 ? videoVolume : 0.5;
-      setIsVideoMuted(false);
-    } else {
-      videoRef.current.volume = 0;
-      setIsVideoMuted(true);
-    }
-  }, [isVideoMuted, videoVolume]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!videoRef.current) return;
-
-    if (!isFullscreen) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  }, [isFullscreen]);
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    const handleTimeUpdate = () => {
+      const time = video.currentTime;
+      setCurrentTime(time);
+      onTimeUpdate?.(time);
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+    const handleDurationChange = () => {
+      const dur = video.duration;
+      setDuration(dur);
+      onDurationChange?.(dur);
+    };
 
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+      onDurationChange?.(video.duration);
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('durationchange', handleDurationChange);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('durationchange', handleDurationChange);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, [onTimeUpdate, onDurationChange]);
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isPlaying) {
+      video.pause();
+    } else {
+      video.play();
     }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    setIsPlaying(!isPlaying);
   };
 
-  if (!isOpen) return null;
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const video = videoRef.current;
+    if (!video || !duration) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    const time = pos * duration;
+    
+    video.currentTime = time;
+    setCurrentTime(time);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume;
+    }
+    if (newVolume === 0) {
+      setIsMuted(true);
+    } else {
+      setIsMuted(false);
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isMuted) {
+      video.muted = false;
+      setIsMuted(false);
+    } else {
+      video.muted = true;
+      setIsMuted(true);
+    }
+  };
+
+  const skipTime = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.currentTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
+  };
+
+  const toggleFullscreen = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      container.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 rounded-full bg-[var(--primary)]"></div>
-            <h2 className="text-lg font-semibold text-[var(--foreground)]">Video Player</h2>
-            <div className="text-sm text-[var(--muted-foreground)] font-mono">
-              Synced with Timeline
-            </div>
+    <div 
+      ref={containerRef}
+      className={`bg-[var(--background)] border border-[var(--border)] rounded-lg overflow-hidden ${className}`}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-[var(--border)]">
+        <h3 className="text-sm font-medium text-[var(--foreground)]">{title}</h3>
+      </div>
+
+      {/* Video Container */}
+      <div className="relative bg-black">
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full h-auto max-h-96"
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+        />
+
+        {/* Video Controls Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+          {/* Progress Bar */}
+          <div 
+            className="w-full h-1 bg-white/20 rounded-full mb-3 cursor-pointer"
+            onClick={handleSeek}
+          >
+            <div 
+              className="h-full bg-[var(--primary)] rounded-full transition-all"
+              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+            />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Video Container */}
-        <div className="relative bg-black">
-          <video
-            ref={videoRef}
-            className="w-full h-auto max-h-[60vh] object-contain"
-            onTimeUpdate={handleVideoTimeUpdate}
-            onLoadedMetadata={handleVideoLoadedMetadata}
-            onPlay={handleVideoPlay}
-            onPause={handleVideoPause}
-            controls={false}
-            preload="metadata"
-          >
-            <source src={videoUrl} type="video/mp4" />
-            <div className="flex items-center justify-center h-64 text-[var(--muted-foreground)]">
-              Video not supported in this browser
-            </div>
-          </video>
-
-          {/* Video Controls Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-            <div className="flex items-center space-x-4 text-white">
-              {/* Play/Pause */}
+          {/* Control Buttons */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
               <Button
-                variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-white/20"
-                onClick={() => {
-                  if (isVideoPlaying) {
-                    videoRef.current?.pause();
-                  } else {
-                    videoRef.current?.play();
-                  }
-                }}
+                variant="ghost"
+                onClick={() => skipTime(-10)}
+                className="text-white hover:bg-white/20"
               >
-                {isVideoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                <SkipBack className="w-4 h-4" />
               </Button>
 
-              {/* Time Display */}
-              <div className="text-sm font-mono">
-                {formatTime(videoCurrentTime)} / {formatTime(videoDuration)}
-              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={togglePlay}
+                className="text-white hover:bg-white/20"
+              >
+                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              </Button>
 
-              {/* Progress Bar */}
-              <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[var(--primary)] transition-all duration-100"
-                  style={{ width: `${videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0}%` }}
-                />
-              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => skipTime(10)}
+                className="text-white hover:bg-white/20"
+              >
+                <SkipForward className="w-4 h-4" />
+              </Button>
 
-              {/* Volume Control */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 ml-4">
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                  variant="ghost"
                   onClick={toggleMute}
+                  className="text-white hover:bg-white/20"
                 >
-                  {isVideoMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
+                
                 <input
                   type="range"
                   min="0"
                   max="1"
                   step="0.1"
-                  value={isVideoMuted ? 0 : videoVolume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="w-16 h-1 bg-white/30 rounded-full appearance-none slider"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="w-20 h-1 bg-white/20 rounded-lg appearance-none slider"
                 />
               </div>
+            </div>
 
-              {/* Fullscreen */}
+            <div className="flex items-center space-x-4">
+              <span className="text-white text-sm font-mono">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+
               <Button
-                variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                variant="ghost"
                 onClick={toggleFullscreen}
+                className="text-white hover:bg-white/20"
               >
-                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                <Maximize2 className="w-4 h-4" />
               </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sync Status */}
-        <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)]/30">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-2 text-[var(--muted-foreground)]">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span>Timeline Sync Active</span>
-            </div>
-            <div className="text-[var(--muted-foreground)] font-mono">
-              Transport: {formatTime(transport.currentTime)}
             </div>
           </div>
         </div>

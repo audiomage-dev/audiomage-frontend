@@ -158,6 +158,21 @@ export function AudioWorkstation() {
             isVisible={!!selectedMediaFile}
           />
           
+          {/* Video Player */}
+          {isVideoPlayerOpen && (
+            <VideoPlayer
+              title="Project Video"
+              isVisible={isVideoPlayerOpen}
+              className="mb-4"
+              onTimeUpdate={(time) => {
+                // Sync video time with audio timeline
+                if (transport.isPlaying) {
+                  console.log('Video time:', time);
+                }
+              }}
+            />
+          )}
+          
           {/* Transport Bar */}
           <div className="flex-none">
             <CompactTransportBar
