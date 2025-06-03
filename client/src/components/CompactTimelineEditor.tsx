@@ -1670,40 +1670,37 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   )}
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackMute(track.id);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                      track.muted 
-                        ? 'bg-[var(--red)] text-white border-white/40' 
-                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                    }`}
-                  >
-                    M
-                  </Button>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackSolo(track.id);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                      track.soloed 
-                        ? 'bg-[var(--yellow)] text-black border-white/40' 
-                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                    }`}
-                  >
-                    S
-                  </Button>
-                </div>
-                <span className="text-xs text-[var(--muted-foreground)]">{track.clips?.length || 0} clips</span>
+              <div className="flex items-center space-x-1">
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTrackMute(track.id);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                    track.muted 
+                      ? 'bg-[var(--red)] text-white border-white/40' 
+                      : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                  }`}
+                >
+                  M
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTrackSolo(track.id);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                    track.soloed 
+                      ? 'bg-[var(--yellow)] text-black border-white/40' 
+                      : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                  }`}
+                >
+                  S
+                </Button>
               </div>
             </div>
           ))}
