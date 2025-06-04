@@ -74,8 +74,8 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
   // Determine if buttons should collapse based on container height
   useEffect(() => {
     if (containerHeight) {
-      // If container height is less than 300px, collapse buttons
-      const shouldCollapse = containerHeight < 300;
+      // If container height is less than 150px, collapse buttons
+      const shouldCollapse = containerHeight < 150;
       setIsCollapsed(shouldCollapse);
       if (shouldCollapse) {
         setDropdownOpen(false);
