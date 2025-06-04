@@ -8,7 +8,6 @@ import { MidiEditor } from './MidiEditor';
 import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
-import { VideoPlayer } from './VideoPlayer';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
 
@@ -41,7 +40,6 @@ export function AudioWorkstation() {
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
-  const [isVideoPlayerVisible, setIsVideoPlayerVisible] = useState(true);
 
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
@@ -116,9 +114,7 @@ export function AudioWorkstation() {
     console.log(`Toggle solo for channel: ${channelId}`);
   };
 
-  const handleVideoPlayerToggle = () => {
-    setIsVideoPlayerVisible(!isVideoPlayerVisible);
-  };
+
 
   // Auto-select first MIDI track when switching to MIDI mode
   useEffect(() => {
@@ -221,7 +217,6 @@ export function AudioWorkstation() {
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               snapMode={snapMode}
               onSnapModeChange={setSnapMode}
-              onVideoPlayerToggle={handleVideoPlayerToggle}
               onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
               onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
             />
@@ -292,14 +287,7 @@ export function AudioWorkstation() {
         currentSession={sessions.find(s => s.isActive)?.name}
       />
 
-      {/* Video Player */}
-      {isVideoPlayerVisible && (
-        <VideoPlayer
-          title="Project Video"
-          src="/api/placeholder-video"
-          isVisible={isVideoPlayerVisible}
-        />
-      )}
+
 
     </div>
   );
