@@ -100,10 +100,10 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
         {sessions.map((session) => (
           <div
             key={session.id}
-            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-300 rounded-lg overflow-hidden mx-0.5 ${
+            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-200 rounded-lg overflow-hidden mx-0.5 ${
               session.isActive
-                ? 'active bg-gradient-to-r from-[var(--primary)]/15 to-[var(--primary)]/8 text-[var(--foreground)] shadow-md border-2 border-[var(--primary)]/30 ring-1 ring-[var(--primary)]/10'
-                : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]/90 hover:text-[var(--foreground)] border-2 border-[var(--border)]/50 hover:border-[var(--border)] hover:shadow-sm bg-[var(--background)]/80'
+                ? 'active bg-gradient-to-r from-[var(--primary)]/20 to-[var(--primary)]/10 text-[var(--foreground)] shadow-lg border-2 border-[var(--primary)]/40 ring-2 ring-[var(--primary)]/20 transform scale-[1.02]'
+                : 'inactive text-[var(--muted-foreground)] bg-[var(--card)]/60 border-2 border-[var(--border)]/30 hover:bg-gradient-to-r hover:from-[var(--accent)]/80 hover:to-[var(--accent)]/60 hover:text-[var(--accent-foreground)] hover:border-[var(--accent)]/50 hover:shadow-md hover:scale-[1.01] hover:ring-1 hover:ring-[var(--accent)]/20'
             }`}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
@@ -115,10 +115,10 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
             
             <div className="flex items-center px-3 py-2 gap-2">
               {/* Session status indicator */}
-              <div className={`w-2 h-2 rounded-full transition-colors status-indicator ${
+              <div className={`w-2 h-2 rounded-full transition-all duration-200 status-indicator ${
                 session.isActive 
-                  ? 'active bg-[var(--primary)] shadow-sm' 
-                  : 'bg-[var(--muted-foreground)]/40 group-hover:bg-[var(--muted-foreground)]/60'
+                  ? 'active bg-[var(--primary)] shadow-lg ring-2 ring-[var(--primary)]/30 animate-pulse' 
+                  : 'bg-[var(--muted-foreground)]/30 group-hover:bg-[var(--accent)] group-hover:shadow-md group-hover:ring-1 group-hover:ring-[var(--accent)]/30 group-hover:scale-110'
               }`} />
               
               <span className="font-medium text-xs truncate max-w-[100px] select-none">
