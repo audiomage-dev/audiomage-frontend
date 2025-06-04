@@ -1013,6 +1013,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     
+    // Clear clip area selection when clicking on empty space
+    if (!e.ctrlKey && !e.metaKey) {
+      const target = e.target as HTMLElement;
+      const isClickingOnClip = target.closest('[data-clip-element]');
+      
+      if (!isClickingOnClip) {
+        setClipAreaSelection(null);
+      }
+    }
+    
     // Start selection box if using select tool
     if (currentTool === 'select') {
       setIsSelecting(true);
@@ -1964,6 +1974,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     return (
                       <div
                         key={`${track.id}-clip-${clip.id}`}
+                        data-clip-element="true"
                         className={`absolute top-1 h-[58px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
                             ? 'opacity-60 scale-105 z-50' 
@@ -2067,34 +2078,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 const r = parseInt(hex.substr(0, 2), 16);
                                 const g = parseInt(hex.substr(2, 2), 16);
                                 const b = parseInt(hex.substr(4, 2), 16);
-                                return `rgba(${Math.floor(r * 0.6)}, ${Math.floor(g * 0.6)}, ${Math.floor(b * 0.6)}, 0.8)`;
+                                return `rgba(${Math.floor(r * 0.6)}, ${Math.floor(g * 0.6)}, ${Math.floor(b * 0.6)}, 0.9)`;
                               })(),
-                              border: '2px solid rgba(255, 255, 255, 0.7)',
-                              borderRadius: '2px',
-                              boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.2)'
+                              borderRadius: '2px'
                             }}
-                          >
-                            {/* Top selection bar */}
-                            <div 
-                              className="absolute top-0 left-0 right-0 h-0.5"
-                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
-                            />
-                            {/* Bottom selection bar */}
-                            <div 
-                              className="absolute bottom-0 left-0 right-0 h-0.5"
-                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
-                            />
-                            {/* Left selection handle */}
-                            <div 
-                              className="absolute top-0 left-0 w-0.5 h-full"
-                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
-                            />
-                            {/* Right selection handle */}
-                            <div 
-                              className="absolute top-0 right-0 w-0.5 h-full"
-                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
-                            />
-                          </div>
+                          />
                         )}
 
                         {/* Resize Handles */}
