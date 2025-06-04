@@ -8,6 +8,7 @@ import { MidiEditor } from './MidiEditor';
 import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
+import { WorkstationVideoPlayer } from './WorkstationVideoPlayer';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
 
@@ -40,6 +41,7 @@ export function AudioWorkstation() {
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
+  const [videoPlayerSize, setVideoPlayerSize] = useState({ width: 320, height: 240 });
 
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
@@ -140,32 +142,25 @@ export function AudioWorkstation() {
       
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Integrated Video and Sidebar */}
-        <div className="flex-none flex flex-col">
-          {/* Integrated Video Box */}
-          <div className="w-[580px] h-[400px] p-2 bg-[var(--muted)] border-r border-b border-[var(--border)] flex items-center justify-center">
-            <div className="w-[512px] h-[384px] bg-black rounded-lg overflow-hidden shadow-lg">
-              {selectedMediaFile?.type === 'video' ? (
-                <video 
-                  className="w-full h-full object-cover"
-                  controls
-                  src={selectedMediaFile.url}
-                  title={selectedMediaFile.name}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/60">
-                  <div className="text-center">
-                    <FileMusic className="w-8 h-8 mx-auto mb-2" />
-                    <div className="text-sm">No Video Selected</div>
-                    <div className="text-xs opacity-75">Select a video from Explorer</div>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Left Panel - Video Player and Sidebar */}
+        <div className="flex-none flex flex-col" style={{ width: Math.max(320, videoPlayerSize.width + 40) }}>
+          {/* Resizable Video Player */}
+          <div className="p-2 bg-[var(--muted)] border-r border-b border-[var(--border)]">
+            <WorkstationVideoPlayer
+              title="Project Video"
+              src={selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video"}
+              initialWidth={videoPlayerSize.width}
+              initialHeight={videoPlayerSize.height}
+              minWidth={200}
+              minHeight={150}
+              maxWidth={800}
+              maxHeight={600}
+              onSizeChange={(width, height) => setVideoPlayerSize({ width, height })}
+            />
           </div>
           
           {/* Vertical Sidebar below video */}
-          <div className="flex-1 p-2 bg-[var(--muted)] border-r border-[var(--border)]">
+          <div className="flex-1 p-2 bg-[var(--muted)] border-r border-[var(--border)]" style={{ width: Math.max(320, videoPlayerSize.width + 40) }}>
             <VerticalSidebar onFileSelect={setSelectedMediaFile} />
           </div>
         </div>
