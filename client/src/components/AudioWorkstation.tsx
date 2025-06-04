@@ -73,6 +73,7 @@ export function AudioWorkstation() {
   
   // Independent video player state
   const [isVideoIndependent, setIsVideoIndependent] = useState(false);
+  const [isMiniPlayer, setIsMiniPlayer] = useState(false);
 
   // Calculate sidebar container height based on video player height
   useEffect(() => {
@@ -164,6 +165,10 @@ export function AudioWorkstation() {
     }
   };
 
+  const handleToggleMiniPlayer = () => {
+    setIsMiniPlayer(!isMiniPlayer);
+  };
+
 
 
   // Auto-select first MIDI track when switching to MIDI mode
@@ -220,6 +225,7 @@ export function AudioWorkstation() {
                 setVideoPlayerHeight(height);
               }}
               onMoveToIndependentScreen={handleMoveVideoToIndependentScreen}
+              onToggleMiniPlayer={handleToggleMiniPlayer}
             />
           </div>
           

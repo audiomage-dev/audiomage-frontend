@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MoreVertical, ExternalLink } from 'lucide-react';
+import { MoreVertical, ExternalLink, PictureInPicture } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
@@ -8,6 +8,7 @@ interface WorkstationVideoPlayerProps {
   className?: string;
   onSizeChange?: (width: number, height: number) => void;
   onMoveToIndependentScreen?: () => void;
+  onToggleMiniPlayer?: () => void;
   initialWidth?: number;
   initialHeight?: number;
   minWidth?: number;
@@ -21,6 +22,7 @@ export function WorkstationVideoPlayer({
   className = "",
   onSizeChange,
   onMoveToIndependentScreen,
+  onToggleMiniPlayer,
   initialWidth = 512,
   initialHeight = 384,
   minWidth = 200,
@@ -96,8 +98,8 @@ export function WorkstationVideoPlayer({
         Your browser does not support the video tag.
       </video>
 
-      {/* Three Dots Menu - bottom right corner */}
-      <div className="absolute bottom-2 right-2 z-20">
+      {/* Three Dots Menu - top right corner */}
+      <div className="absolute top-2 right-2 z-20">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -108,7 +110,14 @@ export function WorkstationVideoPlayer({
               <MoreVertical className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem
+              onClick={onToggleMiniPlayer}
+              className="flex items-center space-x-2"
+            >
+              <PictureInPicture className="w-4 h-4" />
+              <span>Toggle Mini-Player Mode</span>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={onMoveToIndependentScreen}
               className="flex items-center space-x-2"
