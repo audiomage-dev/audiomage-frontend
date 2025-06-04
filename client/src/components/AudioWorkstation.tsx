@@ -36,6 +36,7 @@ export function AudioWorkstation() {
     toggleTrackSolo,
     switchSession,
     addSession,
+    closeSession,
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
@@ -238,6 +239,7 @@ export function AudioWorkstation() {
           sessions={sessions}
           onSwitchSession={switchSession}
           onAddSession={addSession}
+          onCloseSession={closeSession}
         />
       </div>
       

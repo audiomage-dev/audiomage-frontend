@@ -358,6 +358,22 @@ export function useAudioWorkstation() {
     })));
   }, []);
 
+  const closeSession = useCallback((sessionId: string) => {
+    setSessions(prev => {
+      const filteredSessions = prev.filter(session => session.id !== sessionId);
+      
+      // If we're closing the active session, make the first remaining session active
+      if (filteredSessions.length > 0) {
+        const wasActiveSession = prev.find(session => session.id === sessionId)?.isActive;
+        if (wasActiveSession) {
+          filteredSessions[0].isActive = true;
+        }
+      }
+      
+      return filteredSessions;
+    });
+  }, []);
+
   // Clip management
   const updateClipPosition = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration?: number) => {
     setTracks(prevTracks => {
@@ -452,6 +468,7 @@ export function useAudioWorkstation() {
     toggleTrackSolo,
     switchSession,
     addSession,
+    closeSession,
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,

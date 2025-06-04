@@ -599,6 +599,7 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSessio
                   sessions={sessions} 
                   onSwitchSession={onSwitchSession}
                   onAddSession={onAddSession}
+                  onCloseSession={onCloseSession}
                 />
               </div>
             </div>
