@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Video, Shuffle, Grid3x3, Target, Move } from 'lucide-react';
+import { Play, Pause, Square, Circle, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Shuffle, Grid3x3, Target, Move } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -35,7 +35,7 @@ interface CompactTransportBarProps {
   // Metronome functions
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
-  onVideoPlayerToggle?: () => void;
+
 }
 
 interface MetronomeProps {
@@ -336,8 +336,7 @@ export function CompactTransportBar({
   snapMode = 'grid',
   onSnapModeChange,
   onBpmChange,
-  onTimeSignatureChange,
-  onVideoPlayerToggle
+  onTimeSignatureChange
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
@@ -416,14 +415,7 @@ export function CompactTransportBar({
     <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
       {/* Left: Transport Controls */}
       <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title="Go to beginning"
-        >
-          <SkipBack className="w-4 h-4" />
-        </Button>
+
         
         <Button
           variant="ghost"
@@ -494,14 +486,7 @@ export function CompactTransportBar({
           <Circle className={`w-4 h-4 ${transport.isRecording ? 'fill-current' : ''}`} />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title="Go to end"
-        >
-          <SkipForward className="w-4 h-4" />
-        </Button>
+
         
         {/* Time Display - moved next to transport controls */}
         <div className="w-px h-4 bg-[var(--border)] ml-2"></div>
@@ -532,14 +517,7 @@ export function CompactTransportBar({
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
-        {/* Video Player Button */}
-        <button
-          className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)] bg-[var(--background)] border border-[var(--border)] rounded"
-          title="Video Player"
-          onClick={onVideoPlayerToggle}
-        >
-          <Video className="w-3 h-3" />
-        </button>
+
 
 
 
