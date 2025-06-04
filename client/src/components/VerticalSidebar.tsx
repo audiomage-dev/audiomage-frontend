@@ -369,7 +369,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   ];
 
   return (
-    <div className={`${isExpanded ? 'w-[564px]' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
+    <div className={`${isExpanded ? 'w-full max-w-[564px]' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
       {/* Sidebar Icons */}
       <div className="w-12 flex flex-col items-center py-2 space-y-1 bg-[var(--background)]">
         {sidebarItems.map((item) => (

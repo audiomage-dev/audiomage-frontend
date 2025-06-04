@@ -166,13 +166,14 @@ export function AudioWorkstation() {
           
           {/* Vertical Sidebar below video */}
           <div 
-            className="flex-1 p-2 bg-[var(--muted)] border-r border-[var(--border)] overflow-y-auto"
+            className="flex-1 flex flex-col min-h-0 bg-[var(--muted)] border-r border-[var(--border)]"
             style={{ 
-              width: Math.max(320, videoPlayerSize.width + 40),
-              height: `calc(100% - ${videoPlayerSize.height + 16}px)`
+              width: Math.max(320, videoPlayerSize.width + 40)
             }}
           >
-            <VerticalSidebar onFileSelect={setSelectedMediaFile} />
+            <div className="flex-1 min-h-0 p-2">
+              <VerticalSidebar onFileSelect={setSelectedMediaFile} />
+            </div>
           </div>
         </div>
         
