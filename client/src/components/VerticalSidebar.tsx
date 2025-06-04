@@ -6,6 +6,7 @@ import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
 import { SpellbookModal } from './SpellbookModal';
+import { AIChatSidebar } from './AIChatSidebar';
 import { 
   FolderOpen, 
   GitBranch, 
@@ -33,7 +34,8 @@ import {
   Layers,
   Waves,
   Wand2,
-  Lightbulb
+  Lightbulb,
+  MessageSquare
 } from 'lucide-react';
 
 // Define the SidebarItem interface
@@ -69,6 +71,20 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   };
 
   const sidebarItems: SidebarItem[] = [
+    {
+      id: 'prompts',
+      icon: <MessageSquare className="w-5 h-5" />,
+      label: 'Prompts',
+      component: (
+        <div className="h-full">
+          <AIChatSidebar
+            isOpen={true}
+            onToggle={() => {}}
+            currentSession="Main Session"
+          />
+        </div>
+      )
+    },
     {
       id: 'quick-actions',
       icon: <Wand2 className="w-5 h-5" />,
