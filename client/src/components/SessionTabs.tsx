@@ -129,7 +129,7 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-[#2B2B2B] border-b border-[#404040] px-1 h-8 flex items-start overflow-x-auto">
+      <div className="bg-[#2B2B2B] border-b border-[#404040] px-1 h-8 flex items-start overflow-x-auto scrollbar-hide">
         {sessions.map((session, index) => (
           <div key={session.id} className="flex items-start">
             <div
@@ -140,10 +140,10 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
                   ? 'bg-[#3A3A3A] text-white' 
                   : 'bg-[#323232] text-[#B8B8B8] hover:bg-[#373737] hover:text-white'
                 }
-                rounded-t-md border-t-2 border-l border-r
+                rounded-t-md border-2
                 ${session.isActive 
-                  ? 'border-t-[#5A9FD4] border-l-[#4A4A4A] border-r-[#4A4A4A]' 
-                  : 'border-t-transparent border-l-[#404040] border-r-[#404040] hover:border-t-[#757575]'
+                  ? 'border-[#5A9FD4]' 
+                  : 'border-transparent border-t-transparent hover:border-t-[#757575] hover:border-l-transparent hover:border-r-transparent hover:border-b-transparent'
                 }
                 mt-0.5
               `}

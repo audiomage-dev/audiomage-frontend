@@ -401,3 +401,13 @@ html.nord-light, .nord-light {
 .new-tab-btn:hover::before {
   left: 100%;
 }
+
+/* Hide scrollbars */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
