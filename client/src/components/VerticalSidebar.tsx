@@ -7,6 +7,7 @@ import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
 import { SpellbookModal } from './SpellbookModal';
 import { InlineChatPanel } from './InlineChatPanel';
+import { AISoundLibrary } from './AISoundLibrary';
 import { 
   FolderOpen, 
   GitBranch, 
@@ -319,23 +320,7 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
       id: 'library',
       icon: <Library className="w-5 h-5" />,
       label: 'AI Sound Library',
-      component: (
-        <div className="h-full flex flex-col">
-          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
-            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">AI Sound Library</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">AI-generated and curated audio assets</p>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-2">
-              {['AI Drums', 'Synth Pads', 'Ambient Textures', 'Vocal Chops'].map((category) => (
-                <Button key={category} variant="outline" size="sm" className="w-full justify-start text-xs">
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )
+      component: <AISoundLibrary />
     },
     {
       id: 'spellbook',
