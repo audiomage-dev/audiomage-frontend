@@ -1,21 +1,21 @@
-import { useState, useCallback, useEffect } from 'react';
-import { AudioTrack, AudioClip, TransportState, MixerChannel, AudioEffect } from '../types/audio';
+import { useState, useCallback } from 'react';
+import { AudioTrack, AudioClip, TransportState, MixerChannel } from '../types/audio';
 
 export function useAudioWorkstation() {
   // Session tabs with different project content
   const [sessions, setSessions] = useState([
-    { id: '1', name: 'Main Session', isActive: true },
-    { id: '2', name: 'Alternate Mix', isActive: false },
-    { id: '3', name: 'Rough Draft', isActive: false },
+    { id: '1', name: 'Video Project', isActive: true },
+    { id: '2', name: 'Podcast Mix', isActive: false },
+    { id: '3', name: 'Music Track', isActive: false },
   ]);
 
   // Transport state
   const [transport, setTransport] = useState<TransportState>({
     isPlaying: false,
+    isPaused: false,
+    isStopped: true,
     isRecording: false,
     currentTime: 0,
-    bpm: 120,
-    timeSignature: [4, 4],
     isLooping: false,
     loopStart: 0,
     loopEnd: 64,
@@ -280,15 +280,15 @@ export function useAudioWorkstation() {
 
   // Transport controls
   const play = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: true }));
+    setTransport(prev => ({ ...prev, isPlaying: true, isPaused: false, isStopped: false }));
   }, []);
 
   const pause = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: false }));
+    setTransport(prev => ({ ...prev, isPlaying: false, isPaused: true, isStopped: false }));
   }, []);
 
   const stop = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
+    setTransport(prev => ({ ...prev, isPlaying: false, isPaused: false, isStopped: true, currentTime: 0 }));
   }, []);
 
   const toggleRecording = useCallback(() => {
@@ -347,88 +347,6 @@ export function useAudioWorkstation() {
         }
       }
       
-      return filteredSessions;
-    });
-  }, [getTracksForSession]);
-
-  // Clip management
-  const updateClipPosition = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration?: number) => {
-    setTracks(prevTracks => {
-      return prevTracks.map(track => {
-        if (track.id === trackId) {
-          return {
-            ...track,
-            clips: track.clips.map(clip => {
-              if (clip.id === clipId) {
-                return {
-                  ...clip,
-                  startTime: newStartTime,
-                  ...(newDuration !== undefined && { duration: newDuration })
-                };
-              }
-              return clip;
-            })
-          };
-        }
-        return track;
-      });
-    });
-  }, []);
-
-  const updateClipProperties = useCallback((clipId: string, trackId: string, properties: Partial<AudioClip>) => {
-    setTracks(prevTracks => 
-      prevTracks.map(track => 
-        track.id === trackId 
-          ? {
-              ...track,
-              clips: track.clips.map(clip => 
-                clip.id === clipId ? { ...clip, ...properties } : clip
-              )
-            }
-          : track
-      )
-    );
-  }, []);
-
-  // Add new session
-  const addSession = useCallback(() => {
-    const newId = (sessions.length + 1).toString();
-    const newSession = {
-      id: newId,
-      name: `Project ${newId}`,
-      isActive: false
-    };
-    
-    setSessions(prev => [...prev, newSession]);
-  }, [sessions]);
-
-  return {
-    // State
-    transport,
-    currentProject,
-    sessions,
-    tracks,
-    mixerChannels,
-    aiAnalysis,
-    aiSuggestions,
-    
-    // Actions
-    play,
-    pause,
-    stop,
-    toggleRecording,
-    seekTo,
-    updateTrackVolume,
-    toggleTrackMute,
-    toggleTrackSolo,
-    switchSession,
-    addSession,
-    closeSession,
-    setCurrentProject,
-    updateClipPosition,
-    updateClipProperties,
-  };
-}
       return filteredSessions;
     });
   }, [getTracksForSession]);

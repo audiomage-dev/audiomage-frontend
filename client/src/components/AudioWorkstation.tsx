@@ -305,8 +305,8 @@ export function AudioWorkstation() {
           <div className="flex-none">
             <CompactTransportBar
               transport={transport}
-              bpm={currentProject.bpm}
-              timeSignature={currentProject.timeSignature}
+              bpm={120}
+              timeSignature={[4, 4]}
               zoomLevel={zoomLevel}
               viewMode={viewMode}
               midiPlaybackTime={midiPlaybackTime}
