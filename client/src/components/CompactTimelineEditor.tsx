@@ -2078,7 +2078,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 const r = parseInt(hex.substr(0, 2), 16);
                                 const g = parseInt(hex.substr(2, 2), 16);
                                 const b = parseInt(hex.substr(4, 2), 16);
-                                return `rgba(${Math.floor(r * 0.6)}, ${Math.floor(g * 0.6)}, ${Math.floor(b * 0.6)}, 0.4)`;
+                                return `rgba(${Math.floor(r * 0.5)}, ${Math.floor(g * 0.5)}, ${Math.floor(b * 0.5)}, 0.6)`;
                               })(),
                               borderRadius: '2px'
                             }}
@@ -2086,19 +2086,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               e.preventDefault();
                               e.stopPropagation();
                               
-                              const track = tracks.find(t => t.id === trackId);
-                              if (track) {
-                                setClipContextMenu({
-                                  x: e.clientX,
-                                  y: e.clientY,
-                                  clip: {
-                                    id: clip.id,
-                                    name: `${clip.name} (Selection)`,
-                                    trackId: trackId,
-                                    trackName: track.name
-                                  }
-                                });
-                              }
+                              setClipContextMenu({
+                                x: e.clientX,
+                                y: e.clientY,
+                                clip: {
+                                  id: clip.id,
+                                  name: `${clip.name} (Selection)`,
+                                  trackId: track.id,
+                                  trackName: track.name
+                                }
+                              });
                             }}
                           />
                         )}
