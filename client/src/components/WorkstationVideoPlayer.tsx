@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { MoreVertical, ExternalLink } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 interface WorkstationVideoPlayerProps {
   src?: string;
   className?: string;
   onSizeChange?: (width: number, height: number) => void;
+  onMoveToIndependentScreen?: () => void;
   initialWidth?: number;
   initialHeight?: number;
   minWidth?: number;
@@ -16,6 +20,7 @@ export function WorkstationVideoPlayer({
   src = "/api/placeholder-video",
   className = "",
   onSizeChange,
+  onMoveToIndependentScreen,
   initialWidth = 512,
   initialHeight = 384,
   minWidth = 200,
@@ -78,18 +83,44 @@ export function WorkstationVideoPlayer({
         height: size.height
       }}
     >
-      {/* Video Element */}
+      {/* Video Element - no controls */}
       <video
         className="w-full h-full object-cover"
-        controls
         poster="/api/placeholder-video-poster"
         preload="metadata"
+        muted
+        loop
+        autoPlay
       >
         <source src={src} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      {/* Resize Handle - bottom right corner */}
+      {/* Three Dots Menu - bottom right corner */}
+      <div className="absolute bottom-2 right-2 z-20">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={onMoveToIndependentScreen}
+              className="flex items-center space-x-2"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Move to Independent Screen</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Resize Handle - bottom right corner, positioned to avoid menu */}
       <div
         className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-[var(--muted)]/80 hover:bg-[var(--muted)] border-l border-t border-[var(--border)] rounded-tl-md z-10"
         onMouseDown={handleResizeStart}

@@ -70,6 +70,9 @@ export function AudioWorkstation() {
   // Video player dimensions for sidebar container height calculation
   const [videoPlayerHeight, setVideoPlayerHeight] = useState(200);
   const [sidebarContainerHeight, setSidebarContainerHeight] = useState(400);
+  
+  // Independent video player state
+  const [isVideoIndependent, setIsVideoIndependent] = useState(false);
 
   // Calculate sidebar container height based on video player height
   useEffect(() => {
@@ -133,6 +136,34 @@ export function AudioWorkstation() {
     console.log(`Toggle solo for channel: ${channelId}`);
   };
 
+  const handleMoveVideoToIndependentScreen = () => {
+    setIsVideoIndependent(true);
+    // Open video player in a new window/tab
+    const videoWindow = window.open('', '_blank', 'width=800,height=600,resizable=yes');
+    if (videoWindow) {
+      const videoSrc = selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video";
+      videoWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Independent Video Player</title>
+            <style>
+              body { margin: 0; padding: 0; background: black; }
+              video { width: 100%; height: 100vh; object-fit: contain; }
+            </style>
+          </head>
+          <body>
+            <video controls autoplay muted loop poster="/api/placeholder-video-poster">
+              <source src="${videoSrc}" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </body>
+        </html>
+      `);
+      videoWindow.document.close();
+    }
+  };
+
 
 
   // Auto-select first MIDI track when switching to MIDI mode
@@ -188,6 +219,7 @@ export function AudioWorkstation() {
                 setVideoPlayerSize({ width, height });
                 setVideoPlayerHeight(height);
               }}
+              onMoveToIndependentScreen={handleMoveVideoToIndependentScreen}
             />
           </div>
           
