@@ -370,6 +370,14 @@ export function AudioWorkstation() {
 
 
 
+      {/* Movable Mini Player */}
+      <MovableVideoPlayer
+        src={selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video"}
+        isVisible={isMiniPlayer}
+        onClose={handleCloseMiniPlayer}
+        onMaximize={handleMaximizeMiniPlayer}
+      />
+
     </div>
   );
 }
