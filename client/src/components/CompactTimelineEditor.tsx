@@ -2051,7 +2051,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           />
                         )}
                         
-                        {/* Clip Area Selection Overlay - DAW Style */}
+                        {/* Clip Area Selection Overlay - Darker shade of clip color */}
                         {clipAreaSelection && clipAreaSelection.clipId === clip.id && (
                           <div 
                             className="absolute top-0 pointer-events-none"
@@ -2059,40 +2059,40 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               left: `${clipAreaSelection.startX}px`,
                               width: `${clipAreaSelection.endX - clipAreaSelection.startX}px`,
                               height: '100%',
-                              background: 'rgba(59, 130, 246, 0.25)',
-                              border: '2px solid rgba(59, 130, 246, 0.8)',
-                              borderRadius: '4px',
-                              boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.3)'
+                              background: (() => {
+                                // Create darker shade of clip color
+                                const clipColorRgb = clip.color;
+                                // Convert hex to rgb and darken by 40%
+                                const hex = clipColorRgb.replace('#', '');
+                                const r = parseInt(hex.substr(0, 2), 16);
+                                const g = parseInt(hex.substr(2, 2), 16);
+                                const b = parseInt(hex.substr(4, 2), 16);
+                                return `rgba(${Math.floor(r * 0.6)}, ${Math.floor(g * 0.6)}, ${Math.floor(b * 0.6)}, 0.8)`;
+                              })(),
+                              border: '2px solid rgba(255, 255, 255, 0.7)',
+                              borderRadius: '2px',
+                              boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.2)'
                             }}
                           >
                             {/* Top selection bar */}
                             <div 
-                              className="absolute top-0 left-0 right-0 h-1"
-                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                              className="absolute top-0 left-0 right-0 h-0.5"
+                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
                             />
                             {/* Bottom selection bar */}
                             <div 
-                              className="absolute bottom-0 left-0 right-0 h-1"
-                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                              className="absolute bottom-0 left-0 right-0 h-0.5"
+                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
                             />
                             {/* Left selection handle */}
                             <div 
-                              className="absolute top-0 left-0 w-1 h-full"
-                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                              className="absolute top-0 left-0 w-0.5 h-full"
+                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
                             />
                             {/* Right selection handle */}
                             <div 
-                              className="absolute top-0 right-0 w-1 h-full"
-                              style={{ background: 'rgba(59, 130, 246, 1)' }}
-                            />
-                            {/* Center crosshair indicator */}
-                            <div 
-                              className="absolute top-1/2 left-1/2 w-3 h-3 transform -translate-x-1/2 -translate-y-1/2"
-                              style={{
-                                background: 'rgba(59, 130, 246, 0.9)',
-                                borderRadius: '50%',
-                                border: '1px solid white'
-                              }}
+                              className="absolute top-0 right-0 w-0.5 h-full"
+                              style={{ background: 'rgba(255, 255, 255, 0.9)' }}
                             />
                           </div>
                         )}
