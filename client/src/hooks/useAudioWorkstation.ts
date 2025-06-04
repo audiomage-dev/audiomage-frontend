@@ -36,6 +36,11 @@ export function useAudioWorkstation() {
     ];
 
     const getClipsForTrack = (trackId: string, sessionId: string): AudioClip[] => {
+      // For new projects (session ID > 3), return empty clips
+      if (parseInt(sessionId) > 3) {
+        return [];
+      }
+
       switch (sessionId) {
         case '1': // Video Post-Production Project
           switch (trackId) {
@@ -439,6 +444,31 @@ export function useAudioWorkstation() {
     
     setSessions(prev => [...prev, newSession]);
   }, [sessions]);
+
+  // Get empty tracks for new projects
+  const getEmptyTracksForSession = useCallback((): AudioTrack[] => {
+    const baseTrackStructure = [
+      { id: 'video', name: 'Video', color: '#E5E5E5' },
+      { id: 'dialogue', name: 'Dialogue', color: '#3B82F6' },
+      { id: 'music', name: 'Music', color: '#10B981' },
+      { id: 'foley', name: 'Foley', color: '#F59E0B' },
+      { id: 'sound-design', name: 'Sound Design', color: '#8B5CF6' },
+      { id: 'ambiance', name: 'Ambiance', color: '#EC4899' }
+    ];
+
+    return baseTrackStructure.map(trackBase => ({
+      id: trackBase.id,
+      name: trackBase.name,
+      type: 'audio' as const,
+      volume: 75,
+      pan: 50,
+      muted: false,
+      soloed: false,
+      color: trackBase.color,
+      clips: [], // Empty clips for new project
+      effects: []
+    }));
+  }, []);
 
   return {
     // State
