@@ -429,3 +429,85 @@ export function useAudioWorkstation() {
     updateClipProperties,
   };
 }
+      return filteredSessions;
+    });
+  }, [getTracksForSession]);
+
+  // Clip management
+  const updateClipPosition = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration?: number) => {
+    setTracks(prevTracks => {
+      return prevTracks.map(track => {
+        if (track.id === trackId) {
+          return {
+            ...track,
+            clips: track.clips.map(clip => {
+              if (clip.id === clipId) {
+                return {
+                  ...clip,
+                  startTime: newStartTime,
+                  ...(newDuration !== undefined && { duration: newDuration })
+                };
+              }
+              return clip;
+            })
+          };
+        }
+        return track;
+      });
+    });
+  }, []);
+
+  const updateClipProperties = useCallback((clipId: string, trackId: string, properties: Partial<AudioClip>) => {
+    setTracks(prevTracks => 
+      prevTracks.map(track => 
+        track.id === trackId 
+          ? {
+              ...track,
+              clips: track.clips.map(clip => 
+                clip.id === clipId ? { ...clip, ...properties } : clip
+              )
+            }
+          : track
+      )
+    );
+  }, []);
+
+  // Add new session
+  const addSession = useCallback(() => {
+    const newId = (sessions.length + 1).toString();
+    const newSession = {
+      id: newId,
+      name: `Project ${newId}`,
+      isActive: false
+    };
+    
+    setSessions(prev => [...prev, newSession]);
+  }, [sessions]);
+
+  return {
+    // State
+    transport,
+    currentProject,
+    sessions,
+    tracks,
+    mixerChannels,
+    aiAnalysis,
+    aiSuggestions,
+    
+    // Actions
+    play,
+    pause,
+    stop,
+    toggleRecording,
+    seekTo,
+    updateTrackVolume,
+    toggleTrackMute,
+    toggleTrackSolo,
+    switchSession,
+    addSession,
+    closeSession,
+    setCurrentProject,
+    updateClipPosition,
+    updateClipProperties,
+  };
+}
