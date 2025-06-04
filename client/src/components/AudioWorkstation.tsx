@@ -180,7 +180,10 @@ export function AudioWorkstation() {
               minHeight={150}
               maxWidth={800}
               maxHeight={600}
-              onSizeChange={(width, height) => setVideoPlayerSize({ width, height })}
+              onSizeChange={(width, height) => {
+                setVideoPlayerSize({ width, height });
+                setVideoPlayerHeight(height);
+              }}
             />
           </div>
           
