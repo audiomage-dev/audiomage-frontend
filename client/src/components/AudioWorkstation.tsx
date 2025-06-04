@@ -142,10 +142,7 @@ export function AudioWorkstation() {
   });
 
   const handleMasterVolumeChange = (volume: number) => {
-    setCurrentProject({
-      ...currentProject,
-      masterVolume: volume,
-    });
+    setCurrentProject(`${currentProject} - Volume: ${volume}`);
   };
 
   const handleChannelVolumeChange = (channelId: string, volume: number) => {
@@ -337,8 +334,8 @@ export function AudioWorkstation() {
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
               snapMode={snapMode}
               onSnapModeChange={setSnapMode}
-              onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
-              onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
+              onBpmChange={(newBpm) => setCurrentProject(`${currentProject} - BPM: ${newBpm}`)}
+              onTimeSignatureChange={(newTimeSignature) => setCurrentProject(`${currentProject} - Time: ${newTimeSignature}`)}
             />
           </div>
           
@@ -349,14 +346,18 @@ export function AudioWorkstation() {
                 tracks={tracks}
                 transport={transport}
                 zoomLevel={zoomLevel}
-                bpm={currentProject.bpm}
-                timeSignature={currentProject.timeSignature}
+                bpm={120}
+                timeSignature={[4, 4] as [number, number]}
                 snapMode={snapMode}
                 onTrackMute={toggleTrackMute}
                 onTrackSolo={toggleTrackSolo}
                 onTrackSelect={setSelectedTrack}
-                onClipMove={updateClipPosition}
-                onClipResize={updateClipProperties}
+                onClipMove={(clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
+                  updateClipPosition(clipId, toTrackId, newStartTime);
+                }}
+                onClipResize={(clipId: string, trackId: string, newStartTime: number, newDuration: number) => {
+                  updateClipPosition(clipId, trackId, newStartTime, newDuration);
+                }}
                 onZoomChange={handleZoomChange}
                 isLocked={isTimelineLocked}
               />
@@ -393,7 +394,7 @@ export function AudioWorkstation() {
       {/* Bottom Status Bar */}
       <div className="flex-none h-6">
         <StatusBar
-          projectName={currentProject.name}
+          projectName={currentProject}
           isSaved={true}
           aiAnalysis={aiAnalysis}
           lastAIAnalysis={new Date(Date.now() - 120000)}
