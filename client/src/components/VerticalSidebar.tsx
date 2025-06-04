@@ -6,7 +6,7 @@ import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
 import { SpellbookModal } from './SpellbookModal';
-import { AIChatSidebar } from './AIChatSidebar';
+import { InlineChatPanel } from './InlineChatPanel';
 import { 
   FolderOpen, 
   GitBranch, 
@@ -76,13 +76,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       icon: <MessageSquare className="w-5 h-5" />,
       label: 'Prompts',
       component: (
-        <div className="h-full">
-          <AIChatSidebar
-            isOpen={true}
-            onToggle={() => {}}
-            currentSession="Main Session"
-          />
-        </div>
+        <InlineChatPanel currentSession="Main Session" />
       )
     },
     {
