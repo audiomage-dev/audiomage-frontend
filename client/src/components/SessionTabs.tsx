@@ -129,7 +129,7 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-[#141414] border-b border-[#1f1f1f] px-3 h-9 flex items-center overflow-x-auto">
+      <div className="bg-[#1e1e1e] border-b border-[#2d2d30] px-3 h-9 flex items-center overflow-x-auto">
         {sessions.map((session, index) => (
           <div key={session.id} className="flex items-center">
             <div
@@ -137,8 +137,8 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
                 flex items-center gap-2 px-3 py-1.5 cursor-pointer
                 transition-colors duration-150 group relative text-xs font-medium
                 ${session.isActive 
-                  ? 'bg-[#252526] text-white border-b border-[#0e639c]' 
-                  : 'text-[#cccccc] hover:bg-[#2a2d2e] hover:text-white'
+                  ? 'bg-[#1a1a1a] text-white border-b border-[#0e639c]' 
+                  : 'bg-[#252526] text-[#cccccc] hover:bg-[#1e1e1e] hover:text-white'
                 }
               `}
               onClick={() => onSwitchSession(session.id)}
@@ -159,16 +159,16 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
               )}
             </div>
             {index < sessions.length - 1 && (
-              <div className="w-px h-5 bg-[#3c3c3c] mx-1" />
+              <div className="w-px h-5 bg-[#2d2d30] mx-1" />
             )}
           </div>
         ))}
-        <div className="w-px h-5 bg-[#3c3c3c] mx-1" />
+        <div className="w-px h-5 bg-[#2d2d30] mx-1" />
         <Button
           onClick={onAddSession}
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-[#cccccc] hover:text-white hover:bg-[#2a2d2e] rounded ml-2 text-sm"
+          className="h-7 w-7 p-0 text-[#cccccc] hover:text-white hover:bg-[#1e1e1e] rounded ml-2 text-sm"
         >
           +
         </Button>
