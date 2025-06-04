@@ -490,7 +490,15 @@ export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSessio
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
-  const [projectName, setProjectName] = useState("Untitled Project");
+  // Get the current active session name
+  const activeSession = sessions.find(session => session.isActive);
+  const [projectName, setProjectName] = useState(activeSession?.name || "Untitled Project");
+
+  // Update project name when active session changes
+  useEffect(() => {
+    const activeSession = sessions.find(session => session.isActive);
+    setProjectName(activeSession?.name || "Untitled Project");
+  }, [sessions]);
   const [isEditingName, setIsEditingName] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
