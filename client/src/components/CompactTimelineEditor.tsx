@@ -62,6 +62,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
+  // Enhanced cursor and selection states
+  const [cursorMode, setCursorMode] = useState<'range' | 'object' | 'razor'>('range');
+  const [hoverZone, setHoverZone] = useState<{ type: 'range' | 'object' | 'razor'; clipId?: string; edge?: 'left' | 'right' } | null>(null);
+  const [selectionIslands, setSelectionIslands] = useState<Array<{
+    id: string;
+    startTime: number;
+    endTime: number;
+    startTrackIndex: number;
+    endTrackIndex: number;
+    clips: string[];
+    automation: string[];
+    midiNotes: string[];
+  }>>([]);
+  const [isShiftHeld, setIsShiftHeld] = useState(false);
+  const [isAltHeld, setIsAltHeld] = useState(false);
+  
   // Multi-track selection state
   const [multiSelection, setMultiSelection] = useState<{
     startTime: number;
@@ -349,6 +365,89 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   useEffect(() => {
     drawCanvasGrid();
   }, [drawCanvasGrid]);
+
+  // Keyboard event listeners for modifier keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftHeld(true);
+      if (e.key === 'Alt') setIsAltHeld(true);
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftHeld(false);
+      if (e.key === 'Alt') setIsAltHeld(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Cursor morphing logic
+  const determineCursorMode = useCallback((e: MouseEvent, clipElement?: HTMLElement) => {
+    if (!clipElement) return 'range';
+    
+    const rect = clipElement.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const relativeX = e.clientX - rect.left;
+    
+    // Edge detection (±3px from left/right edges)
+    if (relativeX <= 3 || relativeX >= rect.width - 3) {
+      return 'razor';
+    }
+    
+    // Top half = range, bottom half = object
+    if (relativeY < rect.height / 2) {
+      return 'range';
+    } else {
+      return 'object';
+    }
+  }, []);
+
+  // Get cursor style based on mode
+  const getCursorStyle = useCallback(() => {
+    switch (cursorMode) {
+      case 'range':
+        return 'text';
+      case 'object':
+        return 'pointer';
+      case 'razor':
+        return 'col-resize';
+      default:
+        return 'default';
+    }
+  }, [cursorMode]);
+
+  // Enhanced clip hover handler with cursor morphing
+  const handleClipMouseMove = useCallback((e: React.MouseEvent, clipId: string) => {
+    const clipElement = e.currentTarget as HTMLElement;
+    const newMode = determineCursorMode(e.nativeEvent, clipElement);
+    
+    if (newMode !== cursorMode) {
+      setCursorMode(newMode);
+    }
+
+    const rect = clipElement.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    
+    // Determine edge for razor mode
+    let edge: 'left' | 'right' | undefined;
+    if (newMode === 'razor') {
+      edge = relativeX <= 3 ? 'left' : 'right';
+    }
+
+    setHoverZone({ type: newMode, clipId, edge });
+  }, [cursorMode, determineCursorMode]);
+
+  // Reset cursor when leaving clips
+  const handleClipMouseLeave = useCallback(() => {
+    setCursorMode('range');
+    setHoverZone(null);
+  }, []);
 
   const handleTrackSelect = useCallback((trackId: string, e?: React.MouseEvent) => {
     if (e?.ctrlKey || e?.metaKey) {
@@ -1824,6 +1923,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           width: `${clipWidth}px`,
                           backgroundColor: clip.color,
                           borderColor: clip.color,
+                          cursor: getCursorStyle(),
                           transform: (() => {
                             // If this clip is being dragged and is part of a group selection, use group offset
                             if (draggingClip?.clipId === clip.id && draggingClip.selectedClips && draggingClip.selectedClips.length > 0) {
@@ -1843,6 +1943,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                  draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id) ? 40 : 5
                         }}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
+                        onMouseMove={(e) => handleClipMouseMove(e, clip.id)}
+                        onMouseLeave={handleClipMouseLeave}
                         onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
