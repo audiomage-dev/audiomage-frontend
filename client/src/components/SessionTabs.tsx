@@ -129,7 +129,7 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-[#1e1e1e] border-b border-[#2d2d30] px-3 h-9 flex items-center overflow-x-auto">
+      <div className="bg-[#252526] border-b border-[#2d2d30] px-3 h-9 flex items-center overflow-x-auto">
         {sessions.map((session, index) => (
           <div key={session.id} className="flex items-center">
             <div
