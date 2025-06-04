@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProjectBrowser } from './ProjectBrowser';
 import { AudioChangemapsPanel } from './AudioChangemapsPanel';
@@ -35,8 +35,11 @@ import {
   Waves,
   Wand2,
   Lightbulb,
-  MessageSquare
+  MessageSquare,
+  Menu,
+  ChevronDown
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // Define the SidebarItem interface
 interface SidebarItem {
@@ -55,15 +58,30 @@ interface VerticalSidebarProps {
     duration?: number;
     size?: number;
   }) => void;
+  containerHeight?: number;
 }
 
-export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
+export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Determine if buttons should collapse based on container height
+  useEffect(() => {
+    if (containerHeight) {
+      // If container height is less than 300px, collapse buttons
+      const shouldCollapse = containerHeight < 300;
+      setIsCollapsed(shouldCollapse);
+      if (shouldCollapse) {
+        setDropdownOpen(false);
+      }
+    }
+  }, [containerHeight]);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
