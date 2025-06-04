@@ -129,22 +129,32 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-[#252526] border-b border-[#2d2d30] px-3 h-9 flex items-center overflow-x-auto">
+      <div className="bg-[#2B2B2B] border-b border-[#404040] px-1 h-8 flex items-start overflow-x-auto">
         {sessions.map((session, index) => (
-          <div key={session.id} className="flex items-center">
+          <div key={session.id} className="flex items-start">
             <div
               className={`
-                flex items-center gap-2 px-3 py-1.5 cursor-pointer
-                transition-colors duration-150 group relative text-xs font-medium
+                relative flex items-center gap-2 px-4 py-1.5 cursor-pointer
+                transition-all duration-200 group min-w-max
                 ${session.isActive 
-                  ? 'bg-[#1a1a1a] text-white border-b border-[#0e639c]' 
-                  : 'bg-[#252526] text-[#cccccc] hover:bg-[#1e1e1e] hover:text-white'
+                  ? 'bg-[#3A3A3A] text-white' 
+                  : 'bg-[#323232] text-[#B8B8B8] hover:bg-[#373737] hover:text-white'
                 }
+                rounded-t-md border-t-2 border-l border-r
+                ${session.isActive 
+                  ? 'border-t-[#5A9FD4] border-l-[#4A4A4A] border-r-[#4A4A4A]' 
+                  : 'border-t-transparent border-l-[#404040] border-r-[#404040] hover:border-t-[#757575]'
+                }
+                mt-0.5
               `}
               onClick={() => onSwitchSession(session.id)}
               onContextMenu={(e) => handleContextMenu(e, session.id)}
             >
-              <span className="truncate max-w-[120px]">{session.name}</span>
+              <div className={`w-2 h-2 rounded-full mr-1 ${
+                session.isActive ? 'bg-[#5A9FD4]' : 'bg-[#666666] group-hover:bg-[#888888]'
+              }`} />
+              
+              <span className="text-xs font-medium truncate max-w-[100px]">{session.name}</span>
               
               {sessions.length > 1 && (
                 <button
@@ -152,23 +162,25 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
                     e.stopPropagation();
                     handleContextAction('close', session.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-[#FF4444] hover:text-white"
+                  className="opacity-0 group-hover:opacity-70 hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-[#FF4444] hover:text-white ml-1"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5" />
                 </button>
               )}
+              
+              {/* Tab bottom border overlay for active state */}
+              {session.isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5A9FD4]" />
+              )}
             </div>
-            {index < sessions.length - 1 && (
-              <div className="w-px h-5 bg-[#2d2d30] mx-1" />
-            )}
           </div>
         ))}
-        <div className="w-px h-5 bg-[#2d2d30] mx-1" />
+        
         <Button
           onClick={onAddSession}
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-[#cccccc] hover:text-white hover:bg-[#1e1e1e] rounded ml-2 text-sm"
+          className="h-6 w-6 p-0 text-[#888888] hover:text-white hover:bg-[#373737] rounded ml-2 mt-1 text-xs border border-[#404040] hover:border-[#5A5A5A]"
         >
           +
         </Button>
