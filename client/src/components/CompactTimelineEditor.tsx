@@ -157,17 +157,26 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const getClipInteractionZone = useCallback((e: React.MouseEvent, clipElement: HTMLElement, clip: any) => {
     const rect = clipElement.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
+    const relativeY = e.clientY - rect.top;
     const clipWidth = rect.width;
+    const clipHeight = rect.height;
     
-    // Define zones: resize handles (10px each), text selection area (middle)
+    // Define zones: resize handles (10px each), top half for selection, bottom half for drag
     const resizeHandleWidth = 10;
     
+    // Priority: resize handles override everything
     if (relativeX <= resizeHandleWidth) {
       return 'resize-left';
     } else if (relativeX >= clipWidth - resizeHandleWidth) {
       return 'resize-right';
-    } else {
+    } 
+    // Top half for area selection (excluding resize handles)
+    else if (relativeY <= clipHeight / 2) {
       return 'select-area';
+    } 
+    // Bottom half for dragging
+    else {
+      return 'drag';
     }
   }, []);
 
@@ -180,6 +189,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         break;
       case 'select-area':
         setCursorState('text');
+        break;
+      case 'drag':
+        setCursorState('grab');
         break;
       default:
         setCursorState('default');
@@ -2039,18 +2051,49 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           />
                         )}
                         
-                        {/* Clip Area Selection Overlay */}
+                        {/* Clip Area Selection Overlay - DAW Style */}
                         {clipAreaSelection && clipAreaSelection.clipId === clip.id && (
                           <div 
-                            className="absolute top-0 bg-blue-400 bg-opacity-30 border-2 border-blue-500 rounded pointer-events-none"
+                            className="absolute top-0 pointer-events-none"
                             style={{
                               left: `${clipAreaSelection.startX}px`,
                               width: `${clipAreaSelection.endX - clipAreaSelection.startX}px`,
-                              height: '100%'
+                              height: '100%',
+                              background: 'rgba(59, 130, 246, 0.25)',
+                              border: '2px solid rgba(59, 130, 246, 0.8)',
+                              borderRadius: '4px',
+                              boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.3)'
                             }}
                           >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
+                            {/* Top selection bar */}
+                            <div 
+                              className="absolute top-0 left-0 right-0 h-1"
+                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                            />
+                            {/* Bottom selection bar */}
+                            <div 
+                              className="absolute bottom-0 left-0 right-0 h-1"
+                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                            />
+                            {/* Left selection handle */}
+                            <div 
+                              className="absolute top-0 left-0 w-1 h-full"
+                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                            />
+                            {/* Right selection handle */}
+                            <div 
+                              className="absolute top-0 right-0 w-1 h-full"
+                              style={{ background: 'rgba(59, 130, 246, 1)' }}
+                            />
+                            {/* Center crosshair indicator */}
+                            <div 
+                              className="absolute top-1/2 left-1/2 w-3 h-3 transform -translate-x-1/2 -translate-y-1/2"
+                              style={{
+                                background: 'rgba(59, 130, 246, 0.9)',
+                                borderRadius: '50%',
+                                border: '1px solid white'
+                              }}
+                            />
                           </div>
                         )}
 
