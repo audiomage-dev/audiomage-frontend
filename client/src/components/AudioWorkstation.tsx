@@ -41,7 +41,7 @@ export function AudioWorkstation() {
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
-  const [videoPlayerSize, setVideoPlayerSize] = useState({ width: 320, height: 240 });
+  const [videoPlayerSize, setVideoPlayerSize] = useState({ width: 512, height: 384 });
 
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
@@ -147,7 +147,6 @@ export function AudioWorkstation() {
           {/* Resizable Video Player */}
           <div className="p-2 bg-[var(--muted)] border-r border-b border-[var(--border)]">
             <WorkstationVideoPlayer
-              title="Project Video"
               src={selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video"}
               initialWidth={videoPlayerSize.width}
               initialHeight={videoPlayerSize.height}
