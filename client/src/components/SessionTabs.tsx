@@ -129,68 +129,43 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-transparent px-2 flex items-center space-x-2 text-xs overflow-x-auto scrollbar-thin">
+      <div className="bg-[#1A1A1A] border-b border-[#2A2A2A] px-1 h-8 flex items-center overflow-x-auto">
         {sessions.map((session) => (
           <div
             key={session.id}
-            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-200 rounded-lg overflow-hidden mx-0.5 ${
-              session.isActive
-                ? 'active bg-gradient-to-r from-[var(--primary)]/20 to-[var(--primary)]/10 text-[var(--foreground)] shadow-lg border-2 border-[var(--primary)]/40 ring-2 ring-[var(--primary)]/20 transform scale-[1.02]'
-                : 'inactive text-[var(--muted-foreground)] bg-[var(--card)]/60 border-2 border-[var(--border)]/30 hover:bg-gradient-to-r hover:from-[var(--accent)]/80 hover:to-[var(--accent)]/60 hover:text-[var(--accent-foreground)] hover:border-[var(--accent)]/50 hover:shadow-md hover:scale-[1.01] hover:ring-1 hover:ring-[var(--accent)]/20'
-            }`}
+            className={`
+              flex items-center gap-1.5 px-2 py-1 cursor-pointer
+              transition-colors duration-150 group relative text-xs font-medium
+              ${session.isActive 
+                ? 'bg-[#2D2D2D] text-white border-b border-[#007ACC]' 
+                : 'text-gray-400 hover:bg-[#252525] hover:text-gray-200'
+              }
+            `}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
           >
-            {/* Active indicator */}
-            {session.isActive && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/60" />
-            )}
+            <span className="truncate max-w-[100px]">{session.name}</span>
             
-            <div className="flex items-center px-3 py-2 gap-2">
-              {/* Session status indicator */}
-              <div className={`w-2 h-2 rounded-full transition-all duration-200 status-indicator ${
-                session.isActive 
-                  ? 'active bg-[var(--primary)] shadow-lg ring-2 ring-[var(--primary)]/30 animate-pulse' 
-                  : 'bg-[var(--muted-foreground)]/30 group-hover:bg-[var(--accent)] group-hover:shadow-md group-hover:ring-1 group-hover:ring-[var(--accent)]/30 group-hover:scale-110'
-              }`} />
-              
-              <span className="font-medium text-xs truncate max-w-[100px] select-none">
-                {session.name}
-              </span>
-              
-              {/* Close button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`ml-1 h-4 w-4 p-0 rounded-full tab-close-btn ${
-                  session.isActive
-                    ? 'opacity-70 hover:opacity-100 hover:bg-[var(--destructive)]/10 hover:text-[var(--destructive)]'
-                    : 'opacity-0 group-hover:opacity-70 hover:opacity-100 hover:bg-[var(--destructive)]/10 hover:text-[var(--destructive)]'
-                }`}
+            {sessions.length > 1 && (
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleContextAction('close', session.id);
                 }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-[#FF4444] hover:text-white ml-1"
               >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-            
-            {/* Hover effect overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <X className="w-2.5 h-2.5" />
+              </button>
+            )}
           </div>
         ))}
-        {/* Add new session button */}
         <Button
+          onClick={onAddSession}
           variant="ghost"
           size="sm"
-          className="group new-tab-btn flex items-center gap-2 px-3 py-2 h-auto rounded-lg border border-dashed border-[var(--border)] hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] ml-2"
-          onClick={onAddSession}
+          className="h-6 w-6 p-0 text-gray-500 hover:text-white hover:bg-[#333] rounded ml-1 text-xs"
         >
-          <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center group-hover:border-[var(--primary)] transition-colors">
-            <span className="text-xs font-bold leading-none">+</span>
-          </div>
-          <span className="text-xs font-medium hidden sm:block">New</span>
+          +
         </Button>
       </div>
 

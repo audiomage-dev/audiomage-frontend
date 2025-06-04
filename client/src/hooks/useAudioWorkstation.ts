@@ -433,17 +433,20 @@ export function useAudioWorkstation() {
     );
   }, []);
 
-  // Add new session
+  // Add new session and switch to it
   const addSession = useCallback(() => {
     const newId = (sessions.length + 1).toString();
     const newSession = {
       id: newId,
       name: `Project ${newId}`,
-      isActive: false
+      isActive: true
     };
     
-    setSessions(prev => [...prev, newSession]);
-  }, [sessions]);
+    setSessions(prev => prev.map(session => ({ ...session, isActive: false })).concat(newSession));
+    
+    // Load empty tracks for the new session
+    setTracks(getTracksForSession(newId));
+  }, [sessions, getTracksForSession]);
 
   // Get empty tracks for new projects
   const getEmptyTracksForSession = useCallback((): AudioTrack[] => {
