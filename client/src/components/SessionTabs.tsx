@@ -129,41 +129,46 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSe
   };
   return (
     <>
-      <div className="bg-[#1A1A1A] border-b border-[#2A2A2A] px-1 h-8 flex items-center overflow-x-auto">
-        {sessions.map((session) => (
-          <div
-            key={session.id}
-            className={`
-              flex items-center gap-1.5 px-2 py-1 cursor-pointer
-              transition-colors duration-150 group relative text-xs font-medium
-              ${session.isActive 
-                ? 'bg-[#2D2D2D] text-white border-b border-[#007ACC]' 
-                : 'text-gray-400 hover:bg-[#252525] hover:text-gray-200'
-              }
-            `}
-            onClick={() => onSwitchSession(session.id)}
-            onContextMenu={(e) => handleContextMenu(e, session.id)}
-          >
-            <span className="truncate max-w-[100px]">{session.name}</span>
-            
-            {sessions.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleContextAction('close', session.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-[#FF4444] hover:text-white ml-1"
-              >
-                <X className="w-2.5 h-2.5" />
-              </button>
+      <div className="bg-[#1A1A1A] border-b border-[#2A2A2A] px-2 h-10 flex items-center overflow-x-auto">
+        {sessions.map((session, index) => (
+          <div key={session.id} className="flex items-center">
+            <div
+              className={`
+                flex items-center gap-2 px-4 py-2 cursor-pointer
+                transition-colors duration-150 group relative text-xs font-medium
+                ${session.isActive 
+                  ? 'bg-[#2D2D2D] text-white border-b-2 border-[#007ACC]' 
+                  : 'text-gray-400 hover:bg-[#252525] hover:text-gray-200'
+                }
+              `}
+              onClick={() => onSwitchSession(session.id)}
+              onContextMenu={(e) => handleContextMenu(e, session.id)}
+            >
+              <span className="truncate max-w-[120px]">{session.name}</span>
+              
+              {sessions.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleContextAction('close', session.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded hover:bg-[#FF4444] hover:text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {index < sessions.length - 1 && (
+              <div className="w-px h-6 bg-[#333] mx-1" />
             )}
           </div>
         ))}
+        <div className="w-px h-6 bg-[#333] mx-1" />
         <Button
           onClick={onAddSession}
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 text-gray-500 hover:text-white hover:bg-[#333] rounded ml-1 text-xs"
+          className="h-8 w-8 p-0 text-gray-500 hover:text-white hover:bg-[#333] rounded ml-2 text-sm"
         >
           +
         </Button>
