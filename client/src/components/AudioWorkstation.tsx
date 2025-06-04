@@ -99,8 +99,15 @@ export function AudioWorkstation() {
   // Mouse wheel zoom functionality
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Check if mouse is within the workstation area
-      if (e.target && (e.target as Element).closest('.audio-workstation')) {
+      // Check if mouse is within the workstation timeline/clips area (not sidebars or header)
+      const target = e.target as Element;
+      const isInTimelineArea = target.closest('.timeline-container') || 
+                              target.closest('.compact-timeline-editor') ||
+                              target.closest('.audio-editor') ||
+                              target.closest('.midi-editor') ||
+                              target.closest('.score-editor');
+      
+      if (isInTimelineArea) {
         e.preventDefault();
         
         // Zoom in on scroll up (negative deltaY), zoom out on scroll down (positive deltaY)
