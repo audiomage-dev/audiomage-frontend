@@ -481,17 +481,33 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
         const absoluteEndTime = clip.startTime + endTimeWithinClip;
         
-        // Calculate affected tracks
+        // Calculate affected tracks and filter by clips in time range
         const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
         const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
-        const affectedTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
+        const candidateTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
+        
+        const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
+        const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
+        
+        // Filter tracks that have clips overlapping with the selection time range
+        const affectedTracks = candidateTracks.filter(candidateTrack => {
+          if (!candidateTrack.clips) return false;
+          
+          return candidateTrack.clips.some(trackClip => {
+            const clipStart = trackClip.startTime;
+            const clipEnd = trackClip.startTime + trackClip.duration;
+            
+            // Check if clip overlaps with selection time range
+            return clipStart < selectionEndTime && clipEnd > selectionStartTime;
+          });
+        });
         
         // Create multi-track selection
         setClipAreaSelection({
           clipId,
           trackId,
-          startTime: Math.min(absoluteStartTime, absoluteEndTime),
-          endTime: Math.max(absoluteStartTime, absoluteEndTime),
+          startTime: selectionStartTime,
+          endTime: selectionEndTime,
           startX: Math.min(relativeX, currentRelativeX),
           endX: Math.max(relativeX, currentRelativeX),
           isActive: true,
