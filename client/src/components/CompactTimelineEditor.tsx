@@ -76,6 +76,20 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     selectedClips: string[];
   } | null>(null);
 
+  // Clip area selection state
+  const [clipAreaSelection, setClipAreaSelection] = useState<{
+    clipId: string;
+    trackId: string;
+    startTime: number;
+    endTime: number;
+    startX: number;
+    endX: number;
+    isActive: boolean;
+  } | null>(null);
+
+  // Mouse cursor state
+  const [cursorState, setCursorState] = useState<'default' | 'grab' | 'grabbing' | 'col-resize' | 'text' | 'crosshair'>('default');
+
   // Clip dragging state
   const [draggingClip, setDraggingClip] = useState<{
     clipId: string;
@@ -138,6 +152,39 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
   const [selectedClipForLLM, setSelectedClipForLLM] = useState<{ id: string; name: string; trackName: string; trackType: string } | null>(null);
+
+  // Mouse position detection within clips
+  const getClipInteractionZone = useCallback((e: React.MouseEvent, clipElement: HTMLElement, clip: any) => {
+    const rect = clipElement.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    const clipWidth = rect.width;
+    
+    // Define zones: resize handles (10px each), text selection area (middle)
+    const resizeHandleWidth = 10;
+    
+    if (relativeX <= resizeHandleWidth) {
+      return 'resize-left';
+    } else if (relativeX >= clipWidth - resizeHandleWidth) {
+      return 'resize-right';
+    } else {
+      return 'select-area';
+    }
+  }, []);
+
+  // Update cursor based on interaction zone
+  const updateCursorForClip = useCallback((zone: string) => {
+    switch (zone) {
+      case 'resize-left':
+      case 'resize-right':
+        setCursorState('col-resize');
+        break;
+      case 'select-area':
+        setCursorState('text');
+        break;
+      default:
+        setCursorState('default');
+    }
+  }, []);
 
   // Snap calculation function
   const calculateSnappedTime = useCallback((timeInSeconds: number): number => {
@@ -365,18 +412,108 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
 
+  // Handle clip area selection within clips
+  const handleClipAreaSelection = useCallback((e: React.MouseEvent, clipId: string, trackId: string, clip: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const clipElement = e.currentTarget as HTMLElement;
+    const rect = clipElement.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    const clipWidth = rect.width;
+    
+    // Calculate time position within clip
+    const pixelsPerSecond = 60 * zoomLevel;
+    const timeWithinClip = (relativeX / clipWidth) * clip.duration;
+    const absoluteStartTime = clip.startTime + timeWithinClip;
+    
+    console.log('Starting clip area selection:', {
+      clipId,
+      relativeX,
+      timeWithinClip: timeWithinClip.toFixed(3),
+      absoluteStartTime: absoluteStartTime.toFixed(3)
+    });
+    
+    let isSelecting = false;
+    const startX = e.clientX;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isSelecting && Math.abs(moveEvent.clientX - startX) > 3) {
+        isSelecting = true;
+        setCursorState('crosshair');
+      }
+      
+      if (isSelecting) {
+        const currentRelativeX = moveEvent.clientX - rect.left;
+        const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
+        const absoluteEndTime = clip.startTime + endTimeWithinClip;
+        
+        setClipAreaSelection({
+          clipId,
+          trackId,
+          startTime: Math.min(absoluteStartTime, absoluteEndTime),
+          endTime: Math.max(absoluteStartTime, absoluteEndTime),
+          startX: Math.min(relativeX, currentRelativeX),
+          endX: Math.max(relativeX, currentRelativeX),
+          isActive: true
+        });
+      }
+    };
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      setCursorState('default');
+      
+      if (!isSelecting) {
+        // Single click - select entire clip
+        setClipAreaSelection({
+          clipId,
+          trackId,
+          startTime: clip.startTime,
+          endTime: clip.startTime + clip.duration,
+          startX: 0,
+          endX: clipWidth,
+          isActive: true
+        });
+      }
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [zoomLevel]);
+
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     // Prevent dragging when timeline is locked
     if (isLocked) {
       return;
     }
     
-    e.stopPropagation();
-    e.preventDefault();
-    
     const track = tracks.find(t => t.id === trackId);
     const clip = track?.clips?.find(c => c.id === clipId);
     const trackIndex = tracks.findIndex(t => t.id === trackId);
+    
+    if (!clip) return;
+    
+    // Detect interaction zone
+    const clipElement = e.currentTarget as HTMLElement;
+    const zone = getClipInteractionZone(e, clipElement, clip);
+    
+    if (zone === 'select-area') {
+      // Handle area selection within clip
+      handleClipAreaSelection(e, clipId, trackId, clip);
+      return;
+    } else if (zone === 'resize-left' || zone === 'resize-right') {
+      // Handle resizing
+      setCursorState('col-resize');
+      // Implement resize logic here if needed
+      return;
+    }
+    
+    // Default drag behavior for clip movement
+    e.stopPropagation();
+    e.preventDefault();
+    setCursorState('grabbing');
     
     if (clip && trackIndex >= 0) {
       console.log('Starting clip drag:', clipId);
@@ -1824,21 +1961,27 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 ? 'ring-2 ring-[var(--primary)]'
                                 : 'z-5'
                         }`}
+                        onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
+                        onMouseMove={(e) => {
+                          const zone = getClipInteractionZone(e, e.currentTarget as HTMLElement, clip);
+                          updateCursorForClip(zone);
+                        }}
+                        onMouseLeave={() => setCursorState('default')}
+                        onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
+                        onDoubleClick={() => console.log('Edit clip:', clip.name)}
                         style={{
                           left: `${clipStartX}px`,
                           width: `${clipWidth}px`,
                           backgroundColor: clip.color,
                           borderColor: clip.color,
+                          cursor: cursorState,
                           transform: (() => {
-                            // If this clip is being dragged and is part of a group selection, use group offset
                             if (draggingClip?.clipId === clip.id && draggingClip.selectedClips && draggingClip.selectedClips.length > 0) {
                               return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
                             }
-                            // If this clip is being dragged individually
                             else if (draggingClip?.clipId === clip.id) {
                               return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
                             }
-                            // If this clip is part of a dragged group but not the primary clip
                             else if (draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)) {
                               return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
                             }
@@ -1847,9 +1990,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           zIndex: draggingClip?.clipId === clip.id ? 50 : 
                                  draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id) ? 40 : 5
                         }}
-                        onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
-                        onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
-                        onDoubleClick={() => console.log('Edit clip:', clip.name)}
                       >
                         {/* Clip Header */}
                         <div className="h-4 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
