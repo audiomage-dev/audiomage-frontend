@@ -143,13 +143,21 @@ export function AudioWorkstation() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Video Player and Sidebar */}
-        <div className="flex-none flex flex-col" style={{ width: Math.max(320, videoPlayerSize.width + 40) }}>
+        <div 
+          className="flex-none flex flex-col" 
+          style={{ 
+            width: Math.max(320, videoPlayerSize.width + 40),
+            minWidth: Math.max(320, videoPlayerSize.width + 40),
+            maxWidth: Math.max(320, videoPlayerSize.width + 40)
+          }}
+        >
           {/* Resizable Video Player */}
           <div 
             className="flex-none p-2 bg-[var(--muted)] border-r border-b border-[var(--border)]"
             style={{ 
               height: videoPlayerSize.height + 16,
-              minHeight: videoPlayerSize.height + 16
+              minHeight: videoPlayerSize.height + 16,
+              width: '100%'
             }}
           >
             <WorkstationVideoPlayer
@@ -168,10 +176,11 @@ export function AudioWorkstation() {
           <div 
             className="flex-1 flex flex-col min-h-0 bg-[var(--muted)] border-r border-[var(--border)]"
             style={{ 
-              width: Math.max(320, videoPlayerSize.width + 40)
+              width: '100%',
+              minWidth: Math.max(320, videoPlayerSize.width + 40)
             }}
           >
-            <div className="flex-1 min-h-0 p-2">
+            <div className="flex-1 min-h-0 p-2" style={{ width: '100%' }}>
               <VerticalSidebar onFileSelect={setSelectedMediaFile} />
             </div>
           </div>
