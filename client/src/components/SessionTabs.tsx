@@ -96,14 +96,14 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
   };
   return (
     <>
-      <div className="bg-transparent px-2 flex items-center space-x-1 text-xs overflow-x-auto scrollbar-thin">
+      <div className="bg-transparent px-2 flex items-center space-x-2 text-xs overflow-x-auto scrollbar-thin">
         {sessions.map((session) => (
           <div
             key={session.id}
-            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-300 rounded-lg overflow-hidden ${
+            className={`group session-tab flex items-center relative min-w-max cursor-pointer transition-all duration-300 rounded-lg overflow-hidden mx-0.5 ${
               session.isActive
-                ? 'active bg-gradient-to-r from-[var(--primary)]/10 to-[var(--primary)]/5 text-[var(--foreground)] shadow-sm border border-[var(--primary)]/20'
-                : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]/80 hover:text-[var(--foreground)] border border-transparent hover:border-[var(--border)]'
+                ? 'active bg-gradient-to-r from-[var(--primary)]/15 to-[var(--primary)]/8 text-[var(--foreground)] shadow-md border-2 border-[var(--primary)]/30 ring-1 ring-[var(--primary)]/10'
+                : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]/90 hover:text-[var(--foreground)] border-2 border-[var(--border)]/50 hover:border-[var(--border)] hover:shadow-sm bg-[var(--background)]/80'
             }`}
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
