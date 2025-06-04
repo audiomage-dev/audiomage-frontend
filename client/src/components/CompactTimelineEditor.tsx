@@ -2039,6 +2039,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           />
                         )}
                         
+                        {/* Clip Area Selection Overlay */}
+                        {clipAreaSelection && clipAreaSelection.clipId === clip.id && (
+                          <div 
+                            className="absolute top-0 bg-blue-400 bg-opacity-30 border-2 border-blue-500 rounded pointer-events-none"
+                            style={{
+                              left: `${clipAreaSelection.startX}px`,
+                              width: `${clipAreaSelection.endX - clipAreaSelection.startX}px`,
+                              height: '100%'
+                            }}
+                          >
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
+                          </div>
+                        )}
+
                         {/* Resize Handles */}
                         <div 
                           className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
