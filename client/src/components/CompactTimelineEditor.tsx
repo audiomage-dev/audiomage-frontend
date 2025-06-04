@@ -433,21 +433,26 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       
       // Add document-level mouse event listeners for smooth dragging
       const handleDocumentMouseMove = (e: MouseEvent) => {
+        e.preventDefault();
+        
         const deltaX = e.clientX - dragState.startX;
         const deltaY = e.clientY - dragState.startY;
         
-        // Calculate new track position
+        // Calculate new track position with improved smoothing
         const trackHeight = 64;
         const newTrackIndex = Math.max(0, Math.min(tracks.length - 1, 
           dragState.originalTrackIndex + Math.round(deltaY / trackHeight)
         ));
         
-        setDraggingClip(prev => prev ? {
-          ...prev,
-          currentTrackIndex: newTrackIndex,
-          currentOffsetX: deltaX,
-          currentOffsetY: deltaY
-        } : null);
+        // Use requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+          setDraggingClip(prev => prev ? {
+            ...prev,
+            currentTrackIndex: newTrackIndex,
+            currentOffsetX: deltaX,
+            currentOffsetY: deltaY
+          } : null);
+        });
       };
       
       const handleDocumentMouseUp = (e: MouseEvent) => {
@@ -470,9 +475,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         // Calculate exact position compensating for initial grab offset
         const relativeX = e.clientX - containerRect.left + scrollLeft;
-        const adjustedX = relativeX - dragState.initialGrabOffset; // Subtract where mouse grabbed within clip
+        const adjustedX = relativeX - dragState.initialGrabOffset;
         
-        // Calculate exact time position - use consistent pixel-to-time conversion
+        // Calculate exact time position with improved precision
         const pixelsPerSecond = 60 * zoomLevel;
         const rawNewStartTime = Math.max(0, adjustedX / pixelsPerSecond);
         const newStartTime = calculateSnappedTime(rawNewStartTime);

@@ -411,3 +411,44 @@ html.nord-light, .nord-light {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Smooth clip dragging optimizations */
+.clip-dragging {
+  pointer-events: none;
+  z-index: 1000;
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: none !important;
+  will-change: transform;
+}
+
+.clip-drag-preview {
+  opacity: 0.8;
+  border: 2px dashed rgba(90, 159, 212, 0.6);
+  background: rgba(90, 159, 212, 0.1);
+}
+
+/* Timeline performance optimizations */
+.timeline-container {
+  will-change: scroll-position;
+  contain: layout style paint;
+}
+
+.timeline-track {
+  will-change: contents;
+  contain: layout style;
+}
+
+.timeline-clip {
+  will-change: transform;
+  contain: layout style paint;
+  backface-visibility: hidden;
+}
+
+/* Disable text selection during drag */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
