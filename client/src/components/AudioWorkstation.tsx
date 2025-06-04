@@ -9,6 +9,7 @@ import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { WorkstationVideoPlayer } from './WorkstationVideoPlayer';
+import { MovableVideoPlayer } from './MovableVideoPlayer';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
 
@@ -81,12 +82,19 @@ export function AudioWorkstation() {
     const viewportHeight = window.innerHeight;
     const headerHeight = 60; // MenuBar height
     const padding = 32; // Container padding
-    const videoPadding = 16; // Video container padding
-    const totalVideoHeight = videoPlayerHeight + videoPadding;
     
-    const availableHeight = viewportHeight - headerHeight - totalVideoHeight - padding;
-    setSidebarContainerHeight(Math.max(availableHeight, 100)); // Minimum 100px
-  }, [videoPlayerHeight]);
+    if (isMiniPlayer) {
+      // When mini-player is active, full height available for sidebar
+      const availableHeight = viewportHeight - headerHeight - padding;
+      setSidebarContainerHeight(Math.max(availableHeight, 100));
+    } else {
+      // Normal mode - subtract video player height
+      const videoPadding = 16; // Video container padding
+      const totalVideoHeight = videoPlayerHeight + videoPadding;
+      const availableHeight = viewportHeight - headerHeight - totalVideoHeight - padding;
+      setSidebarContainerHeight(Math.max(availableHeight, 100)); // Minimum 100px
+    }
+  }, [videoPlayerHeight, isMiniPlayer]);
   
 
   
@@ -169,6 +177,14 @@ export function AudioWorkstation() {
     setIsMiniPlayer(!isMiniPlayer);
   };
 
+  const handleCloseMiniPlayer = () => {
+    setIsMiniPlayer(false);
+  };
+
+  const handleMaximizeMiniPlayer = () => {
+    setIsMiniPlayer(false);
+  };
+
 
 
   // Auto-select first MIDI track when switching to MIDI mode
@@ -199,35 +215,37 @@ export function AudioWorkstation() {
         <div 
           className="flex-none flex flex-col bg-[var(--muted)] border-r border-[var(--border)]" 
           style={{ 
-            width: Math.max(320, videoPlayerSize.width + 16),
-            minWidth: Math.max(320, videoPlayerSize.width + 16),
-            maxWidth: Math.max(320, videoPlayerSize.width + 16)
+            width: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16),
+            minWidth: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16),
+            maxWidth: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16)
           }}
         >
-          {/* Resizable Video Player */}
-          <div 
-            className="flex-none p-2 border-b border-[var(--border)]"
-            style={{ 
-              height: videoPlayerSize.height + 16,
-              minHeight: videoPlayerSize.height + 16
-            }}
-          >
-            <WorkstationVideoPlayer
-              src={selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video"}
-              initialWidth={videoPlayerSize.width}
-              initialHeight={videoPlayerSize.height}
-              minWidth={200}
-              minHeight={150}
-              maxWidth={800}
-              maxHeight={600}
-              onSizeChange={(width, height) => {
-                setVideoPlayerSize({ width, height });
-                setVideoPlayerHeight(height);
+          {/* Resizable Video Player - Hidden when mini-player is active */}
+          {!isMiniPlayer && (
+            <div 
+              className="flex-none p-2 border-b border-[var(--border)]"
+              style={{ 
+                height: videoPlayerSize.height + 16,
+                minHeight: videoPlayerSize.height + 16
               }}
-              onMoveToIndependentScreen={handleMoveVideoToIndependentScreen}
-              onToggleMiniPlayer={handleToggleMiniPlayer}
-            />
-          </div>
+            >
+              <WorkstationVideoPlayer
+                src={selectedMediaFile?.type === 'video' ? selectedMediaFile.url : "/api/placeholder-video"}
+                initialWidth={videoPlayerSize.width}
+                initialHeight={videoPlayerSize.height}
+                minWidth={200}
+                minHeight={150}
+                maxWidth={800}
+                maxHeight={600}
+                onSizeChange={(width, height) => {
+                  setVideoPlayerSize({ width, height });
+                  setVideoPlayerHeight(height);
+                }}
+                onMoveToIndependentScreen={handleMoveVideoToIndependentScreen}
+                onToggleMiniPlayer={handleToggleMiniPlayer}
+              />
+            </div>
+          )}
           
           {/* Vertical Sidebar below video */}
           <div className="flex-1 flex flex-col min-h-0 p-2">
