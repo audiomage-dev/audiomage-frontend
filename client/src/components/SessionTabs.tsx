@@ -1,12 +1,23 @@
 import { Button } from '@/components/ui/button';
 import { Session } from '../types/audio';
 import { useState, useEffect } from 'react';
-import { Copy, Edit, X, Save, FolderOpen } from 'lucide-react';
+import { Copy, Edit, X, Save, FolderOpen, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface SessionTabsProps {
   sessions: Session[];
   onSwitchSession: (sessionId: string) => void;
   onAddSession: () => void;
+  onCloseSession: (sessionId: string) => void;
 }
 
 interface ContextMenuProps {
@@ -62,8 +73,10 @@ function SessionContextMenu({ x, y, sessionId, onClose, onAction }: ContextMenuP
   );
 }
 
-export function SessionTabs({ sessions, onSwitchSession, onAddSession }: SessionTabsProps) {
+export function SessionTabs({ sessions, onSwitchSession, onAddSession, onCloseSession }: SessionTabsProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sessionId: string } | null>(null);
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false);
+  const [sessionToClose, setSessionToClose] = useState<string | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, sessionId: string) => {
     e.preventDefault();
@@ -91,9 +104,28 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession }: Session
         // Implement export functionality
         break;
       case 'close':
-        // Implement close functionality
+        handleCloseRequest(sessionId);
         break;
     }
+    setContextMenu(null);
+  };
+
+  const handleCloseRequest = (sessionId: string) => {
+    setSessionToClose(sessionId);
+    setCloseDialogOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    if (sessionToClose) {
+      onCloseSession(sessionToClose);
+      setSessionToClose(null);
+    }
+    setCloseDialogOpen(false);
+  };
+
+  const handleCancelClose = () => {
+    setSessionToClose(null);
+    setCloseDialogOpen(false);
   };
   return (
     <>
@@ -172,6 +204,32 @@ export function SessionTabs({ sessions, onSwitchSession, onAddSession }: Session
           onAction={handleContextAction}
         />
       )}
+
+      {/* Close Confirmation Dialog */}
+      <AlertDialog open={closeDialogOpen} onOpenChange={setCloseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[var(--destructive)]" />
+              Close Session
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to close this session? Any unsaved changes will be lost. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelClose}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmClose}
+              className="bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:bg-[var(--destructive)]/90"
+            >
+              Close Session
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

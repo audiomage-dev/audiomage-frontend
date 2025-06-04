@@ -483,9 +483,10 @@ interface MenuBarProps {
   sessions?: any[];
   onSwitchSession?: (sessionId: string) => void;
   onAddSession?: () => void;
+  onCloseSession?: (sessionId: string) => void;
 }
 
-export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSession = () => {} }: MenuBarProps = {}) {
+export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSession = () => {}, onCloseSession = () => {} }: MenuBarProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
