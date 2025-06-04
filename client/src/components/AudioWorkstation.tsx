@@ -237,6 +237,7 @@ export function AudioWorkstation() {
         <MenuBar 
           sessions={sessions}
           onSwitchSession={switchSession}
+          onAddSession={addSession}
         />
       </div>
       
