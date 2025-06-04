@@ -73,11 +73,15 @@ export function AudioWorkstation() {
 
   // Calculate sidebar container height based on video player height
   useEffect(() => {
-    // Assuming a fixed total height for the left section (e.g., 600px)
-    // and subtracting the video player height to get available sidebar space
-    const totalLeftSectionHeight = 600;
-    const availableHeight = totalLeftSectionHeight - videoPlayerHeight;
-    setSidebarContainerHeight(Math.max(availableHeight, 150)); // Minimum 150px
+    // Use viewport height minus header, video player, and padding to get actual available space
+    const viewportHeight = window.innerHeight;
+    const headerHeight = 60; // MenuBar height
+    const padding = 32; // Container padding
+    const videoPadding = 16; // Video container padding
+    const totalVideoHeight = videoPlayerHeight + videoPadding;
+    
+    const availableHeight = viewportHeight - headerHeight - totalVideoHeight - padding;
+    setSidebarContainerHeight(Math.max(availableHeight, 100)); // Minimum 100px
   }, [videoPlayerHeight]);
   
 

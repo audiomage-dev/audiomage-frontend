@@ -74,14 +74,21 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
   // Determine if buttons should collapse based on container height
   useEffect(() => {
     if (containerHeight) {
-      // If container height is less than 300px, collapse buttons
-      const shouldCollapse = containerHeight < 300;
+      // Calculate space needed for all buttons (8 buttons * 32px height + 8 * 4px spacing + padding)
+      const buttonHeight = 32; // h-8 = 32px
+      const buttonSpacing = 4; // space-y-1 = 4px
+      const paddingAndOtherElements = 80; // Toggle button, settings button, padding
+      const totalNeededHeight = (sidebarItems.length * buttonHeight) + 
+                               ((sidebarItems.length - 1) * buttonSpacing) + 
+                               paddingAndOtherElements;
+      
+      const shouldCollapse = containerHeight < totalNeededHeight;
       setIsCollapsed(shouldCollapse);
-      if (shouldCollapse) {
+      if (shouldCollapse && dropdownOpen) {
         setDropdownOpen(false);
       }
     }
-  }, [containerHeight]);
+  }, [containerHeight, dropdownOpen]);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
