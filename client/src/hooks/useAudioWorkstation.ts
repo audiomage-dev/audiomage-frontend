@@ -419,6 +419,18 @@ export function useAudioWorkstation() {
     }
   }, [tracks, transport.currentTime, stop]);
 
+  // Add new session
+  const addSession = useCallback(() => {
+    const newId = (sessions.length + 1).toString();
+    const newSession = {
+      id: newId,
+      name: `Project ${newId}`,
+      isActive: false
+    };
+    
+    setSessions(prev => [...prev, newSession]);
+  }, [sessions]);
+
   return {
     // State
     transport,
@@ -439,6 +451,7 @@ export function useAudioWorkstation() {
     toggleTrackMute,
     toggleTrackSolo,
     switchSession,
+    addSession,
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,

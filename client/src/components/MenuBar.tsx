@@ -482,9 +482,10 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
 interface MenuBarProps {
   sessions?: any[];
   onSwitchSession?: (sessionId: string) => void;
+  onAddSession?: () => void;
 }
 
-export function MenuBar({ sessions = [], onSwitchSession = () => {} }: MenuBarProps = {}) {
+export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSession = () => {} }: MenuBarProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 

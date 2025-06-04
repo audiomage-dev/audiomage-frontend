@@ -35,6 +35,7 @@ export function AudioWorkstation() {
     toggleTrackMute,
     toggleTrackSolo,
     switchSession,
+    addSession,
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
