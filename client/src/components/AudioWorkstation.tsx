@@ -67,6 +67,19 @@ export function AudioWorkstation() {
   // Snap mode state
   const [snapMode, setSnapMode] = useState<'free' | 'grid' | 'beat' | 'measure'>('grid');
   
+  // Video player dimensions for sidebar container height calculation
+  const [videoPlayerHeight, setVideoPlayerHeight] = useState(200);
+  const [sidebarContainerHeight, setSidebarContainerHeight] = useState(400);
+
+  // Calculate sidebar container height based on video player height
+  useEffect(() => {
+    // Assuming a fixed total height for the left section (e.g., 600px)
+    // and subtracting the video player height to get available sidebar space
+    const totalLeftSectionHeight = 600;
+    const availableHeight = totalLeftSectionHeight - videoPlayerHeight;
+    setSidebarContainerHeight(Math.max(availableHeight, 150)); // Minimum 150px
+  }, [videoPlayerHeight]);
+  
 
   
   // Global MIDI playback control functions
@@ -173,7 +186,10 @@ export function AudioWorkstation() {
           
           {/* Vertical Sidebar below video */}
           <div className="flex-1 flex flex-col min-h-0 p-2">
-            <VerticalSidebar onFileSelect={setSelectedMediaFile} />
+            <VerticalSidebar 
+              onFileSelect={setSelectedMediaFile} 
+              containerHeight={sidebarContainerHeight}
+            />
           </div>
         </div>
         

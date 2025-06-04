@@ -400,25 +400,58 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
     <div className={`${isExpanded ? 'w-full' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
       {/* Sidebar Icons */}
       <div className="w-12 flex flex-col items-center py-2 space-y-1 bg-[var(--background)]">
-        {sidebarItems.map((item) => (
-          <Button
-            key={item.id}
-            variant="ghost"
-            size="sm"
-            className={`w-8 h-8 p-0 ${
-              activePanel === item.id 
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-            }`}
-            onClick={() => {
-              setActivePanel(item.id);
-              if (!isExpanded) setIsExpanded(true);
-            }}
-            title={item.label}
-          >
-            {item.icon}
-          </Button>
-        ))}
+        {isCollapsed ? (
+          /* Collapsed: Single dropdown button */
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-8 h-8 p-0 bg-[var(--primary)] text-[var(--primary-foreground)]"
+                title="Panel Options"
+              >
+                <Menu className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" className="w-48">
+              {sidebarItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.id}
+                  onClick={() => {
+                    setActivePanel(item.id);
+                    setDropdownOpen(false);
+                    if (!isExpanded) setIsExpanded(true);
+                  }}
+                  className="flex items-center space-x-2"
+                >
+                  <span className="w-4 h-4">{item.icon}</span>
+                  <span>{item.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          /* Normal: Individual buttons */
+          sidebarItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              size="sm"
+              className={`w-8 h-8 p-0 ${
+                activePanel === item.id 
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+              }`}
+              onClick={() => {
+                setActivePanel(item.id);
+                if (!isExpanded) setIsExpanded(true);
+              }}
+              title={item.label}
+            >
+              {item.icon}
+            </Button>
+          ))
+        )}
         
         <div className="flex-1" />
         
