@@ -85,6 +85,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     startX: number;
     endX: number;
     isActive: boolean;
+    multiTrack?: {
+      startTrackIndex: number;
+      endTrackIndex: number;
+      affectedTracks: string[];
+    };
   } | null>(null);
 
   // Mouse cursor state
@@ -424,7 +429,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
 
-  // Handle clip area selection within clips
+  // Handle clip area selection within clips with multi-track support
   const handleClipAreaSelection = useCallback((e: React.MouseEvent, clipId: string, trackId: string, clip: any) => {
     e.preventDefault();
     e.stopPropagation();
@@ -433,6 +438,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const rect = clipElement.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
     const clipWidth = rect.width;
+    
+    // Get timeline container for multi-track calculations
+    const timelineContainer = timelineRef.current;
+    if (!timelineContainer) return;
+    
+    const timelineRect = timelineContainer.getBoundingClientRect();
+    const startY = e.clientY - timelineRect.top;
+    const startTrackIndex = tracks.findIndex(t => t.id === trackId);
     
     // Calculate time position within clip
     const pixelsPerSecond = 60 * zoomLevel;
@@ -443,23 +456,37 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       clipId,
       relativeX,
       timeWithinClip: timeWithinClip.toFixed(3),
-      absoluteStartTime: absoluteStartTime.toFixed(3)
+      absoluteStartTime: absoluteStartTime.toFixed(3),
+      startTrackIndex
     });
     
     let isSelecting = false;
     const startX = e.clientX;
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!isSelecting && Math.abs(moveEvent.clientX - startX) > 3) {
+      const deltaX = Math.abs(moveEvent.clientX - startX);
+      const deltaY = Math.abs(moveEvent.clientY - e.clientY);
+      
+      if (!isSelecting && (deltaX > 3 || deltaY > 3)) {
         isSelecting = true;
         setCursorState('crosshair');
       }
       
       if (isSelecting) {
+        const currentY = moveEvent.clientY - timelineRect.top;
+        const currentTrackIndex = Math.floor(currentY / 96); // 96px per track
+        
+        // Calculate time range
         const currentRelativeX = moveEvent.clientX - rect.left;
         const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
         const absoluteEndTime = clip.startTime + endTimeWithinClip;
         
+        // Calculate affected tracks
+        const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
+        const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
+        const affectedTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
+        
+        // Create multi-track selection
         setClipAreaSelection({
           clipId,
           trackId,
@@ -467,7 +494,12 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           endTime: Math.max(absoluteStartTime, absoluteEndTime),
           startX: Math.min(relativeX, currentRelativeX),
           endX: Math.max(relativeX, currentRelativeX),
-          isActive: true
+          isActive: true,
+          multiTrack: affectedTracks.length > 1 ? {
+            startTrackIndex: minTrackIndex,
+            endTrackIndex: maxTrackIndex,
+            affectedTracks: affectedTracks.map(t => t.id)
+          } : undefined
         });
       }
     };
@@ -493,7 +525,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [zoomLevel]);
+  }, [zoomLevel, tracks, timelineRef]);
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     // Prevent dragging when timeline is locked
@@ -2063,7 +2095,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         )}
                         
                         {/* Clip Area Selection Overlay - Darker shade of clip color */}
-                        {clipAreaSelection && clipAreaSelection.clipId === clip.id && (
+                        {clipAreaSelection && (
+                          clipAreaSelection.clipId === clip.id || 
+                          (clipAreaSelection.multiTrack && clipAreaSelection.multiTrack.affectedTracks.includes(track.id))
+                        ) && (
                           <div 
                             className="absolute top-0"
                             style={{
@@ -2086,12 +2121,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               e.preventDefault();
                               e.stopPropagation();
                               
+                              const selectionLabel = clipAreaSelection.multiTrack 
+                                ? `Multi-track Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
+                                : `${clip.name} (Selection)`;
+                              
                               setClipContextMenu({
                                 x: e.clientX,
                                 y: e.clientY,
                                 clip: {
                                   id: clip.id,
-                                  name: `${clip.name} (Selection)`,
+                                  name: selectionLabel,
                                   trackId: track.id,
                                   trackName: track.name
                                 }
