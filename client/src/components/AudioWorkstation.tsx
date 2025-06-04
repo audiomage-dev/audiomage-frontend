@@ -95,6 +95,29 @@ export function AudioWorkstation() {
       setSidebarContainerHeight(Math.max(availableHeight, 100)); // Minimum 100px
     }
   }, [videoPlayerHeight, isMiniPlayer]);
+
+  // Mouse wheel zoom functionality
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Check if mouse is within the workstation area
+      if (e.target && (e.target as Element).closest('.audio-workstation')) {
+        e.preventDefault();
+        
+        // Zoom in on scroll up (negative deltaY), zoom out on scroll down (positive deltaY)
+        if (e.deltaY < 0) {
+          handleZoomIn();
+        } else if (e.deltaY > 0) {
+          handleZoomOut();
+        }
+      }
+    };
+
+    document.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+    };
+  }, [zoomLevel]);
   
 
   
@@ -200,7 +223,7 @@ export function AudioWorkstation() {
 
 
   return (
-    <div className="h-screen flex flex-col select-none bg-[var(--background)]">
+    <div className="audio-workstation h-screen flex flex-col select-none bg-[var(--background)]">
       {/* Top Menu Bar with Session Tabs */}
       <div className="flex-none">
         <MenuBar 
