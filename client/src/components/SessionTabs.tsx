@@ -6,6 +6,7 @@ import { Copy, Edit, X, Save, FolderOpen } from 'lucide-react';
 interface SessionTabsProps {
   sessions: Session[];
   onSwitchSession: (sessionId: string) => void;
+  onAddSession: () => void;
 }
 
 interface ContextMenuProps {
@@ -61,7 +62,7 @@ function SessionContextMenu({ x, y, sessionId, onClose, onAction }: ContextMenuP
   );
 }
 
-export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
+export function SessionTabs({ sessions, onSwitchSession, onAddSession }: SessionTabsProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sessionId: string } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, sessionId: string) => {
@@ -152,7 +153,7 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
           variant="ghost"
           size="sm"
           className="group new-tab-btn flex items-center gap-2 px-3 py-2 h-auto rounded-lg border border-dashed border-[var(--border)] hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] ml-2"
-          onClick={() => console.log('Add new session')}
+          onClick={onAddSession}
         >
           <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center group-hover:border-[var(--primary)] transition-colors">
             <span className="text-xs font-bold leading-none">+</span>

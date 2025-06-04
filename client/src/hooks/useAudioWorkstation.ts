@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { AudioTrack, AudioClip, TransportState, MixerChannel, AudioEffect } from '../types/audio';
 
 export function useAudioWorkstation() {
+  // Session tabs
+  const [sessions, setSessions] = useState([
+    { id: '1', name: 'Main Session', isActive: true },
+    { id: '2', name: 'Alternate Mix', isActive: false },
+    { id: '3', name: 'Rough Draft', isActive: false },
+  ]);
+
   // Transport state
   const [transport, setTransport] = useState<TransportState>({
     isPlaying: false,
@@ -16,13 +23,6 @@ export function useAudioWorkstation() {
 
   // Current project
   const [currentProject, setCurrentProject] = useState('Untitled Project');
-
-  // Session tabs
-  const [sessions, setSessions] = useState([
-    { id: '1', name: 'Main Session', isActive: true },
-    { id: '2', name: 'Alternate Mix', isActive: false },
-    { id: '3', name: 'Rough Draft', isActive: false },
-  ]);
 
   // Audio tracks - 6 categories for video post-production
   const [tracks, setTracks] = useState<AudioTrack[]>([
