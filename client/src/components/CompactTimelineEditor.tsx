@@ -2083,41 +2083,45 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   return (
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
-      {/* Master Fader Panel - Repositioned to align with video player */}
-      <div className="w-16 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10" style={{ position: 'relative', top: '0' }}>
-        {/* Compact Master Controls */}
-        <div className="flex-1 flex flex-col py-2 px-1">
+      {/* Master Fader Panel - Aligned with video player height */}
+      <div className="w-16 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10">
+        {/* Video Player Height Section - Matches video player dimensions */}
+        <div 
+          className="flex-none flex flex-col border-b border-[var(--border)] bg-[var(--muted)]/5"
+          style={{ height: '400px' }} // Matches typical video player height
+        >
           {/* Master Label */}
-          <div className="text-center mb-2">
-            <span className="text-[8px] font-medium text-[var(--muted-foreground)]">MST</span>
+          <div className="text-center py-1">
+            <span className="text-[10px] font-medium text-[var(--muted-foreground)]">MASTER</span>
           </div>
           
-          {/* Main Controls Row */}
-          <div className="flex flex-row items-stretch justify-center gap-1 flex-1">
-            {/* Peak Level Indicator - Compact Vertical */}
-            <div className="w-3 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden">
+          {/* Main Controls - Full height of video player */}
+          <div className="flex-1 flex flex-row items-stretch justify-center gap-2 px-1 py-2">
+            {/* Peak Level Indicator - Full height */}
+            <div className="w-4 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-90"
-                   style={{ height: '68%' }}>
+                   style={{ height: '72%' }}>
               </div>
-              {/* Compact meter markings */}
-              <div className="absolute inset-0 flex flex-col justify-between text-[5px] text-white font-mono font-bold p-px">
-                <span className="text-center bg-black/50 rounded">0</span>
-                <span className="text-center bg-black/50 rounded">-6</span>
-                <span className="text-center bg-black/50 rounded">-12</span>
-                <span className="text-center bg-black/50 rounded">-∞</span>
+              {/* Meter markings */}
+              <div className="absolute inset-0 flex flex-col justify-between text-[6px] text-white font-mono font-bold p-0.5">
+                <span className="text-center bg-black/50 rounded px-0.5">0</span>
+                <span className="text-center bg-black/50 rounded px-0.5">-6</span>
+                <span className="text-center bg-black/50 rounded px-0.5">-12</span>
+                <span className="text-center bg-black/50 rounded px-0.5">-18</span>
+                <span className="text-center bg-black/50 rounded px-0.5">-∞</span>
               </div>
               {/* Peak hold indicator */}
-              <div className="absolute w-full h-px bg-red-400 shadow-sm" style={{ top: '32%' }}></div>
+              <div className="absolute w-full h-0.5 bg-red-400 shadow-sm" style={{ top: '28%' }}></div>
             </div>
             
-            {/* Master Fader - Compact Vertical */}
+            {/* Master Fader - Full height */}
             <div className="flex flex-col items-center justify-center">
-              <div className="w-5 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative flex-1">
+              <div className="w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative flex-1">
                 {/* Fader Track */}
-                <div className="absolute inset-x-0 top-1 bottom-1 bg-[var(--muted)] rounded-full mx-0.5"></div>
+                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1"></div>
                 {/* Fader Handle */}
                 <div 
-                  className="absolute w-4 h-3 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-sm"
+                  className="absolute w-5 h-4 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-md"
                   style={{ 
                     top: '30%', // 0dB position
                     left: '50%',
@@ -2125,24 +2129,26 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   }}
                   title="Master: 0dB"
                 ></div>
-                {/* Compact Fader Scale */}
-                <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[5px] text-[var(--muted-foreground)] font-mono py-1">
+                {/* Fader Scale */}
+                <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--muted-foreground)] font-mono py-2">
                   <span>+6</span>
                   <span>0</span>
                   <span>-6</span>
+                  <span>-12</span>
+                  <span>-18</span>
                   <span>-∞</span>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Compact Controls */}
-          <div className="flex flex-col gap-1 mt-2 items-center">
+          {/* Bottom Controls */}
+          <div className="flex flex-col gap-1 p-1 items-center">
             {/* Mute Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="h-4 w-5 p-0 rounded text-[7px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
+              className="h-5 w-6 p-0 rounded text-[8px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
               title="Master Mute"
             >
               M
@@ -2150,12 +2156,15 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             
             {/* Level Display */}
             <div className="text-center">
-              <div className="text-[6px] font-mono text-[var(--muted-foreground)]">
-                -2.3
+              <div className="text-[7px] font-mono text-[var(--muted-foreground)]">
+                -2.3dB
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Remaining space for timeline alignment */}
+        <div className="flex-1"></div>
       </div>
 
       {/* Left Sidebar - Track Headers */}
