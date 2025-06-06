@@ -18,7 +18,6 @@ import {
   History,
   Library,
   Volume2,
-  MoreHorizontal,
   VolumeX,
   Headphones,
   Music,
@@ -61,11 +60,9 @@ interface VerticalSidebarProps {
     size?: number;
   }) => void;
   containerHeight?: number;
-  videoPlayerWidth?: number;
-  availableWidth?: number;
 }
 
-export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidth = 0, availableWidth = 1200 }: VerticalSidebarProps = {}) {
+export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
@@ -74,10 +71,25 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
   const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [collapseLevel, setCollapseLevel] = useState(0);
 
-  // Calculate how many buttons to show based on available space (video player size)
-  const [visibleButtonCount, setVisibleButtonCount] = useState(8);
+  // Determine if buttons should collapse based on container height
+  useEffect(() => {
+    if (containerHeight) {
+      // Calculate space needed for all buttons (8 buttons * 32px height + 8 * 4px spacing + padding)
+      const buttonHeight = 32; // h-8 = 32px
+      const buttonSpacing = 4; // space-y-1 = 4px
+      const paddingAndOtherElements = 80; // Toggle button, settings button, padding
+      const totalNeededHeight = (sidebarItems.length * buttonHeight) + 
+                               ((sidebarItems.length - 1) * buttonSpacing) + 
+                               paddingAndOtherElements;
+      
+      const shouldCollapse = containerHeight < totalNeededHeight;
+      setIsCollapsed(shouldCollapse);
+      if (shouldCollapse && dropdownOpen) {
+        setDropdownOpen(false);
+      }
+    }
+  }, [containerHeight, dropdownOpen]);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -376,40 +388,12 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
 
   ];
 
-  // Calculate how many buttons to show based on video player width
-  useEffect(() => {
-    if (containerHeight && videoPlayerWidth) {
-      // Calculate available height for buttons
-      const buttonHeight = 32; // h-8 = 32px
-      const buttonSpacing = 4; // space-y-1 = 4px
-      const paddingAndOtherElements = 80; // Toggle button, settings button, padding
-      
-      // Calculate how many buttons can fit in available height
-      const availableHeightForButtons = containerHeight - paddingAndOtherElements;
-      const maxButtonsByHeight = Math.floor(availableHeightForButtons / (buttonHeight + buttonSpacing));
-      
-      // As video player width increases, reduce button count from bottom up
-      const baseWidth = 320; // Base video player width
-      const maxReduction = sidebarItems.length - 1; // Keep at least 1 button
-      const widthFactor = Math.max(0, (videoPlayerWidth - baseWidth) / 150); // Reduce 1 button per 150px increase
-      const buttonReduction = Math.min(maxReduction, Math.floor(widthFactor));
-      const maxButtonsByWidth = sidebarItems.length - buttonReduction;
-      
-      // Use the more restrictive constraint
-      const finalButtonCount = Math.max(1, Math.min(maxButtonsByHeight, maxButtonsByWidth));
-      setVisibleButtonCount(finalButtonCount);
-      
-      // Set collapse state for dropdown when buttons are hidden
-      setIsCollapsed(finalButtonCount < sidebarItems.length);
-    }
-  }, [containerHeight, videoPlayerWidth, sidebarItems.length]);
-
   return (
     <div className={`${isExpanded ? 'w-full' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
       {/* Sidebar Icons */}
       <div className="w-12 flex flex-col items-center py-2 space-y-1 bg-[var(--background)]">
         {isCollapsed ? (
-          /* Collapsed: Single dropdown button for hidden items */
+          /* Collapsed: Single dropdown button */
           <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
@@ -439,57 +423,26 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          /* Normal: Show visible buttons (from top) and dropdown for hidden ones */
-          <>
-            {sidebarItems.slice(0, visibleButtonCount).map((item) => (
-              <Button
-                key={item.id}
-                variant="ghost"
-                size="sm"
-                className={`w-8 h-8 p-0 ${
-                  activePanel === item.id 
-                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-                }`}
-                onClick={() => {
-                  setActivePanel(item.id);
-                  if (!isExpanded) setIsExpanded(true);
-                }}
-                title={item.label}
-              >
-                {item.icon}
-              </Button>
-            ))}
-            {visibleButtonCount < sidebarItems.length && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-8 h-8 p-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                    title="More Options"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" align="start" className="w-48">
-                  {sidebarItems.slice(visibleButtonCount).map((item) => (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => {
-                        setActivePanel(item.id);
-                        if (!isExpanded) setIsExpanded(true);
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      {item.icon}
-                      <span className="text-sm">{item.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </>
+          /* Normal: Individual buttons */
+          sidebarItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              size="sm"
+              className={`w-8 h-8 p-0 ${
+                activePanel === item.id 
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+              }`}
+              onClick={() => {
+                setActivePanel(item.id);
+                if (!isExpanded) setIsExpanded(true);
+              }}
+              title={item.label}
+            >
+              {item.icon}
+            </Button>
+          ))
         )}
         
         <div className="flex-1" />

@@ -283,8 +283,6 @@ export function AudioWorkstation() {
             <VerticalSidebar 
               onFileSelect={setSelectedMediaFile} 
               containerHeight={sidebarContainerHeight}
-              videoPlayerWidth={videoPlayerSize.width}
-              availableWidth={window.innerWidth}
             />
           </div>
         </div>
