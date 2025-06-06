@@ -536,23 +536,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           endX: clipWidth,
           isActive: true
         });
-      } else if (clipAreaSelection) {
-        // Show range selection context menu after completing selection
-        const selectionLabel = clipAreaSelection.multiTrack 
-          ? `Range Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
-          : `Range Selection`;
-        
-        const currentTrack = tracks.find(t => t.id === clipAreaSelection.trackId);
-        setClipContextMenu({
-          x: upEvent.clientX,
-          y: upEvent.clientY,
-          clip: {
-            id: clipAreaSelection.clipId,
-            name: selectionLabel,
-            trackId: clipAreaSelection.trackId,
-            trackName: currentTrack?.name || 'Unknown Track'
-          }
-        });
       }
     };
     
@@ -2155,8 +2138,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               e.stopPropagation();
                               
                               const selectionLabel = clipAreaSelection.multiTrack 
-                                ? `Multi-track Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
-                                : `${clip.name} (Selection)`;
+                                ? `Range Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
+                                : `Range Selection`;
                               
                               setClipContextMenu({
                                 x: e.clientX,
