@@ -365,6 +365,12 @@ export function useAudioWorkstation() {
     ));
   }, []);
 
+  const updateTrackPan = useCallback((trackId: string, pan: number) => {
+    setTracks(prev => prev.map(track => 
+      track.id === trackId ? { ...track, pan } : track
+    ));
+  }, []);
+
   // Session management with content switching
   const switchSession = useCallback((sessionId: string) => {
     setSessions(prev => prev.map(session => ({

@@ -10,6 +10,7 @@ import { MixingConsole } from './MixingConsole';
 import { StatusBar } from './StatusBar';
 import { WorkstationVideoPlayer } from './WorkstationVideoPlayer';
 import { MovableVideoPlayer } from './MovableVideoPlayer';
+import { DAWMixerPanel } from './DAWMixerPanel';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
 
@@ -389,6 +390,28 @@ export function AudioWorkstation() {
 
 
         </div>
+      </div>
+      
+      {/* DAW Mixer Panel */}
+      <div className="flex-none">
+        <DAWMixerPanel
+          tracks={tracks}
+          onVolumeChange={(trackId: string, volume: number) => {
+            updateTrackVolume(trackId, volume);
+          }}
+          onMuteToggle={toggleTrackMute}
+          onSoloToggle={toggleTrackSolo}
+          onPanChange={(trackId: string, pan: number) => {
+            updateTrackPan(trackId, pan);
+          }}
+          onEQChange={(trackId: string, band: 'high' | 'mid' | 'low', gain: number) => {
+            console.log(`EQ ${band} for ${trackId}: ${gain}dB`);
+          }}
+          masterVolume={75}
+          onMasterVolumeChange={(volume: number) => {
+            console.log('Master volume:', volume);
+          }}
+        />
       </div>
       
       {/* Bottom Status Bar */}
