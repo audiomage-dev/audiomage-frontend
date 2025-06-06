@@ -2088,7 +2088,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         {/* Video Player Height Section - Matches video player dimensions */}
         <div 
           className="flex-none flex flex-col border-b border-[var(--border)] bg-[var(--muted)]/5"
-          style={{ height: '400px' }} // Matches typical video player height
+          style={{ height: '384px' }} // Matches actual video player height from image
         >
           {/* Master Label */}
           <div className="text-center py-1">
