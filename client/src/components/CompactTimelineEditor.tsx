@@ -414,6 +414,169 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     drawCanvasGrid();
   }, [drawCanvasGrid]);
 
+  // Standard DAW keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent shortcuts when typing in inputs
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      const isAlt = e.altKey;
+
+      switch (e.key.toLowerCase()) {
+        case 'a':
+          if (isCtrl) {
+            e.preventDefault();
+            // Select All clips
+            const allClipIds: string[] = [];
+            tracks.forEach(track => {
+              track.clips?.forEach(clip => allClipIds.push(clip.id));
+            });
+            
+            if (allClipIds.length > 0) {
+              setMultiSelection({
+                startTime: 0,
+                endTime: Math.max(...tracks.flatMap(t => t.clips?.map(c => c.startTime + c.duration) || [])),
+                startTrackIndex: 0,
+                endTrackIndex: tracks.length - 1,
+                startX: 0,
+                endX: getTimelineWidth(),
+                startY: 0,
+                endY: tracks.length * 64,
+                isActive: false,
+                selectedClips: allClipIds
+              });
+            }
+          }
+          break;
+          
+        case 'escape':
+          e.preventDefault();
+          // Clear all selections
+          setMultiSelection(null);
+          setClipAreaSelection(null);
+          setContextMenu(null);
+          setAudioContextMenu(null);
+          setClipContextMenu(null);
+          break;
+          
+        case 'delete':
+        case 'backspace':
+          e.preventDefault();
+          // Delete selected clips
+          if (multiSelection && multiSelection.selectedClips.length > 0) {
+            console.log('Deleting selected clips:', multiSelection.selectedClips);
+            // In a real implementation, this would call an onDeleteClips callback
+            setMultiSelection(null);
+          }
+          break;
+          
+        case 'd':
+          if (isCtrl) {
+            e.preventDefault();
+            // Duplicate selected clips
+            if (multiSelection && multiSelection.selectedClips.length > 0) {
+              console.log('Duplicating selected clips:', multiSelection.selectedClips);
+              // In a real implementation, this would call an onDuplicateClips callback
+            }
+          }
+          break;
+          
+        case 'g':
+          if (isCtrl) {
+            e.preventDefault();
+            // Group selected clips
+            if (multiSelection && multiSelection.selectedClips.length > 1) {
+              console.log('Grouping selected clips:', multiSelection.selectedClips);
+              // In a real implementation, this would call an onGroupClips callback
+            }
+          }
+          break;
+          
+        case 'u':
+          if (isCtrl && isShift) {
+            e.preventDefault();
+            // Ungroup selected clips
+            console.log('Ungrouping selected clips');
+            // In a real implementation, this would call an onUngroupClips callback
+          }
+          break;
+          
+        case 'arrowleft':
+          if (isCtrl && multiSelection && multiSelection.selectedClips.length > 0) {
+            e.preventDefault();
+            // Nudge selected clips left
+            const nudgeAmount = isShift ? 1.0 : 0.1; // Fine vs coarse nudging
+            console.log(`Nudging clips left by ${nudgeAmount}s`);
+            // In a real implementation, this would call onNudgeClips
+          }
+          break;
+          
+        case 'arrowright':
+          if (isCtrl && multiSelection && multiSelection.selectedClips.length > 0) {
+            e.preventDefault();
+            // Nudge selected clips right
+            const nudgeAmount = isShift ? 1.0 : 0.1;
+            console.log(`Nudging clips right by ${nudgeAmount}s`);
+            // In a real implementation, this would call onNudgeClips
+          }
+          break;
+          
+        case 'arrowup':
+          if (isCtrl && multiSelection && multiSelection.selectedClips.length > 0) {
+            e.preventDefault();
+            // Move selected clips up one track
+            console.log('Moving clips up one track');
+            // In a real implementation, this would call onMoveClipsToTrack
+          }
+          break;
+          
+        case 'arrowdown':
+          if (isCtrl && multiSelection && multiSelection.selectedClips.length > 0) {
+            e.preventDefault();
+            // Move selected clips down one track
+            console.log('Moving clips down one track');
+            // In a real implementation, this would call onMoveClipsToTrack
+          }
+          break;
+          
+        case 'r':
+          if (!isCtrl && !isShift && !isAlt) {
+            e.preventDefault();
+            // Switch to Range/Selector tool
+            setCurrentTool('select');
+            console.log('Switched to Range/Selector tool');
+          }
+          break;
+          
+        case 'h':
+          if (!isCtrl && !isShift && !isAlt) {
+            e.preventDefault();
+            // Switch to Hand/Pan tool
+            setCurrentTool('hand');
+            console.log('Switched to Hand/Pan tool');
+          }
+          break;
+          
+        case 'e':
+          if (!isCtrl && !isShift && !isAlt) {
+            e.preventDefault();
+            // Switch to Edit tool
+            setCurrentTool('edit');
+            console.log('Switched to Edit tool');
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [tracks, multiSelection, getTimelineWidth]);
+
   const handleTrackSelect = useCallback((trackId: string, e?: React.MouseEvent) => {
     if (e?.ctrlKey || e?.metaKey) {
       // Multi-select with Ctrl/Cmd
@@ -550,6 +713,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     
     if (!clip) return;
     
+    // Standard DAW behavior: Check modifier keys
+    const isShiftClick = e.shiftKey;
+    const isCtrlClick = e.ctrlKey || e.metaKey;
+    const isAltClick = e.altKey;
+    
     // Detect interaction zone
     const clipElement = e.currentTarget as HTMLElement;
     const zone = getClipInteractionZone(e, clipElement, clip);
@@ -563,6 +731,66 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       setCursorState('col-resize');
       handleClipResizeStart(e, clipId, trackId, zone === 'resize-left' ? 'left' : 'right');
       return;
+    }
+    
+    // DAW Standard: Handle clip selection before dragging
+    const isClipSelected = multiSelection && multiSelection.selectedClips.includes(clipId);
+    
+    if (isCtrlClick) {
+      // Ctrl+click: Toggle clip selection
+      if (isClipSelected && multiSelection) {
+        // Remove from selection
+        const newSelectedClips = multiSelection.selectedClips.filter(id => id !== clipId);
+        if (newSelectedClips.length === 0) {
+          setMultiSelection(null);
+        } else {
+          setMultiSelection({
+            ...multiSelection,
+            selectedClips: newSelectedClips
+          });
+        }
+      } else {
+        // Add to selection
+        const existingSelection = multiSelection?.selectedClips || [];
+        setMultiSelection({
+          startTime: clip.startTime,
+          endTime: clip.startTime + clip.duration,
+          startTrackIndex: trackIndex,
+          endTrackIndex: trackIndex,
+          startX: clip.startTime * 60 * zoomLevel,
+          endX: (clip.startTime + clip.duration) * 60 * zoomLevel,
+          startY: trackIndex * 64,
+          endY: (trackIndex + 1) * 64,
+          isActive: false,
+          selectedClips: [...existingSelection, clipId]
+        });
+      }
+      return; // Don't start drag on Ctrl+click
+    } else if (isShiftClick && multiSelection && multiSelection.selectedClips.length > 0) {
+      // Shift+click: Extend selection to include range between last selected and this clip
+      console.log('Shift+click: Extending selection range');
+      // For now, just add this clip to selection
+      if (!isClipSelected) {
+        setMultiSelection({
+          ...multiSelection,
+          selectedClips: [...multiSelection.selectedClips, clipId]
+        });
+      }
+      return; // Don't start drag on Shift+click
+    } else if (!isClipSelected && !isShiftClick) {
+      // Click on unselected clip without modifiers: select only this clip
+      setMultiSelection({
+        startTime: clip.startTime,
+        endTime: clip.startTime + clip.duration,
+        startTrackIndex: trackIndex,
+        endTrackIndex: trackIndex,
+        startX: clip.startTime * 60 * zoomLevel,
+        endX: (clip.startTime + clip.duration) * 60 * zoomLevel,
+        startY: trackIndex * 64,
+        endY: (trackIndex + 1) * 64,
+        isActive: false,
+        selectedClips: [clipId]
+      });
     }
     
     // Default drag behavior for clip movement
@@ -1023,9 +1251,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       return;
     }
     
-    // If there's already an active multi-selection with clips, check if we should drag it instead
+    // Standard DAW behavior: Check modifier keys for selection behavior
+    const isShiftClick = e.shiftKey;
+    const isCtrlClick = e.ctrlKey || e.metaKey;
+    const isAltClick = e.altKey;
+    
+    // If there's already an active multi-selection with clips
     if (multiSelection && !multiSelection.isActive && multiSelection.selectedClips.length > 0) {
-      // Check if the click is within the selection bounds
       const timelineRect = timelineRef.current?.getBoundingClientRect();
       if (!timelineRect) return;
       
@@ -1034,19 +1266,30 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       const totalTime = timelineWidth / zoomLevel;
       const clickTime = (clickX / timelineWidth) * totalTime;
       
-      // Check if click is within the time range of the selection
       const isWithinTimeRange = clickTime >= multiSelection.startTime && clickTime <= multiSelection.endTime;
-      
-      // Check if click is within the track range of the selection
       const isWithinTrackRange = startTrackIndex >= multiSelection.startTrackIndex && 
                                 startTrackIndex <= multiSelection.endTrackIndex;
       
       if (isWithinTimeRange && isWithinTrackRange) {
-        // Clear existing selection to prevent interference with new timeline selection
-        console.log('Clearing existing selection to prevent drag interference');
+        // DAW Standard: Click within selection area starts drag unless Ctrl/Cmd is held
+        if (!isCtrlClick) {
+          // Start dragging the selection
+          console.log('Starting drag of existing selection');
+          return;
+        } else {
+          // Ctrl/Cmd+click within selection: deselect this area
+          console.log('Deselecting area with Ctrl+click');
+          setMultiSelection(null);
+          setClipAreaSelection(null);
+          return;
+        }
+      }
+      
+      // Click outside selection area
+      if (!isShiftClick && !isCtrlClick) {
+        // Standard: Clear previous selection when clicking outside without modifiers
         setMultiSelection(null);
         setClipAreaSelection(null);
-        return;
       }
     }
     
@@ -1054,15 +1297,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     if (!timelineRect) return;
     
     const startX = e.clientX - timelineRect.left + scrollX;
-    // Calculate Y position relative to the track that was clicked
-    const trackY = startTrackIndex * 96; // Each track is 96px high
+    const trackY = startTrackIndex * 64; // Track height is 64px
     const startY = trackY + (e.clientY - e.currentTarget.getBoundingClientRect().top);
     
     const timelineWidth = getTimelineWidth();
-    const totalTime = timelineWidth / zoomLevel;
-    const startTime = (startX / timelineWidth) * totalTime;
+    const pixelsPerSecond = 60 * zoomLevel;
+    const startTime = startX / pixelsPerSecond;
     
-    console.log('Starting multi-track selection:', { startX, startY, startTime, startTrackIndex, trackY });
+    console.log('Starting DAW-style selection:', { 
+      startTime: startTime.toFixed(3), 
+      startTrackIndex, 
+      modifiers: { shift: isShiftClick, ctrl: isCtrlClick, alt: isAltClick }
+    });
     
     setMultiSelection({
       startTime,
@@ -1084,18 +1330,26 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     
+    // DAW Standard: Check modifier keys for empty space clicks
+    const isCtrlClick = e.ctrlKey || e.metaKey;
+    const isShiftClick = e.shiftKey;
+    
     // Clear clip area selection when clicking on empty space
-    if (!e.ctrlKey && !e.metaKey) {
-      const target = e.target as HTMLElement;
-      const isClickingOnClip = target.closest('[data-clip-element]');
-      
-      if (!isClickingOnClip) {
+    const target = e.target as HTMLElement;
+    const isClickingOnClip = target.closest('[data-clip-element]');
+    const isClickingOnSelection = target.closest('[data-selection-box]');
+    
+    if (!isClickingOnClip && !isClickingOnSelection) {
+      // Clicking on empty timeline space
+      if (!isCtrlClick && !isShiftClick) {
+        // Standard behavior: clear all selections when clicking empty space without modifiers
         setClipAreaSelection(null);
+        setMultiSelection(null);
       }
     }
     
-    // Start selection box if using select tool
-    if (currentTool === 'select') {
+    // Start selection box if using select tool and not clicking on clips/selections
+    if (currentTool === 'select' && !isClickingOnClip && !isClickingOnSelection) {
       setIsSelecting(true);
       setSelectionBox({
         startX: e.clientX,
