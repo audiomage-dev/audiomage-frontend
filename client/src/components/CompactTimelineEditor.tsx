@@ -2083,6 +2083,98 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   return (
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
+      {/* Master Fader Panel */}
+      <div className="w-16 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10">
+        {/* Master Header */}
+        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 flex items-center justify-center">
+          <span className="text-xs font-medium text-[var(--muted-foreground)]">MST</span>
+        </div>
+        
+        {/* Master Fader Section */}
+        <div className="flex-1 flex flex-col items-center py-2 px-1">
+          {/* Peak Level Indicator */}
+          <div className="w-8 h-12 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm mb-2 relative overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-80"
+                 style={{ height: '75%' }}>
+            </div>
+            <div className="absolute inset-0 flex flex-col justify-between p-0.5 text-[8px] text-white font-mono">
+              <span>0</span>
+              <span>-6</span>
+              <span>-12</span>
+              <span>-18</span>
+              <span>-∞</span>
+            </div>
+          </div>
+          
+          {/* Master Fader */}
+          <div className="flex-1 flex flex-col items-center w-full max-w-8">
+            <div className="flex-1 w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative mx-auto">
+              {/* Fader Track */}
+              <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1"></div>
+              {/* Fader Handle */}
+              <div 
+                className="absolute w-4 h-3 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-sm transform -translate-x-0.5"
+                style={{ 
+                  top: '25%', // 0dB position
+                  left: '50%',
+                  transform: 'translateX(-50%)'
+                }}
+                title="Master Volume: 0dB"
+              ></div>
+              {/* Fader Scale */}
+              <div className="absolute -right-2 top-0 bottom-0 flex flex-col justify-between text-[8px] text-[var(--muted-foreground)] font-mono py-2">
+                <span>+6</span>
+                <span>0</span>
+                <span>-6</span>
+                <span>-12</span>
+                <span>-18</span>
+                <span>-∞</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Master Controls */}
+          <div className="flex flex-col space-y-1 mt-2">
+            {/* Mute Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-8 p-0 rounded text-[10px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
+              title="Master Mute"
+            >
+              M
+            </Button>
+            
+            {/* Solo Clear Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-8 p-0 rounded text-[10px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
+              title="Clear All Solos"
+            >
+              SC
+            </Button>
+            
+            {/* Mono Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-8 p-0 rounded text-[9px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
+              title="Mono Mode"
+            >
+              ⊕
+            </Button>
+          </div>
+          
+          {/* Master Level Display */}
+          <div className="mt-2 text-center">
+            <div className="text-[9px] font-mono text-[var(--muted-foreground)]">
+              -2.3dB
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Left Sidebar - Track Headers */}
       <div className="w-64 border-r border-[var(--border)] flex flex-col">
         {/* Header */}
