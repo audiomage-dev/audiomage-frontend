@@ -487,42 +487,35 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const selectionStartTime = Math.max(clipStartTime, Math.min(clipEndTime, Math.min(absoluteStartTime, absoluteEndTime)));
         const selectionEndTime = Math.max(clipStartTime, Math.min(clipEndTime, Math.max(absoluteStartTime, absoluteEndTime)));
         
-        // Only enable multi-track selection if user is dragging vertically significantly
-        const verticalDragThreshold = 48; // Half track height
-        const isVerticalDrag = Math.abs(currentTrackIndex - startTrackIndex) > 0 && 
-                              Math.abs(currentY - startY) > verticalDragThreshold;
+        // Timeline-based multi-track selection: find all tracks with clips in the time range
+        const affectedTracks = tracks.filter(candidateTrack => {
+          if (!candidateTrack.clips) return false;
+          
+          return candidateTrack.clips.some(trackClip => {
+            const clipStart = trackClip.startTime;
+            const clipEnd = trackClip.startTime + trackClip.duration;
+            
+            // Check if clip overlaps with selection time range
+            return clipStart < selectionEndTime && clipEnd > selectionStartTime;
+          });
+        });
         
         let multiTrackData = undefined;
         
-        if (isVerticalDrag) {
-          // Calculate affected tracks and filter by clips in time range
-          const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
-          const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
-          const candidateTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
+        // Enable multi-track if more than one track has clips in the time range
+        if (affectedTracks.length > 1) {
+          const trackIndices = affectedTracks.map(track => tracks.findIndex(t => t.id === track.id));
+          const minTrackIndex = Math.min(...trackIndices);
+          const maxTrackIndex = Math.max(...trackIndices);
           
-          // Filter tracks that have clips overlapping with the selection time range
-          const affectedTracks = candidateTracks.filter(candidateTrack => {
-            if (!candidateTrack.clips) return false;
-            
-            return candidateTrack.clips.some(trackClip => {
-              const clipStart = trackClip.startTime;
-              const clipEnd = trackClip.startTime + trackClip.duration;
-              
-              // Check if clip overlaps with selection time range
-              return clipStart < selectionEndTime && clipEnd > selectionStartTime;
-            });
-          });
-          
-          if (affectedTracks.length > 1) {
-            multiTrackData = {
-              startTrackIndex: minTrackIndex,
-              endTrackIndex: maxTrackIndex,
-              affectedTracks: affectedTracks.map(t => t.id)
-            };
-          }
+          multiTrackData = {
+            startTrackIndex: minTrackIndex,
+            endTrackIndex: maxTrackIndex,
+            affectedTracks: affectedTracks.map(t => t.id)
+          };
         }
         
-        // Create selection (single-track by default, multi-track only if vertical drag)
+        // Create selection (multi-track automatically if clips exist in other tracks within time range)
         // Constrain visual coordinates to clip boundaries
         const constrainedStartX = Math.max(0, Math.min(clipWidth, Math.min(relativeX, currentRelativeX)));
         const constrainedEndX = Math.max(0, Math.min(clipWidth, Math.max(relativeX, currentRelativeX)));
