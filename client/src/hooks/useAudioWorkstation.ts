@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { AudioTrack, AudioClip, TransportState, MixerChannel, AudioEffect } from '../types/audio';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { AudioTrack, AudioClip, TransportState, MixerChannel, AudioEffect, MixSnapshot, MixSceneManager } from '../types/audio';
 
 export function useAudioWorkstation() {
   // Session management
@@ -321,6 +321,25 @@ export function useAudioWorkstation() {
     'Add subtle reverb to foley sounds for spatial depth'
   ]);
 
+  // Mix Scene Snapshots
+  const [sceneManager, setSceneManager] = useState<MixSceneManager>({
+    snapshots: [],
+    currentSnapshot: null,
+    crossfadeTarget: null,
+    crossfadePosition: 0,
+    isBlending: false,
+    blendDuration: 3,
+    autoBlend: false
+  });
+
+  // Master volume
+  const [masterVolume, setMasterVolume] = useState(75);
+
+  // Crossfade animation ref
+  const crossfadeAnimationRef = useRef<number | null>(null);
+  const crossfadeStartTimeRef = useRef<number | null>(null);
+  const originalMixStateRef = useRef<{ tracks: AudioTrack[]; masterVolume: number } | null>(null);
+
   // Transport controls
   const play = useCallback(() => {
     setTransport(prev => ({ ...prev, isPlaying: true, isPaused: false, isStopped: false }));
@@ -370,6 +389,223 @@ export function useAudioWorkstation() {
       track.id === trackId ? { ...track, pan } : track
     ));
   }, []);
+
+  // Mix Scene Snapshot Functions
+  const createMixSnapshot = useCallback((name: string, description?: string) => {
+    const snapshot: MixSnapshot = {
+      id: `snapshot_${Date.now()}`,
+      name,
+      description,
+      createdAt: new Date(),
+      channels: {},
+      masterVolume,
+      auxReturns: {
+        reverb: { volume: 50, pan: 50, muted: false },
+        delay: { volume: 40, pan: 50, muted: false }
+      }
+    };
+
+    // Capture current track states
+    tracks.forEach(track => {
+      snapshot.channels[track.id] = {
+        volume: track.volume,
+        pan: track.pan,
+        muted: track.muted,
+        soloed: track.soloed,
+        gain: 0, // Default gain value
+        eq: {
+          highFreq: 1.0,
+          midFreq: 1.0,
+          lowFreq: 1.0
+        },
+        sends: { reverb: 30, delay: 20 },
+        effects: track.effects.map(effect => ({
+          id: effect.id,
+          enabled: effect.enabled,
+          parameters: { ...effect.parameters }
+        }))
+      };
+    });
+
+    setSceneManager(prev => ({
+      ...prev,
+      snapshots: [...prev.snapshots, snapshot],
+      currentSnapshot: snapshot.id
+    }));
+  }, [tracks, masterVolume]);
+
+  const loadMixSnapshot = useCallback((snapshotId: string) => {
+    const snapshot = sceneManager.snapshots.find(s => s.id === snapshotId);
+    if (!snapshot) return;
+
+    // Stop any ongoing crossfade
+    if (crossfadeAnimationRef.current) {
+      cancelAnimationFrame(crossfadeAnimationRef.current);
+      crossfadeAnimationRef.current = null;
+    }
+
+    // Apply snapshot immediately
+    setTracks(prev => prev.map(track => {
+      const channelState = snapshot.channels[track.id];
+      if (channelState) {
+        return {
+          ...track,
+          volume: channelState.volume,
+          pan: channelState.pan,
+          muted: channelState.muted,
+          soloed: channelState.soloed
+        };
+      }
+      return track;
+    }));
+
+    setMasterVolume(snapshot.masterVolume);
+    setSceneManager(prev => ({
+      ...prev,
+      currentSnapshot: snapshotId,
+      crossfadeTarget: null,
+      crossfadePosition: 0,
+      isBlending: false
+    }));
+  }, [sceneManager.snapshots]);
+
+  const deleteMixSnapshot = useCallback((snapshotId: string) => {
+    setSceneManager(prev => ({
+      ...prev,
+      snapshots: prev.snapshots.filter(s => s.id !== snapshotId),
+      currentSnapshot: prev.currentSnapshot === snapshotId ? null : prev.currentSnapshot,
+      crossfadeTarget: prev.crossfadeTarget === snapshotId ? null : prev.crossfadeTarget
+    }));
+  }, []);
+
+  // Crossfade animation function
+  const animateCrossfade = useCallback((startTime: number, duration: number, targetSnapshot: MixSnapshot) => {
+    const animate = (currentTime: number) => {
+      const elapsed = (currentTime - startTime) / 1000; // Convert to seconds
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Update crossfade position
+      setSceneManager(prev => ({
+        ...prev,
+        crossfadePosition: progress * 100
+      }));
+
+      if (originalMixStateRef.current && progress < 1) {
+        // Interpolate between original and target states
+        setTracks(prev => prev.map(track => {
+          const originalState = originalMixStateRef.current?.tracks.find(t => t.id === track.id);
+          const targetState = targetSnapshot.channels[track.id];
+          
+          if (originalState && targetState) {
+            return {
+              ...track,
+              volume: originalState.volume + (targetState.volume - originalState.volume) * progress,
+              pan: originalState.pan + (targetState.pan - originalState.pan) * progress,
+              muted: progress > 0.5 ? targetState.muted : originalState.muted,
+              soloed: progress > 0.5 ? targetState.soloed : originalState.soloed
+            };
+          }
+          return track;
+        }));
+
+        // Interpolate master volume
+        const originalMaster = originalMixStateRef.current.masterVolume;
+        const targetMaster = targetSnapshot.masterVolume;
+        setMasterVolume(originalMaster + (targetMaster - originalMaster) * progress);
+
+        crossfadeAnimationRef.current = requestAnimationFrame(animate);
+      } else {
+        // Crossfade complete
+        loadMixSnapshot(targetSnapshot.id);
+        originalMixStateRef.current = null;
+        crossfadeStartTimeRef.current = null;
+      }
+    };
+
+    crossfadeAnimationRef.current = requestAnimationFrame(animate);
+  }, [loadMixSnapshot]);
+
+  const startCrossfade = useCallback((targetSnapshotId: string, duration: number) => {
+    const targetSnapshot = sceneManager.snapshots.find(s => s.id === targetSnapshotId);
+    if (!targetSnapshot || !sceneManager.currentSnapshot) return;
+
+    // Store original state
+    originalMixStateRef.current = {
+      tracks: [...tracks],
+      masterVolume
+    };
+
+    crossfadeStartTimeRef.current = performance.now();
+    
+    setSceneManager(prev => ({
+      ...prev,
+      crossfadeTarget: targetSnapshotId,
+      crossfadePosition: 0,
+      isBlending: true,
+      blendDuration: duration
+    }));
+
+    animateCrossfade(crossfadeStartTimeRef.current, duration, targetSnapshot);
+  }, [sceneManager.snapshots, sceneManager.currentSnapshot, tracks, masterVolume, animateCrossfade]);
+
+  const stopCrossfade = useCallback(() => {
+    if (crossfadeAnimationRef.current) {
+      cancelAnimationFrame(crossfadeAnimationRef.current);
+      crossfadeAnimationRef.current = null;
+    }
+    
+    setSceneManager(prev => ({
+      ...prev,
+      crossfadeTarget: null,
+      crossfadePosition: 0,
+      isBlending: false
+    }));
+
+    originalMixStateRef.current = null;
+    crossfadeStartTimeRef.current = null;
+  }, []);
+
+  const setCrossfadePosition = useCallback((position: number) => {
+    if (!sceneManager.isBlending || !originalMixStateRef.current || !sceneManager.crossfadeTarget) return;
+
+    const targetSnapshot = sceneManager.snapshots.find(s => s.id === sceneManager.crossfadeTarget);
+    if (!targetSnapshot) return;
+
+    const progress = position / 100;
+
+    // Update crossfade position
+    setSceneManager(prev => ({
+      ...prev,
+      crossfadePosition: position
+    }));
+
+    // Manually interpolate to the specified position
+    setTracks(prev => prev.map(track => {
+      const originalState = originalMixStateRef.current?.tracks.find(t => t.id === track.id);
+      const targetState = targetSnapshot.channels[track.id];
+      
+      if (originalState && targetState) {
+        return {
+          ...track,
+          volume: originalState.volume + (targetState.volume - originalState.volume) * progress,
+          pan: originalState.pan + (targetState.pan - originalState.pan) * progress,
+          muted: progress > 0.5 ? targetState.muted : originalState.muted,
+          soloed: progress > 0.5 ? targetState.soloed : originalState.soloed
+        };
+      }
+      return track;
+    }));
+
+    // Interpolate master volume
+    const originalMaster = originalMixStateRef.current.masterVolume;
+    const targetMaster = targetSnapshot.masterVolume;
+    setMasterVolume(originalMaster + (targetMaster - originalMaster) * progress);
+
+    // If we reach 100%, complete the crossfade
+    if (position >= 100) {
+      loadMixSnapshot(targetSnapshot.id);
+    }
+  }, [sceneManager.isBlending, sceneManager.crossfadeTarget, sceneManager.snapshots, loadMixSnapshot]);
 
   // Session management with content switching
   const switchSession = useCallback((sessionId: string) => {
@@ -488,6 +724,8 @@ export function useAudioWorkstation() {
     mixerChannels,
     aiAnalysis,
     aiSuggestions,
+    sceneManager,
+    masterVolume,
     
     // Actions
     play,
@@ -505,5 +743,14 @@ export function useAudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
+    
+    // Mix Scene Snapshots
+    createMixSnapshot,
+    loadMixSnapshot,
+    deleteMixSnapshot,
+    startCrossfade,
+    stopCrossfade,
+    setCrossfadePosition,
+    setMasterVolume,
   };
 }
