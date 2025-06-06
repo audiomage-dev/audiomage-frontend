@@ -33,6 +33,7 @@ export function AudioWorkstation() {
     toggleRecording,
     seekTo,
     updateTrackVolume,
+    updateTrackPan,
     toggleTrackMute,
     toggleTrackSolo,
     switchSession,

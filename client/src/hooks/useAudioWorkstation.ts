@@ -496,6 +496,7 @@ export function useAudioWorkstation() {
     toggleRecording,
     seekTo,
     updateTrackVolume,
+    updateTrackPan,
     toggleTrackMute,
     toggleTrackSolo,
     switchSession,
