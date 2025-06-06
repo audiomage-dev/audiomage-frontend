@@ -2084,20 +2084,20 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   return (
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
       {/* Master Fader Panel */}
-      <div className="w-16 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10">
+      <div className="w-20 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10">
         {/* Master Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 flex items-center justify-center">
-          <span className="text-xs font-medium text-[var(--muted-foreground)]">MST</span>
+          <span className="text-xs font-medium text-[var(--muted-foreground)]">MASTER</span>
         </div>
         
-        {/* Master Fader Section */}
-        <div className="flex-1 flex flex-col items-center py-2 px-1">
-          {/* Peak Level Indicator */}
-          <div className="w-8 h-12 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm mb-2 relative overflow-hidden">
+        {/* Master Fader Section - Horizontal Layout */}
+        <div className="flex-1 flex flex-row items-center justify-center py-2 px-1 gap-2">
+          {/* Peak Level Indicator - Vertical */}
+          <div className="w-4 flex-1 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden max-h-full">
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-80"
                  style={{ height: '75%' }}>
             </div>
-            <div className="absolute inset-0 flex flex-col justify-between p-0.5 text-[8px] text-white font-mono">
+            <div className="absolute inset-0 flex flex-col justify-between p-0.5 text-[6px] text-white font-mono">
               <span>0</span>
               <span>-6</span>
               <span>-12</span>
@@ -2106,7 +2106,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             </div>
           </div>
           
-          {/* Master Fader */}
+          {/* Master Fader - Vertical */}
           <div className="flex-1 flex flex-col items-center w-full max-w-8">
             <div className="flex-1 w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative mx-auto">
               {/* Fader Track */}
@@ -2122,7 +2122,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 title="Master Volume: 0dB"
               ></div>
               {/* Fader Scale */}
-              <div className="absolute -right-2 top-0 bottom-0 flex flex-col justify-between text-[8px] text-[var(--muted-foreground)] font-mono py-2">
+              <div className="absolute -right-2 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--muted-foreground)] font-mono py-2">
                 <span>+6</span>
                 <span>0</span>
                 <span>-6</span>
