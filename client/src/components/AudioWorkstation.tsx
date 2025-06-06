@@ -11,6 +11,7 @@ import { StatusBar } from './StatusBar';
 import { WorkstationVideoPlayer } from './WorkstationVideoPlayer';
 import { MovableVideoPlayer } from './MovableVideoPlayer';
 import { DAWMixerPanel } from './DAWMixerPanel';
+import { MixSceneSnapshots } from './MixSceneSnapshots';
 
 import { MediaPreviewPane } from './MediaPreviewPane';
 
@@ -36,6 +37,15 @@ export function AudioWorkstation() {
     updateTrackPan,
     toggleTrackMute,
     toggleTrackSolo,
+    sceneManager,
+    masterVolume,
+    createMixSnapshot,
+    loadMixSnapshot,
+    deleteMixSnapshot,
+    startCrossfade,
+    stopCrossfade,
+    setCrossfadePosition,
+    setMasterVolume,
     switchSession,
     addSession,
     closeSession,
@@ -393,6 +403,24 @@ export function AudioWorkstation() {
         </div>
       </div>
       
+      {/* Mix Scene Snapshots */}
+      <div className="flex-none">
+        <MixSceneSnapshots
+          tracks={tracks}
+          masterVolume={masterVolume}
+          sceneManager={sceneManager}
+          onSnapshotCreate={createMixSnapshot}
+          onSnapshotLoad={loadMixSnapshot}
+          onSnapshotDelete={deleteMixSnapshot}
+          onSnapshotUpdate={(snapshotId: string, data: any) => {
+            console.log('Update snapshot:', snapshotId, data);
+          }}
+          onCrossfadeStart={startCrossfade}
+          onCrossfadeStop={stopCrossfade}
+          onCrossfadePositionChange={setCrossfadePosition}
+        />
+      </div>
+      
       {/* DAW Mixer Panel */}
       <div className="flex-none">
         <DAWMixerPanel
@@ -408,10 +436,8 @@ export function AudioWorkstation() {
           onEQChange={(trackId: string, band: 'high' | 'mid' | 'low', gain: number) => {
             console.log(`EQ ${band} for ${trackId}: ${gain}dB`);
           }}
-          masterVolume={75}
-          onMasterVolumeChange={(volume: number) => {
-            console.log('Master volume:', volume);
-          }}
+          masterVolume={masterVolume}
+          onMasterVolumeChange={setMasterVolume}
         />
       </div>
       
