@@ -520,7 +520,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       }
     };
     
-    const handleMouseUp = () => {
+    const handleMouseUp = (upEvent: MouseEvent) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       setCursorState('default');
@@ -535,6 +535,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           startX: 0,
           endX: clipWidth,
           isActive: true
+        });
+      } else if (clipAreaSelection) {
+        // Show range selection context menu after completing selection
+        const selectionLabel = clipAreaSelection.multiTrack 
+          ? `Range Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
+          : `Range Selection`;
+        
+        const currentTrack = tracks.find(t => t.id === clipAreaSelection.trackId);
+        setClipContextMenu({
+          x: upEvent.clientX,
+          y: upEvent.clientY,
+          clip: {
+            id: clipAreaSelection.clipId,
+            name: selectionLabel,
+            trackId: clipAreaSelection.trackId,
+            trackName: currentTrack?.name || 'Unknown Track'
+          }
         });
       }
     };
@@ -2438,19 +2455,44 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             <div className="text-[var(--muted-foreground)]">Track: {clipContextMenu.clip.trackName}</div>
           </div>
           
-          {[
-            { label: 'Cut', icon: Scissors, action: 'cut', shortcut: 'Ctrl+X' },
-            { label: 'Copy', icon: Copy, action: 'copy', shortcut: 'Ctrl+C' },
-            { label: 'Duplicate', icon: Files, action: 'duplicate', shortcut: 'Ctrl+D' },
-            { type: 'separator' },
-            { label: 'Fade In', icon: TrendingUp, action: 'fade-in' },
-            { label: 'Fade Out', icon: TrendingDown, action: 'fade-out' },
-            { label: 'Normalize', icon: BarChart3, action: 'normalize' },
-            { type: 'separator' },
-            { label: 'AI Prompt', icon: Sparkles, action: 'ai-prompt', ai: true },
-            { type: 'separator' },
-            { label: 'Delete', icon: Trash2, action: 'delete', destructive: true, shortcut: 'Del' },
-          ].map((item, index) => {
+          {(() => {
+            // Range selection specific options
+            if (clipContextMenu.clip.name.includes('Range Selection') || clipContextMenu.clip.name.includes('Selection')) {
+              return [
+                { label: 'Cut Range', icon: Scissors, action: 'cut-range', shortcut: 'Ctrl+X' },
+                { label: 'Copy Range', icon: Copy, action: 'copy-range', shortcut: 'Ctrl+C' },
+                { label: 'Delete Range', icon: Trash2, action: 'delete-range', destructive: true, shortcut: 'Del' },
+                { type: 'separator' },
+                { label: 'Crop to Selection', icon: Circle, action: 'crop-selection' },
+                { label: 'Bounce to Audio', icon: Link, action: 'bounce-audio' },
+                { type: 'separator' },
+                { label: 'Fade In Selection', icon: TrendingUp, action: 'fade-in-range' },
+                { label: 'Fade Out Selection', icon: TrendingDown, action: 'fade-out-range' },
+                { label: 'Crossfade', icon: RotateCcw, action: 'crossfade' },
+                { type: 'separator' },
+                { label: 'Normalize Range', icon: BarChart3, action: 'normalize-range' },
+                { label: 'Reverse Audio', icon: RotateCcw, action: 'reverse-audio' },
+                { type: 'separator' },
+                { label: 'AI Enhancement', icon: Sparkles, action: 'ai-enhance-range', ai: true },
+                { label: 'Split at Selection', icon: Scissors, action: 'split-selection' },
+              ];
+            }
+            
+            // Regular clip options
+            return [
+              { label: 'Cut', icon: Scissors, action: 'cut', shortcut: 'Ctrl+X' },
+              { label: 'Copy', icon: Copy, action: 'copy', shortcut: 'Ctrl+C' },
+              { label: 'Duplicate', icon: Files, action: 'duplicate', shortcut: 'Ctrl+D' },
+              { type: 'separator' },
+              { label: 'Fade In', icon: TrendingUp, action: 'fade-in' },
+              { label: 'Fade Out', icon: TrendingDown, action: 'fade-out' },
+              { label: 'Normalize', icon: BarChart3, action: 'normalize' },
+              { type: 'separator' },
+              { label: 'AI Prompt', icon: Sparkles, action: 'ai-prompt', ai: true },
+              { type: 'separator' },
+              { label: 'Delete', icon: Trash2, action: 'delete', destructive: true, shortcut: 'Del' },
+            ];
+          })().map((item, index) => {
             if (item.type === 'separator') {
               return <div key={`clip-separator-${index}`} className="h-px bg-[var(--border)] my-1" />;
             }
