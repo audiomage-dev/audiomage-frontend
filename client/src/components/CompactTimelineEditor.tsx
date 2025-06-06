@@ -429,33 +429,42 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
 
-  // Handle timeline-based range selection across all clips and empty areas
-  const handleTimelineRangeSelection = useCallback((e: React.MouseEvent) => {
+  // Handle clip area selection within clips with multi-track support
+  const handleClipAreaSelection = useCallback((e: React.MouseEvent, clipId: string, trackId: string, clip: any) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Get timeline container for calculations
+    const clipElement = e.currentTarget as HTMLElement;
+    const rect = clipElement.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    const clipWidth = rect.width;
+    
+    // Get timeline container for multi-track calculations
     const timelineContainer = timelineRef.current;
     if (!timelineContainer) return;
     
     const timelineRect = timelineContainer.getBoundingClientRect();
-    const selectionStartX = e.clientX - timelineRect.left;
-    const selectionStartY = e.clientY - timelineRect.top;
-    const startTrackIndex = Math.floor(selectionStartY / 96);
+    const startY = e.clientY - timelineRect.top;
+    const startTrackIndex = tracks.findIndex(t => t.id === trackId);
     
-    // Calculate time position on timeline
+    // Calculate time position within clip
     const pixelsPerSecond = 60 * zoomLevel;
-    const absoluteStartTime = selectionStartX / pixelsPerSecond;
+    const timeWithinClip = (relativeX / clipWidth) * clip.duration;
+    const absoluteStartTime = clip.startTime + timeWithinClip;
     
-    console.log('Starting timeline range selection:', {
+    console.log('Starting clip area selection:', {
+      clipId,
+      relativeX,
+      timeWithinClip: timeWithinClip.toFixed(3),
       absoluteStartTime: absoluteStartTime.toFixed(3),
       startTrackIndex
     });
     
     let isSelecting = false;
+    const startX = e.clientX;
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const deltaX = Math.abs(moveEvent.clientX - e.clientX);
+      const deltaX = Math.abs(moveEvent.clientX - startX);
       const deltaY = Math.abs(moveEvent.clientY - e.clientY);
       
       if (!isSelecting && (deltaX > 3 || deltaY > 3)) {
@@ -464,22 +473,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       }
       
       if (isSelecting) {
-        const currentX = moveEvent.clientX - timelineRect.left;
         const currentY = moveEvent.clientY - timelineRect.top;
-        const currentTrackIndex = Math.floor(currentY / 96);
+        const currentTrackIndex = Math.floor(currentY / 96); // 96px per track
         
         // Calculate time range
-        const absoluteEndTime = currentX / pixelsPerSecond;
+        const currentRelativeX = moveEvent.clientX - rect.left;
+        const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
+        const absoluteEndTime = clip.startTime + endTimeWithinClip;
+        
         const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
         const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
         
         // Only enable multi-track selection if user is dragging vertically significantly
-        const verticalDragThreshold = 48;
+        const verticalDragThreshold = 48; // Half track height
         const isVerticalDrag = Math.abs(currentTrackIndex - startTrackIndex) > 0 && 
-                              Math.abs(currentY - selectionStartY) > verticalDragThreshold;
+                              Math.abs(currentY - startY) > verticalDragThreshold;
         
         let multiTrackData = undefined;
-        let primaryTrackId = tracks[startTrackIndex]?.id;
         
         if (isVerticalDrag) {
           // Calculate affected tracks and filter by clips in time range
@@ -509,14 +519,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           }
         }
         
-        // Create timeline-based selection
+        // Create selection (single-track by default, multi-track only if vertical drag)
         setClipAreaSelection({
-          clipId: 'timeline-selection',
-          trackId: primaryTrackId || tracks[0]?.id || '',
+          clipId,
+          trackId,
           startTime: selectionStartTime,
           endTime: selectionEndTime,
-          startX: Math.min(selectionStartX, currentX),
-          endX: Math.max(selectionStartX, currentX),
+          startX: Math.min(relativeX, currentRelativeX),
+          endX: Math.max(relativeX, currentRelativeX),
           isActive: true,
           multiTrack: multiTrackData
         });
@@ -529,14 +539,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       setCursorState('default');
       
       if (!isSelecting) {
-        // Clear any existing selection on timeline click
-        setClipAreaSelection(null);
+        // Single click - select entire clip
+        setClipAreaSelection({
+          clipId,
+          trackId,
+          startTime: clip.startTime,
+          endTime: clip.startTime + clip.duration,
+          startX: 0,
+          endX: clipWidth,
+          isActive: true
+        });
       }
     };
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [tracks, zoomLevel]);
+  }, [zoomLevel, tracks, timelineRef]);
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     // Prevent dragging when timeline is locked
@@ -555,8 +573,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const zone = getClipInteractionZone(e, clipElement, clip);
     
     if (zone === 'select-area') {
-      // Handle timeline-based range selection
-      handleTimelineRangeSelection(e);
+      // Handle area selection within clip
+      handleClipAreaSelection(e, clipId, trackId, clip);
       return;
     } else if (zone === 'resize-left' || zone === 'resize-right') {
       // Handle resizing
@@ -1961,17 +1979,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           className="flex-1 overflow-auto scrollbar-thin select-none" 
           ref={timelineRef}
           data-timeline-container
-          onMouseDown={(e) => {
-            // Check if clicking on empty timeline area (not on a clip)
-            const target = e.target as HTMLElement;
-            const isClipElement = target.closest('[data-clip-id]');
-            
-            if (!isClipElement && currentTool === 'select') {
-              handleTimelineRangeSelection(e);
-            } else {
-              handleMouseDown(e);
-            }
-          }}
+          onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onWheel={handleScroll}
@@ -2027,7 +2035,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     return (
                       <div
                         key={`${track.id}-clip-${clip.id}`}
-                        data-clip-id={clip.id}
                         data-clip-element="true"
                         className={`absolute top-1 h-[58px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
@@ -2047,9 +2054,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onContextMenu={(e) => {
                           // Check if there's an active selection on this clip
                           if (clipAreaSelection && clipAreaSelection.clipId === clip.id) {
-                            // Prevent the clip's context menu from showing
-                            e.preventDefault();
-                            e.stopPropagation();
+                            // Let the selection overlay handle the context menu
                             return;
                           }
                           handleClipRightClick(e, clip.id, track.id);
