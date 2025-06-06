@@ -1023,6 +1023,33 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       return;
     }
     
+    // If there's already an active multi-selection with clips, check if we should drag it instead
+    if (multiSelection && !multiSelection.isActive && multiSelection.selectedClips.length > 0) {
+      // Check if the click is within the selection bounds
+      const timelineRect = timelineRef.current?.getBoundingClientRect();
+      if (!timelineRect) return;
+      
+      const clickX = e.clientX - timelineRect.left + scrollX;
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+      const clickTime = (clickX / timelineWidth) * totalTime;
+      
+      // Check if click is within the time range of the selection
+      const isWithinTimeRange = clickTime >= multiSelection.startTime && clickTime <= multiSelection.endTime;
+      
+      // Check if click is within the track range of the selection
+      const isWithinTrackRange = startTrackIndex >= multiSelection.startTrackIndex && 
+                                startTrackIndex <= multiSelection.endTrackIndex;
+      
+      if (isWithinTimeRange && isWithinTrackRange) {
+        // Clear existing selection to prevent interference with new timeline selection
+        console.log('Clearing existing selection to prevent drag interference');
+        setMultiSelection(null);
+        setClipAreaSelection(null);
+        return;
+      }
+    }
+    
     const timelineRect = timelineRef.current?.getBoundingClientRect();
     if (!timelineRect) return;
     
@@ -1049,7 +1076,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       isActive: true,
       selectedClips: []
     });
-  }, [scrollX, zoomLevel, getTimelineWidth]);
+  }, [scrollX, zoomLevel, getTimelineWidth, multiSelection, tracks]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
