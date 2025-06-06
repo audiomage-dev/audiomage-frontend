@@ -2054,7 +2054,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onContextMenu={(e) => {
                           // Check if there's an active selection on this clip
                           if (clipAreaSelection && clipAreaSelection.clipId === clip.id) {
-                            // Let the selection overlay handle the context menu
+                            // Prevent the clip's context menu from showing
+                            e.preventDefault();
+                            e.stopPropagation();
                             return;
                           }
                           handleClipRightClick(e, clip.id, track.id);
