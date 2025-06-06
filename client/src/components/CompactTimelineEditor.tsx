@@ -2038,7 +2038,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           updateCursorForClip(zone);
                         }}
                         onMouseLeave={() => setCursorState('default')}
-                        onContextMenu={(e) => handleClipRightClick(e, clip.id, track.id)}
+                        onContextMenu={(e) => {
+                          // Check if there's an active selection on this clip
+                          if (clipAreaSelection && clipAreaSelection.clipId === clip.id) {
+                            // Let the selection overlay handle the context menu
+                            return;
+                          }
+                          handleClipRightClick(e, clip.id, track.id);
+                        }}
                         onDoubleClick={() => console.log('Edit clip:', clip.name)}
                         style={{
                           left: `${clipStartX}px`,
