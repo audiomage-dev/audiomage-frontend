@@ -561,7 +561,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     } else if (zone === 'resize-left' || zone === 'resize-right') {
       // Handle resizing
       setCursorState('col-resize');
-      // Implement resize logic here if needed
+      handleClipResizeStart(e, clipId, trackId, zone === 'resize-left' ? 'left' : 'right');
       return;
     }
     
@@ -935,10 +935,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             ? resizingClip.originalStartTime + newDuration
             : resizingClip.originalStartTime;
           
-          // Calculate position and dimensions for virtual extension overlay
-          const extensionX = (extensionStartTime / totalTime) * timelineWidth;
-          const extensionWidth = (extensionLength / totalTime) * timelineWidth;
-          const extensionY = trackIndex * 96;
+          // Calculate position and dimensions for virtual extension overlay using consistent pixel-per-second calculation
+          const pixelsPerSecond = 60 * zoomLevel; // Use same calculation as clip rendering
+          const extensionX = extensionStartTime * pixelsPerSecond;
+          const extensionWidth = extensionLength * pixelsPerSecond;
+          const extensionY = trackIndex * 64; // Track height is 64px, not 96px
           
           setVirtualExtension({
             clipId: resizingClip.clipId,
@@ -2266,9 +2267,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 className="absolute z-15 border-2 border-dashed border-[var(--primary)] bg-[var(--primary)]/10 pointer-events-none rounded-md"
                 style={{
                   left: `${virtualExtension.x}px`,
-                  top: `${virtualExtension.y + 12}px`,
+                  top: `${virtualExtension.y + 1}px`,
                   width: `${virtualExtension.width}px`,
-                  height: '64px',
+                  height: '58px',
                 }}
               >
                 {/* Action buttons group - positioned next to cancel button */}
