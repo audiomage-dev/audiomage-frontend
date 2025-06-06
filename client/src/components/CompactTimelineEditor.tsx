@@ -429,42 +429,33 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
 
-  // Handle clip area selection within clips with multi-track support
-  const handleClipAreaSelection = useCallback((e: React.MouseEvent, clipId: string, trackId: string, clip: any) => {
+  // Handle timeline-based range selection across all clips and empty areas
+  const handleTimelineRangeSelection = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const clipElement = e.currentTarget as HTMLElement;
-    const rect = clipElement.getBoundingClientRect();
-    const relativeX = e.clientX - rect.left;
-    const clipWidth = rect.width;
-    
-    // Get timeline container for multi-track calculations
+    // Get timeline container for calculations
     const timelineContainer = timelineRef.current;
     if (!timelineContainer) return;
     
     const timelineRect = timelineContainer.getBoundingClientRect();
-    const startY = e.clientY - timelineRect.top;
-    const startTrackIndex = tracks.findIndex(t => t.id === trackId);
+    const selectionStartX = e.clientX - timelineRect.left;
+    const selectionStartY = e.clientY - timelineRect.top;
+    const startTrackIndex = Math.floor(selectionStartY / 96);
     
-    // Calculate time position within clip
+    // Calculate time position on timeline
     const pixelsPerSecond = 60 * zoomLevel;
-    const timeWithinClip = (relativeX / clipWidth) * clip.duration;
-    const absoluteStartTime = clip.startTime + timeWithinClip;
+    const absoluteStartTime = selectionStartX / pixelsPerSecond;
     
-    console.log('Starting clip area selection:', {
-      clipId,
-      relativeX,
-      timeWithinClip: timeWithinClip.toFixed(3),
+    console.log('Starting timeline range selection:', {
       absoluteStartTime: absoluteStartTime.toFixed(3),
       startTrackIndex
     });
     
     let isSelecting = false;
-    const startX = e.clientX;
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const deltaX = Math.abs(moveEvent.clientX - startX);
+      const deltaX = Math.abs(moveEvent.clientX - e.clientX);
       const deltaY = Math.abs(moveEvent.clientY - e.clientY);
       
       if (!isSelecting && (deltaX > 3 || deltaY > 3)) {
@@ -473,23 +464,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       }
       
       if (isSelecting) {
+        const currentX = moveEvent.clientX - timelineRect.left;
         const currentY = moveEvent.clientY - timelineRect.top;
-        const currentTrackIndex = Math.floor(currentY / 96); // 96px per track
+        const currentTrackIndex = Math.floor(currentY / 96);
         
         // Calculate time range
-        const currentRelativeX = moveEvent.clientX - rect.left;
-        const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
-        const absoluteEndTime = clip.startTime + endTimeWithinClip;
-        
+        const absoluteEndTime = currentX / pixelsPerSecond;
         const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
         const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
         
         // Only enable multi-track selection if user is dragging vertically significantly
-        const verticalDragThreshold = 48; // Half track height
+        const verticalDragThreshold = 48;
         const isVerticalDrag = Math.abs(currentTrackIndex - startTrackIndex) > 0 && 
-                              Math.abs(currentY - startY) > verticalDragThreshold;
+                              Math.abs(currentY - selectionStartY) > verticalDragThreshold;
         
         let multiTrackData = undefined;
+        let primaryTrackId = tracks[startTrackIndex]?.id;
         
         if (isVerticalDrag) {
           // Calculate affected tracks and filter by clips in time range
@@ -519,14 +509,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           }
         }
         
-        // Create selection (single-track by default, multi-track only if vertical drag)
+        // Create timeline-based selection
         setClipAreaSelection({
-          clipId,
-          trackId,
+          clipId: 'timeline-selection',
+          trackId: primaryTrackId || tracks[0]?.id || '',
           startTime: selectionStartTime,
           endTime: selectionEndTime,
-          startX: Math.min(relativeX, currentRelativeX),
-          endX: Math.max(relativeX, currentRelativeX),
+          startX: Math.min(selectionStartX, currentX),
+          endX: Math.max(selectionStartX, currentX),
           isActive: true,
           multiTrack: multiTrackData
         });
@@ -539,22 +529,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       setCursorState('default');
       
       if (!isSelecting) {
-        // Single click - select entire clip
-        setClipAreaSelection({
-          clipId,
-          trackId,
-          startTime: clip.startTime,
-          endTime: clip.startTime + clip.duration,
-          startX: 0,
-          endX: clipWidth,
-          isActive: true
-        });
+        // Clear any existing selection on timeline click
+        setClipAreaSelection(null);
       }
     };
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [zoomLevel, tracks, timelineRef]);
+  }, [tracks, zoomLevel]);
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     // Prevent dragging when timeline is locked
@@ -573,8 +555,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const zone = getClipInteractionZone(e, clipElement, clip);
     
     if (zone === 'select-area') {
-      // Handle area selection within clip
-      handleClipAreaSelection(e, clipId, trackId, clip);
+      // Handle timeline-based range selection
+      handleTimelineRangeSelection(e);
       return;
     } else if (zone === 'resize-left' || zone === 'resize-right') {
       // Handle resizing
