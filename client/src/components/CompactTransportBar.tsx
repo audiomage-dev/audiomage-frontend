@@ -412,7 +412,7 @@ export function CompactTransportBar({
   }, [isTimeEditing]);
 
   return (
-    <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
+    <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between" style={{ marginLeft: '64px' }}>
       {/* Left: Transport Controls */}
       <div className="flex items-center space-x-2">
 
