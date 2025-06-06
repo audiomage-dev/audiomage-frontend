@@ -1961,7 +1961,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           className="flex-1 overflow-auto scrollbar-thin select-none" 
           ref={timelineRef}
           data-timeline-container
-          onMouseDown={handleMouseDown}
+          onMouseDown={(e) => {
+            // Check if clicking on empty timeline area (not on a clip)
+            const target = e.target as HTMLElement;
+            const isClipElement = target.closest('[data-clip-id]');
+            
+            if (!isClipElement && currentTool === 'select') {
+              handleTimelineRangeSelection(e);
+            } else {
+              handleMouseDown(e);
+            }
+          }}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onWheel={handleScroll}
@@ -2017,6 +2027,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     return (
                       <div
                         key={`${track.id}-clip-${clip.id}`}
+                        data-clip-id={clip.id}
                         data-clip-element="true"
                         className={`absolute top-1 h-[58px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
