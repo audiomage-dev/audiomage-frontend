@@ -2083,89 +2083,76 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   return (
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
-      {/* Master Fader Panel */}
-      <div className="w-24 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10">
-        {/* Master Header */}
-        <div className="h-10 border-b border-[var(--border)] bg-[var(--muted)]/30 flex items-center justify-center">
-          <span className="text-sm font-medium text-[var(--muted-foreground)]">MASTER</span>
-        </div>
-        
-        {/* Master Fader Section - Horizontal Layout */}
-        <div className="flex-1 flex flex-col py-3 px-2">
+      {/* Master Fader Panel - Repositioned to align with video player */}
+      <div className="w-16 border-r border-[var(--border)] flex flex-col bg-[var(--muted)]/10" style={{ position: 'relative', top: '0' }}>
+        {/* Compact Master Controls */}
+        <div className="flex-1 flex flex-col py-2 px-1">
+          {/* Master Label */}
+          <div className="text-center mb-2">
+            <span className="text-[8px] font-medium text-[var(--muted-foreground)]">MST</span>
+          </div>
+          
           {/* Main Controls Row */}
-          <div className="flex flex-row items-stretch justify-center gap-3 flex-1">
-            {/* Peak Level Indicator - Vertical */}
-            <div className="w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden">
+          <div className="flex flex-row items-stretch justify-center gap-1 flex-1">
+            {/* Peak Level Indicator - Compact Vertical */}
+            <div className="w-3 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-90"
-                   style={{ height: '72%' }}>
+                   style={{ height: '68%' }}>
               </div>
-              {/* Meter segments for better visibility */}
-              <div className="absolute inset-0 flex flex-col justify-between text-[7px] text-white font-mono font-bold p-0.5">
-                <span className="text-center bg-black/40 rounded px-0.5">0</span>
-                <span className="text-center bg-black/40 rounded px-0.5">-6</span>
-                <span className="text-center bg-black/40 rounded px-0.5">-12</span>
-                <span className="text-center bg-black/40 rounded px-0.5">-18</span>
-                <span className="text-center bg-black/40 rounded px-0.5">-∞</span>
+              {/* Compact meter markings */}
+              <div className="absolute inset-0 flex flex-col justify-between text-[5px] text-white font-mono font-bold p-px">
+                <span className="text-center bg-black/50 rounded">0</span>
+                <span className="text-center bg-black/50 rounded">-6</span>
+                <span className="text-center bg-black/50 rounded">-12</span>
+                <span className="text-center bg-black/50 rounded">-∞</span>
               </div>
               {/* Peak hold indicator */}
-              <div className="absolute w-full h-0.5 bg-red-400 shadow-sm" style={{ top: '28%' }}></div>
+              <div className="absolute w-full h-px bg-red-400 shadow-sm" style={{ top: '32%' }}></div>
             </div>
             
-            {/* Master Fader - Vertical */}
+            {/* Master Fader - Compact Vertical */}
             <div className="flex flex-col items-center justify-center">
-              <div className="w-8 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative flex-1">
+              <div className="w-5 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative flex-1">
                 {/* Fader Track */}
-                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1"></div>
+                <div className="absolute inset-x-0 top-1 bottom-1 bg-[var(--muted)] rounded-full mx-0.5"></div>
                 {/* Fader Handle */}
                 <div 
-                  className="absolute w-6 h-4 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-md"
+                  className="absolute w-4 h-3 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-sm"
                   style={{ 
-                    top: '25%', // 0dB position
+                    top: '30%', // 0dB position
                     left: '50%',
                     transform: 'translateX(-50%)'
                   }}
-                  title="Master Volume: 0dB"
+                  title="Master: 0dB"
                 ></div>
-                {/* Fader Scale */}
-                <div className="absolute -right-4 top-0 bottom-0 flex flex-col justify-between text-[7px] text-[var(--muted-foreground)] font-mono py-2">
+                {/* Compact Fader Scale */}
+                <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[5px] text-[var(--muted-foreground)] font-mono py-1">
                   <span>+6</span>
                   <span>0</span>
                   <span>-6</span>
-                  <span>-12</span>
-                  <span>-18</span>
                   <span>-∞</span>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Master Controls Row */}
-          <div className="flex flex-row justify-center gap-1 mt-3">
+          {/* Compact Controls */}
+          <div className="flex flex-col gap-1 mt-2 items-center">
             {/* Mute Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 rounded text-[9px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
+              className="h-4 w-5 p-0 rounded text-[7px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
               title="Master Mute"
             >
               M
             </Button>
             
-            {/* Solo Clear Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-8 p-0 rounded text-[8px] border border-white/20 hover:bg-[var(--accent)] opacity-80"
-              title="Clear All Solos"
-            >
-              SC
-            </Button>
-          </div>
-          
-          {/* Master Level Display */}
-          <div className="mt-2 text-center">
-            <div className="text-[9px] font-mono text-[var(--muted-foreground)]">
-              -2.3dB
+            {/* Level Display */}
+            <div className="text-center">
+              <div className="text-[6px] font-mono text-[var(--muted-foreground)]">
+                -2.3
+              </div>
             </div>
           </div>
         </div>
