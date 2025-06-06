@@ -18,6 +18,7 @@ import {
   History,
   Library,
   Volume2,
+  MoreHorizontal,
   VolumeX,
   Headphones,
   Music,
@@ -75,54 +76,8 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [collapseLevel, setCollapseLevel] = useState(0);
 
-  // Determine collapse level based on video player size and available space
-  useEffect(() => {
-    const minSidebarWidth = 320; // Minimum width for full sidebar
-    const remainingWidth = availableWidth - videoPlayerWidth;
-    
-    // Calculate collapse level based on available space
-    if (remainingWidth < minSidebarWidth) {
-      // Level 3: Complete collapse to icon-only mode
-      setCollapseLevel(3);
-      setIsExpanded(false);
-      setIsCollapsed(true);
-    } else if (remainingWidth < minSidebarWidth + 100) {
-      // Level 2: Hide content panels, show only buttons
-      setCollapseLevel(2);
-      setIsExpanded(false);
-      setIsCollapsed(false);
-    } else if (remainingWidth < minSidebarWidth + 200) {
-      // Level 1: Compress content panels
-      setCollapseLevel(1);
-      setIsExpanded(true);
-      setIsCollapsed(false);
-    } else {
-      // Level 0: Full expansion
-      setCollapseLevel(0);
-      setIsExpanded(true);
-      setIsCollapsed(false);
-    }
-  }, [videoPlayerWidth, availableWidth]);
-
-  // Determine if buttons should collapse based on container height
-  useEffect(() => {
-    if (containerHeight) {
-      // Calculate space needed for all buttons (8 buttons * 32px height + 8 * 4px spacing + padding)
-      const buttonHeight = 32; // h-8 = 32px
-      const buttonSpacing = 4; // space-y-1 = 4px
-      const paddingAndOtherElements = 80; // Toggle button, settings button, padding
-      const totalNeededHeight = (sidebarItems.length * buttonHeight) + 
-                               ((sidebarItems.length - 1) * buttonSpacing) + 
-                               paddingAndOtherElements;
-      
-      const shouldHeightCollapse = containerHeight < totalNeededHeight;
-      
-      // Only update collapse level if it's driven by height constraints
-      if (shouldHeightCollapse && collapseLevel === 0) {
-        setCollapseLevel(2);
-      }
-    }
-  }, [containerHeight]);
+  // Calculate how many buttons to show based on available space (video player size)
+  const [visibleButtonCount, setVisibleButtonCount] = useState(8);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -421,14 +376,40 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
 
   ];
 
+  // Calculate how many buttons to show based on video player width
+  useEffect(() => {
+    if (containerHeight && videoPlayerWidth) {
+      // Calculate available height for buttons
+      const buttonHeight = 32; // h-8 = 32px
+      const buttonSpacing = 4; // space-y-1 = 4px
+      const paddingAndOtherElements = 80; // Toggle button, settings button, padding
+      
+      // Calculate how many buttons can fit in available height
+      const availableHeightForButtons = containerHeight - paddingAndOtherElements;
+      const maxButtonsByHeight = Math.floor(availableHeightForButtons / (buttonHeight + buttonSpacing));
+      
+      // As video player width increases, reduce button count from bottom up
+      const baseWidth = 320; // Base video player width
+      const maxReduction = sidebarItems.length - 1; // Keep at least 1 button
+      const widthFactor = Math.max(0, (videoPlayerWidth - baseWidth) / 150); // Reduce 1 button per 150px increase
+      const buttonReduction = Math.min(maxReduction, Math.floor(widthFactor));
+      const maxButtonsByWidth = sidebarItems.length - buttonReduction;
+      
+      // Use the more restrictive constraint
+      const finalButtonCount = Math.max(1, Math.min(maxButtonsByHeight, maxButtonsByWidth));
+      setVisibleButtonCount(finalButtonCount);
+      
+      // Set collapse state for dropdown when buttons are hidden
+      setIsCollapsed(finalButtonCount < sidebarItems.length);
+    }
+  }, [containerHeight, videoPlayerWidth, sidebarItems.length]);
+
   return (
-    <div className={`${
-      collapseLevel >= 2 ? 'w-12' : isExpanded ? 'w-full' : 'w-12'
-    } h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
+    <div className={`${isExpanded ? 'w-full' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
       {/* Sidebar Icons */}
       <div className="w-12 flex flex-col items-center py-2 space-y-1 bg-[var(--background)]">
-        {collapseLevel >= 3 ? (
-          /* Level 3: Complete collapse - Single dropdown button */
+        {isCollapsed ? (
+          /* Collapsed: Single dropdown button for hidden items */
           <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
@@ -458,26 +439,57 @@ export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidt
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          /* Normal: Individual buttons */
-          sidebarItems.map((item) => (
-            <Button
-              key={item.id}
-              variant="ghost"
-              size="sm"
-              className={`w-8 h-8 p-0 ${
-                activePanel === item.id 
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
-                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-              onClick={() => {
-                setActivePanel(item.id);
-                if (!isExpanded) setIsExpanded(true);
-              }}
-              title={item.label}
-            >
-              {item.icon}
-            </Button>
-          ))
+          /* Normal: Show visible buttons (from top) and dropdown for hidden ones */
+          <>
+            {sidebarItems.slice(0, visibleButtonCount).map((item) => (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="sm"
+                className={`w-8 h-8 p-0 ${
+                  activePanel === item.id 
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+                onClick={() => {
+                  setActivePanel(item.id);
+                  if (!isExpanded) setIsExpanded(true);
+                }}
+                title={item.label}
+              >
+                {item.icon}
+              </Button>
+            ))}
+            {visibleButtonCount < sidebarItems.length && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-8 h-8 p-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    title="More Options"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start" className="w-48">
+                  {sidebarItems.slice(visibleButtonCount).map((item) => (
+                    <DropdownMenuItem
+                      key={item.id}
+                      onClick={() => {
+                        setActivePanel(item.id);
+                        if (!isExpanded) setIsExpanded(true);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      {item.icon}
+                      <span className="text-sm">{item.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </>
         )}
         
         <div className="flex-1" />
