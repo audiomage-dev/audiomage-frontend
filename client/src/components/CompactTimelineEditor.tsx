@@ -476,13 +476,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const currentY = moveEvent.clientY - timelineRect.top;
         const currentTrackIndex = Math.floor(currentY / 96); // 96px per track
         
-        // Calculate time range
-        const currentRelativeX = moveEvent.clientX - rect.left;
+        // Calculate time range constrained to the current clip
+        const currentRelativeX = Math.max(0, Math.min(clipWidth, moveEvent.clientX - rect.left));
         const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
         const absoluteEndTime = clip.startTime + endTimeWithinClip;
         
-        const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
-        const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
+        // Constrain selection to clip boundaries
+        const clipStartTime = clip.startTime;
+        const clipEndTime = clip.startTime + clip.duration;
+        const selectionStartTime = Math.max(clipStartTime, Math.min(clipEndTime, Math.min(absoluteStartTime, absoluteEndTime)));
+        const selectionEndTime = Math.max(clipStartTime, Math.min(clipEndTime, Math.max(absoluteStartTime, absoluteEndTime)));
         
         // Only enable multi-track selection if user is dragging vertically significantly
         const verticalDragThreshold = 48; // Half track height
@@ -520,13 +523,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         }
         
         // Create selection (single-track by default, multi-track only if vertical drag)
+        // Constrain visual coordinates to clip boundaries
+        const constrainedStartX = Math.max(0, Math.min(clipWidth, Math.min(relativeX, currentRelativeX)));
+        const constrainedEndX = Math.max(0, Math.min(clipWidth, Math.max(relativeX, currentRelativeX)));
+        
         setClipAreaSelection({
           clipId,
           trackId,
           startTime: selectionStartTime,
           endTime: selectionEndTime,
-          startX: Math.min(relativeX, currentRelativeX),
-          endX: Math.max(relativeX, currentRelativeX),
+          startX: constrainedStartX,
+          endX: constrainedEndX,
           isActive: true,
           multiTrack: multiTrackData
         });
