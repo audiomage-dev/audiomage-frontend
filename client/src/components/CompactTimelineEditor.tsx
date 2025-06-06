@@ -481,28 +481,45 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         const endTimeWithinClip = (currentRelativeX / clipWidth) * clip.duration;
         const absoluteEndTime = clip.startTime + endTimeWithinClip;
         
-        // Calculate affected tracks and filter by clips in time range
-        const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
-        const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
-        const candidateTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
-        
         const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
         const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
         
-        // Filter tracks that have clips overlapping with the selection time range
-        const affectedTracks = candidateTracks.filter(candidateTrack => {
-          if (!candidateTrack.clips) return false;
-          
-          return candidateTrack.clips.some(trackClip => {
-            const clipStart = trackClip.startTime;
-            const clipEnd = trackClip.startTime + trackClip.duration;
-            
-            // Check if clip overlaps with selection time range
-            return clipStart < selectionEndTime && clipEnd > selectionStartTime;
-          });
-        });
+        // Only enable multi-track selection if user is dragging vertically significantly
+        const verticalDragThreshold = 48; // Half track height
+        const isVerticalDrag = Math.abs(currentTrackIndex - startTrackIndex) > 0 && 
+                              Math.abs(currentY - startY) > verticalDragThreshold;
         
-        // Create multi-track selection
+        let multiTrackData = undefined;
+        
+        if (isVerticalDrag) {
+          // Calculate affected tracks and filter by clips in time range
+          const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
+          const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
+          const candidateTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
+          
+          // Filter tracks that have clips overlapping with the selection time range
+          const affectedTracks = candidateTracks.filter(candidateTrack => {
+            if (!candidateTrack.clips) return false;
+            
+            return candidateTrack.clips.some(trackClip => {
+              const clipStart = trackClip.startTime;
+              const clipEnd = trackClip.startTime + trackClip.duration;
+              
+              // Check if clip overlaps with selection time range
+              return clipStart < selectionEndTime && clipEnd > selectionStartTime;
+            });
+          });
+          
+          if (affectedTracks.length > 1) {
+            multiTrackData = {
+              startTrackIndex: minTrackIndex,
+              endTrackIndex: maxTrackIndex,
+              affectedTracks: affectedTracks.map(t => t.id)
+            };
+          }
+        }
+        
+        // Create selection (single-track by default, multi-track only if vertical drag)
         setClipAreaSelection({
           clipId,
           trackId,
@@ -511,11 +528,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           startX: Math.min(relativeX, currentRelativeX),
           endX: Math.max(relativeX, currentRelativeX),
           isActive: true,
-          multiTrack: affectedTracks.length > 1 ? {
-            startTrackIndex: minTrackIndex,
-            endTrackIndex: maxTrackIndex,
-            affectedTracks: affectedTracks.map(t => t.id)
-          } : undefined
+          multiTrack: multiTrackData
         });
       }
     };
