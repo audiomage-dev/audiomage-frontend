@@ -14,7 +14,7 @@ import { MovableVideoPlayer } from './MovableVideoPlayer';
 import { MediaPreviewPane } from './MediaPreviewPane';
 
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileMusic } from 'lucide-react';
 
 export function AudioWorkstation() {
@@ -78,6 +78,21 @@ export function AudioWorkstation() {
   const [isVideoIndependent, setIsVideoIndependent] = useState(false);
   const [isMiniPlayer, setIsMiniPlayer] = useState(false);
 
+  // Define handler functions with useCallback first
+  const handleZoomIn = useCallback(() => {
+    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
+    setZoomLevel(newZoomLevel);
+  }, [zoomLevel]);
+
+  const handleZoomOut = useCallback(() => {
+    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
+    setZoomLevel(newZoomLevel);
+  }, [zoomLevel]);
+
+  const handleZoomChange = useCallback((newZoomLevel: number) => {
+    setZoomLevel(newZoomLevel);
+  }, []);
+
   // Calculate sidebar container height based on video player height
   useEffect(() => {
     // Use viewport height minus header, video player, and padding to get actual available space
@@ -126,7 +141,7 @@ export function AudioWorkstation() {
     return () => {
       document.removeEventListener('wheel', handleWheel);
     };
-  }, [zoomLevel]);
+  }, [handleZoomIn, handleZoomOut]);
   
 
   
@@ -141,38 +156,24 @@ export function AudioWorkstation() {
     stopMidiPlayback: null,
   });
 
-  const handleMasterVolumeChange = (volume: number) => {
+  const handleMasterVolumeChange = useCallback((volume: number) => {
     setCurrentProject(`${currentProject} - Volume: ${volume}`);
-  };
+  }, [currentProject, setCurrentProject]);
 
-  const handleChannelVolumeChange = (channelId: string, volume: number) => {
+  const handleChannelVolumeChange = useCallback((channelId: string, volume: number) => {
     // Update channel volume logic
     console.log(`Channel ${channelId} volume: ${volume}`);
-  };
+  }, []);
 
-  const handleZoomIn = () => {
-    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
-    setZoomLevel(newZoomLevel);
-  };
-
-  const handleZoomOut = () => {
-    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
-    setZoomLevel(newZoomLevel);
-  };
-
-  const handleZoomChange = (newZoomLevel: number) => {
-    setZoomLevel(newZoomLevel);
-  };
-
-  const handleChannelMute = (channelId: string) => {
+  const handleChannelMute = useCallback((channelId: string) => {
     // Toggle channel mute logic
     console.log(`Toggle mute for channel: ${channelId}`);
-  };
+  }, []);
 
-  const handleChannelSolo = (channelId: string) => {
+  const handleChannelSolo = useCallback((channelId: string) => {
     // Toggle channel solo logic
     console.log(`Toggle solo for channel: ${channelId}`);
-  };
+  }, []);
 
   const handleMoveVideoToIndependentScreen = () => {
     setIsVideoIndependent(true);
