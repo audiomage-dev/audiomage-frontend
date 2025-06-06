@@ -2092,43 +2092,85 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         {/* Master Fader Section */}
         <div className="flex-1 flex flex-col items-center py-2 px-1">
-          {/* Peak Level Indicator */}
-          <div className="w-8 h-12 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm mb-2 relative overflow-hidden">
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-80"
+          {/* Peak Level Indicator - Full Height */}
+          <div className="w-8 flex-1 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm mb-2 relative overflow-hidden min-h-0">
+            {/* Level Meter Background */}
+            <div className="absolute inset-1 bg-black/20 rounded-sm"></div>
+            
+            {/* Active Level Display */}
+            <div className="absolute bottom-1 left-1 right-1 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 rounded-sm"
                  style={{ height: '75%' }}>
             </div>
-            <div className="absolute inset-0 flex flex-col justify-between p-0.5 text-[8px] text-white font-mono">
-              <span>0</span>
-              <span>-6</span>
-              <span>-12</span>
-              <span>-18</span>
-              <span>-∞</span>
+            
+            {/* Peak Hold Indicator */}
+            <div className="absolute left-1 right-1 h-0.5 bg-red-400"
+                 style={{ top: '15%' }}>
+            </div>
+            
+            {/* Scale Markings */}
+            <div className="absolute inset-0 flex flex-col justify-between py-1 text-[7px] text-white font-mono font-bold text-center leading-none">
+              <span className="drop-shadow-sm">0</span>
+              <span className="drop-shadow-sm">-6</span>
+              <span className="drop-shadow-sm">-12</span>
+              <span className="drop-shadow-sm">-18</span>
+              <span className="drop-shadow-sm">-24</span>
+              <span className="drop-shadow-sm">-30</span>
+              <span className="drop-shadow-sm">-∞</span>
+            </div>
+            
+            {/* Scale Tick Marks */}
+            <div className="absolute right-0 top-0 bottom-0 w-1 flex flex-col justify-between py-1">
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
+              <div className="h-px bg-white/40"></div>
             </div>
           </div>
           
           {/* Master Fader */}
-          <div className="flex-1 flex flex-col items-center w-full max-w-8">
-            <div className="flex-1 w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative mx-auto">
+          <div className="w-full flex flex-col items-center mb-2">
+            <div className="h-32 w-6 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative mx-auto">
               {/* Fader Track */}
-              <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1"></div>
+              <div className="absolute inset-x-0 top-1 bottom-1 bg-[var(--muted)] rounded-sm mx-1"></div>
+              
               {/* Fader Handle */}
               <div 
-                className="absolute w-4 h-3 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-sm transform -translate-x-0.5"
+                className="absolute w-5 h-4 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-ns-resize shadow-sm hover:bg-[var(--primary)] transition-colors"
                 style={{ 
                   top: '25%', // 0dB position
                   left: '50%',
-                  transform: 'translateX(-50%)'
+                  transform: 'translateX(-50%)',
+                  zIndex: 10
                 }}
                 title="Master Volume: 0dB"
               ></div>
+              
+              {/* Fader Center Detent */}
+              <div className="absolute left-0 right-0 h-px bg-[var(--primary)]/60"
+                   style={{ top: '25%' }}>
+              </div>
+              
               {/* Fader Scale */}
-              <div className="absolute -right-2 top-0 bottom-0 flex flex-col justify-between text-[8px] text-[var(--muted-foreground)] font-mono py-2">
+              <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[7px] text-[var(--muted-foreground)] font-mono py-1 leading-none">
                 <span>+6</span>
                 <span>0</span>
                 <span>-6</span>
                 <span>-12</span>
                 <span>-18</span>
                 <span>-∞</span>
+              </div>
+              
+              {/* Scale Tick Marks */}
+              <div className="absolute -left-1 top-0 bottom-0 w-1 flex flex-col justify-between py-1">
+                <div className="h-px bg-[var(--muted-foreground)]/40 w-2"></div>
+                <div className="h-px bg-[var(--primary)]/60 w-3"></div> {/* 0dB mark */}
+                <div className="h-px bg-[var(--muted-foreground)]/40 w-2"></div>
+                <div className="h-px bg-[var(--muted-foreground)]/40 w-2"></div>
+                <div className="h-px bg-[var(--muted-foreground)]/40 w-2"></div>
+                <div className="h-px bg-[var(--muted-foreground)]/40 w-2"></div>
               </div>
             </div>
           </div>
