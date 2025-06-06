@@ -60,9 +60,11 @@ interface VerticalSidebarProps {
     size?: number;
   }) => void;
   containerHeight?: number;
+  videoPlayerWidth?: number;
+  availableWidth?: number;
 }
 
-export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSidebarProps = {}) {
+export function VerticalSidebar({ onFileSelect, containerHeight, videoPlayerWidth = 0, availableWidth = 1200 }: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
@@ -71,6 +73,36 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
   const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [collapseLevel, setCollapseLevel] = useState(0);
+
+  // Determine collapse level based on video player size and available space
+  useEffect(() => {
+    const minSidebarWidth = 320; // Minimum width for full sidebar
+    const remainingWidth = availableWidth - videoPlayerWidth;
+    
+    // Calculate collapse level based on available space
+    if (remainingWidth < minSidebarWidth) {
+      // Level 3: Complete collapse to icon-only mode
+      setCollapseLevel(3);
+      setIsExpanded(false);
+      setIsCollapsed(true);
+    } else if (remainingWidth < minSidebarWidth + 100) {
+      // Level 2: Hide content panels, show only buttons
+      setCollapseLevel(2);
+      setIsExpanded(false);
+      setIsCollapsed(false);
+    } else if (remainingWidth < minSidebarWidth + 200) {
+      // Level 1: Compress content panels
+      setCollapseLevel(1);
+      setIsExpanded(true);
+      setIsCollapsed(false);
+    } else {
+      // Level 0: Full expansion
+      setCollapseLevel(0);
+      setIsExpanded(true);
+      setIsCollapsed(false);
+    }
+  }, [videoPlayerWidth, availableWidth]);
 
   // Determine if buttons should collapse based on container height
   useEffect(() => {
@@ -83,13 +115,14 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
                                ((sidebarItems.length - 1) * buttonSpacing) + 
                                paddingAndOtherElements;
       
-      const shouldCollapse = containerHeight < totalNeededHeight;
-      setIsCollapsed(shouldCollapse);
-      if (shouldCollapse && dropdownOpen) {
-        setDropdownOpen(false);
+      const shouldHeightCollapse = containerHeight < totalNeededHeight;
+      
+      // Only update collapse level if it's driven by height constraints
+      if (shouldHeightCollapse && collapseLevel === 0) {
+        setCollapseLevel(2);
       }
     }
-  }, [containerHeight, dropdownOpen]);
+  }, [containerHeight]);
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -389,11 +422,13 @@ export function VerticalSidebar({ onFileSelect, containerHeight }: VerticalSideb
   ];
 
   return (
-    <div className={`${isExpanded ? 'w-full' : 'w-12'} h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
+    <div className={`${
+      collapseLevel >= 2 ? 'w-12' : isExpanded ? 'w-full' : 'w-12'
+    } h-full bg-[var(--background)] border border-[var(--border)] rounded-lg transition-all duration-300 flex`}>
       {/* Sidebar Icons */}
       <div className="w-12 flex flex-col items-center py-2 space-y-1 bg-[var(--background)]">
-        {isCollapsed ? (
-          /* Collapsed: Single dropdown button */
+        {collapseLevel >= 3 ? (
+          /* Level 3: Complete collapse - Single dropdown button */
           <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
