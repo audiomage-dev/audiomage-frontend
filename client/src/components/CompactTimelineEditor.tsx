@@ -42,13 +42,14 @@ interface CompactTimelineEditorProps {
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
+  onTrackExpansionToggle?: (trackId: string) => void;
   onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
   onClipResize?: (clipId: string, trackId: string, newStartTime: number, newDuration: number) => void;
   onZoomChange?: (zoomLevel: number) => void;
   isLocked?: boolean;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onTrackExpansionToggle, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);

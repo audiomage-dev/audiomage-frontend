@@ -47,33 +47,33 @@ export function useAudioWorkstation() {
       );
       
       // Foley parent track with 5 sub-tracks
-      tracks.push({ id: 'foley', name: 'Foley', color: '#F59E0B', type: 'audio', isParent: true, isExpanded: true });
+      tracks.push({ id: 'foley', name: 'Foley', color: '#F59E0B', type: 'audio', isParent: true, isExpanded: false });
       tracks.push(
-        { id: 'foley-footsteps', name: '  └ Footsteps', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-props', name: '  └ Props', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-clothing', name: '  └ Clothing', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-surfaces', name: '  └ Surfaces', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-misc', name: '  └ Miscellaneous', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' }
+        { id: 'foley-footsteps', name: 'Footsteps', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
+        { id: 'foley-props', name: 'Props', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
+        { id: 'foley-clothing', name: 'Clothing', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
+        { id: 'foley-surfaces', name: 'Surfaces', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
+        { id: 'foley-misc', name: 'Miscellaneous', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' }
       );
       
       // Sound Design parent track with 5 sub-tracks
-      tracks.push({ id: 'sound-design', name: 'Sound Design', color: '#8B5CF6', type: 'audio', isParent: true, isExpanded: true });
+      tracks.push({ id: 'sound-design', name: 'Sound Design', color: '#8B5CF6', type: 'audio', isParent: true, isExpanded: false });
       tracks.push(
-        { id: 'sound-design-impacts', name: '  └ Impacts', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-whooshes', name: '  └ Whooshes', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-drones', name: '  └ Drones', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-stingers', name: '  └ Stingers', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-textures', name: '  └ Textures', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' }
+        { id: 'sound-design-impacts', name: 'Impacts', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
+        { id: 'sound-design-whooshes', name: 'Whooshes', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
+        { id: 'sound-design-drones', name: 'Drones', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
+        { id: 'sound-design-stingers', name: 'Stingers', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
+        { id: 'sound-design-textures', name: 'Textures', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' }
       );
       
       // Ambiance parent track with 5 sub-tracks
-      tracks.push({ id: 'ambiance', name: 'Ambiance', color: '#EC4899', type: 'audio', isParent: true, isExpanded: true });
+      tracks.push({ id: 'ambiance', name: 'Ambiance', color: '#EC4899', type: 'audio', isParent: true, isExpanded: false });
       tracks.push(
-        { id: 'ambiance-room-tone', name: '  └ Room Tone', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-nature', name: '  └ Nature', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-urban', name: '  └ Urban', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-interior', name: '  └ Interior', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-crowd', name: '  └ Crowd', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' }
+        { id: 'ambiance-room-tone', name: 'Room Tone', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
+        { id: 'ambiance-nature', name: 'Nature', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
+        { id: 'ambiance-urban', name: 'Urban', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
+        { id: 'ambiance-interior', name: 'Interior', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
+        { id: 'ambiance-crowd', name: 'Crowd', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' }
       );
       
       return tracks;
@@ -482,6 +482,17 @@ export function useAudioWorkstation() {
     );
   }, []);
 
+  // Toggle track expansion for parent tracks
+  const toggleTrackExpansion = useCallback((trackId: string) => {
+    setTracks(prevTracks => 
+      prevTracks.map(track => 
+        track.id === trackId && track.isParent
+          ? { ...track, isExpanded: !track.isExpanded }
+          : track
+      )
+    );
+  }, []);
+
   // Add new session and switch to it
   const addSession = useCallback(() => {
     const newId = (sessions.length + 1).toString();
@@ -547,5 +558,6 @@ export function useAudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
+    toggleTrackExpansion,
   };
 }
