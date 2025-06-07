@@ -226,7 +226,7 @@ export function AudioWorkstation() {
             </div>
             
             {/* Main Control Area - Horizontal Layout */}
-            <div className="flex-1 flex flex-row items-stretch justify-center gap-0.5 w-full px-1">
+            <div className="flex-1 flex flex-row items-stretch justify-center gap-2 w-full px-1">
               
               {/* Stereo Peak Meters - Left and Right Channels */}
               <div className="flex gap-0.5">
@@ -253,17 +253,26 @@ export function AudioWorkstation() {
                 </div>
               </div>
 
-              {/* Interactive Master Fader */}
-              <div className="w-5 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 min-h-0 mx-1">
-                {/* Fader Track */}
-                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-0.5 shadow-inner"></div>
-                {/* Interactive Fader Handle */}
+              {/* Neve-Style Master Fader */}
+              <div className="w-5 relative flex-1 min-h-0">
+                {/* Fader Track - Neve Style */}
+                <div className="absolute inset-x-0 top-2 bottom-2 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900 border border-gray-600 rounded-sm mx-1 shadow-inner">
+                  {/* Track center line */}
+                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-500 transform -translate-x-1/2"></div>
+                  {/* Track markings */}
+                  <div className="absolute left-0 right-0 top-1/4 h-px bg-gray-500"></div>
+                  <div className="absolute left-0 right-0 top-1/2 h-px bg-gray-400"></div>
+                  <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
+                </div>
+                
+                {/* Neve-Style Fader Handle */}
                 <div 
-                  className="absolute w-4 h-3 bg-gradient-to-b from-blue-400 to-blue-600 border border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-4 h-4 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
-                    transform: 'translateX(-50%)'
+                    transform: 'translateX(-50%)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4)'
                   }}
                   title="Master Volume: 0dB"
                   onMouseDown={(e) => {
@@ -272,7 +281,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 12; // 3 * 4px (w-4 h-3)
+                    const handleHeight = 16; // 4 * 4px (w-4 h-4)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -298,7 +307,10 @@ export function AudioWorkstation() {
                     document.addEventListener('mouseup', handleMouseUp);
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
-                ></div>
+                >
+                  {/* Fader cap detail */}
+                  <div className="absolute top-1/2 left-1/2 w-2 h-0.5 bg-gray-200 transform -translate-x-1/2 -translate-y-1/2 rounded-full"></div>
+                </div>
               </div>
 
               {/* Fader Scale - Positioned on the right */}
