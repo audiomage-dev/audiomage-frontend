@@ -276,9 +276,9 @@ export function AudioWorkstation() {
                   <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
                 </div>
                 
-                {/* Neve-Style Fader Handle - Longer */}
+                {/* Red Fader Handle - Double Length */}
                 <div 
-                  className="absolute w-5 h-6 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-5 h-12 bg-gradient-to-b from-red-400 via-red-500 to-red-700 border-2 border-red-600 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -292,7 +292,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 24; // 6 * 4px (w-5 h-6)
+                    const handleHeight = 48; // 12 * 4px (w-5 h-12)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -319,10 +319,12 @@ export function AudioWorkstation() {
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
                 >
-                  {/* Fader cap detail - Multiple lines for longer handle */}
-                  <div className="absolute top-1/4 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
-                  <div className="absolute top-1/2 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
-                  <div className="absolute top-3/4 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
+                  {/* Fader cap detail - Multiple lines for longer red handle */}
+                  <div className="absolute top-1/6 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-1/3 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-2/3 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-5/6 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
                 </div>
               </div>
             </div>
