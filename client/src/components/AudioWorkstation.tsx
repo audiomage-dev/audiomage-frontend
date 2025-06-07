@@ -227,41 +227,88 @@ export function AudioWorkstation() {
             
             {/* Master Controls Container - Horizontal Layout */}
             <div className="flex-1 flex flex-row items-stretch justify-center gap-2 w-full">
-              {/* Peak Meter - Refined */}
-              <div className="w-4 bg-[var(--card)] border border-[var(--border)] rounded relative overflow-hidden shadow-sm">
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
-                     style={{ height: '68%' }}>
+              {/* Stereo Peak Meter - Left and Right Channels */}
+              <div className="flex gap-0.5">
+                {/* Left Channel Meter */}
+                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
+                       style={{ height: '75%' }}>
+                  </div>
+                  {/* Peak hold indicator - Left */}
+                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '25%' }}></div>
+                  {/* Channel label */}
+                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">L</div>
                 </div>
-                {/* Meter markings - Cleaner */}
-                <div className="absolute inset-0 flex flex-col justify-between text-[6px] text-white font-mono font-bold p-0.5">
-                  <span className="text-center bg-black/80 rounded px-0.5">0</span>
-                  <span className="text-center bg-black/80 rounded px-0.5">-6</span>
-                  <span className="text-center bg-black/80 rounded px-0.5">-12</span>
-                  <span className="text-center bg-black/80 rounded px-0.5">-∞</span>
+                
+                {/* Right Channel Meter */}
+                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
+                       style={{ height: '68%' }}>
+                  </div>
+                  {/* Peak hold indicator - Right */}
+                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '32%' }}></div>
+                  {/* Channel label */}
+                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">R</div>
                 </div>
-                {/* Peak hold indicator - More visible */}
-                <div className="absolute w-full h-0.5 bg-red-300 shadow-md" style={{ top: '32%' }}></div>
+                
+                {/* Meter Scale */}
+                <div className="ml-1 flex flex-col justify-between text-[5px] text-[var(--muted-foreground)] font-mono font-medium py-1">
+                  <span>0</span>
+                  <span>-6</span>
+                  <span>-12</span>
+                  <span>-24</span>
+                  <span>-∞</span>
+                </div>
               </div>
               
-              {/* Master Fader - Refined */}
+              {/* Interactive Master Fader */}
               <div className="w-5 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm">
-                {/* Fader Track - Cleaner */}
+                {/* Fader Track */}
                 <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1 shadow-inner"></div>
-                {/* Fader Handle - More defined */}
+                {/* Interactive Fader Handle */}
                 <div 
-                  className="absolute w-4 h-4 bg-gradient-to-b from-[var(--card)] to-[var(--muted)] border-2 border-[var(--border)] rounded cursor-pointer shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  className="absolute w-4 h-4 bg-gradient-to-b from-[var(--card)] to-[var(--muted)] border-2 border-[var(--border)] rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
                     transform: 'translateX(-50%)'
                   }}
                   title="Master Volume: 0dB"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    const faderContainer = e.currentTarget.parentElement;
+                    const startY = e.clientY;
+                    const startTop = parseFloat(e.currentTarget.style.top);
+                    
+                    const handleMouseMove = (moveEvent: MouseEvent) => {
+                      const deltaY = moveEvent.clientY - startY;
+                      const containerHeight = faderContainer!.clientHeight - 16; // Subtract handle height
+                      const newTop = Math.max(4, Math.min(containerHeight - 4, startTop + (deltaY / containerHeight) * 100));
+                      e.currentTarget.style.top = newTop + '%';
+                      
+                      // Calculate dB value (inverted because top = higher volume)
+                      const volumePercent = (containerHeight - newTop) / containerHeight;
+                      const dbValue = -60 + (volumePercent * 66); // -60dB to +6dB range
+                      e.currentTarget.title = `Master Volume: ${dbValue.toFixed(1)}dB`;
+                    };
+                    
+                    const handleMouseUp = () => {
+                      document.removeEventListener('mousemove', handleMouseMove);
+                      document.removeEventListener('mouseup', handleMouseUp);
+                      e.currentTarget.style.cursor = 'grab';
+                    };
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                    e.currentTarget.style.cursor = 'grabbing';
+                  }}
                 ></div>
-                {/* Fader Scale - Better positioned */}
+                {/* Fader Scale */}
                 <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--muted-foreground)] font-mono font-medium py-2">
                   <span>+6</span>
                   <span>0</span>
                   <span>-6</span>
+                  <span>-12</span>
                   <span>-∞</span>
                 </div>
               </div>
