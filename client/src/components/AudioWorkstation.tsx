@@ -267,7 +267,7 @@ export function AudioWorkstation() {
                 <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1 shadow-inner"></div>
                 {/* Interactive Fader Handle */}
                 <div 
-                  className="absolute w-4 h-4 bg-gradient-to-b from-[var(--card)] to-[var(--muted)] border-2 border-[var(--border)] rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-4 h-4 bg-gradient-to-b from-blue-400 to-blue-600 border-2 border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -277,17 +277,21 @@ export function AudioWorkstation() {
                   onMouseDown={(e) => {
                     e.preventDefault();
                     const faderContainer = e.currentTarget.parentElement;
-                    const startY = e.clientY;
-                    const startTop = parseFloat(e.currentTarget.style.top);
+                    if (!faderContainer) return;
+                    
+                    const containerRect = faderContainer.getBoundingClientRect();
+                    const handleHeight = 16; // 4 * 4px (w-4 h-4)
+                    const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
-                      const deltaY = moveEvent.clientY - startY;
-                      const containerHeight = faderContainer!.clientHeight - 16; // Subtract handle height
-                      const newTop = Math.max(4, Math.min(containerHeight - 4, startTop + (deltaY / containerHeight) * 100));
-                      e.currentTarget.style.top = newTop + '%';
+                      const relativeY = moveEvent.clientY - containerRect.top - 8; // Subtract top padding
+                      const clampedY = Math.max(0, Math.min(trackHeight - handleHeight, relativeY));
+                      const topPercent = (clampedY / (trackHeight - handleHeight)) * 100;
+                      
+                      e.currentTarget.style.top = topPercent + '%';
                       
                       // Calculate dB value (inverted because top = higher volume)
-                      const volumePercent = (containerHeight - newTop) / containerHeight;
+                      const volumePercent = 1 - (topPercent / 100);
                       const dbValue = -60 + (volumePercent * 66); // -60dB to +6dB range
                       e.currentTarget.title = `Master Volume: ${dbValue.toFixed(1)}dB`;
                     };
