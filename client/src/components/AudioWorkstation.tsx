@@ -217,7 +217,7 @@ export function AudioWorkstation() {
         <div className="flex-1 flex min-w-0">
           {/* Master Fader Panel - Between video player and tracks */}
           <div 
-            className="w-16 bg-[var(--background)] border-r border-b border-[var(--border)] flex flex-col items-center py-3 px-2"
+            className="w-24 bg-[var(--background)] border-r border-b border-[var(--border)] flex flex-col items-center py-3 px-3"
             style={{ height: videoPlayerSize.height + 16 + 'px' }}
           >
             {/* Master Label */}
