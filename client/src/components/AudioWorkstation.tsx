@@ -226,37 +226,40 @@ export function AudioWorkstation() {
             </div>
             
             {/* Main Control Area - Horizontal Layout */}
-            <div className="flex-1 flex flex-row items-stretch justify-center gap-1 w-full px-1">
+            <div className="flex-1 flex flex-row items-stretch justify-center gap-0.5 w-full px-1">
               
-              {/* Single Peak Meter - Narrow */}
-              <div className="flex flex-col items-center flex-1">
-                <div className="w-3 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm flex-1 min-h-0">
-                  {/* Combined stereo level display */}
+              {/* Stereo Peak Meters - Left and Right Channels */}
+              <div className="flex gap-0.5">
+                {/* Left Channel Meter */}
+                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm flex-1 min-h-0">
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
-                       style={{ height: '72%' }}>
+                       style={{ height: '75%' }}>
                   </div>
-                  {/* Peak hold indicator */}
-                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '28%' }}></div>
-                  {/* Meter label */}
-                  <div className="absolute bottom-0 w-full text-center text-[5px] text-white font-bold bg-black/60">M</div>
+                  {/* Peak hold indicator - Left */}
+                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '25%' }}></div>
+                  {/* Channel label */}
+                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">L</div>
                 </div>
                 
-                {/* Meter Scale - Compact */}
-                <div className="flex flex-col justify-between text-[5px] text-[var(--foreground)] font-mono font-bold py-1 bg-[var(--background)]/80 rounded px-0.5 mt-1 leading-none">
-                  <span className="text-red-500 text-center">0</span>
-                  <span className="text-yellow-600 text-center">-6</span>
-                  <span className="text-green-600 text-center">-12</span>
-                  <span className="text-gray-500 text-center">-∞</span>
+                {/* Right Channel Meter */}
+                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm flex-1 min-h-0">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
+                       style={{ height: '68%' }}>
+                  </div>
+                  {/* Peak hold indicator - Right */}
+                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '32%' }}></div>
+                  {/* Channel label */}
+                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">R</div>
                 </div>
               </div>
 
-              {/* Interactive Master Fader - Narrow */}
-              <div className="w-4 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 min-h-0">
+              {/* Interactive Master Fader */}
+              <div className="w-5 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 min-h-0 mx-1">
                 {/* Fader Track */}
                 <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-0.5 shadow-inner"></div>
                 {/* Interactive Fader Handle */}
                 <div 
-                  className="absolute w-3 h-3 bg-gradient-to-b from-blue-400 to-blue-600 border border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-4 h-3 bg-gradient-to-b from-blue-400 to-blue-600 border border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -269,7 +272,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 12; // 3 * 4px (w-3 h-3)
+                    const handleHeight = 12; // 3 * 4px (w-4 h-3)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
