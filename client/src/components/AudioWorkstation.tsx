@@ -221,53 +221,42 @@ export function AudioWorkstation() {
             style={{ height: videoPlayerSize.height + 16 + 'px' }}
           >
             {/* Master Label */}
-            <div className="text-center mb-3">
+            <div className="text-center mb-2">
               <span className="text-[9px] font-bold text-[var(--foreground)] tracking-widest">MASTER</span>
             </div>
             
-            {/* Master Controls Container - Horizontal Layout */}
-            <div className="flex-1 flex flex-row items-stretch justify-center gap-2 w-full">
-              {/* Stereo Peak Meter - Left and Right Channels */}
-              <div className="flex gap-0.5">
-                {/* Left Channel Meter */}
-                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm">
+            {/* Main Control Area */}
+            <div className="flex-1 flex flex-col items-center justify-between w-full">
+              
+              {/* Single Peak Meter - Stereo Combined */}
+              <div className="flex flex-col items-center mb-2">
+                <div className="w-6 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm" style={{ height: '60px' }}>
+                  {/* Combined stereo level display */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
-                       style={{ height: '75%' }}>
+                       style={{ height: '72%' }}>
                   </div>
-                  {/* Peak hold indicator - Left */}
-                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '25%' }}></div>
-                  {/* Channel label */}
-                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">L</div>
-                </div>
-                
-                {/* Right Channel Meter */}
-                <div className="w-2 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm">
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
-                       style={{ height: '68%' }}>
-                  </div>
-                  {/* Peak hold indicator - Right */}
-                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '32%' }}></div>
-                  {/* Channel label */}
-                  <div className="absolute bottom-0 w-full text-center text-[4px] text-white font-bold bg-black/60">R</div>
+                  {/* Peak hold indicator */}
+                  <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '28%' }}></div>
+                  {/* Meter label */}
+                  <div className="absolute bottom-0 w-full text-center text-[6px] text-white font-bold bg-black/60">MAIN</div>
                 </div>
                 
                 {/* Meter Scale */}
-                <div className="ml-1 flex flex-col justify-between text-[7px] text-[var(--foreground)] font-mono font-bold py-1 bg-[var(--background)]/80 rounded px-1">
-                  <span className="text-red-500">0</span>
-                  <span className="text-yellow-600">-6</span>
-                  <span className="text-green-600">-12</span>
-                  <span className="text-green-700">-24</span>
-                  <span className="text-gray-500">-∞</span>
+                <div className="flex flex-col justify-between text-[6px] text-[var(--foreground)] font-mono font-bold py-1 bg-[var(--background)]/80 rounded px-1 mt-1">
+                  <span className="text-red-500 text-center">0</span>
+                  <span className="text-yellow-600 text-center">-6</span>
+                  <span className="text-green-600 text-center">-12</span>
+                  <span className="text-gray-500 text-center">-∞</span>
                 </div>
               </div>
-              
+
               {/* Interactive Master Fader */}
-              <div className="w-5 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm">
+              <div className="w-8 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 mx-1">
                 {/* Fader Track */}
                 <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1 shadow-inner"></div>
                 {/* Interactive Fader Handle */}
                 <div 
-                  className="absolute w-4 h-4 bg-gradient-to-b from-blue-400 to-blue-600 border-2 border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-6 h-4 bg-gradient-to-b from-blue-400 to-blue-600 border-2 border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -308,7 +297,7 @@ export function AudioWorkstation() {
                   }}
                 ></div>
                 {/* Fader Scale */}
-                <div className="absolute -right-4 top-0 bottom-0 flex flex-col justify-between text-[7px] text-[var(--foreground)] font-mono font-bold py-2 bg-[var(--background)]/80 rounded px-1">
+                <div className="absolute -right-6 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--foreground)] font-mono font-bold py-2 bg-[var(--background)]/80 rounded px-1">
                   <span className="text-red-500">+6</span>
                   <span className="text-green-600">0</span>
                   <span className="text-yellow-600">-6</span>
