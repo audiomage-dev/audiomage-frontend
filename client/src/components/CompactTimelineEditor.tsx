@@ -2381,20 +2381,35 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               width={getTimelineWidth()}
               height={tracks.length * 64}
             />
-            {tracks.map((track, index) => (
-              <div
-                key={`track-timeline-${track.id}-${index}`}
-                className={`absolute left-0 right-0 h-16 transition-colors ${
-                  selectedTrackIds.includes(track.id) 
-                    ? 'bg-[var(--accent)]/20' 
-                    : draggingClip && draggingClip.currentTrackIndex === index
-                      ? 'bg-[var(--primary)]/20 border-2 border-[var(--primary)] border-dashed'
-                      : 'hover:bg-[var(--muted)]/20'
-                }`}
-                style={{ top: `${index * 64}px` }}
-                onClick={(e) => handleTrackSelect(track.id, e)}
-                onContextMenu={(e) => handleTrackRightClick(e, track.id)}
-              >
+            {tracks.map((track, index) => {
+              // Convert track color to rgba with 20% opacity
+              const getTrackBackgroundColor = (color: string) => {
+                // Remove # if present
+                const hex = color.replace('#', '');
+                // Convert hex to rgb
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                return `rgba(${r}, ${g}, ${b}, 0.2)`;
+              };
+
+              return (
+                <div
+                  key={`track-timeline-${track.id}-${index}`}
+                  className={`absolute left-0 right-0 h-16 transition-colors ${
+                    selectedTrackIds.includes(track.id) 
+                      ? 'border-2 border-[var(--primary)]' 
+                      : draggingClip && draggingClip.currentTrackIndex === index
+                        ? 'border-2 border-[var(--primary)] border-dashed'
+                        : 'hover:brightness-110'
+                  }`}
+                  style={{ 
+                    top: `${index * 64}px`,
+                    backgroundColor: getTrackBackgroundColor(track.color)
+                  }}
+                  onClick={(e) => handleTrackSelect(track.id, e)}
+                  onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                >
                 {/* Audio Clips */}
                 <div 
                   className="h-full relative cursor-crosshair"
@@ -2593,7 +2608,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   )}
                 </div>
               </div>
-            ))}
+            );
+            })}
             
             {/* Multi-track Selection Box */}
             {multiSelection && multiSelection.isActive && (
