@@ -2158,14 +2158,25 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     key={`track-group-${track.id}`}
                     className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
                       allGroupTracks.some(t => selectedTrackIds.includes(t.id))
-                        ? 'bg-[var(--accent)] border-l-[var(--primary)]' 
-                        : 'hover:bg-[var(--accent)]/50'
+                        ? 'border-l-[var(--primary)]' 
+                        : 'hover:brightness-110'
                     }`}
                     style={{ 
                       height: `${groupHeight}px`,
                       borderLeftColor: allGroupTracks.some(t => selectedTrackIds.includes(t.id)) 
                         ? 'var(--primary)' 
-                        : track.color
+                        : track.color,
+                      backgroundColor: (() => {
+                        if (allGroupTracks.some(t => selectedTrackIds.includes(t.id))) {
+                          return 'var(--accent)';
+                        }
+                        // Convert track color to rgba with 10% opacity
+                        const hex = track.color.replace('#', '');
+                        const r = parseInt(hex.substr(0, 2), 16);
+                        const g = parseInt(hex.substr(2, 2), 16);
+                        const b = parseInt(hex.substr(4, 2), 16);
+                        return `rgba(${r}, ${g}, ${b}, 0.1)`;
+                      })()
                     }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
@@ -2235,13 +2246,24 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     key={`track-sidebar-${track.id}-${i}`}
                     className={`h-16 border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
                       selectedTrackIds.includes(track.id) 
-                        ? 'bg-[var(--accent)] border-l-[var(--primary)]' 
-                        : 'hover:bg-[var(--accent)]/50'
+                        ? 'border-l-[var(--primary)]' 
+                        : 'hover:brightness-110'
                     }`}
                     style={{ 
                       borderLeftColor: selectedTrackIds.includes(track.id) 
                         ? 'var(--primary)' 
-                        : track.color
+                        : track.color,
+                      backgroundColor: (() => {
+                        if (selectedTrackIds.includes(track.id)) {
+                          return 'var(--accent)';
+                        }
+                        // Convert track color to rgba with 10% opacity
+                        const hex = track.color.replace('#', '');
+                        const r = parseInt(hex.substr(0, 2), 16);
+                        const g = parseInt(hex.substr(2, 2), 16);
+                        const b = parseInt(hex.substr(4, 2), 16);
+                        return `rgba(${r}, ${g}, ${b}, 0.1)`;
+                      })()
                     }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
