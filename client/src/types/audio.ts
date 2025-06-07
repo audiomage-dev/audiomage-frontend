@@ -23,6 +23,8 @@ export interface AudioTrack {
   color: string;
   clips: AudioClip[];
   effects: AudioEffect[];
+  isGroup?: boolean;
+  parentId?: string;
 }
 
 export interface AudioEffect {
