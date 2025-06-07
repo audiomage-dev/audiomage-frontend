@@ -254,9 +254,9 @@ export function AudioWorkstation() {
               </div>
 
               {/* Neve-Style Master Fader */}
-              <div className="w-5 relative flex-1 min-h-0">
+              <div className="w-6 relative flex-1 min-h-0">
                 {/* Fader Track - Neve Style */}
-                <div className="absolute inset-x-0 top-2 bottom-2 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900 border border-gray-600 rounded-sm mx-1 shadow-inner">
+                <div className="absolute left-1/2 top-2 bottom-2 w-1 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900 border border-gray-600 rounded-sm transform -translate-x-1/2 shadow-inner">
                   {/* Track center line */}
                   <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-500 transform -translate-x-1/2"></div>
                   {/* Track markings */}
@@ -265,9 +265,9 @@ export function AudioWorkstation() {
                   <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
                 </div>
                 
-                {/* Neve-Style Fader Handle */}
+                {/* Neve-Style Fader Handle - Longer */}
                 <div 
-                  className="absolute w-4 h-4 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-5 h-6 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -281,7 +281,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 16; // 4 * 4px (w-4 h-4)
+                    const handleHeight = 24; // 6 * 4px (w-5 h-6)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -308,8 +308,10 @@ export function AudioWorkstation() {
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
                 >
-                  {/* Fader cap detail */}
-                  <div className="absolute top-1/2 left-1/2 w-2 h-0.5 bg-gray-200 transform -translate-x-1/2 -translate-y-1/2 rounded-full"></div>
+                  {/* Fader cap detail - Multiple lines for longer handle */}
+                  <div className="absolute top-1/4 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
+                  <div className="absolute top-3/4 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
                 </div>
               </div>
 
