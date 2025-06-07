@@ -2134,65 +2134,165 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         </div>
         
         <div className="flex-1 overflow-auto scrollbar-thin" ref={tracksRef}>
-          {tracks.map((track, index) => (
-            <div
-              key={`track-sidebar-${track.id}-${index}`}
-              className={`h-16 border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
-                selectedTrackIds.includes(track.id) 
-                  ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
-                  : 'hover:bg-[var(--accent)]/50'
-              }`}
-              onClick={(e) => handleTrackSelect(track.id, e)}
-              onContextMenu={(e) => handleTrackRightClick(e, track.id)}
-            >
-              <div className="flex items-center justify-between min-w-0 mb-1">
-                <div className="flex items-center space-x-2 min-w-0">
-                  <div 
-                    className="w-2 h-2 rounded-sm flex-shrink-0" 
-                    style={{ backgroundColor: track.color }}
-                  ></div>
-                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                    {track.name}
-                  </span>
-                  {track.type === 'ai-generated' && (
-                    <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onTrackMute(track.id);
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                    track.muted 
-                      ? 'bg-[var(--red)] text-white border-white/40' 
-                      : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                  }`}
-                >
-                  M
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onTrackSolo(track.id);
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                    track.soloed 
-                      ? 'bg-[var(--yellow)] text-black border-white/40' 
-                      : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                  }`}
-                >
-                  S
-                </Button>
-              </div>
-            </div>
-          ))}
+          {(() => {
+            const renderedTracks: JSX.Element[] = [];
+            let i = 0;
+            
+            while (i < tracks.length) {
+              const track = tracks[i];
+              
+              // Check if this is a parent track with children
+              const isParentTrack = track.isGroup && !track.parentId;
+              
+              if (isParentTrack) {
+                // Find all child tracks
+                const childTracks = tracks.filter(t => t.parentId === track.id);
+                const allGroupTracks = [track, ...childTracks];
+                
+                // Calculate total height for the group
+                const groupHeight = allGroupTracks.length * 64; // 64px per track (h-16 = 4rem = 64px)
+                
+                // Render single container for the entire group
+                renderedTracks.push(
+                  <div
+                    key={`track-group-${track.id}`}
+                    className={`border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
+                      allGroupTracks.some(t => selectedTrackIds.includes(t.id))
+                        ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
+                        : 'hover:bg-[var(--accent)]/50'
+                    }`}
+                    style={{ height: `${groupHeight}px` }}
+                    onClick={(e) => handleTrackSelect(track.id, e)}
+                    onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                  >
+                    {/* Parent track header positioned in the middle of the group */}
+                    <div 
+                      className="flex items-center justify-between min-w-0"
+                      style={{ 
+                        height: '100%',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <div 
+                          className="w-2 h-2 rounded-sm flex-shrink-0" 
+                          style={{ backgroundColor: track.color }}
+                        ></div>
+                        <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                          {track.name}
+                        </span>
+                        {track.type === 'ai-generated' && (
+                          <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackMute(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.muted 
+                              ? 'bg-[var(--red)] text-white border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          M
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackSolo(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.soloed 
+                              ? 'bg-[var(--yellow)] text-black border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          S
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+                
+                // Skip all tracks in this group
+                i += allGroupTracks.length;
+              } else if (!track.parentId) {
+                // Regular track (not grouped)
+                renderedTracks.push(
+                  <div
+                    key={`track-sidebar-${track.id}-${i}`}
+                    className={`h-16 border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
+                      selectedTrackIds.includes(track.id) 
+                        ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
+                        : 'hover:bg-[var(--accent)]/50'
+                    }`}
+                    onClick={(e) => handleTrackSelect(track.id, e)}
+                    onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                  >
+                    <div className="flex items-center justify-between min-w-0 mb-1">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <div 
+                          className="w-2 h-2 rounded-sm flex-shrink-0" 
+                          style={{ backgroundColor: track.color }}
+                        ></div>
+                        <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                          {track.name}
+                        </span>
+                        {track.type === 'ai-generated' && (
+                          <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTrackMute(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                          track.muted 
+                            ? 'bg-[var(--red)] text-white border-white/40' 
+                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                        }`}
+                      >
+                        M
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTrackSolo(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                          track.soloed 
+                            ? 'bg-[var(--yellow)] text-black border-white/40' 
+                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                        }`}
+                      >
+                        S
+                      </Button>
+                    </div>
+                  </div>
+                );
+                i++;
+              } else {
+                // Skip child tracks as they're handled by their parent
+                i++;
+              }
+            }
+            
+            return renderedTracks;
+          })()}
         </div>
       </div>
 

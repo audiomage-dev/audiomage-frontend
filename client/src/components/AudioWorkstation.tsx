@@ -135,23 +135,17 @@ export function AudioWorkstation() {
 
   // Create AI analysis with required properties
   const aiAnalysisData = {
-    isAnalyzing: false,
-    results: {
-      peakLevels: { left: 0.75, right: 0.68 },
-      dynamicRange: 12.5,
-      frequencyBalance: { low: 0.32, mid: 0.45, high: 0.23 },
-      suggestedBpm: 120,
-      keyDetection: 'C Major',
-      stereoWidth: 85,
-      phase: 'Good',
-      snr: 48.2,
-      thd: 0.003
-    },
-    spectralData: [],
+    spectralData: [10, 25, 40, 35, 60, 45, 30, 55, 70, 85, 75, 90, 80, 65, 50, 40, 30, 20, 15, 10],
     peakFrequency: 440,
-    recommendations: [],
+    recommendations: [
+      "Apply 3dB cut at 2.4kHz",
+      "Increase reverb send by 15%", 
+      "Consider parallel compression",
+      "Add subtle harmonic enhancement"
+    ],
     lufs: -14.2,
-    truePeak: -1.2
+    peak: -1.2,
+    isProcessing: false
   };
 
   return (
