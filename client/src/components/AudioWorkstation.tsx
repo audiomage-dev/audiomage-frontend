@@ -16,6 +16,7 @@ import { MediaPreviewPane } from './MediaPreviewPane';
 import { useAudioWorkstation } from '../hooks/useAudioWorkstation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileMusic } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function AudioWorkstation() {
   const {
@@ -297,8 +298,85 @@ export function AudioWorkstation() {
             isVisible={!!selectedMediaFile}
           />
           
+          {/* Master Fader Panel - Between video player and transport */}
+          <div className="flex-none flex">
+            <div 
+              className="w-20 bg-[var(--muted)]/10 border-b border-[var(--border)] flex flex-col items-center py-3 px-2"
+              style={{ height: videoPlayerSize.height + 'px' }}
+            >
+              {/* Master Label */}
+              <div className="text-center mb-3">
+                <span className="text-xs font-semibold text-[var(--muted-foreground)] tracking-wider">MASTER</span>
+              </div>
+              
+              {/* Master Controls Container */}
+              <div className="flex-1 flex flex-col items-center gap-3 w-full">
+                {/* Peak Meter */}
+                <div className="w-6 flex-1 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden min-h-[200px]">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-90"
+                       style={{ height: '75%' }}>
+                  </div>
+                  {/* Meter markings */}
+                  <div className="absolute inset-0 flex flex-col justify-between text-[6px] text-white font-mono font-bold p-0.5">
+                    <span className="text-center bg-black/60 rounded px-0.5">0</span>
+                    <span className="text-center bg-black/60 rounded px-0.5">-6</span>
+                    <span className="text-center bg-black/60 rounded px-0.5">-12</span>
+                    <span className="text-center bg-black/60 rounded px-0.5">-18</span>
+                    <span className="text-center bg-black/60 rounded px-0.5">-∞</span>
+                  </div>
+                  {/* Peak hold indicator */}
+                  <div className="absolute w-full h-0.5 bg-red-400 shadow-sm" style={{ top: '25%' }}></div>
+                </div>
+                
+                {/* Master Fader */}
+                <div className="w-8 flex-1 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative min-h-[200px]">
+                  {/* Fader Track */}
+                  <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1"></div>
+                  {/* Fader Handle */}
+                  <div 
+                    className="absolute w-6 h-4 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-md hover:shadow-lg transition-shadow"
+                    style={{ 
+                      top: '25%', // 0dB position
+                      left: '50%',
+                      transform: 'translateX(-50%)'
+                    }}
+                    title="Master Volume: 0dB"
+                  ></div>
+                  {/* Fader Scale */}
+                  <div className="absolute -right-4 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--muted-foreground)] font-mono py-2">
+                    <span>+6</span>
+                    <span>0</span>
+                    <span>-6</span>
+                    <span>-12</span>
+                    <span>-18</span>
+                    <span>-∞</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bottom Controls */}
+              <div className="flex flex-col gap-2 mt-3 items-center">
+                {/* Mute Button */}
+                <button
+                  className="h-6 w-12 p-0 rounded text-[8px] border border-white/20 hover:bg-[var(--accent)] opacity-80 font-bold bg-transparent text-[var(--foreground)] cursor-pointer transition-colors"
+                  title="Master Mute"
+                >
+                  MUTE
+                </button>
+                
+                {/* Level Display */}
+                <div className="text-center bg-[var(--muted)]/30 rounded px-2 py-1">
+                  <div className="text-[8px] font-mono text-[var(--foreground)] font-bold">
+                    -2.3dB
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Spacer to push transport bar */}
+            <div className="flex-1"></div>
+          </div>
 
-          
           {/* Transport Bar */}
           <div className="flex-none">
             <CompactTransportBar
