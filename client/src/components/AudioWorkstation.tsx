@@ -276,9 +276,9 @@ export function AudioWorkstation() {
                   <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
                 </div>
                 
-                {/* Red Fader Handle - Compact */}
+                {/* Red Fader Handle - Clean */}
                 <div 
-                  className="absolute w-5 h-6 bg-gradient-to-b from-red-400 via-red-500 to-red-700 border-2 border-red-600 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-5 h-8 bg-gradient-to-b from-red-400 via-red-500 to-red-700 border-2 border-red-600 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -292,7 +292,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 24; // 6 * 4px (w-5 h-6)
+                    const handleHeight = 32; // 8 * 4px (w-5 h-8)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -318,12 +318,7 @@ export function AudioWorkstation() {
                     document.addEventListener('mouseup', handleMouseUp);
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
-                >
-                  {/* Fader cap detail - Compact red handle */}
-                  <div className="absolute top-1/4 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
-                  <div className="absolute top-1/2 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
-                  <div className="absolute top-3/4 left-1/2 w-3 h-0.5 bg-red-200 transform -translate-x-1/2 rounded-full"></div>
-                </div>
+                ></div>
               </div>
             </div>
             
