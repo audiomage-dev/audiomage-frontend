@@ -217,48 +217,48 @@ export function AudioWorkstation() {
         <div className="flex-1 flex min-w-0">
           {/* Master Fader Panel - Between video player and tracks */}
           <div 
-            className="w-16 bg-[var(--muted)]/10 border-r border-[var(--border)] flex flex-col items-center py-2 px-1"
-            style={{ height: videoPlayerSize.height + 'px' }}
+            className="w-16 bg-[var(--background)] border-r border-b border-[var(--border)] flex flex-col items-center py-3 px-2"
+            style={{ height: videoPlayerSize.height + 16 + 'px' }}
           >
             {/* Master Label */}
-            <div className="text-center mb-2">
-              <span className="text-[8px] font-semibold text-[var(--muted-foreground)] tracking-wider">MST</span>
+            <div className="text-center mb-3">
+              <span className="text-[9px] font-bold text-[var(--foreground)] tracking-widest">MASTER</span>
             </div>
             
             {/* Master Controls Container - Horizontal Layout */}
-            <div className="flex-1 flex flex-row items-stretch justify-center gap-1 w-full">
-              {/* Peak Meter - Narrow */}
-              <div className="w-3 bg-[var(--muted)]/40 border border-[var(--border)] rounded-sm relative overflow-hidden">
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-yellow-500 to-red-500 opacity-90"
-                     style={{ height: '75%' }}>
+            <div className="flex-1 flex flex-row items-stretch justify-center gap-2 w-full">
+              {/* Peak Meter - Refined */}
+              <div className="w-4 bg-[var(--card)] border border-[var(--border)] rounded relative overflow-hidden shadow-sm">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
+                     style={{ height: '68%' }}>
                 </div>
-                {/* Meter markings */}
-                <div className="absolute inset-0 flex flex-col justify-between text-[5px] text-white font-mono font-bold p-px">
-                  <span className="text-center bg-black/60 rounded">0</span>
-                  <span className="text-center bg-black/60 rounded">-6</span>
-                  <span className="text-center bg-black/60 rounded">-12</span>
-                  <span className="text-center bg-black/60 rounded">-∞</span>
+                {/* Meter markings - Cleaner */}
+                <div className="absolute inset-0 flex flex-col justify-between text-[6px] text-white font-mono font-bold p-0.5">
+                  <span className="text-center bg-black/80 rounded px-0.5">0</span>
+                  <span className="text-center bg-black/80 rounded px-0.5">-6</span>
+                  <span className="text-center bg-black/80 rounded px-0.5">-12</span>
+                  <span className="text-center bg-black/80 rounded px-0.5">-∞</span>
                 </div>
-                {/* Peak hold indicator */}
-                <div className="absolute w-full h-px bg-red-400 shadow-sm" style={{ top: '25%' }}></div>
+                {/* Peak hold indicator - More visible */}
+                <div className="absolute w-full h-0.5 bg-red-300 shadow-md" style={{ top: '32%' }}></div>
               </div>
               
-              {/* Master Fader - Narrow */}
-              <div className="w-4 bg-[var(--muted)]/40 border border-[var(--border)] rounded-full relative">
-                {/* Fader Track */}
-                <div className="absolute inset-x-0 top-1 bottom-1 bg-[var(--muted)] rounded-full mx-0.5"></div>
-                {/* Fader Handle */}
+              {/* Master Fader - Refined */}
+              <div className="w-5 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm">
+                {/* Fader Track - Cleaner */}
+                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1 shadow-inner"></div>
+                {/* Fader Handle - More defined */}
                 <div 
-                  className="absolute w-3 h-3 bg-[var(--foreground)] border border-[var(--border)] rounded-sm cursor-pointer shadow-md hover:shadow-lg transition-shadow"
+                  className="absolute w-4 h-4 bg-gradient-to-b from-[var(--card)] to-[var(--muted)] border-2 border-[var(--border)] rounded cursor-pointer shadow-lg hover:shadow-xl transition-all hover:scale-105"
                   style={{ 
                     top: '25%',
                     left: '50%',
                     transform: 'translateX(-50%)'
                   }}
-                  title="Master: 0dB"
+                  title="Master Volume: 0dB"
                 ></div>
-                {/* Fader Scale */}
-                <div className="absolute -right-2 top-0 bottom-0 flex flex-col justify-between text-[5px] text-[var(--muted-foreground)] font-mono py-1">
+                {/* Fader Scale - Better positioned */}
+                <div className="absolute -right-3 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--muted-foreground)] font-mono font-medium py-2">
                   <span>+6</span>
                   <span>0</span>
                   <span>-6</span>
@@ -267,20 +267,20 @@ export function AudioWorkstation() {
               </div>
             </div>
             
-            {/* Bottom Controls */}
-            <div className="flex flex-col gap-1 mt-2 items-center">
-              {/* Mute Button */}
+            {/* Bottom Controls - Refined */}
+            <div className="flex flex-col gap-2 mt-3 items-center">
+              {/* Mute Button - More prominent */}
               <button
-                className="h-4 w-6 p-0 rounded text-[6px] border border-white/20 hover:bg-[var(--accent)] opacity-80 font-bold bg-transparent text-[var(--foreground)] cursor-pointer transition-colors"
+                className="h-5 w-8 p-0 rounded text-[7px] border border-[var(--border)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] font-bold bg-[var(--card)] text-[var(--foreground)] cursor-pointer transition-all shadow-sm hover:shadow-md"
                 title="Master Mute"
               >
-                M
+                MUTE
               </button>
               
-              {/* Level Display */}
-              <div className="text-center">
-                <div className="text-[6px] font-mono text-[var(--foreground)] font-bold">
-                  -2.3
+              {/* Level Display - Cleaner */}
+              <div className="text-center bg-[var(--card)] rounded px-2 py-1 border border-[var(--border)] shadow-sm">
+                <div className="text-[7px] font-mono text-[var(--foreground)] font-bold">
+                  -2.3dB
                 </div>
               </div>
             </div>
