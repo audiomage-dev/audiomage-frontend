@@ -2382,7 +2382,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               height={tracks.length * 64}
             />
             {tracks.map((track, index) => {
-              // Convert track color to rgba with 20% opacity
+              // Convert track color to rgba with 5% opacity
               const getTrackBackgroundColor = (color: string) => {
                 // Remove # if present
                 const hex = color.replace('#', '');
@@ -2390,7 +2390,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 const r = parseInt(hex.substr(0, 2), 16);
                 const g = parseInt(hex.substr(2, 2), 16);
                 const b = parseInt(hex.substr(4, 2), 16);
-                return `rgba(${r}, ${g}, ${b}, 0.2)`;
+                return `rgba(${r}, ${g}, ${b}, 0.05)`;
               };
 
               return (
