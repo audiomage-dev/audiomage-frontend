@@ -226,8 +226,16 @@ export function AudioWorkstation() {
             </div>
             
             {/* Main Control Area - Horizontal Layout */}
-            <div className="flex-1 flex flex-row items-stretch justify-center gap-2 w-full px-1">
+            <div className="flex-1 flex flex-row items-stretch w-full px-1">
               
+              {/* Meter Scale - Positioned on the left */}
+              <div className="flex flex-col justify-between text-[5px] text-[var(--foreground)] font-mono font-bold py-2 leading-none mr-1">
+                <span className="text-red-500">0</span>
+                <span className="text-yellow-600">-6</span>
+                <span className="text-green-600">-12</span>
+                <span className="text-gray-500">-∞</span>
+              </div>
+
               {/* Stereo Peak Meters - Left and Right Channels */}
               <div className="flex gap-0.5">
                 {/* Left Channel Meter */}
@@ -253,8 +261,11 @@ export function AudioWorkstation() {
                 </div>
               </div>
 
-              {/* Neve-Style Master Fader */}
-              <div className="w-6 relative flex-1 min-h-0">
+              {/* Spacer */}
+              <div className="flex-1"></div>
+
+              {/* Neve-Style Master Fader - Positioned at right edge */}
+              <div className="w-6 relative flex-1 min-h-0 max-w-6">
                 {/* Fader Track - Neve Style */}
                 <div className="absolute left-1/2 top-2 bottom-2 w-1 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900 border border-gray-600 rounded-sm transform -translate-x-1/2 shadow-inner">
                   {/* Track center line */}
@@ -313,15 +324,6 @@ export function AudioWorkstation() {
                   <div className="absolute top-1/2 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
                   <div className="absolute top-3/4 left-1/2 w-3 h-0.5 bg-gray-200 transform -translate-x-1/2 rounded-full"></div>
                 </div>
-              </div>
-
-              {/* Fader Scale - Positioned on the right */}
-              <div className="flex flex-col justify-between text-[5px] text-[var(--foreground)] font-mono font-bold py-2 leading-none">
-                <span className="text-red-500">+6</span>
-                <span className="text-green-600">0</span>
-                <span className="text-yellow-600">-6</span>
-                <span className="text-orange-600">-12</span>
-                <span className="text-gray-500">-∞</span>
               </div>
             </div>
             
