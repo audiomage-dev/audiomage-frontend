@@ -23,10 +23,6 @@ export interface AudioTrack {
   color: string;
   clips: AudioClip[];
   effects: AudioEffect[];
-  // Hierarchical track properties
-  isParent?: boolean;
-  isExpanded?: boolean;
-  parentId?: string;
 }
 
 export interface AudioEffect {

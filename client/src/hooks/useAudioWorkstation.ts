@@ -24,60 +24,16 @@ export function useAudioWorkstation() {
   // Current project
   const [currentProject, setCurrentProject] = useState('Untitled Project');
 
-  // Get different clips for each session with hierarchical track structure
+  // Get different clips for each session with standardized track structure
   const getTracksForSession = useCallback((sessionId: string): AudioTrack[] => {
-    interface TrackTemplate {
-      id: string;
-      name: string;
-      color: string;
-      type: 'audio' | 'video';
-      isParent?: boolean;
-      isExpanded?: boolean;
-      parentId?: string;
-    }
-
-    const createHierarchicalTracks = (): TrackTemplate[] => {
-      const tracks: TrackTemplate[] = [];
-      
-      // Main tracks
-      tracks.push(
-        { id: 'video', name: 'Video', color: '#E5E5E5', type: 'video', isParent: false },
-        { id: 'dialogue', name: 'Dialogue', color: '#3B82F6', type: 'audio', isParent: false },
-        { id: 'music', name: 'Music', color: '#10B981', type: 'audio', isParent: false }
-      );
-      
-      // Foley parent track with 5 sub-tracks
-      tracks.push({ id: 'foley', name: 'Foley', color: '#F59E0B', type: 'audio', isParent: true, isExpanded: false });
-      tracks.push(
-        { id: 'foley-footsteps', name: 'Footsteps', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-props', name: 'Props', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-clothing', name: 'Clothing', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-surfaces', name: 'Surfaces', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' },
-        { id: 'foley-misc', name: 'Miscellaneous', color: '#F59E0B', type: 'audio', isParent: false, parentId: 'foley' }
-      );
-      
-      // Sound Design parent track with 5 sub-tracks
-      tracks.push({ id: 'sound-design', name: 'Sound Design', color: '#8B5CF6', type: 'audio', isParent: true, isExpanded: false });
-      tracks.push(
-        { id: 'sound-design-impacts', name: 'Impacts', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-whooshes', name: 'Whooshes', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-drones', name: 'Drones', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-stingers', name: 'Stingers', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' },
-        { id: 'sound-design-textures', name: 'Textures', color: '#8B5CF6', type: 'audio', isParent: false, parentId: 'sound-design' }
-      );
-      
-      // Ambiance parent track with 5 sub-tracks
-      tracks.push({ id: 'ambiance', name: 'Ambiance', color: '#EC4899', type: 'audio', isParent: true, isExpanded: false });
-      tracks.push(
-        { id: 'ambiance-room-tone', name: 'Room Tone', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-nature', name: 'Nature', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-urban', name: 'Urban', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-interior', name: 'Interior', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' },
-        { id: 'ambiance-crowd', name: 'Crowd', color: '#EC4899', type: 'audio', isParent: false, parentId: 'ambiance' }
-      );
-      
-      return tracks;
-    };
+    const baseTrackStructure = [
+      { id: 'video', name: 'Video', color: '#E5E5E5' },
+      { id: 'dialogue', name: 'Dialogue', color: '#3B82F6' },
+      { id: 'music', name: 'Music', color: '#10B981' },
+      { id: 'foley', name: 'Foley', color: '#F59E0B' },
+      { id: 'sound-design', name: 'Sound Design', color: '#8B5CF6' },
+      { id: 'ambiance', name: 'Ambiance', color: '#EC4899' }
+    ];
 
     const getClipsForTrack = (trackId: string, sessionId: string): AudioClip[] => {
       // For new projects (session ID > 3), return empty clips
@@ -293,22 +249,17 @@ export function useAudioWorkstation() {
       }
     };
 
-    const hierarchicalTracks = createHierarchicalTracks();
-    
-    return hierarchicalTracks.map(trackBase => ({
+    return baseTrackStructure.map(trackBase => ({
       id: trackBase.id,
       name: trackBase.name,
-      type: trackBase.type as 'audio' | 'video',
+      type: 'audio' as const,
       volume: 75,
       pan: 50,
       muted: false,
       soloed: false,
       color: trackBase.color,
       clips: getClipsForTrack(trackBase.id, sessionId),
-      effects: [],
-      isParent: trackBase.isParent || false,
-      isExpanded: trackBase.isExpanded || false,
-      parentId: trackBase.parentId
+      effects: []
     }));
   }, []);
 
@@ -482,17 +433,6 @@ export function useAudioWorkstation() {
     );
   }, []);
 
-  // Toggle track expansion for parent tracks
-  const toggleTrackExpansion = useCallback((trackId: string) => {
-    setTracks(prevTracks => 
-      prevTracks.map(track => 
-        track.id === trackId && track.isParent
-          ? { ...track, isExpanded: !track.isExpanded }
-          : track
-      )
-    );
-  }, []);
-
   // Add new session and switch to it
   const addSession = useCallback(() => {
     const newId = (sessions.length + 1).toString();
@@ -558,6 +498,5 @@ export function useAudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
-    toggleTrackExpansion,
   };
 }

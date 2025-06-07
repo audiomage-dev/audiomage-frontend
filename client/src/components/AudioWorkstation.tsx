@@ -41,7 +41,6 @@ export function AudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
-    toggleTrackExpansion,
   } = useAudioWorkstation();
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
@@ -403,7 +402,6 @@ export function AudioWorkstation() {
                   onTrackMute={toggleTrackMute}
                   onTrackSolo={toggleTrackSolo}
                   onTrackSelect={setSelectedTrack}
-                  onTrackExpansionToggle={toggleTrackExpansion}
                   onClipMove={(clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
                     updateClipPosition(clipId, toTrackId, newStartTime);
                   }}

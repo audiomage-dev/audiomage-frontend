@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
@@ -29,9 +29,7 @@ import {
   X,
   Files,
   Copy,
-  Link,
-  ChevronDown,
-  ChevronRight
+  Link
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -44,14 +42,13 @@ interface CompactTimelineEditorProps {
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
-  onTrackExpansionToggle?: (trackId: string) => void;
   onClipMove?: (clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => void;
   onClipResize?: (clipId: string, trackId: string, newStartTime: number, newDuration: number) => void;
   onZoomChange?: (zoomLevel: number) => void;
   isLocked?: boolean;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onTrackExpansionToggle, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
@@ -97,20 +94,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
   // Mouse cursor state
   const [cursorState, setCursorState] = useState<'default' | 'grab' | 'grabbing' | 'col-resize' | 'text' | 'crosshair'>('default');
-
-  // Filter tracks to only show expanded sub-tracks
-  const visibleTracks = useMemo(() => {
-    return tracks.filter(track => {
-      // Always show tracks that aren't children (no parentId)
-      if (!track.parentId) {
-        return true;
-      }
-      
-      // For child tracks, only show if parent is expanded
-      const parentTrack = tracks.find(t => t.id === track.parentId);
-      return parentTrack?.isExpanded === true;
-    });
-  }, [tracks]);
 
   // Clip dragging state
   const [draggingClip, setDraggingClip] = useState<{
@@ -2151,36 +2134,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         </div>
         
         <div className="flex-1 overflow-auto scrollbar-thin" ref={tracksRef}>
-          {visibleTracks.map((track, index) => (
+          {tracks.map((track, index) => (
             <div
               key={`track-sidebar-${track.id}-${index}`}
-              className={`h-16 border-b border-[var(--border)] py-1 cursor-pointer transition-colors group ${
+              className={`h-16 border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
                 selectedTrackIds.includes(track.id) 
                   ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
                   : 'hover:bg-[var(--accent)]/50'
-              } ${track.parentId ? 'pl-8' : 'pl-3'}`}
+              }`}
               onClick={(e) => handleTrackSelect(track.id, e)}
               onContextMenu={(e) => handleTrackRightClick(e, track.id)}
             >
               <div className="flex items-center justify-between min-w-0 mb-1">
                 <div className="flex items-center space-x-2 min-w-0">
-                  {track.isParent && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTrackExpansionToggle?.(track.id);
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 opacity-60 hover:opacity-100"
-                    >
-                      {track.isExpanded ? (
-                        <ChevronDown className="w-3 h-3" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3" />
-                      )}
-                    </Button>
-                  )}
                   <div 
                     className="w-2 h-2 rounded-sm flex-shrink-0" 
                     style={{ backgroundColor: track.color }}
@@ -2304,7 +2270,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             className="relative" 
             style={{ 
               width: `${getTimelineWidth()}px`, 
-              height: `${visibleTracks.length * 64}px`,
+              height: `${tracks.length * 64}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
@@ -2313,9 +2279,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               ref={canvasRef}
               className="absolute top-0 left-0 pointer-events-none z-0"
               width={getTimelineWidth()}
-              height={visibleTracks.length * 64}
+              height={tracks.length * 64}
             />
-            {visibleTracks.map((track, index) => (
+            {tracks.map((track, index) => (
               <div
                 key={`track-timeline-${track.id}-${index}`}
                 className={`absolute left-0 right-0 h-16 transition-colors ${
