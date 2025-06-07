@@ -2156,12 +2156,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 renderedTracks.push(
                   <div
                     key={`track-group-${track.id}`}
-                    className={`border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
+                    className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
                       allGroupTracks.some(t => selectedTrackIds.includes(t.id))
-                        ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
+                        ? 'bg-[var(--accent)] border-l-[var(--primary)]' 
                         : 'hover:bg-[var(--accent)]/50'
                     }`}
-                    style={{ height: `${groupHeight}px` }}
+                    style={{ 
+                      height: `${groupHeight}px`,
+                      borderLeftColor: allGroupTracks.some(t => selectedTrackIds.includes(t.id)) 
+                        ? 'var(--primary)' 
+                        : track.color
+                    }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                   >
@@ -2228,11 +2233,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 renderedTracks.push(
                   <div
                     key={`track-sidebar-${track.id}-${i}`}
-                    className={`h-16 border-b border-[var(--border)] px-3 py-1 cursor-pointer transition-colors group ${
+                    className={`h-16 border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
                       selectedTrackIds.includes(track.id) 
-                        ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]' 
+                        ? 'bg-[var(--accent)] border-l-[var(--primary)]' 
                         : 'hover:bg-[var(--accent)]/50'
                     }`}
+                    style={{ 
+                      borderLeftColor: selectedTrackIds.includes(track.id) 
+                        ? 'var(--primary)' 
+                        : track.color
+                    }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                   >
