@@ -225,12 +225,12 @@ export function AudioWorkstation() {
               <span className="text-[9px] font-bold text-[var(--foreground)] tracking-widest">MASTER</span>
             </div>
             
-            {/* Main Control Area */}
-            <div className="flex-1 flex flex-col items-center justify-between w-full">
+            {/* Main Control Area - Horizontal Layout */}
+            <div className="flex-1 flex flex-row items-stretch justify-center gap-1 w-full px-1">
               
-              {/* Single Peak Meter - Stereo Combined */}
-              <div className="flex flex-col items-center mb-2">
-                <div className="w-6 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm" style={{ height: '60px' }}>
+              {/* Single Peak Meter - Narrow */}
+              <div className="flex flex-col items-center flex-1">
+                <div className="w-3 bg-[var(--card)] border border-[var(--border)] rounded-sm relative overflow-hidden shadow-sm flex-1 min-h-0">
                   {/* Combined stereo level display */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-400 via-yellow-400 to-red-400"
                        style={{ height: '72%' }}>
@@ -238,11 +238,11 @@ export function AudioWorkstation() {
                   {/* Peak hold indicator */}
                   <div className="absolute w-full h-px bg-red-300 shadow-md" style={{ top: '28%' }}></div>
                   {/* Meter label */}
-                  <div className="absolute bottom-0 w-full text-center text-[6px] text-white font-bold bg-black/60">MAIN</div>
+                  <div className="absolute bottom-0 w-full text-center text-[5px] text-white font-bold bg-black/60">M</div>
                 </div>
                 
-                {/* Meter Scale */}
-                <div className="flex flex-col justify-between text-[6px] text-[var(--foreground)] font-mono font-bold py-1 bg-[var(--background)]/80 rounded px-1 mt-1">
+                {/* Meter Scale - Compact */}
+                <div className="flex flex-col justify-between text-[5px] text-[var(--foreground)] font-mono font-bold py-1 bg-[var(--background)]/80 rounded px-0.5 mt-1 leading-none">
                   <span className="text-red-500 text-center">0</span>
                   <span className="text-yellow-600 text-center">-6</span>
                   <span className="text-green-600 text-center">-12</span>
@@ -250,13 +250,13 @@ export function AudioWorkstation() {
                 </div>
               </div>
 
-              {/* Interactive Master Fader */}
-              <div className="w-8 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 mx-1">
+              {/* Interactive Master Fader - Narrow */}
+              <div className="w-4 bg-[var(--card)] border border-[var(--border)] rounded-full relative shadow-sm flex-1 min-h-0">
                 {/* Fader Track */}
-                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-1 shadow-inner"></div>
+                <div className="absolute inset-x-0 top-2 bottom-2 bg-[var(--muted)] rounded-full mx-0.5 shadow-inner"></div>
                 {/* Interactive Fader Handle */}
                 <div 
-                  className="absolute w-6 h-4 bg-gradient-to-b from-blue-400 to-blue-600 border-2 border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-3 h-3 bg-gradient-to-b from-blue-400 to-blue-600 border border-blue-300 rounded cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
@@ -269,7 +269,7 @@ export function AudioWorkstation() {
                     if (!faderContainer) return;
                     
                     const containerRect = faderContainer.getBoundingClientRect();
-                    const handleHeight = 16; // 4 * 4px (w-4 h-4)
+                    const handleHeight = 12; // 3 * 4px (w-3 h-3)
                     const trackHeight = containerRect.height - 16; // Subtract top/bottom padding
                     
                     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -296,14 +296,15 @@ export function AudioWorkstation() {
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
                 ></div>
-                {/* Fader Scale */}
-                <div className="absolute -right-6 top-0 bottom-0 flex flex-col justify-between text-[6px] text-[var(--foreground)] font-mono font-bold py-2 bg-[var(--background)]/80 rounded px-1">
-                  <span className="text-red-500">+6</span>
-                  <span className="text-green-600">0</span>
-                  <span className="text-yellow-600">-6</span>
-                  <span className="text-orange-600">-12</span>
-                  <span className="text-gray-500">-∞</span>
-                </div>
+              </div>
+
+              {/* Fader Scale - Positioned on the right */}
+              <div className="flex flex-col justify-between text-[5px] text-[var(--foreground)] font-mono font-bold py-2 leading-none">
+                <span className="text-red-500">+6</span>
+                <span className="text-green-600">0</span>
+                <span className="text-yellow-600">-6</span>
+                <span className="text-orange-600">-12</span>
+                <span className="text-gray-500">-∞</span>
               </div>
             </div>
             
