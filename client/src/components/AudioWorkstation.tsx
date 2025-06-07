@@ -166,9 +166,9 @@ export function AudioWorkstation() {
         <div 
           className="flex-none flex flex-col bg-[var(--muted)] border-r border-[var(--border)]" 
           style={{ 
-            width: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16),
-            minWidth: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16),
-            maxWidth: isMiniPlayer ? 320 : Math.max(320, videoPlayerSize.width + 16)
+            width: isMiniPlayer ? 320 : Math.max(400, videoPlayerSize.width + 100),
+            minWidth: isMiniPlayer ? 320 : Math.max(400, videoPlayerSize.width + 100),
+            maxWidth: isMiniPlayer ? 320 : Math.max(500, videoPlayerSize.width + 150)
           }}
         >
           {/* Resizable Video Player - Hidden when mini-player is active */}
