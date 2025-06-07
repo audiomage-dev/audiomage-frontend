@@ -252,12 +252,12 @@ export function AudioWorkstation() {
                 </div>
                 
                 {/* Meter Scale */}
-                <div className="ml-1 flex flex-col justify-between text-[9px] font-mono font-bold py-1 bg-black/90 rounded px-1.5 border border-gray-600">
-                  <span className="text-white shadow-sm">0</span>
-                  <span className="text-white shadow-sm">-6</span>
-                  <span className="text-white shadow-sm">-12</span>
-                  <span className="text-white shadow-sm">-24</span>
-                  <span className="text-white shadow-sm">-∞</span>
+                <div className="ml-1 flex flex-col justify-between text-[9px] text-white font-mono font-black py-1 bg-black/70 rounded px-1 shadow-md">
+                  <span>0</span>
+                  <span>-6</span>
+                  <span>-12</span>
+                  <span>-24</span>
+                  <span>-∞</span>
                 </div>
               </div>
               
@@ -308,12 +308,12 @@ export function AudioWorkstation() {
                   }}
                 ></div>
                 {/* Fader Scale */}
-                <div className="absolute -right-5 top-0 bottom-0 flex flex-col justify-between text-[9px] font-mono font-bold py-2 bg-black/90 rounded px-1.5 border border-gray-600">
-                  <span className="text-white shadow-sm">+6</span>
-                  <span className="text-white shadow-sm">0</span>
-                  <span className="text-white shadow-sm">-6</span>
-                  <span className="text-white shadow-sm">-12</span>
-                  <span className="text-white shadow-sm">-∞</span>
+                <div className="absolute -right-4 top-0 bottom-0 flex flex-col justify-between text-[9px] text-white font-mono font-black py-2 bg-black/70 rounded px-1 shadow-md">
+                  <span>+6</span>
+                  <span>0</span>
+                  <span>-6</span>
+                  <span>-12</span>
+                  <span>-∞</span>
                 </div>
               </div>
             </div>
