@@ -2627,16 +2627,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       <div className="flex-1 flex flex-col">
         {/* Timeline Header with Ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
-          {/* Grid Toggle Button - Top Right */}
+          {/* Grid Display Mode Toggle - Top Right */}
           <div className="absolute top-1 right-1 z-10">
             <Button
               onClick={() => setGridDisplayMode(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds')}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-[var(--accent)] transition-colors"
-              title={`Grid display: ${gridDisplayMode} (click to toggle)`}
+              className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
+              title={`Switch to ${gridDisplayMode === 'seconds' ? 'timecode' : 'seconds'} display`}
             >
-              <BarChart3 className="w-3 h-3" />
+              {gridDisplayMode === 'seconds' ? 'SEC' : 'TC'}
             </Button>
           </div>
           
