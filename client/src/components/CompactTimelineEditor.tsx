@@ -2309,99 +2309,44 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                         )}
                       </div>
-                    </div>
-                    
-                    {/* Group-level Solo/Mute Controls */}
-                    <div className="flex items-center justify-center space-x-2 mt-1 mb-1">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Mute/unmute all tracks in the group
-                          allGroupTracks.forEach(groupTrack => onTrackMute(groupTrack.id));
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-5 w-8 p-0 rounded text-xs border border-white/20 ${
-                          allGroupTracks.every(t => t.muted)
-                            ? 'bg-[var(--red)] text-white border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                      >
-                        M
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Solo/unsolo all tracks in the group
-                          allGroupTracks.forEach(groupTrack => onTrackSolo(groupTrack.id));
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-5 w-8 p-0 rounded text-xs border border-white/20 ${
-                          allGroupTracks.every(t => t.soloed)
-                            ? 'bg-[var(--yellow)] text-black border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                      >
-                        S
-                      </Button>
-                    </div>
-                    
-                    {/* Child tracks - compact inline layout when expanded */}
-                    {!isCollapsed && childTracks.map(childTrack => (
-                      <div key={`child-inline-${childTrack.id}`} className="flex items-center justify-between px-2 py-1 ml-6 border-l border-[var(--border)] bg-[var(--muted)]/10">
-                        <div className="flex items-center space-x-2 min-w-0">
-                          <div 
-                            className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: childTrack.color }}
-                          ></div>
-                          <span className="text-xs text-[var(--muted-foreground)] truncate">
-                            {childTrack.name}
-                          </span>
-                          {childTrack.type === 'ai-generated' && (
-                            <div className="w-1 h-1 bg-[var(--purple)] rounded-full"></div>
-                          )}
-                        </div>
-                        {/* Individual track solo/mute controls */}
-                        <div className="flex items-center space-x-1">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTrackMute(childTrack.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                              childTrack.muted 
-                                ? 'bg-[var(--red)] text-white border-white/40' 
-                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                            }`}
-                          >
-                            M
-                          </Button>
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTrackSolo(childTrack.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                              childTrack.soloed 
-                                ? 'bg-[var(--yellow)] text-black border-white/40' 
-                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                            }`}
-                          >
-                            S
-                          </Button>
-                        </div>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackMute(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.muted 
+                              ? 'bg-[var(--red)] text-white border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          M
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackSolo(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.soloed 
+                              ? 'bg-[var(--yellow)] text-black border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          S
+                        </Button>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 );
                 
-                // Skip all tracks in this group
-                i += allGroupTracks.length;
+                // Skip all tracks in this group (if collapsed, only skip child tracks)
+                i += isCollapsed ? 1 : allGroupTracks.length;
               } else if (!track.parentId) {
                 // Regular track (not grouped)
                 const trackHeight = getTrackHeight(track.id);
