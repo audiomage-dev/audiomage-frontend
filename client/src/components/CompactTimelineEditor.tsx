@@ -71,6 +71,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [isHoveringEmptySpace, setIsHoveringEmptySpace] = useState(false);
   const [rangeSelection, setRangeSelection] = useState<{ startTime: number; endTime: number; isActive: boolean } | null>(null);
   const [showRangeActions, setShowRangeActions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   
   // Track resizing state
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
@@ -711,6 +712,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     console.log('Starting timeline range selection at:', startTime.toFixed(3));
     
     let isSelecting = false;
+    const initialCursorX = e.clientX;
+    const initialCursorY = e.clientY;
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = Math.abs(moveEvent.clientX - e.clientX);
@@ -3181,118 +3184,137 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
                 data-range-actions
-                className="absolute z-50 pointer-events-auto"
+                className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${Math.max(10, (rangeSelection.startTime + rangeSelection.endTime) / 2 * 60 * zoomLevel - 120)}px`,
-                  top: `${Math.max(20, tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0) / 2 - 30)}px`,
+                  left: `${Math.max(20, Math.min(window.innerWidth - 280, cursorPosition.x - 140))}px`,
+                  top: `${Math.max(20, Math.min(window.innerHeight - 200, cursorPosition.y + 10))}px`,
                 }}
               >
-                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3 min-w-[240px]">
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Range Actions ({(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s)
+                {/* Modern floating panel with glassmorphism effect */}
+                <div className="bg-black/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-4 min-w-[260px]">
+                  {/* Header with duration */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-sm font-medium text-white/90">
+                      Range Selection
+                    </div>
+                    <div className="text-xs text-blue-400 font-mono bg-blue-500/20 px-2 py-1 rounded-md">
+                      {(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* AI-based features */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('AI Generate Music for range:', rangeSelection);
-                        // TODO: Open AI music generation modal
-                      }}
-                      title="Generate AI music for this time range"
-                    >
+                  {/* AI-powered actions section */}
+                  <div className="mb-3">
+                    <div className="text-xs text-white/60 mb-2 flex items-center gap-1">
                       <Sparkles className="w-3 h-3" />
-                      AI Music
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('AI Enhance Audio for range:', rangeSelection);
-                        // TODO: Open AI audio enhancement modal
-                      }}
-                      title="AI-enhance audio in this range"
-                    >
-                      <TrendingUp className="w-3 h-3" />
-                      Enhance
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('AI Mix for range:', rangeSelection);
-                        // TODO: Open AI mixing assistant
-                      }}
-                      title="AI-powered mixing for this range"
-                    >
-                      <BarChart3 className="w-3 h-3" />
-                      AI Mix
-                    </Button>
-                    
-                    {/* Standard editing features */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('Cut range:', rangeSelection);
-                        // TODO: Cut selected range
-                      }}
-                      title="Cut selected range"
-                    >
-                      <Scissors className="w-3 h-3" />
-                      Cut
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('Copy range:', rangeSelection);
-                        // TODO: Copy selected range
-                      }}
-                      title="Copy selected range"
-                    >
-                      <Copy className="w-3 h-3" />
-                      Copy
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex items-center gap-1"
-                      onClick={() => {
-                        console.log('Delete range:', rangeSelection);
-                        // TODO: Delete content in selected range
-                      }}
-                      title="Delete content in range"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Delete
-                    </Button>
+                      AI-Powered
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-purple-500/20 border-purple-400/30 text-white hover:bg-purple-500/30 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('AI Generate Music for range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="Generate AI music for this time range"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Music
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-green-500/20 border-green-400/30 text-white hover:bg-green-500/30 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('AI Enhance Audio for range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="AI-enhance audio in this range"
+                      >
+                        <TrendingUp className="w-3 h-3" />
+                        Enhance
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-blue-500/20 border-blue-400/30 text-white hover:bg-blue-500/30 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('AI Mix for range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="AI-powered mixing for this range"
+                      >
+                        <BarChart3 className="w-3 h-3" />
+                        Mix
+                      </Button>
+                    </div>
                   </div>
                   
-                  <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      className="w-full h-8 text-xs"
-                      onClick={() => {
-                        console.log('Show full range options for:', rangeSelection);
-                        // TODO: Open comprehensive range actions modal
-                      }}
-                    >
-                      More Options...
-                    </Button>
+                  {/* Standard editing actions */}
+                  <div className="mb-3">
+                    <div className="text-xs text-white/60 mb-2">
+                      Edit
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('Cut range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="Cut selected range"
+                      >
+                        <Scissors className="w-3 h-3" />
+                        Cut
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('Copy range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="Copy selected range"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs bg-red-500/20 border-red-400/30 text-white hover:bg-red-500/30 flex items-center gap-1"
+                        onClick={() => {
+                          console.log('Delete range:', rangeSelection);
+                          setShowRangeActions(false);
+                        }}
+                        title="Delete content in range"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
+                  
+                  {/* More options */}
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="w-full h-8 text-xs bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+                    onClick={() => {
+                      console.log('Show full range options for:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    More Options...
+                  </Button>
                 </div>
               </div>
             )}
