@@ -765,7 +765,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       const target = e.target as HTMLElement;
       const isRangeElement = target.closest('[data-range-actions]');
       
-      if (!isRangeElement && showRangeActions) {
+      // Only close on left-click, not right-click
+      if (!isRangeElement && showRangeActions && e.button !== 2) {
         setShowRangeActions(false);
       }
     };
@@ -2813,8 +2814,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             const isClipElement = target.closest('[data-clip-id]');
             const isRangeActionElement = target.closest('[data-range-actions]');
             
-            // Clear range selection if clicking elsewhere
-            if (!isRangeActionElement && rangeSelection) {
+            // Clear range selection if clicking elsewhere (but not on right-click)
+            if (!isRangeActionElement && rangeSelection && e.button !== 2) {
               setRangeSelection(null);
               setShowRangeActions(false);
             }
