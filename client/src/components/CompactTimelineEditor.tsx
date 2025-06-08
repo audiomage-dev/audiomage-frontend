@@ -2723,6 +2723,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             setIsSelecting(false);
             setSelectionBox(null);
             setDraggingClip(null);
+            setIsHoveringEmptySpace(false);
+            setRangeSelection(null);
           }}
           style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : isHoveringEmptySpace ? 'text' : 'default' }}
         >
@@ -3071,6 +3073,31 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
                 }}
               />
+            )}
+
+            {/* DAW-style Range Selection Overlay */}
+            {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
+              <div
+                className="absolute bg-blue-500/20 border-l-2 border-r-2 border-blue-500 pointer-events-none z-19"
+                style={{
+                  left: `${rangeSelection.startTime * 60 * zoomLevel}px`,
+                  top: '0px',
+                  width: `${(rangeSelection.endTime - rangeSelection.startTime) * 60 * zoomLevel}px`,
+                  height: `${tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0)}px`,
+                }}
+              >
+                {/* Time markers at the edges */}
+                <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-500" />
+                <div className="absolute top-0 right-0 w-0.5 h-full bg-blue-500" />
+                
+                {/* Time display at top */}
+                <div className="absolute -top-6 left-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded">
+                  {rangeSelection.startTime.toFixed(2)}s
+                </div>
+                <div className="absolute -top-6 right-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded">
+                  {rangeSelection.endTime.toFixed(2)}s
+                </div>
+              </div>
             )}
 
 
