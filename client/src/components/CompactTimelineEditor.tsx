@@ -2276,16 +2276,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onMouseDown={(e) => handleResizeStart(e, track.id)}
                       />
                       
-                      {/* Parent track header - vertically centered with expanded width */}
+                      {/* Parent track header - vertically centered */}
                       <div 
-                        className="absolute left-0 flex flex-col z-10 bg-[var(--background)]/80 rounded-md p-3 min-w-48" 
+                        className="absolute left-0 flex flex-col z-10" 
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)' 
                         }}
                       >
                         {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-3">
+                        <div className="flex items-center space-x-2 mb-2">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -2309,8 +2309,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           )}
                         </div>
                         
-                        {/* Parent track mute/solo buttons centered under header */}
-                        <div className="flex items-center justify-center space-x-2">
+                        {/* Parent track mute/solo buttons under header */}
+                        <div className="flex items-center space-x-1">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -2321,7 +2321,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             }}
                             variant="ghost"
                             size="sm"
-                            className={`h-6 w-6 p-0 rounded text-xs border border-white/20 ${
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
                               childTracks.every(t => t.muted)
                                 ? 'bg-[var(--red)] text-white border-white/40' 
                                 : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
@@ -2339,7 +2339,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             }}
                             variant="ghost"
                             size="sm"
-                            className={`h-6 w-6 p-0 rounded text-xs border border-white/20 ${
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
                               childTracks.every(t => t.soloed)
                                 ? 'bg-[var(--yellow)] text-black border-white/40' 
                                 : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
