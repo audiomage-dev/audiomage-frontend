@@ -1,0 +1,101 @@
+name: Development Branch Deployment
+
+on:
+  push:
+    branches: [ develop, development ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  fast-test:
+    name: Fast Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run essential E2E tests
+        run: npm run test:e2e:smoke
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npx eslint . --ext .ts,.tsx
+
+      - name: Prettier check
+        run: npx prettier --check .
+
+      - name: TypeScript check
+        run: npm run check
+
+  deploy-development:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [fast-test, code-quality]
+    environment: development
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for development
+        run: npm run build
+        env:
+          NODE_ENV: development
+
+      - name: Deploy to development environment
+        run: |
+          echo "Deploying to development environment..."
+          # Development deployment handled by Replit Deployments
+
+      - name: Run smoke tests
+        run: npm run test:smoke
+        env:
+          TEST_URL: ${{ secrets.DEVELOPMENT_URL }}
+
+      - name: Create preview deployment comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Development deployment ready! Preview: ${{ secrets.DEVELOPMENT_URL }}'
+            })
