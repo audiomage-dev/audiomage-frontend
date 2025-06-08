@@ -2273,43 +2273,41 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onMouseDown={(e) => handleResizeStart(e, track.id)}
                     />
-                    {/* Parent track header positioned in the middle of the group */}
-                    <div 
-                      className="flex items-center justify-between min-w-0"
-                      style={{ 
-                        height: '100%',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <div className="flex items-center space-x-2 min-w-0">
-                        {/* Collapse/Expand Icon */}
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleGroupCollapse?.(track.id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                        >
-                          {collapsedGroups.has(track.id) ? (
-                            <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                    {/* Parent track header */}
+                    <div className="flex flex-col h-full">
+                      <div className="flex items-center justify-between min-w-0 mb-2">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          {/* Collapse/Expand Icon */}
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleGroupCollapse?.(track.id);
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                          >
+                            {collapsedGroups.has(track.id) ? (
+                              <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                            )}
+                          </Button>
+                          <div 
+                            className="w-2 h-2 rounded-sm flex-shrink-0" 
+                            style={{ backgroundColor: track.color }}
+                          ></div>
+                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                            {track.name}
+                          </span>
+                          {track.type === 'ai-generated' && (
+                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                           )}
-                        </Button>
-                        <div 
-                          className="w-2 h-2 rounded-sm flex-shrink-0" 
-                          style={{ backgroundColor: track.color }}
-                        ></div>
-                        <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                          {track.name}
-                        </span>
-                        {track.type === 'ai-generated' && (
-                          <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                        )}
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-1">
+                      
+                      {/* Parent track mute/solo buttons under header */}
+                      <div className="flex items-center space-x-1 mb-2">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -2341,6 +2339,58 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           S
                         </Button>
                       </div>
+
+                      {/* Child tracks with individual mute/solo buttons */}
+                      {!isCollapsed && childTracks.map((childTrack) => (
+                        <div key={`child-track-${childTrack.id}`} className="flex items-center justify-between min-w-0 mb-1 pl-6">
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <div 
+                              className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
+                              style={{ backgroundColor: childTrack.color }}
+                            ></div>
+                            <span className="text-xs text-[var(--muted-foreground)] truncate">
+                              {childTrack.name}
+                            </span>
+                            {childTrack.type === 'ai-generated' && (
+                              <div className="w-1 h-1 bg-[var(--purple)] rounded-full"></div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackMute(childTrack.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
+                                childTrack.muted 
+                                  ? 'bg-[var(--red)] text-white border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                              style={{ fontSize: '6px' }}
+                            >
+                              M
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackSolo(childTrack.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
+                                childTrack.soloed 
+                                  ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                              style={{ fontSize: '6px' }}
+                            >
+                              S
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
