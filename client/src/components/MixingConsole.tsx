@@ -81,8 +81,6 @@ export function MixingConsole({
               className="w-6 h-32 bg-[hsl(var(--secondary))] rounded-full relative fader-track cursor-pointer"
               onClick={handleMasterFaderChange}
             >
-              {/* Horizontal center line */}
-              <div className="absolute left-0 right-0 top-1/2 h-px bg-black/20 transform -translate-y-1/2"></div>
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-4 h-6 bg-[hsl(var(--primary))] rounded-sm border border-[hsl(var(--muted-foreground))] cursor-pointer"
                 style={{ bottom: `${masterFaderPosition * 0.75 + 8}%` }}

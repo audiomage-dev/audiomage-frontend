@@ -243,65 +243,6 @@ html.nord-light, .nord-light {
   .resizer:hover {
     background: hsl(var(--frost-4));
   }
-
-  /* Range Input Styling with Center Line */
-  .range-with-centerline {
-    position: relative;
-  }
-
-  .range-with-centerline::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.2);
-    transform: translateY(-50%);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .range-with-centerline input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    position: relative;
-    z-index: 2;
-  }
-
-  .range-with-centerline input[type="range"]::-webkit-slider-track {
-    height: 8px;
-    border-radius: 4px;
-    background: var(--muted);
-  }
-
-  .range-with-centerline input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    height: 16px;
-    width: 16px;
-    border-radius: 2px;
-    background: var(--primary);
-    cursor: pointer;
-    border: 1px solid var(--border);
-  }
-
-  .range-with-centerline input[type="range"]::-moz-range-track {
-    height: 8px;
-    border-radius: 4px;
-    background: var(--muted);
-    border: none;
-  }
-
-  .range-with-centerline input[type="range"]::-moz-range-thumb {
-    height: 16px;
-    width: 16px;
-    border-radius: 2px;
-    background: var(--primary);
-    cursor: pointer;
-    border: 1px solid var(--border);
-  }
 }
 
 @layer utilities {
