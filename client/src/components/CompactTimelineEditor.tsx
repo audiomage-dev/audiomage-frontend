@@ -66,6 +66,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
+  // Track resizing state
+  const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
+  const [resizingTrack, setResizingTrack] = useState<{ trackId: string; startY: number; startHeight: number } | null>(null);
+  
   // Multi-track selection state
   const [multiSelection, setMultiSelection] = useState<{
     startTime: number;
@@ -401,13 +405,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       }
     }
 
-    // Horizontal track lines
-    for (let i = 1; i < tracks.length; i++) {
-      const y = i * 64;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
+    // Horizontal track lines with variable heights
+    let cumulativeHeight = 0;
+    for (let i = 0; i < tracks.length; i++) {
+      cumulativeHeight += getTrackHeight(tracks[i].id);
+      if (i < tracks.length - 1) { // Don't draw line after last track
+        ctx.beginPath();
+        ctx.moveTo(0, cumulativeHeight);
+        ctx.lineTo(width, cumulativeHeight);
+        ctx.stroke();
+      }
     }
 
     ctx.globalAlpha = 1;
@@ -595,6 +602,50 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
+
+  // Track resize functionality
+  const getTrackHeight = useCallback((trackId: string) => {
+    return trackHeights[trackId] || 64; // Default height
+  }, [trackHeights]);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent, trackId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const currentHeight = getTrackHeight(trackId);
+    setResizingTrack({
+      trackId,
+      startY: e.clientY,
+      startHeight: currentHeight
+    });
+  }, [getTrackHeight]);
+
+  // Mouse move handler for track resizing
+  useEffect(() => {
+    if (!resizingTrack) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = e.clientY - resizingTrack.startY;
+      const newHeight = Math.max(40, Math.min(200, resizingTrack.startHeight + deltaY)); // Min 40px, max 200px
+      
+      setTrackHeights(prev => ({
+        ...prev,
+        [resizingTrack.trackId]: newHeight
+      }));
+    };
+
+    const handleMouseUp = () => {
+      setResizingTrack(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingTrack]);
 
   // Handle timeline-based range selection across all clips and empty areas
   const handleTimelineRangeSelection = useCallback((e: React.MouseEvent) => {
@@ -2423,7 +2474,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             className="relative" 
             style={{ 
               width: `${getTimelineWidth()}px`, 
-              height: `${tracks.length * 64}px`,
+              height: `${tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0)}px`,
               transform: `translateX(-${scrollX}px)`
             }}
           >
@@ -2432,7 +2483,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               ref={canvasRef}
               className="absolute top-0 left-0 pointer-events-none z-0"
               width={getTimelineWidth()}
-              height={tracks.length * 64}
+              height={tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0)}
             />
             {tracks.filter(track => {
               // If it's a child track, check if its parent is collapsed
@@ -2452,10 +2503,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 return `rgba(${r}, ${g}, ${b}, 0.05)`;
               };
 
+              const trackHeight = getTrackHeight(track.id);
+              const cumulativeHeight = tracks.slice(0, index).reduce((acc, t, i) => acc + getTrackHeight(t.id), 0);
+
               return (
                 <div
                   key={`track-timeline-${track.id}-${index}`}
-                  className={`absolute left-0 right-0 h-16 transition-colors ${
+                  className={`absolute left-0 right-0 transition-colors group ${
                     selectedTrackIds.includes(track.id) 
                       ? 'border-2 border-[var(--primary)]' 
                       : draggingClip && draggingClip.currentTrackIndex === index
@@ -2463,12 +2517,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         : 'hover:brightness-110'
                   }`}
                   style={{ 
-                    top: `${index * 64}px`,
+                    top: `${cumulativeHeight}px`,
+                    height: `${trackHeight}px`,
                     backgroundColor: getTrackBackgroundColor(track.color)
                   }}
                   onClick={(e) => handleTrackSelect(track.id, e)}
                   onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                 >
+                  {/* Resize Handle */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    onMouseDown={(e) => handleResizeStart(e, track.id)}
+                    style={{
+                      cursor: resizingTrack?.trackId === track.id ? 'row-resize' : 'row-resize'
+                    }}
+                  />
                 {/* Audio Clips */}
                 <div 
                   className="h-full relative cursor-crosshair"
