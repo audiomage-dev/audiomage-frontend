@@ -3367,6 +3367,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setCursorPosition({ x: e.clientX, y: e.clientY });
                   setShowRangeActions(true);
                 }}
