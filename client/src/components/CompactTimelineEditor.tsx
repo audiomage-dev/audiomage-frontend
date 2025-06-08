@@ -2153,8 +2153,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 const childTracks = tracks.filter(t => t.parentId === track.id);
                 const allGroupTracks = [track, ...childTracks];
                 
-                // Calculate total height for the group
-                const groupHeight = allGroupTracks.length * 64; // 64px per track (h-16 = 4rem = 64px)
+                // Calculate total height for the group - collapsed groups show only parent track height
+                const isCollapsed = collapsedGroups.has(track.id);
+                const groupHeight = isCollapsed ? 64 : allGroupTracks.length * 64; // 64px per track (h-16 = 4rem = 64px)
                 
                 // Render single container for the entire group
                 renderedTracks.push(
@@ -2257,8 +2258,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   </div>
                 );
                 
-                // Skip all tracks in this group
-                i += allGroupTracks.length;
+                // Skip all tracks in this group (if collapsed, only skip child tracks)
+                i += isCollapsed ? 1 : allGroupTracks.length;
               } else if (!track.parentId) {
                 // Regular track (not grouped)
                 renderedTracks.push(
@@ -2433,7 +2434,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               width={getTimelineWidth()}
               height={tracks.length * 64}
             />
-            {tracks.map((track, index) => {
+            {tracks.filter(track => {
+              // If it's a child track, check if its parent is collapsed
+              if (track.parentId) {
+                return !collapsedGroups.has(track.parentId);
+              }
+              return true;
+            }).map((track, index) => {
               // Convert track color to rgba with 5% opacity
               const getTrackBackgroundColor = (color: string) => {
                 // Remove # if present

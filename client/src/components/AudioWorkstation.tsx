@@ -406,6 +406,8 @@ export function AudioWorkstation() {
                   }}
                   onZoomChange={handleZoomChange}
                   isLocked={isTimelineLocked}
+                  collapsedGroups={collapsedGroups}
+                  onToggleGroupCollapse={toggleGroupCollapse}
                 />
               ) : viewMode === 'midi' ? (
                 <MidiEditor
