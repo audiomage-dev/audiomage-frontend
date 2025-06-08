@@ -2304,7 +2304,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight max-w-40">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-all leading-tight w-16">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
@@ -2452,8 +2452,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col max-w-40">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-all leading-tight w-16">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
