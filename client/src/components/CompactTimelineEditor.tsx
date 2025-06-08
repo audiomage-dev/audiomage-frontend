@@ -2646,12 +2646,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         {/* Horizontal Resize Handle */}
         <div
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-[var(--primary)] hover:opacity-50 transition-colors z-30"
+          className="absolute top-0 right-0 w-2 h-full cursor-col-resize bg-transparent hover:bg-[var(--primary)] hover:opacity-70 transition-all duration-200 z-30 group"
           onMouseDown={handlePanelResizeStart}
           style={{
-            cursor: resizingPanel ? 'col-resize' : 'col-resize'
+            cursor: resizingPanel ? 'col-resize' : 'col-resize',
+            right: '-1px' // Slightly overlap the border for better interaction
           }}
-        />
+          title="Drag to resize panel"
+        >
+          {/* Visual indicator on hover */}
+          <div className="absolute inset-0 bg-[var(--primary)] opacity-0 group-hover:opacity-30 transition-opacity" />
+        </div>
       </div>
 
       {/* Right Side - Timeline */}
