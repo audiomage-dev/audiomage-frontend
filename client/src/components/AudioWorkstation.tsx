@@ -4,7 +4,6 @@ import { VerticalSidebar } from './VerticalSidebar';
 import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
-import { SimpleContextualMenu } from './SimpleContextualMenu';
 import { MidiEditor } from './MidiEditor';
 import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
@@ -90,79 +89,20 @@ export function AudioWorkstation() {
     stopMidiPlayback?: () => void;
   }>({});
 
-  // Calculate optimal zoom level for fit-to-window
-  const calculateFitToWindowZoom = useCallback(() => {
-    // Find the longest clip end time
-    let maxContentTime = 0;
-    tracks.forEach(track => {
-      track.clips?.forEach(clip => {
-        const clipEndTime = clip.startTime + clip.duration;
-        if (clipEndTime > maxContentTime) {
-          maxContentTime = clipEndTime;
-        }
-      });
-    });
-
-    // If no clips, use default
-    if (maxContentTime === 0) {
-      return 1;
-    }
-
-    // Get available timeline width (subtract sidebar and padding)
-    const sidebarWidth = 280; // Left sidebar width
-    const padding = 40; // Timeline padding
-    const availableWidth = window.innerWidth - sidebarWidth - padding;
-
-    // Calculate zoom level that fits all content
-    const pixelsPerSecond = availableWidth / maxContentTime;
-    const baseZoomLevel = pixelsPerSecond / 60; // 60 is the base pixels per second
-
-    // Ensure reasonable zoom bounds
-    return Math.max(0.1, Math.min(5, baseZoomLevel));
-  }, [tracks]);
-
   // Define handler functions with useCallback first
   const handleZoomIn = useCallback(() => {
-    const newZoomLevel = Math.min(zoomLevel + 0.05, 5.0); // 5% increments, max 500%
+    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
     setZoomLevel(newZoomLevel);
   }, [zoomLevel]);
 
   const handleZoomOut = useCallback(() => {
-    const newZoomLevel = Math.max(zoomLevel - 0.05, 0.05); // 5% decrements, min 5%
+    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
     setZoomLevel(newZoomLevel);
   }, [zoomLevel]);
 
-  // Standard zoom presets
-  const handleZoomToPercent = useCallback((percent: number) => {
-    const zoomLevel = percent / 100;
-    setZoomLevel(zoomLevel);
-  }, []);
-
   const handleZoomChange = useCallback((newZoomLevel: number) => {
-    // If zoom level is set to 1.0 (100%), automatically fit all clips to window
-    if (Math.abs(newZoomLevel - 1.0) < 0.01) {
-      const fitZoomLevel = calculateFitToWindowZoom();
-      setZoomLevel(fitZoomLevel);
-    } else {
-      setZoomLevel(newZoomLevel);
-    }
-  }, [calculateFitToWindowZoom]);
-
-  // Handle zoom to fit (100% zoom shows all clips)
-  const handleZoomToFit = useCallback(() => {
-    const fitZoomLevel = calculateFitToWindowZoom();
-    setZoomLevel(fitZoomLevel);
-  }, [calculateFitToWindowZoom]);
-
-  // Initialize zoom to fit on component mount or when tracks change
-  useEffect(() => {
-    if (tracks.length > 0) {
-      const fitZoomLevel = calculateFitToWindowZoom();
-      if (fitZoomLevel !== zoomLevel) {
-        setZoomLevel(fitZoomLevel);
-      }
-    }
-  }, [tracks, calculateFitToWindowZoom]);
+    setZoomLevel(newZoomLevel);
+  }, []);
 
   // Calculate sidebar container height based on video player height
   useEffect(() => {
@@ -264,17 +204,10 @@ export function AudioWorkstation() {
           )}
           
           {/* Vertical Sidebar below video */}
-          <div className="flex-1 flex flex-col min-h-0 p-2 space-y-2">
+          <div className="flex-1 flex flex-col min-h-0 p-2">
             <VerticalSidebar 
               onFileSelect={setSelectedMediaFile} 
               containerHeight={sidebarContainerHeight}
-            />
-            
-            {/* Intelligent Contextual Menu Demo */}
-            <SimpleContextualMenu 
-              tracks={tracks}
-              onTrackMute={toggleTrackMute}
-              onTrackSolo={toggleTrackSolo}
             />
           </div>
         </div>
@@ -444,8 +377,6 @@ export function AudioWorkstation() {
                 onSeek={seekTo}
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
-                onZoomToPercent={handleZoomToPercent}
-                onZoomToFit={handleZoomToFit}
                 onViewModeChange={setViewMode}
                 onMidiPlay={() => {
                   midiPlaybackFunctions.playMidiTrack?.();

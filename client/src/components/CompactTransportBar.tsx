@@ -17,8 +17,6 @@ interface CompactTransportBarProps {
   onSeek?: (time: number) => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
-  onZoomToPercent?: (percent: number) => void;
-  onZoomToFit?: () => void;
   onViewModeChange?: (mode: 'timeline' | 'midi' | 'score') => void;
   // MIDI-specific playback functions
   onMidiPlay?: () => void;
@@ -328,8 +326,6 @@ export function CompactTransportBar({
   onSeek,
   onZoomIn,
   onZoomOut,
-  onZoomToPercent,
-  onZoomToFit,
   onViewModeChange,
   onMidiPlay,
   onMidiPause,
@@ -618,39 +614,18 @@ export function CompactTransportBar({
             onClick={onZoomOut}
             disabled={!onZoomOut}
             className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)] disabled:opacity-50"
-            title="Zoom Out (5%)"
+            title="Zoom Out"
           >
             -
           </button>
-          <div className="relative group">
-            <span className="text-xs text-[var(--foreground)] min-w-[2.5rem] text-center font-mono cursor-pointer hover:bg-[var(--accent)] px-1 rounded">
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            {/* Zoom Preset Dropdown */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg py-1 min-w-[80px] z-50">
-              {[25, 50, 75, 100, 125, 150, 200, 300, 400, 500].map(percent => (
-                <button
-                  key={percent}
-                  onClick={() => onZoomToPercent?.(percent)}
-                  className="w-full text-left px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
-                >
-                  {percent}%
-                </button>
-              ))}
-              <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
-              <button
-                onClick={onZoomToFit}
-                className="w-full text-left px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
-              >
-                Fit All
-              </button>
-            </div>
-          </div>
+          <span className="text-xs text-[var(--foreground)] min-w-[2.5rem] text-center font-mono">
+            {Math.round(zoomLevel * 100)}%
+          </span>
           <button
             onClick={onZoomIn}
             disabled={!onZoomIn}
             className="h-5 w-5 flex items-center justify-center hover:bg-[var(--accent)] rounded text-[var(--foreground)] disabled:opacity-50"
-            title="Zoom In (5%)"
+            title="Zoom In"
           >
             +
           </button>
