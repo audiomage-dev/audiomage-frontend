@@ -185,7 +185,7 @@ export function CompactTimelineEditor({
         <div 
           className="w-48 flex-shrink-0 flex items-center px-3 border-r border-[var(--border)] relative"
           style={{ 
-            backgroundColor: `${track.color}1A`, // 10% transparency
+            backgroundColor: `${track.color}33`, // 20% transparency
             borderLeft: `4px solid ${track.color}`
           }}
           onContextMenu={(e) => handleRightClick(e, 'track-header', { 
@@ -195,7 +195,7 @@ export function CompactTimelineEditor({
           })}
         >
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-[var(--foreground)] truncate">
+            <div className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
               {track.name}
             </div>
           </div>
