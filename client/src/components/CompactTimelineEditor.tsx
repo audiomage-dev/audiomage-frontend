@@ -2176,7 +2176,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
       {/* Left Sidebar - Track Headers */}
       <div 
-        className="w-80 border-r border-[var(--border)] flex flex-col relative"
+        className="w-96 border-r border-[var(--border)] flex flex-col relative"
       >
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
@@ -2304,7 +2304,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)',
-                          maxWidth: `${320 - 120}px` // Responsive to panel width, accounting for controls
+                          maxWidth: `${384 - 120}px` // Responsive to panel width, accounting for controls
                         }}
                       >
                         {/* Header section */}
