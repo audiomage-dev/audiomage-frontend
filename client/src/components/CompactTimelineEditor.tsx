@@ -2628,6 +2628,58 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         {/* Timeline Header with Ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
           
+          {/* Grid lines in header */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{ 
+              width: `${getTimelineWidth()}px`,
+              transform: `translateX(-${scrollX}px)`
+            }}
+          >
+            {(() => {
+              const timelineWidth = getTimelineWidth();
+              const pixelsPerSecond = 60 * zoomLevel;
+              const totalTimelineSeconds = timelineWidth / pixelsPerSecond;
+              
+              // Grid interval based on zoom level and display mode
+              let gridInterval: number;
+              if (gridDisplayMode === 'timecode') {
+                // Timecode mode: grid every 30 frames (assuming 30fps) = 1 second
+                gridInterval = 1; // 1 second intervals
+              } else {
+                // Seconds mode: adaptive intervals based on zoom
+                if (zoomLevel >= 4) {
+                  gridInterval = 0.5; // Half-second intervals at high zoom
+                } else if (zoomLevel >= 2) {
+                  gridInterval = 1; // 1-second intervals at medium zoom
+                } else {
+                  gridInterval = 5; // 5-second intervals at low zoom
+                }
+              }
+              
+              const gridCount = Math.ceil(totalTimelineSeconds / gridInterval);
+              
+              return Array.from({ length: gridCount + 1 }).map((_, index) => {
+                const timePosition = index * gridInterval;
+                const xPosition = timePosition * pixelsPerSecond;
+                
+                if (xPosition > timelineWidth) return null;
+                
+                return (
+                  <div
+                    key={`header-grid-${index}`}
+                    className="absolute top-0 bottom-0 w-px"
+                    style={{
+                      left: `${xPosition}px`,
+                      backgroundColor: 'rgba(156, 163, 175, 0.3)', // Neutral grid color for header
+                      transform: `translateX(-${scrollX}px)`
+                    }}
+                  />
+                );
+              }).filter(Boolean);
+            })()}
+          </div>
+          
           <div 
             className="absolute inset-0 flex items-center"
             style={{ 
