@@ -808,6 +808,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const isCtrlClick = e.ctrlKey || e.metaKey;
     const isAltClick = e.altKey;
     
+    // For selection tool, enable clip dragging
+    if (currentTool === 'select') {
+      // Set cursor to grabbing when starting drag
+      setCursorState('grabbing');
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     // Detect interaction zone
     const clipElement = e.currentTarget as HTMLElement;
     const zone = getClipInteractionZone(e, clipElement, clip);
@@ -817,10 +825,12 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       handleTimelineRangeSelection(e);
       return;
     } else if (zone === 'resize-left' || zone === 'resize-right') {
-      // Handle resizing
-      setCursorState('col-resize');
-      handleClipResizeStart(e, clipId, trackId, zone === 'resize-left' ? 'left' : 'right');
-      return;
+      // Handle resizing (only if not using selection tool for basic dragging)
+      if (currentTool !== 'select') {
+        setCursorState('col-resize');
+        handleClipResizeStart(e, clipId, trackId, zone === 'resize-left' ? 'left' : 'right');
+        return;
+      }
     }
     
     // DAW Standard: Handle clip selection before dragging
@@ -1558,6 +1568,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     setIsDragging(false);
     setIsSelecting(false);
     setSelectionBox(null);
+    
+    // Reset cursor for selection tool
+    if (currentTool === 'select') {
+      setCursorState('default');
+    }
     
     // Note: Clip dragging finalization is handled by the document mouse up handler
     // to avoid duplicate calls to onClipMove
@@ -2744,7 +2759,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             setSelectionBox(null);
             setDraggingClip(null);
           }}
-          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : 'default' }}
+          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : currentTool === 'select' ? 'default' : 'default' }}
         >
           <div 
             className="relative" 
@@ -2888,7 +2903,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         key={`${track.id}-clip-${clip.id}`}
                         data-clip-id={clip.id}
                         data-clip-element="true"
-                        className={`absolute top-1 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                        className={`absolute top-1 rounded-md shadow-md border border-opacity-30 hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
                             ? 'opacity-60 scale-105 z-50' 
                             : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
@@ -2899,8 +2914,12 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         }`}
                         onMouseDown={(e) => handleClipDragStart(e, clip.id, track.id)}
                         onMouseMove={(e) => {
-                          const zone = getClipInteractionZone(e, e.currentTarget as HTMLElement, clip);
-                          updateCursorForClip(zone);
+                          if (currentTool === 'select') {
+                            setCursorState('grab');
+                          } else {
+                            const zone = getClipInteractionZone(e, e.currentTarget as HTMLElement, clip);
+                            updateCursorForClip(zone);
+                          }
                         }}
                         onMouseLeave={() => setCursorState('default')}
                         onContextMenu={(e) => {
