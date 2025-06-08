@@ -30,24 +30,9 @@ export function useAudioWorkstation() {
       { id: 'video', name: 'Video', color: '#E5E5E5', isGroup: false },
       { id: 'dialogue', name: 'Dialogue', color: '#3B82F6', isGroup: false },
       { id: 'music', name: 'Music', color: '#10B981', isGroup: false },
-      { id: 'foley', name: 'Foley', color: '#F59E0B', isGroup: true },
-      { id: 'foley-1', name: 'Foley 1', color: '#F59E0B', isGroup: false, parentId: 'foley' },
-      { id: 'foley-2', name: 'Foley 2', color: '#F59E0B', isGroup: false, parentId: 'foley' },
-      { id: 'foley-3', name: 'Foley 3', color: '#F59E0B', isGroup: false, parentId: 'foley' },
-      { id: 'foley-4', name: 'Foley 4', color: '#F59E0B', isGroup: false, parentId: 'foley' },
-      { id: 'foley-5', name: 'Foley 5', color: '#F59E0B', isGroup: false, parentId: 'foley' },
-      { id: 'sound-design', name: 'Sound Design', color: '#8B5CF6', isGroup: true },
-      { id: 'sound-design-1', name: 'SFX 1', color: '#8B5CF6', isGroup: false, parentId: 'sound-design' },
-      { id: 'sound-design-2', name: 'SFX 2', color: '#8B5CF6', isGroup: false, parentId: 'sound-design' },
-      { id: 'sound-design-3', name: 'SFX 3', color: '#8B5CF6', isGroup: false, parentId: 'sound-design' },
-      { id: 'sound-design-4', name: 'SFX 4', color: '#8B5CF6', isGroup: false, parentId: 'sound-design' },
-      { id: 'sound-design-5', name: 'SFX 5', color: '#8B5CF6', isGroup: false, parentId: 'sound-design' },
-      { id: 'ambiance', name: 'Ambiance', color: '#EC4899', isGroup: true },
-      { id: 'ambiance-1', name: 'Ambiance 1', color: '#EC4899', isGroup: false, parentId: 'ambiance' },
-      { id: 'ambiance-2', name: 'Ambiance 2', color: '#EC4899', isGroup: false, parentId: 'ambiance' },
-      { id: 'ambiance-3', name: 'Ambiance 3', color: '#EC4899', isGroup: false, parentId: 'ambiance' },
-      { id: 'ambiance-4', name: 'Ambiance 4', color: '#EC4899', isGroup: false, parentId: 'ambiance' },
-      { id: 'ambiance-5', name: 'Ambiance 5', color: '#EC4899', isGroup: false, parentId: 'ambiance' }
+      { id: 'foley', name: 'Foley', color: '#F59E0B', isGroup: false },
+      { id: 'sound-design', name: 'Sound Design', color: '#8B5CF6', isGroup: false },
+      { id: 'ambiance', name: 'Ambiance', color: '#EC4899', isGroup: false }
     ];
 
     const getClipsForTrack = (trackId: string, sessionId: string): AudioClip[] => {
