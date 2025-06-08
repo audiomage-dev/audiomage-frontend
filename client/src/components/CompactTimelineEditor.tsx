@@ -2175,7 +2175,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
       {/* Left Sidebar - Track Headers */}
       <div 
-        className="w-96 border-r border-[var(--border)] flex flex-col relative"
+        className="w-80 border-r border-[var(--border)] flex flex-col relative"
       >
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
@@ -2303,11 +2303,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)',
-                          maxWidth: `${384 - 120}px` // Responsive to panel width, accounting for controls
+                          maxWidth: `${320 - 120}px` // Responsive to panel width, accounting for controls
                         }}
                       >
                         {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-8">
+                        <div className="flex items-center space-x-2 mb-2">
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
@@ -2371,7 +2371,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       </div>
 
                       {/* Individual child track controls on the right */}
-                      <div className="absolute top-1 right-1 flex flex-col justify-start space-y-1" style={{ width: '60px', zIndex: 30 }}>
+                      <div className="absolute right-3 top-0 flex flex-col justify-center h-full space-y-1">
                         {childTracks.map((childTrack, index) => (
                           <div 
                             key={`child-controls-${childTrack.id}`}
