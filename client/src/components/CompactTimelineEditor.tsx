@@ -3221,147 +3221,180 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               />
             )}
 
-            {/* Accessible Context Menu for Range Selection */}
+            {/* Multi-Track Range Context Menu */}
             {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
                 className="fixed z-50 pointer-events-auto"
                 style={{
                   left: `${Math.min(cursorPosition.x, window.innerWidth - 240)}px`,
-                  top: `${Math.min(cursorPosition.y, window.innerHeight - 340)}px`,
+                  top: `${Math.min(cursorPosition.y, window.innerHeight - 400)}px`,
                 }}
                 role="menu"
-                aria-label="Range selection actions"
+                aria-label="Multi-track range operations"
                 data-range-actions
               >
-                {/* Accessible context menu with improved design */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl py-2 min-w-[200px] backdrop-blur-sm">
-                  {/* Header with range duration */}
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                      Range Actions
+                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl py-1 min-w-[220px]">
+                  {/* Header */}
+                  <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      Multi-Track Operations
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                      {(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s duration
+                      {(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s across all tracks
                     </div>
                   </div>
                   
-                  {/* AI-powered actions */}
-                  <div className="px-3 py-1">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      AI-Powered Tools
-                    </div>
+                  {/* Clip Manipulation */}
+                  <div className="py-1">
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Split all clips at range boundaries');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Scissors className="w-4 h-4" />
+                      Split All Clips at Boundaries
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Delete clips within range');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete Clips in Range
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Copy clips from all tracks');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy All Clips
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Ripple delete range');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Move className="w-4 h-4" />
+                      Ripple Delete
+                    </button>
                   </div>
                   
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('AI Generate Music for range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <Sparkles className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                    <div>
-                      <div className="text-gray-800 dark:text-gray-200">Generate AI Music</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Create music for this range</div>
-                    </div>
-                  </button>
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
                   
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-green-50 dark:hover:bg-green-900/20 focus:bg-green-50 dark:focus:bg-green-900/20 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('AI Enhance Audio for range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <TrendingUp className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    <div>
-                      <div className="text-gray-800 dark:text-gray-200">AI Enhance Audio</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Improve audio quality</div>
-                    </div>
-                  </button>
-                  
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('AI Mix for range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <BarChart3 className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                    <div>
-                      <div className="text-gray-800 dark:text-gray-200">AI Smart Mix</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Auto-balance levels</div>
-                    </div>
-                  </button>
-                  
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                  
-                  {/* Standard editing actions */}
-                  <div className="px-3 py-1">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Edit Operations
-                    </div>
+                  {/* Track Control */}
+                  <div className="py-1">
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Mute all affected tracks');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <VolumeX className="w-4 h-4" />
+                      Mute Affected Tracks
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Solo affected tracks');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Radio className="w-4 h-4" />
+                      Solo Affected Tracks
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Group affected tracks');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Link className="w-4 h-4" />
+                      Group Tracks
+                    </button>
                   </div>
                   
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('Cut range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <Scissors className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                    <div className="text-gray-800 dark:text-gray-200">Cut</div>
-                  </button>
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
                   
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('Copy range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                    <div className="text-gray-800 dark:text-gray-200">Copy</div>
-                  </button>
+                  {/* Audio Processing */}
+                  <div className="py-1">
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Normalize all clips in range');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      Normalize All Audio
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Apply crossfades between clips');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <TrendingDown className="w-4 h-4" />
+                      Auto Crossfade
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Time stretch all clips');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Time Stretch All
+                    </button>
+                  </div>
                   
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20 focus:outline-none flex items-center gap-3 transition-colors"
-                    onClick={() => {
-                      console.log('Delete range:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <div className="text-gray-800 dark:text-gray-200">Delete</div>
-                  </button>
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
                   
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                  
-                  <button
-                    role="menuitem"
-                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none font-medium text-gray-800 dark:text-gray-200 transition-colors"
-                    onClick={() => {
-                      console.log('Show full range options for:', rangeSelection);
-                      setShowRangeActions(false);
-                    }}
-                    tabIndex={0}
-                  >
-                    More Options...
-                  </button>
+                  {/* Organization */}
+                  <div className="py-1">
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Create submix from range');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Files className="w-4 h-4" />
+                      Create Submix
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Bounce to new track');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Bounce to New Track
+                    </button>
+                    <button
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      onClick={() => {
+                        console.log('Export multi-track selection');
+                        setShowRangeActions(false);
+                      }}
+                    >
+                      <Files className="w-4 h-4" />
+                      Export Selection
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
