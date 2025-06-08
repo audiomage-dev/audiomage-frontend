@@ -2692,7 +2692,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           {/* Range Selection Overlay in Timeline Header */}
           {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
             <div
-              className="absolute bg-blue-500/30 border-l-2 border-r-2 border-blue-500 pointer-events-none z-50"
+              className="absolute bg-blue-500/30 border-l border-r border-blue-500 pointer-events-none z-50"
               style={{
                 left: `${rangeSelection.startTime * 60 * zoomLevel - scrollX}px`,
                 top: '0px',
@@ -2701,8 +2701,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               }}
             >
               {/* Time markers at the edges */}
-              <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-500" />
-              <div className="absolute top-0 right-0 w-0.5 h-full bg-blue-500" />
+              <div className="absolute top-0 left-0 w-px h-full bg-blue-500" />
+              <div className="absolute top-0 right-0 w-px h-full bg-blue-500" />
             </div>
           )}
         </div>
@@ -3095,7 +3095,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* DAW-style Range Selection Overlay */}
             {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
-                className="absolute bg-blue-500/20 border-l-2 border-r-2 border-blue-500 pointer-events-none z-50"
+                className="absolute bg-blue-500/20 border-l border-r border-blue-500 pointer-events-none z-50"
                 style={{
                   left: `${rangeSelection.startTime * 60 * zoomLevel}px`,
                   top: '0px',
@@ -3104,8 +3104,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 }}
               >
                 {/* Time markers at the edges */}
-                <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-500" />
-                <div className="absolute top-0 right-0 w-0.5 h-full bg-blue-500" />
+                <div className="absolute top-0 left-0 w-px h-full bg-blue-500" />
+                <div className="absolute top-0 right-0 w-px h-full bg-blue-500" />
                 
                 {/* Time display at top */}
                 <div className="absolute -top-6 left-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded">
