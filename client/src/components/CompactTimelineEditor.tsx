@@ -169,9 +169,9 @@ export function CompactTimelineEditor({
   // Render track
   const renderTrack = (track: AudioTrack, index: number) => {
     const isSelected = selectedTracks.has(track.id);
-    const isCollapsed = collapsedGroups.has(track.groupId || '');
+    const isCollapsed = collapsedGroups.has(track.parentId || '');
     
-    if (isCollapsed && track.groupId) return null;
+    if (isCollapsed && track.parentId) return null;
     
     return (
       <div
@@ -213,7 +213,7 @@ export function CompactTimelineEditor({
             <button
               onClick={() => onTrackSolo(track.id)}
               className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
-                track.solo
+                track.soloed
                   ? 'bg-yellow-500 text-white'
                   : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--accent)]'
               }`}
@@ -288,21 +288,45 @@ export function CompactTimelineEditor({
         <div className="flex">
           {/* Track Header Space */}
           <div className="w-48 flex-shrink-0 border-r border-[var(--border)] flex items-center justify-between px-3">
-            <div className="text-xs font-medium text-[var(--muted-foreground)]">
-              TRACKS
+            <div className="flex items-center space-x-2">
+              <div className="text-xs font-medium text-[var(--muted-foreground)]">
+                TRACKS
+              </div>
+              <button
+                onClick={() => {
+                  // Toggle grid view - could be passed as prop or managed in parent
+                  console.log('Toggle grid view');
+                }}
+                className="w-5 h-5 flex items-center justify-center text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)] rounded"
+                title="Toggle Grid View"
+              >
+                <Grid3x3 className="w-3 h-3" />
+              </button>
             </div>
             <div className="flex items-center space-x-1">
               <button
-                onClick={() => handleZoomChange(internalZoomLevel * 1.2)}
+                onClick={() => {
+                  // Add new track - could trigger a callback to parent
+                  console.log('Add new track');
+                }}
                 className="w-6 h-6 flex items-center justify-center text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)] rounded"
+                title="Add Track"
               >
                 <Plus className="w-3 h-3" />
               </button>
               <button
-                onClick={() => handleZoomChange(internalZoomLevel / 1.2)}
-                className="w-6 h-6 flex items-center justify-center text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)] rounded"
+                onClick={() => handleZoomChange(internalZoomLevel * 1.2)}
+                className="w-5 h-5 flex items-center justify-center text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)] rounded"
+                title="Zoom In"
               >
-                <Minus className="w-3 h-3" />
+                <ZoomIn className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => handleZoomChange(internalZoomLevel / 1.2)}
+                className="w-5 h-5 flex items-center justify-center text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--accent)] rounded"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-3 h-3" />
               </button>
             </div>
           </div>
