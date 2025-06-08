@@ -758,6 +758,20 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     document.addEventListener('mouseup', handleMouseUp);
   }, [tracks, zoomLevel, scrollX]);
 
+  // Update mouse up handlers to capture cursor position
+  useEffect(() => {
+    const updateCursorPosition = (e: MouseEvent) => {
+      if (showRangeActions) {
+        setCursorPosition({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    if (showRangeActions) {
+      // Set initial cursor position from the last mouse interaction
+      setCursorPosition(prev => prev.x === 0 ? { x: window.innerWidth / 2, y: window.innerHeight / 2 } : prev);
+    }
+  }, [showRangeActions]);
+
   // Handle range selection from timeline header
   const handleTimelineHeaderRangeSelection = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
