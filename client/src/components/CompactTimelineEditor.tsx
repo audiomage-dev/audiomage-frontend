@@ -2168,7 +2168,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
 
       {/* Left Sidebar - Track Headers */}
-      <div className="w-64 border-r border-[var(--border)] flex flex-col">
+      <div className="w-80 border-r border-[var(--border)] flex flex-col">
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
           <div className="flex items-center justify-between px-3 h-full w-full">
