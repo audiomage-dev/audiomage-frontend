@@ -2341,18 +2341,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         </div>
                       </div>
 
-                      {/* Child tracks controls on the right */}
+                      {/* Child tracks controls on the right - buttons only */}
                       {!isCollapsed && (
                         <div className="flex flex-col justify-center space-y-1 pr-3">
                           {childTracks.map((childTrack) => (
                             <div key={`child-controls-${childTrack.id}`} className="flex items-center space-x-1">
-                              <div 
-                                className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
-                                style={{ backgroundColor: childTrack.color }}
-                              />
-                              <span className="text-xs text-[var(--muted-foreground)] truncate min-w-0 max-w-16">
-                                {childTrack.name}
-                              </span>
                               <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
