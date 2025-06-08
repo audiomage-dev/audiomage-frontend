@@ -2276,9 +2276,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onMouseDown={(e) => handleResizeStart(e, track.id)}
                       />
                       
+                      {/* Collapse button - top left corner */}
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleGroupCollapse?.(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 left-1 h-4 w-4 p-0 hover:bg-[var(--accent)] z-20"
+                      >
+                        <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                      </Button>
+
                       {/* Parent track header - vertically centered */}
                       <div 
-                        className="absolute left-0 flex flex-col z-10" 
+                        className="absolute left-6 flex flex-col z-10 max-w-48" 
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)' 
@@ -2286,27 +2299,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       >
                         {/* Header section */}
                         <div className="flex items-center space-x-2 mb-2">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleGroupCollapse?.(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                          >
-                            <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
-                          </Button>
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                            {track.name}
-                          </span>
-                          {track.type === 'ai-generated' && (
-                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                          )}
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight max-w-40">
+                              {track.name}
+                            </span>
+                            {track.type === 'ai-generated' && (
+                              <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full mt-0.5"></div>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Parent track mute/solo buttons under header */}
@@ -2429,29 +2433,33 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         onMouseDown={(e) => handleResizeStart(e, track.id)}
                       />
+                      {/* Collapse button - top left corner */}
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleGroupCollapse?.(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 left-1 h-4 w-4 p-0 hover:bg-[var(--accent)] z-20"
+                      >
+                        <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
+                      </Button>
+
                       <div className="flex items-center justify-between min-w-0">
-                        <div className="flex items-center space-x-2 min-w-0">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleGroupCollapse?.(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                          >
-                            <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
-                          </Button>
+                        <div className="flex items-center space-x-2 min-w-0 ml-6">
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                            {track.name}
-                          </span>
-                          {track.type === 'ai-generated' && (
-                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                          )}
+                          <div className="flex flex-col max-w-40">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight">
+                              {track.name}
+                            </span>
+                            {track.type === 'ai-generated' && (
+                              <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full mt-0.5"></div>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Button
