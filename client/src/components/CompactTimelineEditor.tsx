@@ -2245,13 +2245,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   renderedTracks.push(
                     <div
                       key={`track-group-${track.id}`}
-                      className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
+                      className={`border-b border-[var(--border)] border-l-4 px-3 py-2 cursor-pointer transition-colors group relative ${
                         allGroupTracks.some(t => selectedTrackIds.includes(t.id))
                           ? 'border-l-[var(--primary)]' 
                           : 'hover:brightness-110'
                       }`}
                       style={{ 
-                        height: `${groupHeight}px`,
+                        height: `${Math.max(groupHeight, 80)}px`,
+                        minHeight: '80px',
                         borderLeftColor: allGroupTracks.some(t => selectedTrackIds.includes(t.id)) 
                           ? 'var(--primary)' 
                           : track.color,
@@ -2289,22 +2290,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
                       </Button>
 
-                      {/* Parent track header - vertically centered */}
+                      {/* Parent track header - positioned at top with proper spacing */}
                       <div 
-                        className="absolute left-6 flex flex-col z-10 max-w-48" 
-                        style={{ 
-                          top: '50%', 
-                          transform: 'translateY(-50%)' 
-                        }}
+                        className="absolute left-6 top-2 flex flex-col z-10 max-w-44" 
                       >
                         {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex items-center space-x-2 mb-1.5">
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight w-40">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight max-w-36">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
@@ -2355,7 +2352,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       </div>
 
                       {/* Individual child track controls on the right */}
-                      <div className="absolute right-3 top-0 flex flex-col justify-center h-full space-y-1">
+                      <div className="absolute right-3 flex flex-col justify-center space-y-1" style={{ 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        height: `${Math.min(groupHeight - 20, childTracks.length * 20)}px`
+                      }}>
                         {childTracks.map((childTrack, index) => (
                           <div 
                             key={`child-controls-${childTrack.id}`}
