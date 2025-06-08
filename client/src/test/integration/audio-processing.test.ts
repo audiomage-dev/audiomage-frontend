@@ -7,7 +7,7 @@ import { AudioWorkstation } from '../../components/AudioWorkstation';
 describe('Audio Processing Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock Web Audio API for integration tests
     global.AudioContext = vi.fn().mockImplementation(() => ({
       createGain: vi.fn().mockReturnValue({
@@ -43,18 +43,19 @@ describe('Audio Processing Integration', () => {
       if (url.includes('/api/upload')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({
-            success: true,
-            fileId: 'test-audio-file',
-            waveformData: new Array(1000).fill(0).map(() => Math.random()),
-          }),
+          json: () =>
+            Promise.resolve({
+              success: true,
+              fileId: 'test-audio-file',
+              waveformData: new Array(1000).fill(0).map(() => Math.random()),
+            }),
         });
       }
       return Promise.resolve({ ok: false });
     });
 
     const { container } = render(React.createElement(AudioWorkstation));
-    
+
     // Simulate file upload
     const fileInput = container.querySelector('input[type="file"]');
     if (fileInput) {
@@ -63,7 +64,7 @@ describe('Audio Processing Integration', () => {
         value: [file],
         writable: false,
       });
-      
+
       fileInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
@@ -93,11 +94,12 @@ describe('Audio Processing Integration', () => {
       if (url.includes('/api/midi/process')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({
-            success: true,
-            audioData: new ArrayBuffer(1024),
-            waveformData: new Array(500).fill(0).map(() => Math.random()),
-          }),
+          json: () =>
+            Promise.resolve({
+              success: true,
+              audioData: new ArrayBuffer(1024),
+              waveformData: new Array(500).fill(0).map(() => Math.random()),
+            }),
         });
       }
       return Promise.resolve({ ok: false });
@@ -133,9 +135,11 @@ describe('Audio Processing Integration', () => {
     });
 
     const { container } = render(React.createElement(AudioWorkstation));
-    
+
     // Start recording
-    const recordButton = container.querySelector('[data-testid="record-button"]');
+    const recordButton = container.querySelector(
+      '[data-testid="record-button"]'
+    );
     if (recordButton) {
       recordButton.dispatchEvent(new Event('click', { bubbles: true }));
     }
@@ -192,14 +196,15 @@ describe('Audio Processing Integration', () => {
       if (url.includes('/api/mix/sync')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({
-            success: true,
-            mixedAudio: new ArrayBuffer(2048),
-            timing: {
-              totalDuration: 10,
-              syncPoints: [0, 2, 5],
-            },
-          }),
+          json: () =>
+            Promise.resolve({
+              success: true,
+              mixedAudio: new ArrayBuffer(2048),
+              timing: {
+                totalDuration: 10,
+                syncPoints: [0, 2, 5],
+              },
+            }),
         });
       }
       return Promise.resolve({ ok: false });
@@ -217,7 +222,7 @@ describe('Audio Processing Integration', () => {
 
   it('should handle audio format conversion', async () => {
     const formats = ['wav', 'mp3', 'flac', 'aac'];
-    
+
     for (const format of formats) {
       global.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes(`/api/convert/${format}`)) {
@@ -250,29 +255,25 @@ describe('Audio Processing Integration', () => {
 
   it('should maintain audio quality during processing chain', async () => {
     const originalAudio = new ArrayBuffer(2048);
-    const processingSteps = [
-      'normalize',
-      'eq',
-      'compression',
-      'reverb',
-    ];
+    const processingSteps = ['normalize', 'eq', 'compression', 'reverb'];
 
     let currentAudio = originalAudio;
-    
+
     for (const step of processingSteps) {
       global.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes(`/api/process/${step}`)) {
           return Promise.resolve({
             ok: true,
             arrayBuffer: () => Promise.resolve(new ArrayBuffer(2048)),
-            json: () => Promise.resolve({
-              qualityMetrics: {
-                dynamicRange: 85,
-                peakLevel: -3,
-                rmsLevel: -18,
-                thd: 0.001,
-              },
-            }),
+            json: () =>
+              Promise.resolve({
+                qualityMetrics: {
+                  dynamicRange: 85,
+                  peakLevel: -3,
+                  rmsLevel: -18,
+                  thd: 0.001,
+                },
+              }),
           });
         }
         return Promise.resolve({ ok: false });
@@ -285,7 +286,7 @@ describe('Audio Processing Integration', () => {
 
       expect(response.ok).toBe(true);
       currentAudio = await response.arrayBuffer();
-      
+
       const metrics = await response.json();
       expect(metrics.qualityMetrics.thd).toBeLessThan(0.01); // Low distortion
     }
