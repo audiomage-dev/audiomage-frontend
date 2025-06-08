@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Shuffle, Grid3x3, Target, Move } from 'lucide-react';
+import { Play, Pause, Square, Circle, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Shuffle, Grid3x3, Target, Move, RotateCcw, Repeat, Gauge, Hand, MousePointer, Edit3, Sliders } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -527,8 +527,69 @@ export function CompactTransportBar({
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
 
+        {/* Loop Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Toggle loop functionality
+            console.log('Loop toggled');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Loop"
+        >
+          <Repeat className="w-4 h-4" />
+        </Button>
 
+        {/* Automation Mode */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Toggle automation mode
+            console.log('Automation mode toggled');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Automation"
+        >
+          <Sliders className="w-4 h-4" />
+        </Button>
 
+        {/* Tool Selection */}
+        <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
+          <button
+            className="h-7 px-2 flex items-center justify-center transition-colors bg-[var(--primary)] text-[var(--primary-foreground)]"
+            title="Select Tool"
+          >
+            <MousePointer className="w-3 h-3" />
+          </button>
+          <button
+            className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)]"
+            title="Hand Tool"
+          >
+            <Hand className="w-3 h-3" />
+          </button>
+          <button
+            className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)]"
+            title="Edit Tool"
+          >
+            <Edit3 className="w-3 h-3" />
+          </button>
+        </div>
+
+        {/* Tempo Tap */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Tap tempo functionality
+            console.log('Tempo tapped');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Tap Tempo"
+        >
+          <Gauge className="w-4 h-4" />
+        </Button>
 
         {/* View Mode Toggle */}
         <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
