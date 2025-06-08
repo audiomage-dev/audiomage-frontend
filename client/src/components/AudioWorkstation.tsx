@@ -275,15 +275,15 @@ export function AudioWorkstation() {
                   <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
                 </div>
                 
-                {/* Metallic Fader Handle - Professional */}
+                {/* Professional Fader Cap */}
                 <div 
-                  className="absolute w-5 h-8 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-5 h-8 cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none rounded-sm border border-gray-600"
                   style={{ 
                     top: '25%',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.5)',
-                    background: 'linear-gradient(to bottom, #e5e7eb 0%, #9ca3af 50%, #6b7280 100%)'
+                    background: 'linear-gradient(to bottom, #f3f4f6 0%, #d1d5db 20%, #9ca3af 50%, #6b7280 80%, #4b5563 100%)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.4)'
                   }}
                   title="Master Volume: 0dB"
                   onMouseDown={(e) => {
@@ -300,12 +300,15 @@ export function AudioWorkstation() {
                       const clampedY = Math.max(0, Math.min(trackHeight - handleHeight, relativeY));
                       const topPercent = (clampedY / (trackHeight - handleHeight)) * 100;
                       
-                      e.currentTarget.style.top = topPercent + '%';
-                      
-                      // Calculate dB value (inverted because top = higher volume)
-                      const volumePercent = 1 - (topPercent / 100);
-                      const dbValue = -60 + (volumePercent * 66); // -60dB to +6dB range
-                      e.currentTarget.title = `Master Volume: ${dbValue.toFixed(1)}dB`;
+                      const currentTarget = e.currentTarget as HTMLElement;
+                      if (currentTarget && currentTarget.style) {
+                        currentTarget.style.top = topPercent + '%';
+                        
+                        // Calculate dB value (inverted because top = higher volume)
+                        const volumePercent = 1 - (topPercent / 100);
+                        const dbValue = -60 + (volumePercent * 66); // -60dB to +6dB range
+                        currentTarget.title = `Master Volume: ${dbValue.toFixed(1)}dB`;
+                      }
                     };
                     
                     const handleMouseUp = () => {
@@ -318,7 +321,15 @@ export function AudioWorkstation() {
                     document.addEventListener('mouseup', handleMouseUp);
                     e.currentTarget.style.cursor = 'grabbing';
                   }}
-                ></div>
+                >
+                  {/* Black center line for fader cap */}
+                  <div 
+                    className="absolute left-1/2 top-1/2 w-3 h-px bg-black transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{
+                      boxShadow: '0 1px 0 rgba(255,255,255,0.3)'
+                    }}
+                  ></div>
+                </div>
               </div>
             </div>
             
