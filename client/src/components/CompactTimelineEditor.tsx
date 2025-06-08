@@ -33,7 +33,8 @@ import {
   Copy,
   Link,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Sliders
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -163,19 +164,122 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     width: number;
   } | null>(null);
 
-  // Context menu states
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackIds: string[] } | null>(null);
-  const [audioContextMenu, setAudioContextMenu] = useState<{ 
-    x: number; 
-    y: number; 
-    selection: { trackId: string; startTime: number; endTime: number; trackName: string } 
-  } | null>(null);
-  const [clipContextMenu, setClipContextMenu] = useState<{ 
-    x: number; 
-    y: number; 
-    clip: { id: string; name: string; trackId: string; trackName: string } 
+  // Intelligent contextual menu state
+  const [intelligentContextMenu, setIntelligentContextMenu] = useState<{
+    x: number;
+    y: number;
+    type: 'clip' | 'track' | 'empty-space' | 'multi-selection' | 'range' | 'track-header';
+    context: {
+      clipId?: string;
+      trackId?: string;
+      trackType?: string;
+      clipType?: string;
+      isEmpty?: boolean;
+      selectedCount?: number;
+      timePosition?: number;
+      rangeData?: { startTime: number; endTime: number; };
+      trackName?: string;
+      clipName?: string;
+    };
+    suggestions: Array<{
+      id: string;
+      label: string;
+      icon: any;
+      action: string;
+      priority: 'high' | 'medium' | 'low';
+      category: 'edit' | 'audio' | 'organize' | 'ai' | 'workflow';
+      description?: string;
+      shortcut?: string;
+      destructive?: boolean;
+    }>;
   } | null>(null);
   
+  // Intelligent action suggestion engine
+  const generateContextualSuggestions = useCallback((contextType: string, context: any) => {
+    const suggestions = [];
+
+    switch (contextType) {
+      case 'clip':
+        const isAudioClip = context.clipType === 'audio';
+        const isVideoClip = context.clipType === 'video';
+        
+        // High priority actions for clips
+        suggestions.push(
+          { id: 'cut', label: 'Cut', icon: Scissors, action: 'cut', priority: 'high', category: 'edit', shortcut: 'Ctrl+X' },
+          { id: 'copy', label: 'Copy', icon: Copy, action: 'copy', priority: 'high', category: 'edit', shortcut: 'Ctrl+C' },
+          { id: 'delete', label: 'Delete', icon: Trash2, action: 'delete', priority: 'high', category: 'edit', shortcut: 'Del', destructive: true }
+        );
+
+        // Audio-specific suggestions
+        if (isAudioClip) {
+          suggestions.push(
+            { id: 'normalize', label: 'Normalize Audio', icon: TrendingUp, action: 'normalize', priority: 'medium', category: 'audio', description: 'Optimize volume levels' },
+            { id: 'fade-in', label: 'Fade In', icon: TrendingUp, action: 'fade-in', priority: 'medium', category: 'audio' },
+            { id: 'fade-out', label: 'Fade Out', icon: TrendingDown, action: 'fade-out', priority: 'medium', category: 'audio' },
+            { id: 'ai-enhance', label: 'AI Audio Enhancement', icon: Sparkles, action: 'ai-enhance', priority: 'medium', category: 'ai', description: 'Improve audio quality with AI' }
+          );
+        }
+
+        // Video-specific suggestions
+        if (isVideoClip) {
+          suggestions.push(
+            { id: 'extract-audio', label: 'Extract Audio', icon: Volume2, action: 'extract-audio', priority: 'medium', category: 'workflow' },
+            { id: 'color-correct', label: 'Color Correction', icon: Circle, action: 'color-correct', priority: 'medium', category: 'workflow' }
+          );
+        }
+
+        // Organization suggestions
+        suggestions.push(
+          { id: 'duplicate', label: 'Duplicate', icon: Files, action: 'duplicate', priority: 'low', category: 'organize', shortcut: 'Ctrl+D' },
+          { id: 'split', label: 'Split at Playhead', icon: Scissors, action: 'split', priority: 'low', category: 'edit' }
+        );
+        break;
+
+      case 'empty-space':
+        suggestions.push(
+          { id: 'paste', label: 'Paste', icon: Copy, action: 'paste', priority: 'high', category: 'edit', shortcut: 'Ctrl+V' },
+          { id: 'record', label: 'Record Here', icon: Circle, action: 'record', priority: 'medium', category: 'workflow', description: 'Start recording at this position' },
+          { id: 'add-marker', label: 'Add Marker', icon: Plus, action: 'add-marker', priority: 'low', category: 'organize' },
+          { id: 'ai-generate', label: 'AI Generate Music', icon: Sparkles, action: 'ai-generate', priority: 'medium', category: 'ai', description: 'Create music with AI' }
+        );
+        break;
+
+      case 'track-header':
+        suggestions.push(
+          { id: 'mute-track', label: 'Mute Track', icon: VolumeX, action: 'mute-track', priority: 'high', category: 'workflow' },
+          { id: 'solo-track', label: 'Solo Track', icon: Radio, action: 'solo-track', priority: 'high', category: 'workflow' },
+          { id: 'duplicate-track', label: 'Duplicate Track', icon: Files, action: 'duplicate-track', priority: 'medium', category: 'organize' },
+          { id: 'delete-track', label: 'Delete Track', icon: Trash2, action: 'delete-track', priority: 'low', category: 'organize', destructive: true },
+          { id: 'track-effects', label: 'Add Effects', icon: Sliders, action: 'track-effects', priority: 'medium', category: 'audio' }
+        );
+        break;
+
+      case 'multi-selection':
+        const count = context.selectedCount || 0;
+        suggestions.push(
+          { id: 'group-clips', label: `Group ${count} Clips`, icon: Link, action: 'group-clips', priority: 'high', category: 'organize' },
+          { id: 'align-clips', label: 'Align Clips', icon: Move, action: 'align-clips', priority: 'medium', category: 'organize' },
+          { id: 'normalize-all', label: 'Normalize All', icon: TrendingUp, action: 'normalize-all', priority: 'medium', category: 'audio' },
+          { id: 'delete-all', label: `Delete ${count} Clips`, icon: Trash2, action: 'delete-all', priority: 'low', category: 'edit', destructive: true }
+        );
+        break;
+
+      case 'range':
+        suggestions.push(
+          { id: 'split-range', label: 'Split All at Boundaries', icon: Scissors, action: 'split-range', priority: 'high', category: 'edit' },
+          { id: 'extract-range', label: 'Extract to New Track', icon: Plus, action: 'extract-range', priority: 'medium', category: 'organize' },
+          { id: 'bounce-range', label: 'Bounce Selection', icon: Files, action: 'bounce-range', priority: 'medium', category: 'workflow' },
+          { id: 'ai-mix-range', label: 'AI Smart Mix', icon: Sparkles, action: 'ai-mix-range', priority: 'medium', category: 'ai', description: 'Auto-balance levels with AI' }
+        );
+        break;
+    }
+
+    return suggestions.sort((a, b) => {
+      const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
+  }, []);
+
   // LLM prompt state
   const [showLLMPrompt, setShowLLMPrompt] = useState(false);
   const [llmPrompt, setLLMPrompt] = useState('');
@@ -2119,18 +2223,25 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const clip = track?.clips?.find(c => c.id === clipId);
     
     if (clip && track) {
-      setClipContextMenu({
+      const context = {
+        clipId,
+        trackId,
+        clipType: clip.type || 'audio',
+        trackName: track.name,
+        clipName: clip.name
+      };
+      
+      const suggestions = generateContextualSuggestions('clip', context);
+      
+      setIntelligentContextMenu({
         x: e.clientX,
         y: e.clientY,
-        clip: {
-          id: clipId,
-          name: clip.name,
-          trackId: trackId,
-          trackName: track.name
-        }
+        type: 'clip',
+        context,
+        suggestions
       });
     }
-  }, [tracks]);
+  }, [tracks, generateContextualSuggestions]);
 
   const getPresetPrompts = useCallback((trackType: string, clipName: string) => {
     const isVocal = clipName.toLowerCase().includes('vocal') || clipName.toLowerCase().includes('voice') || clipName.toLowerCase().includes('bvox');
@@ -2251,9 +2362,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   // Close context menus when clicking elsewhere
   useEffect(() => {
     const handleClick = () => {
-      setContextMenu(null);
-      setAudioContextMenu(null);
-      setClipContextMenu(null);
+      setIntelligentContextMenu(null);
+      setShowRangeActions(false);
     };
     
     document.addEventListener('click', handleClick);
