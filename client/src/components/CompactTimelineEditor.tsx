@@ -3226,9 +3226,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               <div
                 className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${cursorPosition.x}px`,
-                  top: `${cursorPosition.y}px`,
-                  transform: `translate(${cursorPosition.x + 220 > window.innerWidth ? '-100%' : '0'}, ${cursorPosition.y + 320 > window.innerHeight ? '-100%' : '0'})`,
+                  left: `${Math.min(cursorPosition.x, window.innerWidth - 240)}px`,
+                  top: `${Math.min(cursorPosition.y, window.innerHeight - 340)}px`,
                 }}
                 role="menu"
                 aria-label="Range selection actions"
@@ -3380,6 +3379,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  console.log('Right-click at:', e.clientX, e.clientY);
                   setCursorPosition({ x: e.clientX, y: e.clientY });
                   setShowRangeActions(true);
                 }}
