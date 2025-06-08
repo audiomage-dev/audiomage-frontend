@@ -2806,7 +2806,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           {/* Range Selection Overlay in Timeline Header */}
           {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
             <div
-              className="absolute bg-blue-500/30 pointer-events-none z-50"
+              className="absolute bg-blue-500/30 pointer-events-none z-[100]"
               style={{
                 left: `${rangeSelection.startTime * 60 * zoomLevel - scrollX}px`,
                 top: '0px',
@@ -3358,7 +3358,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* DAW-style Range Selection Overlay */}
             {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
-                className="absolute bg-blue-500/20 pointer-events-auto z-50"
+                className="absolute bg-blue-500/20 pointer-events-auto z-[100]"
                 style={{
                   left: `${rangeSelection.startTime * 60 * zoomLevel}px`,
                   top: '0px',
