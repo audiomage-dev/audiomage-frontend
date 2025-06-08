@@ -2276,37 +2276,40 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         onMouseDown={(e) => handleResizeStart(e, track.id)}
                       />
                       
-                      {/* Parent track header - vertically centered */}
+                      {/* Parent track header - vertically centered with controlled width */}
                       <div 
                         className="absolute left-0 flex flex-col z-10" 
                         style={{ 
                           top: '50%', 
-                          transform: 'translateY(-50%)' 
+                          transform: 'translateY(-50%)',
+                          maxWidth: '200px' // Maximum container width
                         }}
                       >
-                        {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleGroupCollapse?.(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                          >
-                            <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
-                          </Button>
-                          <div 
-                            className="w-2 h-2 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: track.color }}
-                          ></div>
-                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                            {track.name}
-                          </span>
-                          {track.type === 'ai-generated' && (
-                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                          )}
+                        {/* Header section with proper wrapping */}
+                        <div className="flex items-center flex-wrap gap-1 mb-2 max-w-full">
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleGroupCollapse?.(track.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 hover:bg-[var(--accent)] flex-shrink-0"
+                            >
+                              <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                            </Button>
+                            <div 
+                              className="w-2 h-2 rounded-sm flex-shrink-0" 
+                              style={{ backgroundColor: track.color }}
+                            ></div>
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight">
+                              {track.name}
+                            </span>
+                            {track.type === 'ai-generated' && (
+                              <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full flex-shrink-0"></div>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Parent track mute/solo buttons under header */}
@@ -2350,8 +2353,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         </div>
                       </div>
 
-                      {/* Individual child track controls on the right */}
-                      <div className="absolute right-3 top-0 flex flex-col justify-center h-full space-y-1">
+                      {/* Individual child track controls positioned after parent header */}
+                      <div 
+                        className="absolute top-0 flex flex-col justify-center h-full space-y-1"
+                        style={{ 
+                          left: '220px', // Position after parent header max width + padding
+                          zIndex: 10
+                        }}
+                      >
                         {childTracks.map((childTrack, index) => (
                           <div 
                             key={`child-controls-${childTrack.id}`}
