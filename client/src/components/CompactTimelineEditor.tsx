@@ -170,6 +170,7 @@ export function CompactTimelineEditor({
   const renderTrack = (track: AudioTrack, index: number) => {
     const isSelected = selectedTracks.has(track.id);
     const isCollapsed = collapsedGroups.has(track.parentId || '');
+    const isSubTrack = !!track.parentId;
     
     if (isCollapsed && track.parentId) return null;
     
@@ -183,7 +184,9 @@ export function CompactTimelineEditor({
       >
         {/* Track Header */}
         <div 
-          className="w-48 flex-shrink-0 flex items-center px-3 border-r border-[var(--border)] relative"
+          className={`w-48 flex-shrink-0 flex items-center border-r border-[var(--border)] relative ${
+            isSubTrack ? 'pl-8 pr-3' : 'px-3'
+          }`}
           style={{ 
             backgroundColor: `${track.color}33`, // 20% transparency
             borderLeft: `4px solid ${track.color}`
@@ -195,7 +198,9 @@ export function CompactTimelineEditor({
           })}
         >
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+            <div className={`text-sm font-semibold text-white truncate ${
+              isSubTrack ? 'text-xs' : ''
+            }`}>
               {track.name}
             </div>
           </div>
