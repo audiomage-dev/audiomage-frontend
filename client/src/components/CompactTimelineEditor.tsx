@@ -2273,10 +2273,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onMouseDown={(e) => handleResizeStart(e, track.id)}
                     />
-                    {/* Parent track header */}
-                    <div className="flex flex-col h-full">
-                      <div className="flex items-center justify-between min-w-0 mb-2">
-                        <div className="flex items-center space-x-2 min-w-0">
+                    {/* Track headers layout */}
+                    <div className="flex h-full w-full">
+                      {/* Parent track header - centered */}
+                      <div className="flex flex-col justify-center items-center flex-1">
+                        <div className="flex items-center space-x-2 min-w-0 mb-2">
                           {/* Collapse/Expand Icon */}
                           <Button
                             onClick={(e) => {
@@ -2304,43 +2305,90 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                           )}
                         </div>
-                      </div>
-                      
-                      {/* Parent track mute/solo buttons under header */}
-                      <div className="flex items-center space-x-1 mb-2">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onTrackMute(track.id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                            track.muted 
-                              ? 'bg-[var(--red)] text-white border-white/40' 
-                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                          }`}
-                        >
-                          M
-                        </Button>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onTrackSolo(track.id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                            track.soloed 
-                              ? 'bg-[var(--yellow)] text-black border-white/40' 
-                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                          }`}
-                        >
-                          S
-                        </Button>
+                        
+                        {/* Parent track mute/solo buttons under header - centered */}
+                        <div className="flex items-center space-x-1">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTrackMute(track.id);
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                              track.muted 
+                                ? 'bg-[var(--red)] text-white border-white/40' 
+                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                            }`}
+                          >
+                            M
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTrackSolo(track.id);
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                              track.soloed 
+                                ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                            }`}
+                          >
+                            S
+                          </Button>
+                        </div>
                       </div>
 
-
+                      {/* Child tracks controls on the right */}
+                      {!isCollapsed && (
+                        <div className="flex flex-col justify-center space-y-1 pr-3">
+                          {childTracks.map((childTrack) => (
+                            <div key={`child-controls-${childTrack.id}`} className="flex items-center space-x-1">
+                              <div 
+                                className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
+                                style={{ backgroundColor: childTrack.color }}
+                              />
+                              <span className="text-xs text-[var(--muted-foreground)] truncate min-w-0 max-w-16">
+                                {childTrack.name}
+                              </span>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onTrackMute(childTrack.id);
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
+                                  childTrack.muted 
+                                    ? 'bg-[var(--red)] text-white border-white/40' 
+                                    : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                                }`}
+                                style={{ fontSize: '6px' }}
+                              >
+                                M
+                              </Button>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onTrackSolo(childTrack.id);
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
+                                  childTrack.soloed 
+                                    ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                    : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                                }`}
+                                style={{ fontSize: '6px' }}
+                              >
+                                S
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -2384,7 +2432,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onMouseDown={(e) => handleResizeStart(e, track.id)}
                     />
-                    <div className="flex items-center justify-between min-w-0 mb-1">
+                    <div className="flex items-center justify-between min-w-0">
                       <div className="flex items-center space-x-2 min-w-0">
                         <div 
                           className="w-2 h-2 rounded-sm flex-shrink-0" 
@@ -2397,38 +2445,38 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackMute(track.id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                          track.muted 
-                            ? 'bg-[var(--red)] text-white border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                      >
-                        M
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackSolo(track.id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                          track.soloed 
-                            ? 'bg-[var(--yellow)] text-black border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                      >
-                        S
-                      </Button>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackMute(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.muted 
+                              ? 'bg-[var(--red)] text-white border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          M
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTrackSolo(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                            track.soloed 
+                              ? 'bg-[var(--yellow)] text-black border-white/40' 
+                              : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                          }`}
+                        >
+                          S
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -2572,43 +2620,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   onClick={(e) => handleTrackSelect(track.id, e)}
                   onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                 >
-                  {/* Child track controls for grouped tracks */}
-                  {track.parentId && (
-                    <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1 z-20">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackMute(track.id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                          track.muted 
-                            ? 'bg-[var(--red)] text-white border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                        style={{ fontSize: '6px' }}
-                      >
-                        M
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTrackSolo(track.id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                          track.soloed 
-                            ? 'bg-[var(--yellow)] text-black border-white/40' 
-                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                        }`}
-                        style={{ fontSize: '6px' }}
-                      >
-                        S
-                      </Button>
-                    </div>
-                  )}
+
                   
                   {/* Resize Handle */}
                   <div
