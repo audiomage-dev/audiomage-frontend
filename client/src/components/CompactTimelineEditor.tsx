@@ -2688,6 +2688,23 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               }).filter(Boolean);
             })()}
           </div>
+
+          {/* Range Selection Overlay in Timeline Header */}
+          {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
+            <div
+              className="absolute bg-blue-500/30 border-l-2 border-r-2 border-blue-500 pointer-events-none z-50"
+              style={{
+                left: `${rangeSelection.startTime * 60 * zoomLevel - scrollX}px`,
+                top: '0px',
+                width: `${(rangeSelection.endTime - rangeSelection.startTime) * 60 * zoomLevel}px`,
+                height: '100%',
+              }}
+            >
+              {/* Time markers at the edges */}
+              <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-500" />
+              <div className="absolute top-0 right-0 w-0.5 h-full bg-blue-500" />
+            </div>
+          )}
         </div>
 
         {/* Timeline Content with Canvas Grid */}
@@ -3078,7 +3095,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* DAW-style Range Selection Overlay */}
             {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
-                className="absolute bg-blue-500/20 border-l-2 border-r-2 border-blue-500 pointer-events-none z-19"
+                className="absolute bg-blue-500/20 border-l-2 border-r-2 border-blue-500 pointer-events-none z-50"
                 style={{
                   left: `${rangeSelection.startTime * 60 * zoomLevel}px`,
                   top: '0px',
