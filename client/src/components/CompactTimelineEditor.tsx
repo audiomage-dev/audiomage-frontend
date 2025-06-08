@@ -629,6 +629,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('Panel resize started:', { startX: e.clientX, startWidth: panelWidth });
+    
     setResizingPanel({
       startX: e.clientX,
       startWidth: panelWidth
@@ -694,13 +696,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   useEffect(() => {
     if (!resizingPanel) return;
 
+    console.log('Panel resize mode active');
+
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - resizingPanel.startX;
       const newWidth = Math.max(240, Math.min(600, resizingPanel.startWidth + deltaX)); // Min 240px, Max 600px
+      console.log('Panel resizing:', { deltaX, newWidth, currentX: e.clientX, startX: resizingPanel.startX });
       setPanelWidth(newWidth);
     };
 
     const handleMouseUp = () => {
+      console.log('Panel resize ended');
       setResizingPanel(null);
     };
 
@@ -2646,16 +2652,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         
         {/* Horizontal Resize Handle */}
         <div
-          className="absolute top-0 right-0 w-2 h-full cursor-col-resize bg-transparent hover:bg-[var(--primary)] hover:opacity-70 transition-all duration-200 z-30 group"
+          className="absolute top-0 right-0 w-3 h-full cursor-col-resize bg-red-500/20 hover:bg-[var(--primary)] hover:opacity-70 transition-all duration-200 z-50 group"
           onMouseDown={handlePanelResizeStart}
           style={{
-            cursor: resizingPanel ? 'col-resize' : 'col-resize',
-            right: '-1px' // Slightly overlap the border for better interaction
+            cursor: 'col-resize',
+            right: '-2px' // Slightly overlap the border for better interaction
           }}
           title="Drag to resize panel"
+          onMouseEnter={() => console.log('Resize handle hovered')}
+          onClick={() => console.log('Resize handle clicked')}
         >
-          {/* Visual indicator on hover */}
-          <div className="absolute inset-0 bg-[var(--primary)] opacity-0 group-hover:opacity-30 transition-opacity" />
+          {/* Visual indicator */}
+          <div className="absolute inset-0 bg-[var(--primary)] opacity-30 group-hover:opacity-50 transition-opacity" />
+          <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-[var(--primary)] opacity-60" />
         </div>
       </div>
 
