@@ -18,6 +18,8 @@ interface CompactTimelineEditorProps {
   timeSignature?: [number, number];
   snapMode?: 'free' | 'grid' | 'beat' | 'measure';
   gridDisplayMode?: 'seconds' | 'timecode';
+  showGrid?: boolean;
+  onGridToggle?: () => void;
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -37,6 +39,8 @@ export function CompactTimelineEditor({
   timeSignature = [4, 4], 
   snapMode = 'grid', 
   gridDisplayMode = 'timecode', 
+  showGrid = false,
+  onGridToggle,
   onTrackMute, 
   onTrackSolo, 
   onTrackSelect, 
@@ -293,6 +297,11 @@ export function CompactTimelineEditor({
       <div className="w-96 bg-[var(--muted)]/20 border-r border-[var(--border)] flex flex-col">
         {/* Header spacer to align with timeline ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30"></div>
+        
+        {/* Timeline header spacer */}
+        <div className="h-12 border-b border-[var(--border)] bg-[var(--muted)]/10 flex items-center px-3">
+          <span className="text-xs font-medium text-[var(--muted-foreground)]">Timeline</span>
+        </div>
         
         <div className="flex-1 overflow-auto scrollbar-thin" ref={tracksRef}>
           {(() => {
