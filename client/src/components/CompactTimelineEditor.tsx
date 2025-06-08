@@ -2219,18 +2219,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               >
                 <Link className="w-3 h-3" />
               </Button>
-              
-              <div className="w-px h-4 bg-[var(--border)]" />
-              
-              <Button
-                onClick={() => setGridDisplayMode(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds')}
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0"
-                title={`Grid display: ${gridDisplayMode} (click to toggle)`}
-              >
-                <BarChart3 className="w-3 h-3" />
-              </Button>
             </div>
           </div>
           
@@ -2639,6 +2627,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       <div className="flex-1 flex flex-col">
         {/* Timeline Header with Ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
+          {/* Grid Toggle Button - Top Right */}
+          <div className="absolute top-1 right-1 z-10">
+            <Button
+              onClick={() => setGridDisplayMode(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds')}
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-[var(--accent)] transition-colors"
+              title={`Grid display: ${gridDisplayMode} (click to toggle)`}
+            >
+              <BarChart3 className="w-3 h-3" />
+            </Button>
+          </div>
+          
           <div 
             className="absolute inset-0 flex items-center"
             style={{ 
