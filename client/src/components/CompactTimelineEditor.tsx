@@ -2235,121 +2235,126 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 // Calculate total height for the group - only child tracks count
                 const isCollapsed = collapsedGroups.has(track.id);
                 
-                // Add individual child track headers directly
+                // Create single container for the group with parent header and child controls
+                const groupHeight = isCollapsed 
+                  ? getTrackHeight(track.id) 
+                  : childTracks.reduce((acc, t) => acc + getTrackHeight(t.id), 0);
+                  
                 if (!isCollapsed) {
-                  childTracks.forEach((childTrack) => {
-                    const childTrackHeight = getTrackHeight(childTrack.id);
-                    renderedTracks.push(
+                  // Render expanded group with parent header and child controls
+                  renderedTracks.push(
+                    <div
+                      key={`track-group-${track.id}`}
+                      className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
+                        allGroupTracks.some(t => selectedTrackIds.includes(t.id))
+                          ? 'border-l-[var(--primary)]' 
+                          : 'hover:brightness-110'
+                      }`}
+                      style={{ 
+                        height: `${groupHeight}px`,
+                        borderLeftColor: allGroupTracks.some(t => selectedTrackIds.includes(t.id)) 
+                          ? 'var(--primary)' 
+                          : track.color,
+                        backgroundColor: (() => {
+                          const hex = track.color.replace('#', '');
+                          const r = parseInt(hex.substr(0, 2), 16);
+                          const g = parseInt(hex.substr(2, 2), 16);
+                          const b = parseInt(hex.substr(4, 2), 16);
+                          
+                          if (allGroupTracks.some(t => selectedTrackIds.includes(t.id))) {
+                            return `rgba(${r}, ${g}, ${b}, 0.15)`;
+                          }
+                          return `rgba(${r}, ${g}, ${b}, 0.1)`;
+                        })()
+                      }}
+                      onClick={(e) => handleTrackSelect(track.id, e)}
+                      onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                    >
+                      {/* Resize Handle */}
                       <div
-                        key={`track-sidebar-${childTrack.id}`}
-                        className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
-                          selectedTrackIds.includes(childTrack.id) 
-                            ? 'border-l-[var(--primary)]' 
-                            : 'hover:brightness-110'
-                        }`}
+                        className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onMouseDown={(e) => handleResizeStart(e, track.id)}
+                      />
+                      
+                      {/* Parent track header - vertically centered */}
+                      <div 
+                        className="absolute left-0 flex items-center space-x-2 z-10" 
                         style={{ 
-                          height: `${childTrackHeight}px`,
-                          borderLeftColor: selectedTrackIds.includes(childTrack.id) 
-                            ? 'var(--primary)' 
-                            : childTrack.color,
-                          backgroundColor: (() => {
-                            // Convert track color to rgba with appropriate opacity
-                            const hex = childTrack.color.replace('#', '');
-                            const r = parseInt(hex.substr(0, 2), 16);
-                            const g = parseInt(hex.substr(2, 2), 16);
-                            const b = parseInt(hex.substr(4, 2), 16);
-                            
-                            if (selectedTrackIds.includes(childTrack.id)) {
-                              return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity for selected
-                            }
-                            return `rgba(${r}, ${g}, ${b}, 0.1)`; // 10% opacity for default
-                          })()
+                          top: '50%', 
+                          transform: 'translateY(-50%)' 
                         }}
-                        onClick={(e) => handleTrackSelect(childTrack.id, e)}
-                        onContextMenu={(e) => handleTrackRightClick(e, childTrack.id)}
                       >
-                        {/* Resize Handle for Child Track */}
-                        <div
-                          className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                          onMouseDown={(e) => handleResizeStart(e, childTrack.id)}
-                        />
-                        <div className="flex items-center justify-between min-w-0">
-                          <div className="flex items-center space-x-2 min-w-0">
-                            {/* Show collapse/expand icon and parent name only for first child */}
-                            {childTrack === childTracks[0] && (
-                              <>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onToggleGroupCollapse?.(track.id);
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                                >
-                                  {collapsedGroups.has(track.id) ? (
-                                    <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
-                                  ) : (
-                                    <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
-                                  )}
-                                </Button>
-                                <div 
-                                  className="w-2 h-2 rounded-sm flex-shrink-0" 
-                                  style={{ backgroundColor: track.color }}
-                                ></div>
-                                <span className="text-sm font-medium text-[var(--foreground)] truncate mr-2">
-                                  {track.name}
-                                </span>
-                                {/* Parent track mute/solo buttons */}
-                                <div className="flex items-center space-x-1 mr-4">
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onTrackMute(track.id);
-                                    }}
-                                    variant="ghost"
-                                    size="sm"
-                                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                                      track.muted 
-                                        ? 'bg-[var(--red)] text-white border-white/40' 
-                                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                                    }`}
-                                  >
-                                    M
-                                  </Button>
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onTrackSolo(track.id);
-                                    }}
-                                    variant="ghost"
-                                    size="sm"
-                                    className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                                      track.soloed 
-                                        ? 'bg-[var(--yellow)] text-black border-white/40' 
-                                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                                    }`}
-                                  >
-                                    S
-                                  </Button>
-                                </div>
-                              </>
-                            )}
-                            {/* Child track content with indentation */}
-                            <div className={`flex items-center space-x-2 min-w-0 ${childTrack === childTracks[0] ? '' : 'pl-8'}`}>
-                              <div 
-                                className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
-                                style={{ backgroundColor: childTrack.color }}
-                              ></div>
-                              <span className="text-xs text-[var(--muted-foreground)] truncate">
-                                {childTrack.name}
-                              </span>
-                              {childTrack.type === 'ai-generated' && (
-                                <div className="w-1 h-1 bg-[var(--purple)] rounded-full"></div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-1">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleGroupCollapse?.(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                        >
+                          <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                        </Button>
+                        <div 
+                          className="w-2 h-2 rounded-sm flex-shrink-0" 
+                          style={{ backgroundColor: track.color }}
+                        ></div>
+                        <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                          {track.name}
+                        </span>
+                        {track.type === 'ai-generated' && (
+                          <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                        )}
+                        
+                        {/* Parent track mute/solo buttons - control all children */}
+                        <div className="flex items-center space-x-1 ml-4">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Mute/unmute all child tracks
+                              childTracks.forEach(childTrack => {
+                                onTrackMute(childTrack.id);
+                              });
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                              childTracks.every(t => t.muted)
+                                ? 'bg-[var(--red)] text-white border-white/40' 
+                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                            }`}
+                          >
+                            M
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Solo/unsolo all child tracks
+                              childTracks.forEach(childTrack => {
+                                onTrackSolo(childTrack.id);
+                              });
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                              childTracks.every(t => t.soloed)
+                                ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                            }`}
+                          >
+                            S
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Individual child track controls on the right */}
+                      <div className="absolute right-3 top-0 flex flex-col justify-center h-full space-y-1">
+                        {childTracks.map((childTrack, index) => (
+                          <div 
+                            key={`child-controls-${childTrack.id}`}
+                            className="flex items-center space-x-1"
+                            style={{ height: `${getTrackHeight(childTrack.id)}px` }}
+                          >
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -2383,10 +2388,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               S
                             </Button>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    );
-                  });
+                    </div>
+                  );
                 } else {
                   // Show collapsed parent track
                   renderedTracks.push(
