@@ -194,9 +194,6 @@ export function CompactTimelineEditor({
             <div className="text-sm font-medium text-[var(--foreground)] truncate">
               {track.name}
             </div>
-            <div className="text-xs text-[var(--muted-foreground)] capitalize">
-              {track.type}
-            </div>
           </div>
           
           <div className="flex items-center space-x-1 ml-2">
@@ -346,8 +343,8 @@ export function CompactTimelineEditor({
             {tracks.map((track, index) => renderTrack(track, index))}
           </div>
           
-          {/* Grid Overlay */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Grid Overlay - exclude track header area */}
+          <div className="absolute top-0 bottom-0 right-0 pointer-events-none overflow-hidden" style={{ left: 192 }}>
             <div className="relative h-full">
               {renderTimelineGrid()}
             </div>
