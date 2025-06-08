@@ -2303,7 +2303,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)',
-                          maxWidth: `${panelWidth - 120}px` // Responsive to panel width, accounting for controls
+                          maxWidth: `${320 - 120}px` // Responsive to panel width, accounting for controls
                         }}
                       >
                         {/* Header section */}
@@ -2611,29 +2611,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
           })()}
         </div>
         
-        {/* Horizontal Resize Handle */}
-        <div
-          className="absolute top-0 right-0 w-3 h-full cursor-col-resize hover:bg-[var(--primary)]/20 transition-all duration-200 z-50 group"
-          onMouseDown={handlePanelResizeStart}
-          style={{
-            cursor: 'col-resize',
-            right: '-2px' // Slightly overlap the border for better interaction
-          }}
-          title="Drag to resize panel"
-        >
-          {/* Visual indicator - subtle gradient with grip dots */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-40 group-hover:opacity-80 transition-opacity" />
-          
-          {/* Grip dots for better visual indication */}
-          <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 flex flex-col justify-center space-y-1">
-            <div className="w-1 h-1 bg-[var(--muted-foreground)] rounded-full opacity-60 group-hover:opacity-100 transition-opacity" />
-            <div className="w-1 h-1 bg-[var(--muted-foreground)] rounded-full opacity-60 group-hover:opacity-100 transition-opacity" />
-            <div className="w-1 h-1 bg-[var(--muted-foreground)] rounded-full opacity-60 group-hover:opacity-100 transition-opacity" />
-          </div>
-          
-          {/* Hover state enhancement */}
-          <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        </div>
+
       </div>
 
       {/* Right Side - Timeline */}
