@@ -745,7 +745,66 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [tracks, zoomLevel]);
+  }, [tracks, zoomLevel, scrollX]);
+
+  // Handle range selection from timeline header
+  const handleTimelineHeaderRangeSelection = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Get timeline header container for calculations
+    const headerElement = e.currentTarget as HTMLElement;
+    const headerRect = headerElement.getBoundingClientRect();
+    const selectionStartX = e.clientX - headerRect.left + scrollX;
+    
+    // Calculate time position on timeline
+    const pixelsPerSecond = 60 * zoomLevel;
+    const startTime = selectionStartX / pixelsPerSecond;
+    
+    // Initialize range selection
+    setRangeSelection({ startTime, endTime: startTime, isActive: true });
+    
+    console.log('Starting timeline header range selection at:', startTime.toFixed(3));
+    
+    let isSelecting = false;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = Math.abs(moveEvent.clientX - e.clientX);
+      
+      if (!isSelecting && deltaX > 3) {
+        isSelecting = true;
+      }
+      
+      if (isSelecting) {
+        const currentX = moveEvent.clientX - headerRect.left + scrollX;
+        
+        // Calculate end time for range selection
+        const endTime = currentX / pixelsPerSecond;
+        const selectionStartTime = Math.min(startTime, endTime);
+        const selectionEndTime = Math.max(startTime, endTime);
+        
+        // Update range selection
+        setRangeSelection({ 
+          startTime: selectionStartTime, 
+          endTime: selectionEndTime, 
+          isActive: true 
+        });
+      }
+    };
+    
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      if (!isSelecting) {
+        // Clear range selection on simple click
+        setRangeSelection(null);
+      }
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [zoomLevel, scrollX]);
 
   const handleClipDragStart = useCallback((e: React.MouseEvent, clipId: string, trackId: string) => {
     // Prevent dragging when timeline is locked
@@ -2597,7 +2656,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       {/* Right Side - Timeline */}
       <div className="flex-1 flex flex-col">
         {/* Timeline Header with Ruler */}
-        <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
+        <div 
+          className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden cursor-text"
+          onMouseDown={(e) => {
+            if (currentTool === 'select') {
+              handleTimelineHeaderRangeSelection(e);
+            }
+          }}
+        >
           
           {/* Grid lines in header */}
           <div 
