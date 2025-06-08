@@ -338,13 +338,14 @@ export function CompactTransportBar({
   onMidiLockToggle,
   snapMode = 'grid',
   onSnapModeChange,
+  gridDisplayMode = 'seconds',
+  onGridDisplayModeChange,
   onBpmChange,
   onTimeSignatureChange
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
   const [editTimeValue, setEditTimeValue] = useState('');
-  const [timeDisplayMode, setTimeDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
   const timeInputRef = useRef<HTMLInputElement>(null);
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -369,7 +370,7 @@ export function CompactTransportBar({
     if (viewMode === 'midi') {
       return formatMidiTime(midiPlaybackTime);
     }
-    return timeDisplayMode === 'seconds' ? formatSeconds(transport.currentTime) : formatTime(transport.currentTime);
+    return gridDisplayMode === 'seconds' ? formatSeconds(transport.currentTime) : formatTime(transport.currentTime);
   };
 
   const parseTimeString = (timeStr: string): number => {
@@ -613,18 +614,19 @@ export function CompactTransportBar({
           }
         </Button>
 
-        {/* Time Display Mode Toggle */}
+        {/* Grid Display Mode Toggle */}
         <div className="relative">
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
+            className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)] flex items-center gap-1"
             onClick={() => {
-              setTimeDisplayMode(prev => prev === 'seconds' ? 'timecode' : 'seconds');
+              onGridDisplayModeChange?.(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds');
             }}
-            title={`Currently showing ${timeDisplayMode}. Click to switch to ${timeDisplayMode === 'seconds' ? 'timecode' : 'seconds'}`}
+            title={`Grid mode: ${gridDisplayMode}. Click to switch to ${gridDisplayMode === 'seconds' ? 'timecode' : 'seconds'}`}
           >
-            {timeDisplayMode === 'seconds' ? 'SEC' : 'TC'}
+            <Grid3x3 className="w-3 h-3" />
+            {gridDisplayMode === 'seconds' ? 'SEC' : 'TC'}
           </Button>
         </div>
 
