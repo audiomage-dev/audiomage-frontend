@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'wouter';
 import { useTheme } from '../contexts/ThemeContext';
+import { SessionTabs } from './SessionTabs';
 import audiomageLogoPath from '@assets/audiomage-logo-transparent.png';
 import { 
   Search, 
@@ -35,7 +36,8 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  Clock
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -477,14 +479,30 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
   );
 }
 
-export function MenuBar() {
+interface MenuBarProps {
+  sessions?: any[];
+  onSwitchSession?: (sessionId: string) => void;
+  onAddSession?: () => void;
+  onCloseSession?: (sessionId: string) => void;
+}
+
+export function MenuBar({ sessions = [], onSwitchSession = () => {}, onAddSession = () => {}, onCloseSession = () => {} }: MenuBarProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
-  const [projectName, setProjectName] = useState("Untitled Project");
+  // Get the current active session name
+  const activeSession = sessions.find(session => session.isActive);
+  const [projectName, setProjectName] = useState(activeSession?.name || "Untitled Project");
+
+  // Update project name when active session changes
+  useEffect(() => {
+    const activeSession = sessions.find(session => session.isActive);
+    setProjectName(activeSession?.name || "Untitled Project");
+  }, [sessions]);
   const [isEditingName, setIsEditingName] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -547,7 +565,7 @@ export function MenuBar() {
   return (
     <>
       <div className="h-12 bg-gradient-to-r from-[var(--background)] via-[var(--muted)] to-[var(--background)] border-b border-[var(--border)] px-6 flex items-center justify-between shadow-lg">
-        {/* Left side - Project Info */}
+        {/* Left side - Project Info & Session Tabs */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Link href="/home">
@@ -579,10 +597,29 @@ export function MenuBar() {
             <span className="text-xs text-[var(--muted-foreground)]">•</span>
             <span className="text-xs text-[var(--muted-foreground)]">Saved</span>
           </div>
+          
+          {/* Session Tabs */}
+          {sessions.length > 0 && (
+            <div className="flex items-center">
+              <span className="text-xs text-[var(--muted-foreground)] mr-2">|</span>
+              <div className="bg-[var(--muted)]/30 rounded-lg p-1">
+                <SessionTabs 
+                  sessions={sessions} 
+                  onSwitchSession={onSwitchSession}
+                  onAddSession={onAddSession}
+                  onCloseSession={onCloseSession}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Center - Quick Actions */}
+        {/* Center - Spacer */}
+        <div className="flex-1"></div>
+
+        {/* Right side - Controls */}
         <div className="flex items-center space-x-2">
+          {/* Commands Button */}
           <Button
             variant="ghost"
             size="sm"
@@ -593,11 +630,6 @@ export function MenuBar() {
             Commands
           </Button>
           
-
-        </div>
-
-        {/* Right side - Controls */}
-        <div className="flex items-center space-x-2">
           {/* Access Button */}
           <Button
             variant="ghost"
@@ -610,6 +642,17 @@ export function MenuBar() {
           </Button>
 
 
+
+          {/* Help Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHelpModal(true)}
+            className="h-8 w-8 p-0"
+            title="Help"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Button>
 
           {/* Notification Bell */}
           <div className="relative" ref={notificationsRef}>
@@ -1117,6 +1160,107 @@ export function MenuBar() {
                   className="text-xs"
                 >
                   Cover page
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-2xl w-[520px] max-h-[80vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="h-5 w-5 text-[var(--primary)]" />
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">Help & Shortcuts</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHelpModal(false)}
+                className="h-8 w-8 p-0 hover:bg-[var(--muted)]"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Keyboard Shortcuts */}
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Keyboard Shortcuts</h3>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded">
+                    <span>Play/Pause</span>
+                    <kbd className="px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs">Space</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded">
+                    <span>Undo</span>
+                    <kbd className="px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs">Ctrl+Z</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded">
+                    <span>Save Project</span>
+                    <kbd className="px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs">Ctrl+S</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded">
+                    <span>Command Palette</span>
+                    <kbd className="px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs">Ctrl+K</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-[var(--muted)] rounded">
+                    <span>Zoom In/Out</span>
+                    <kbd className="px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-xs">Ctrl +/-</kbd>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Tips */}
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Quick Tips</h3>
+                <div className="space-y-2 text-xs text-[var(--muted-foreground)]">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-[var(--primary)]">•</span>
+                    <span>Right-click on any element for context menus</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-[var(--primary)]">•</span>
+                    <span>Use the AI Assistant for intelligent suggestions</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-[var(--primary)]">•</span>
+                    <span>Drag and drop audio files to import them</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-[var(--primary)]">•</span>
+                    <span>Session tabs can be reordered by dragging</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-[var(--primary)]">•</span>
+                    <span>Video player can be moved and resized</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Getting Started */}
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Getting Started</h3>
+                <div className="space-y-2 text-xs text-[var(--muted-foreground)]">
+                  <div>1. Import audio files using the Explorer panel</div>
+                  <div>2. Use Quick Actions for common tasks</div>
+                  <div>3. Access AI tools for enhanced production</div>
+                  <div>4. Save your work with version control</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-[var(--border)] bg-[var(--muted)]/20">
+              <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                <span>Need more help? Check our documentation</span>
+                <Button variant="outline" size="sm" className="text-xs">
+                  Documentation
                 </Button>
               </div>
             </div>

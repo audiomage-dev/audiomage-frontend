@@ -15,7 +15,7 @@ export interface AudioClip {
 export interface AudioTrack {
   id: string;
   name: string;
-  type: 'audio' | 'midi' | 'ai-generated';
+  type: 'audio' | 'midi' | 'ai-generated' | 'video';
   volume: number; // 0-100
   pan: number; // 0-100, 50 is center
   muted: boolean;
@@ -23,6 +23,8 @@ export interface AudioTrack {
   color: string;
   clips: AudioClip[];
   effects: AudioEffect[];
+  isGroup?: boolean;
+  parentId?: string;
 }
 
 export interface AudioEffect {

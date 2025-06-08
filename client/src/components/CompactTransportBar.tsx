@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic } from 'lucide-react';
+import { Play, Pause, Square, Circle, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic, Shuffle, Grid3x3, Target, Move, RotateCcw, Repeat, Gauge, Hand, MousePointer, Edit3, Sliders } from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -29,9 +29,16 @@ interface CompactTransportBarProps {
   isMidiLocked?: boolean;
   onTimelineLockToggle?: () => void;
   onMidiLockToggle?: () => void;
+  // Snap mode management
+  snapMode?: 'free' | 'grid' | 'beat' | 'measure';
+  onSnapModeChange?: (mode: 'free' | 'grid' | 'beat' | 'measure') => void;
   // Metronome functions
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
+  // Grid display mode management
+  gridDisplayMode?: 'seconds' | 'timecode';
+  onGridDisplayModeChange?: (mode: 'seconds' | 'timecode') => void;
+
 }
 
 interface MetronomeProps {
@@ -329,6 +336,10 @@ export function CompactTransportBar({
   isMidiLocked = false,
   onTimelineLockToggle,
   onMidiLockToggle,
+  snapMode = 'grid',
+  onSnapModeChange,
+  gridDisplayMode = 'timecode',
+  onGridDisplayModeChange,
   onBpmChange,
   onTimeSignatureChange
 }: CompactTransportBarProps) {
@@ -337,9 +348,15 @@ export function CompactTransportBar({
   const [editTimeValue, setEditTimeValue] = useState('');
   const timeInputRef = useRef<HTMLInputElement>(null);
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const frames = Math.floor((seconds % 1) * 30); // Using 30fps for SMPTE
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
+  };
+
+  const formatSeconds = (seconds: number) => {
+    return `${seconds.toFixed(2)}s`;
   };
 
   const formatMidiTime = (beats: number) => {
@@ -353,12 +370,20 @@ export function CompactTransportBar({
     if (viewMode === 'midi') {
       return formatMidiTime(midiPlaybackTime);
     }
-    return formatTime(transport.currentTime);
+    return gridDisplayMode === 'seconds' ? formatSeconds(transport.currentTime) : formatTime(transport.currentTime);
   };
 
   const parseTimeString = (timeStr: string): number => {
     const parts = timeStr.split(':');
-    if (parts.length === 2) {
+    if (parts.length === 4) {
+      // SMPTE format: HH:MM:SS:FF
+      const hours = parseInt(parts[0]) || 0;
+      const mins = parseInt(parts[1]) || 0;
+      const secs = parseInt(parts[2]) || 0;
+      const frames = parseInt(parts[3]) || 0;
+      return hours * 3600 + mins * 60 + secs + (frames / 30);
+    } else if (parts.length === 2) {
+      // Legacy MM:SS format for backward compatibility
       const mins = parseInt(parts[0]) || 0;
       const secs = parseInt(parts[1]) || 0;
       return mins * 60 + secs;
@@ -399,14 +424,7 @@ export function CompactTransportBar({
     <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
       {/* Left: Transport Controls */}
       <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title="Go to beginning"
-        >
-          <SkipBack className="w-4 h-4" />
-        </Button>
+
         
         <Button
           variant="ghost"
@@ -477,18 +495,10 @@ export function CompactTransportBar({
           <Circle className={`w-4 h-4 ${transport.isRecording ? 'fill-current' : ''}`} />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title="Go to end"
-        >
-          <SkipForward className="w-4 h-4" />
-        </Button>
-      </div>
 
-      {/* Center: Time Display */}
-      <div className="flex items-center space-x-4">
+        
+        {/* Time Display - moved next to transport controls */}
+        <div className="w-px h-4 bg-[var(--border)] ml-2"></div>
         {isTimeEditing ? (
           <input
             ref={timeInputRef}
@@ -497,30 +507,70 @@ export function CompactTransportBar({
             onChange={(e) => setEditTimeValue(e.target.value)}
             onKeyDown={handleTimeKeyDown}
             onBlur={handleTimeSubmit}
-            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-16 text-center focus:outline-none"
-            placeholder="MM:SS"
+            className="text-sm font-mono text-[var(--foreground)] bg-[var(--background)] border border-[var(--primary)] px-2 py-1 rounded w-24 text-center focus:outline-none ml-2"
+            placeholder="HH:MM:SS:FF"
           />
         ) : (
           <div 
-            className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
+            className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors ml-2"
             onClick={handleTimeClick}
             title="Click to edit time position"
           >
             {getCurrentDisplayTime()}
           </div>
         )}
-        <div className="w-px h-4 bg-[var(--border)]"></div>
-        <button 
-          className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer px-2 py-1 rounded hover:bg-[var(--accent)]"
-          onClick={() => setIsMetronomeOpen(true)}
-          title="Click to open Metronome"
-        >
-          {bpm} BPM • {timeSignature[0]}/{timeSignature[1]}
-        </button>
       </div>
+
+      {/* Center: Spacer */}
+      <div className="flex-1"></div>
 
       {/* Right: Additional Controls */}
       <div className="flex items-center space-x-2">
+
+        {/* Loop Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Toggle loop functionality
+            console.log('Loop toggled');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Loop"
+        >
+          <Repeat className="w-4 h-4" />
+        </Button>
+
+        {/* Automation Mode */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Toggle automation mode
+            console.log('Automation mode toggled');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Automation"
+        >
+          <Sliders className="w-4 h-4" />
+        </Button>
+
+
+
+        {/* Tempo Tap */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            // Tap tempo functionality
+            console.log('Tempo tapped');
+          }}
+          className="h-8 w-8 p-0 hover:bg-[var(--accent)] text-[var(--muted-foreground)]"
+          title="Tap Tempo"
+        >
+          <Gauge className="w-4 h-4" />
+        </Button>
+
         {/* View Mode Toggle */}
         <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
           <button
@@ -604,6 +654,21 @@ export function CompactTransportBar({
             (isMidiLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />)
           }
         </Button>
+
+        {/* Grid Display Mode Toggle */}
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
+            onClick={() => {
+              onGridDisplayModeChange?.(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds');
+            }}
+            title={`Grid mode: ${gridDisplayMode}. Click to switch to ${gridDisplayMode === 'seconds' ? 'timecode' : 'seconds'}`}
+          >
+            <Grid3x3 className="w-3 h-3" />
+          </Button>
+        </div>
 
         {transport.isRecording && (
           <div className="flex items-center space-x-1">
