@@ -338,7 +338,7 @@ export function CompactTransportBar({
   onMidiLockToggle,
   snapMode = 'grid',
   onSnapModeChange,
-  gridDisplayMode = 'seconds',
+  gridDisplayMode = 'timecode',
   onGridDisplayModeChange,
   onBpmChange,
   onTimeSignatureChange
@@ -619,14 +619,13 @@ export function CompactTransportBar({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)] flex items-center gap-1"
+            className="h-6 w-6 p-0 hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
             onClick={() => {
               onGridDisplayModeChange?.(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds');
             }}
             title={`Grid mode: ${gridDisplayMode}. Click to switch to ${gridDisplayMode === 'seconds' ? 'timecode' : 'seconds'}`}
           >
             <Grid3x3 className="w-3 h-3" />
-            {gridDisplayMode === 'seconds' ? 'SEC' : 'TC'}
           </Button>
         </div>
 

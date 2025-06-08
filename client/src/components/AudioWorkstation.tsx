@@ -72,7 +72,7 @@ export function AudioWorkstation() {
   const [snapMode, setSnapMode] = useState<'free' | 'grid' | 'beat' | 'measure'>('grid');
   
   // Grid display mode state
-  const [gridDisplayMode, setGridDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
+  const [gridDisplayMode, setGridDisplayMode] = useState<'seconds' | 'timecode'>('timecode');
   
   // Video player dimensions for sidebar container height calculation
   const [videoPlayerHeight, setVideoPlayerHeight] = useState(200);
