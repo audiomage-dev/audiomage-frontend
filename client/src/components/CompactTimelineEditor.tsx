@@ -2232,11 +2232,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 const childTracks = tracks.filter(t => t.parentId === track.id);
                 const allGroupTracks = [track, ...childTracks];
                 
-                // Calculate total height for the group - collapsed groups show only parent track height
+                // Calculate total height for the group - only child tracks count
                 const isCollapsed = collapsedGroups.has(track.id);
                 const groupHeight = isCollapsed 
                   ? getTrackHeight(track.id) 
-                  : allGroupTracks.reduce((acc, t) => acc + getTrackHeight(t.id), 0);
+                  : childTracks.reduce((acc, t) => acc + getTrackHeight(t.id), 0);
                 
                 // Render single container for the entire group
                 renderedTracks.push(
@@ -2273,8 +2273,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onMouseDown={(e) => handleResizeStart(e, track.id)}
                     />
-                    {/* Parent track header at left edge */}
-                    <div className="absolute left-0 top-2 flex items-center space-x-2 z-10">
+                    {/* Parent track header at left edge, vertically centered */}
+                    <div 
+                      className="absolute left-0 flex items-center space-x-2 z-10" 
+                      style={{ 
+                        top: '50%', 
+                        transform: 'translateY(-50%)' 
+                      }}
+                    >
                       {/* Collapse/Expand Icon */}
                       <Button
                         onClick={(e) => {
@@ -2337,14 +2343,61 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       </div>
                     </div>
 
-                    {/* Child tracks with individual controls */}
-                    <div className="flex flex-col h-full w-full pt-8">
-                      {!isCollapsed && childTracks.map((childTrack, childIndex) => (
-                        <div 
-                          key={`child-section-${childTrack.id}`}
-                          className="flex items-center justify-end pr-3 relative" 
-                          style={{ height: `${getTrackHeight(childTrack.id)}px` }}
-                        >
+
+                  </div>
+                );
+                
+                // Add individual child track headers when expanded
+                if (!isCollapsed) {
+                  childTracks.forEach((childTrack) => {
+                    const childTrackHeight = getTrackHeight(childTrack.id);
+                    renderedTracks.push(
+                      <div
+                        key={`track-sidebar-${childTrack.id}`}
+                        className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
+                          selectedTrackIds.includes(childTrack.id) 
+                            ? 'border-l-[var(--primary)]' 
+                            : 'hover:brightness-110'
+                        }`}
+                        style={{ 
+                          height: `${childTrackHeight}px`,
+                          borderLeftColor: selectedTrackIds.includes(childTrack.id) 
+                            ? 'var(--primary)' 
+                            : childTrack.color,
+                          backgroundColor: (() => {
+                            // Convert track color to rgba with appropriate opacity
+                            const hex = childTrack.color.replace('#', '');
+                            const r = parseInt(hex.substr(0, 2), 16);
+                            const g = parseInt(hex.substr(2, 2), 16);
+                            const b = parseInt(hex.substr(4, 2), 16);
+                            
+                            if (selectedTrackIds.includes(childTrack.id)) {
+                              return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity for selected
+                            }
+                            return `rgba(${r}, ${g}, ${b}, 0.1)`; // 10% opacity for default
+                          })()
+                        }}
+                        onClick={(e) => handleTrackSelect(childTrack.id, e)}
+                        onContextMenu={(e) => handleTrackRightClick(e, childTrack.id)}
+                      >
+                        {/* Resize Handle for Child Track */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          onMouseDown={(e) => handleResizeStart(e, childTrack.id)}
+                        />
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center space-x-2 min-w-0 pl-4">
+                            <div 
+                              className="w-1.5 h-1.5 rounded-sm flex-shrink-0" 
+                              style={{ backgroundColor: childTrack.color }}
+                            ></div>
+                            <span className="text-xs text-[var(--muted-foreground)] truncate">
+                              {childTrack.name}
+                            </span>
+                            {childTrack.type === 'ai-generated' && (
+                              <div className="w-1 h-1 bg-[var(--purple)] rounded-full"></div>
+                            )}
+                          </div>
                           <div className="flex items-center space-x-1">
                             <Button
                               onClick={(e) => {
@@ -2380,13 +2433,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             </Button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                );
+                      </div>
+                    );
+                  });
+                }
                 
-                // Skip all tracks in this group (if collapsed, only skip child tracks)
-                i += isCollapsed ? 1 : allGroupTracks.length;
+                // Skip all tracks in this group
+                i += allGroupTracks.length;
               } else if (!track.parentId) {
                 // Regular track (not grouped)
                 const trackHeight = getTrackHeight(track.id);
