@@ -72,6 +72,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [rangeSelection, setRangeSelection] = useState<{ startTime: number; endTime: number; isActive: boolean } | null>(null);
   const [showRangeActions, setShowRangeActions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [rightClickedOnRange, setRightClickedOnRange] = useState(false);
   
   // Track resizing state
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
@@ -758,17 +759,20 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     document.addEventListener('mouseup', handleMouseUp);
   }, [tracks, zoomLevel, scrollX]);
 
-  // Update mouse up handlers to capture cursor position
+  // Handle click outside to close context menu
   useEffect(() => {
-    const updateCursorPosition = (e: MouseEvent) => {
-      if (showRangeActions) {
-        setCursorPosition({ x: e.clientX, y: e.clientY });
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const isRangeElement = target.closest('[data-range-actions]');
+      
+      if (!isRangeElement && showRangeActions) {
+        setShowRangeActions(false);
       }
     };
 
     if (showRangeActions) {
-      // Set initial cursor position from the last mouse interaction
-      setCursorPosition(prev => prev.x === 0 ? { x: window.innerWidth / 2, y: window.innerHeight / 2 } : prev);
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [showRangeActions]);
 
@@ -3190,141 +3194,100 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               />
             )}
 
-            {/* Range Selection Quick Actions */}
+            {/* Simple White Context Menu for Range Selection */}
             {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
-                data-range-actions
                 className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${Math.max(20, Math.min(window.innerWidth - 280, cursorPosition.x - 140))}px`,
-                  top: `${Math.max(20, Math.min(window.innerHeight - 200, cursorPosition.y + 10))}px`,
+                  left: `${Math.max(10, Math.min(window.innerWidth - 200, cursorPosition.x))}px`,
+                  top: `${Math.max(10, Math.min(window.innerHeight - 300, cursorPosition.y))}px`,
                 }}
               >
-                {/* Modern floating panel with glassmorphism effect */}
-                <div className="bg-black/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-4 min-w-[260px]">
-                  {/* Header with duration */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-sm font-medium text-white/90">
-                      Range Selection
-                    </div>
-                    <div className="text-xs text-blue-400 font-mono bg-blue-500/20 px-2 py-1 rounded-md">
-                      {(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s
-                    </div>
+                {/* Simple white context menu */}
+                <div className="bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[180px]">
+                  {/* AI-powered actions */}
+                  <div className="px-3 py-1 text-xs font-medium text-gray-500 border-b border-gray-100">
+                    AI-Powered
                   </div>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('AI Generate Music for range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 text-purple-500" />
+                    Generate AI Music
+                  </button>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('AI Enhance Audio for range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    AI Enhance Audio
+                  </button>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('AI Mix for range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <BarChart3 className="w-4 h-4 text-blue-500" />
+                    AI Smart Mix
+                  </button>
                   
-                  {/* AI-powered actions section */}
-                  <div className="mb-3">
-                    <div className="text-xs text-white/60 mb-2 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      AI-Powered
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-purple-500/20 border-purple-400/30 text-white hover:bg-purple-500/30 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('AI Generate Music for range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="Generate AI music for this time range"
-                      >
-                        <Sparkles className="w-3 h-3" />
-                        Music
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-green-500/20 border-green-400/30 text-white hover:bg-green-500/30 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('AI Enhance Audio for range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="AI-enhance audio in this range"
-                      >
-                        <TrendingUp className="w-3 h-3" />
-                        Enhance
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-blue-500/20 border-blue-400/30 text-white hover:bg-blue-500/30 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('AI Mix for range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="AI-powered mixing for this range"
-                      >
-                        <BarChart3 className="w-3 h-3" />
-                        Mix
-                      </Button>
-                    </div>
-                  </div>
+                  <div className="border-t border-gray-100 my-1"></div>
                   
                   {/* Standard editing actions */}
-                  <div className="mb-3">
-                    <div className="text-xs text-white/60 mb-2">
-                      Edit
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('Cut range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="Cut selected range"
-                      >
-                        <Scissors className="w-3 h-3" />
-                        Cut
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('Copy range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="Copy selected range"
-                      >
-                        <Copy className="w-3 h-3" />
-                        Copy
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs bg-red-500/20 border-red-400/30 text-white hover:bg-red-500/30 flex items-center gap-1"
-                        onClick={() => {
-                          console.log('Delete range:', rangeSelection);
-                          setShowRangeActions(false);
-                        }}
-                        title="Delete content in range"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </Button>
-                    </div>
+                  <div className="px-3 py-1 text-xs font-medium text-gray-500">
+                    Edit
                   </div>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('Cut range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <Scissors className="w-4 h-4 text-gray-600" />
+                    Cut
+                  </button>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('Copy range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <Copy className="w-4 h-4 text-gray-600" />
+                    Copy
+                  </button>
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                      console.log('Delete range:', rangeSelection);
+                      setShowRangeActions(false);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                    Delete
+                  </button>
                   
-                  {/* More options */}
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="w-full h-8 text-xs bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+                  <div className="border-t border-gray-100 my-1"></div>
+                  
+                  <button
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 font-medium"
                     onClick={() => {
                       console.log('Show full range options for:', rangeSelection);
                       setShowRangeActions(false);
                     }}
                   >
                     More Options...
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
@@ -3332,19 +3295,25 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             {/* DAW-style Range Selection Overlay */}
             {rangeSelection && rangeSelection.isActive && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
-                className="absolute bg-blue-500/20 pointer-events-none z-50"
+                className="absolute bg-blue-500/20 pointer-events-auto z-50"
                 style={{
                   left: `${rangeSelection.startTime * 60 * zoomLevel}px`,
                   top: '0px',
                   width: `${(rangeSelection.endTime - rangeSelection.startTime) * 60 * zoomLevel}px`,
                   height: `${tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0)}px`,
                 }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setCursorPosition({ x: e.clientX, y: e.clientY });
+                  setShowRangeActions(true);
+                }}
+                data-range-actions
               >
                 {/* Time display at top */}
-                <div className="absolute -top-6 left-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded">
+                <div className="absolute -top-6 left-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded pointer-events-none">
                   {rangeSelection.startTime.toFixed(2)}s
                 </div>
-                <div className="absolute -top-6 right-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded">
+                <div className="absolute -top-6 right-0 text-xs text-blue-600 font-mono bg-white dark:bg-gray-800 px-1 rounded pointer-events-none">
                   {rangeSelection.endTime.toFixed(2)}s
                 </div>
               </div>
