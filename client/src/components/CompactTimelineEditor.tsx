@@ -2278,36 +2278,39 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       
                       {/* Parent track header - vertically centered */}
                       <div 
-                        className="absolute left-0 flex items-center space-x-2 z-10" 
+                        className="absolute left-0 flex flex-col z-10" 
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)' 
                         }}
                       >
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleGroupCollapse?.(track.id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                        >
-                          <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
-                        </Button>
-                        <div 
-                          className="w-2 h-2 rounded-sm flex-shrink-0" 
-                          style={{ backgroundColor: track.color }}
-                        ></div>
-                        <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                          {track.name}
-                        </span>
-                        {track.type === 'ai-generated' && (
-                          <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                        )}
+                        {/* Header section */}
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleGroupCollapse?.(track.id);
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                          >
+                            <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                          </Button>
+                          <div 
+                            className="w-2 h-2 rounded-sm flex-shrink-0" 
+                            style={{ backgroundColor: track.color }}
+                          ></div>
+                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                            {track.name}
+                          </span>
+                          {track.type === 'ai-generated' && (
+                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                          )}
+                        </div>
                         
-                        {/* Parent track mute/solo buttons - control all children */}
-                        <div className="flex items-center space-x-1 ml-4">
+                        {/* Parent track mute/solo buttons under header */}
+                        <div className="flex items-center space-x-1">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
