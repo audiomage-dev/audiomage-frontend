@@ -251,34 +251,67 @@ export function QuickActionsPanel() {
     <div className="h-full flex flex-col">
       {/* Category Navigation */}
       <div className="p-3 border-b border-[var(--border)] bg-[var(--card)]">
-        {/* Category Pills */}
-        <div className="flex flex-wrap gap-2 mb-3">
-          {categories.map((category) => {
-            const categoryCount = macroActions.filter(a => a.category === category.id).length;
-            return (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                  selectedCategory === category.id
-                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
-                    : 'bg-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-                }`}
-              >
-                <div className="w-4 h-4">
-                  {category.icon}
-                </div>
-                <span className="text-xs font-medium">{category.name}</span>
-                <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                  selectedCategory === category.id
-                    ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
-                    : 'bg-[var(--background)] text-[var(--muted-foreground)]'
-                }`}>
-                  {categoryCount}
-                </div>
-              </button>
-            );
-          })}
+        {/* Category Pills - Split into two columns */}
+        <div className="flex gap-2 mb-3">
+          {/* Left Column */}
+          <div className="flex-1 flex flex-wrap gap-2">
+            {categories.slice(0, Math.ceil(categories.length / 2)).map((category) => {
+              const categoryCount = macroActions.filter(a => a.category === category.id).length;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                      : 'bg-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  <div className="w-4 h-4">
+                    {category.icon}
+                  </div>
+                  <span className="text-xs font-medium">{category.name}</span>
+                  <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
+                      : 'bg-[var(--background)] text-[var(--muted-foreground)]'
+                  }`}>
+                    {categoryCount}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Right Column */}
+          <div className="flex-1 flex flex-wrap gap-2">
+            {categories.slice(Math.ceil(categories.length / 2)).map((category) => {
+              const categoryCount = macroActions.filter(a => a.category === category.id).length;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                      : 'bg-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  <div className="w-4 h-4">
+                    {category.icon}
+                  </div>
+                  <span className="text-xs font-medium">{category.name}</span>
+                  <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
+                      : 'bg-[var(--background)] text-[var(--muted-foreground)]'
+                  }`}>
+                    {categoryCount}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
         
         {/* Active Category Header */}
