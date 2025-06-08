@@ -1,0 +1,65 @@
+# Audiomage CI/CD Pipeline - Replit Workflows Configuration
+
+[[workflow]]
+name = "Unit Tests"
+command = "npx vitest run client/src/test/unit/hooks/useAudioWorkstation.test.ts"
+
+[[workflow]]
+name = "All Tests"
+command = "npx vitest run"
+
+[[workflow]]
+name = "Test Coverage"
+command = "npx vitest run --coverage"
+
+[[workflow]]
+name = "Test Watch"
+command = "npx vitest"
+
+[[workflow]]
+name = "Lint Code"
+command = "npx eslint . --ext .ts,.tsx --fix"
+
+[[workflow]]
+name = "Format Code"
+command = "npx prettier --write ."
+
+[[workflow]]
+name = "Type Check"
+command = "npx tsc --noEmit"
+
+[[workflow]]
+name = "Security Audit"
+command = "npm audit --audit-level=moderate"
+
+[[workflow]]
+name = "Build Production"
+command = "npm run build"
+
+[[workflow]]
+name = "Build Preview"
+command = "npm run build && npm run preview"
+
+[[workflow]]
+name = "Full CI Pipeline"
+command = "node scripts/replit-runner.js test-all"
+
+[[workflow]]
+name = "Deploy Check"
+command = "node scripts/replit-runner.js deploy-check"
+
+[[workflow]]
+name = "Workflow Manager"
+command = "node scripts/replit-runner.js interactive"
+
+[[workflow]]
+name = "Dev with Testing"
+command = "./scripts/replit-workflows.sh dev-test"
+
+[[workflow]]
+name = "Audio Tests"
+command = "npx vitest run client/src/test/unit/hooks/useAudioWorkstation.test.ts --reporter=verbose"
+
+[[workflow]]
+name = "Integration Tests"
+command = "npx vitest run client/src/test/integration/"
