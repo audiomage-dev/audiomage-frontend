@@ -3218,7 +3218,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       }}
                       title="AI-enhance audio in this range"
                     >
-                      <Wand2 className="w-3 h-3" />
+                      <TrendingUp className="w-3 h-3" />
                       Enhance
                     </Button>
                     
@@ -3232,7 +3232,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       }}
                       title="AI-powered mixing for this range"
                     >
-                      <Brain className="w-3 h-3" />
+                      <BarChart3 className="w-3 h-3" />
                       AI Mix
                     </Button>
                     
