@@ -3211,15 +3211,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                                 ? `Range Selection (${clipAreaSelection.multiTrack.affectedTracks.length} tracks)`
                                 : `Range Selection`;
                               
-                              setClipContextMenu({
+                              const context = {
+                                clipId: clip.id,
+                                trackId: track.id,
+                                clipType: 'audio',
+                                trackName: track.name,
+                                clipName: selectionLabel
+                              };
+                              
+                              const suggestions = generateContextualSuggestions('range', context);
+                              
+                              setIntelligentContextMenu({
                                 x: e.clientX,
                                 y: e.clientY,
-                                clip: {
-                                  id: clip.id,
-                                  name: selectionLabel,
-                                  trackId: track.id,
-                                  trackName: track.name
-                                }
+                                type: 'range',
+                                context,
+                                suggestions
                               });
                             }}
                           />
@@ -3585,8 +3592,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         />
       )}
 
-      {/* Legacy Menu Placeholder - Remove after testing */}
-      {false && (
+      {/* Removed old context menu system - now using IntelligentContextMenu */}
         <div
           className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-1 z-50 min-w-32"
           style={{ left: contextMenu.x, top: contextMenu.y }}

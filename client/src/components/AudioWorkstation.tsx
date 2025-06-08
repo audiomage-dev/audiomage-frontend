@@ -4,6 +4,7 @@ import { VerticalSidebar } from './VerticalSidebar';
 import { AIChatSidebar } from './AIChatSidebar';
 import { CompactTransportBar } from './CompactTransportBar';
 import { CompactTimelineEditor } from './CompactTimelineEditor';
+import { SimpleContextualMenu } from './SimpleContextualMenu';
 import { MidiEditor } from './MidiEditor';
 import { InteractiveScoreEditor } from './InteractiveScoreEditor';
 import { MixingConsole } from './MixingConsole';
@@ -263,10 +264,17 @@ export function AudioWorkstation() {
           )}
           
           {/* Vertical Sidebar below video */}
-          <div className="flex-1 flex flex-col min-h-0 p-2">
+          <div className="flex-1 flex flex-col min-h-0 p-2 space-y-2">
             <VerticalSidebar 
               onFileSelect={setSelectedMediaFile} 
               containerHeight={sidebarContainerHeight}
+            />
+            
+            {/* Intelligent Contextual Menu Demo */}
+            <SimpleContextualMenu 
+              tracks={tracks}
+              onTrackMute={toggleTrackMute}
+              onTrackSolo={toggleTrackSolo}
             />
           </div>
         </div>
