@@ -26,6 +26,8 @@ import {
   TrendingDown,
   BarChart3,
   Sparkles,
+  Wand2,
+  Brain,
   X,
   Files,
   Copy,
@@ -68,6 +70,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   const [isHoveringEmptySpace, setIsHoveringEmptySpace] = useState(false);
   const [rangeSelection, setRangeSelection] = useState<{ startTime: number; endTime: number; isActive: boolean } | null>(null);
+  const [showRangeActions, setShowRangeActions] = useState(false);
   
   // Track resizing state
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
@@ -703,6 +706,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     
     // Initialize range selection
     setRangeSelection({ startTime, endTime: startTime, isActive: true });
+    setShowRangeActions(false);
     
     console.log('Starting timeline range selection at:', startTime.toFixed(3));
     
@@ -740,6 +744,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       if (!isSelecting) {
         // Clear range selection on simple click
         setRangeSelection(null);
+        setShowRangeActions(false);
+      } else {
+        // Range was created, show quick actions
+        setShowRangeActions(true);
       }
     };
     
@@ -799,6 +807,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       if (!isSelecting) {
         // Clear range selection on simple click
         setRangeSelection(null);
+        setShowRangeActions(false);
+      } else {
+        // Range was created, show quick actions
+        setShowRangeActions(true);
       }
     };
     
@@ -2782,6 +2794,13 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             // Check if clicking on empty timeline area (not on a clip)
             const target = e.target as HTMLElement;
             const isClipElement = target.closest('[data-clip-id]');
+            const isRangeActionElement = target.closest('[data-range-actions]');
+            
+            // Clear range selection if clicking elsewhere
+            if (!isRangeActionElement && rangeSelection) {
+              setRangeSelection(null);
+              setShowRangeActions(false);
+            }
             
             if (!isClipElement && currentTool === 'select') {
               handleTimelineRangeSelection(e);
@@ -3156,6 +3175,126 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
                 }}
               />
+            )}
+
+            {/* Range Selection Quick Actions */}
+            {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
+              <div
+                data-range-actions
+                className="absolute z-50 pointer-events-auto"
+                style={{
+                  left: `${Math.max(10, (rangeSelection.startTime + rangeSelection.endTime) / 2 * 60 * zoomLevel - 120)}px`,
+                  top: `${Math.max(20, tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0) / 2 - 30)}px`,
+                }}
+              >
+                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3 min-w-[240px]">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Range Actions ({(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s)
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* AI-based features */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('AI Generate Music for range:', rangeSelection);
+                        // TODO: Open AI music generation modal
+                      }}
+                      title="Generate AI music for this time range"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      AI Music
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('AI Enhance Audio for range:', rangeSelection);
+                        // TODO: Open AI audio enhancement modal
+                      }}
+                      title="AI-enhance audio in this range"
+                    >
+                      <Wand2 className="w-3 h-3" />
+                      Enhance
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('AI Mix for range:', rangeSelection);
+                        // TODO: Open AI mixing assistant
+                      }}
+                      title="AI-powered mixing for this range"
+                    >
+                      <Brain className="w-3 h-3" />
+                      AI Mix
+                    </Button>
+                    
+                    {/* Standard editing features */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('Cut range:', rangeSelection);
+                        // TODO: Cut selected range
+                      }}
+                      title="Cut selected range"
+                    >
+                      <Scissors className="w-3 h-3" />
+                      Cut
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('Copy range:', rangeSelection);
+                        // TODO: Copy selected range
+                      }}
+                      title="Copy selected range"
+                    >
+                      <Copy className="w-3 h-3" />
+                      Copy
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={() => {
+                        console.log('Delete range:', rangeSelection);
+                        // TODO: Delete content in selected range
+                      }}
+                      title="Delete content in range"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Delete
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="w-full h-8 text-xs"
+                      onClick={() => {
+                        console.log('Show full range options for:', rangeSelection);
+                        // TODO: Open comprehensive range actions modal
+                      }}
+                    >
+                      More Options...
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* DAW-style Range Selection Overlay */}
