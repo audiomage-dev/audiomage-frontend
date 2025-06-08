@@ -2273,115 +2273,122 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onMouseDown={(e) => handleResizeStart(e, track.id)}
                     />
-                    {/* Track headers layout */}
-                    <div className="flex h-full w-full">
-                      {/* Parent track header - centered */}
-                      <div className="flex flex-col justify-center items-center flex-1">
-                        <div className="flex items-center space-x-2 min-w-0 mb-2">
-                          {/* Collapse/Expand Icon */}
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleGroupCollapse?.(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-                          >
-                            {collapsedGroups.has(track.id) ? (
-                              <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                    {/* Track layout with proper positioning */}
+                    <div className="flex flex-col h-full w-full relative">
+                      {/* Parent track section */}
+                      <div 
+                        className="flex items-center justify-center" 
+                        style={{ height: `${getTrackHeight(track.id)}px` }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center space-x-2 min-w-0 mb-1">
+                            {/* Collapse/Expand Icon */}
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleGroupCollapse?.(track.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                            >
+                              {collapsedGroups.has(track.id) ? (
+                                <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
+                              ) : (
+                                <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                              )}
+                            </Button>
+                            <div 
+                              className="w-2 h-2 rounded-sm flex-shrink-0" 
+                              style={{ backgroundColor: track.color }}
+                            ></div>
+                            <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                              {track.name}
+                            </span>
+                            {track.type === 'ai-generated' && (
+                              <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                             )}
-                          </Button>
-                          <div 
-                            className="w-2 h-2 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: track.color }}
-                          ></div>
-                          <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                            {track.name}
-                          </span>
-                          {track.type === 'ai-generated' && (
-                            <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                          )}
-                        </div>
-                        
-                        {/* Parent track mute/solo buttons under header - centered */}
-                        <div className="flex items-center space-x-1">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTrackMute(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                              track.muted 
-                                ? 'bg-[var(--red)] text-white border-white/40' 
-                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                            }`}
-                          >
-                            M
-                          </Button>
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTrackSolo(track.id);
-                            }}
-                            variant="ghost"
-                            size="sm"
-                            className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
-                              track.soloed 
-                                ? 'bg-[var(--yellow)] text-black border-white/40' 
-                                : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                            }`}
-                          >
-                            S
-                          </Button>
+                          </div>
+                          
+                          {/* Parent track mute/solo buttons */}
+                          <div className="flex items-center space-x-1">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackMute(track.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                                track.muted 
+                                  ? 'bg-[var(--red)] text-white border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                            >
+                              M
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackSolo(track.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                                track.soloed 
+                                  ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                            >
+                              S
+                            </Button>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Child tracks controls on the right - buttons only */}
-                      {!isCollapsed && (
-                        <div className="flex flex-col justify-center space-y-1 pr-3">
-                          {childTracks.map((childTrack) => (
-                            <div key={`child-controls-${childTrack.id}`} className="flex items-center space-x-1">
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onTrackMute(childTrack.id);
-                                }}
-                                variant="ghost"
-                                size="sm"
-                                className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                                  childTrack.muted 
-                                    ? 'bg-[var(--red)] text-white border-white/40' 
-                                    : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                                }`}
-                                style={{ fontSize: '6px' }}
-                              >
-                                M
-                              </Button>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onTrackSolo(childTrack.id);
-                                }}
-                                variant="ghost"
-                                size="sm"
-                                className={`h-3 w-3 p-0 rounded text-xs border border-white/20 ${
-                                  childTrack.soloed 
-                                    ? 'bg-[var(--yellow)] text-black border-white/40' 
-                                    : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                                }`}
-                                style={{ fontSize: '6px' }}
-                              >
-                                S
-                              </Button>
-                            </div>
-                          ))}
+                      {/* Child tracks sections */}
+                      {!isCollapsed && childTracks.map((childTrack, childIndex) => (
+                        <div 
+                          key={`child-section-${childTrack.id}`}
+                          className="flex items-center justify-end pr-3" 
+                          style={{ height: `${getTrackHeight(childTrack.id)}px` }}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackMute(childTrack.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                                childTrack.muted 
+                                  ? 'bg-[var(--red)] text-white border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                              style={{ fontSize: '8px' }}
+                            >
+                              M
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTrackSolo(childTrack.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-4 w-4 p-0 rounded text-xs border border-white/20 ${
+                                childTrack.soloed 
+                                  ? 'bg-[var(--yellow)] text-black border-white/40' 
+                                  : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                              }`}
+                              style={{ fontSize: '8px' }}
+                            >
+                              S
+                            </Button>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 );
