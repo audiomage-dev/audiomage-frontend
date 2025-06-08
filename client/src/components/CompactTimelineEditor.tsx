@@ -2585,13 +2585,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     const pixelsPerSecond = 60 * zoomLevel; // Use same calculation as drag logic
                     const clipStartX = clip.startTime * pixelsPerSecond;
                     const clipWidth = clip.duration * pixelsPerSecond;
+                    const currentTrackHeight = getTrackHeight(track.id);
                     
                     return (
                       <div
                         key={`${track.id}-clip-${clip.id}`}
                         data-clip-id={clip.id}
                         data-clip-element="true"
-                        className={`absolute top-1 h-[58px] rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                        className={`absolute top-1 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
                             ? 'opacity-60 scale-105 z-50' 
                             : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
@@ -2620,6 +2621,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         style={{
                           left: `${clipStartX}px`,
                           width: `${clipWidth}px`,
+                          height: `${currentTrackHeight - 8}px`, // Track height minus top/bottom margins
                           backgroundColor: clip.color,
                           borderColor: clip.color,
                           cursor: cursorState,
@@ -2646,13 +2648,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         </div>
                         
                         {/* Line Waveform */}
-                        <div className="h-[50px] px-2 py-1 relative">
+                        <div className="flex-1 px-2 py-1 relative" style={{ height: `${currentTrackHeight - 24}px` }}>
                           {clip.waveformData && (
-                            <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} 46`} preserveAspectRatio="none">
+                            <svg className="w-full h-full" viewBox={`0 0 ${clipWidth} ${currentTrackHeight - 24}`} preserveAspectRatio="none">
                               <path
-                                d={`M 0,23 ${clip.waveformData.map((amplitude, i) => {
+                                d={`M 0,${(currentTrackHeight - 24) / 2} ${clip.waveformData.map((amplitude, i) => {
                                   const x = (i / (clip.waveformData!.length - 1)) * clipWidth;
-                                  const y = 23 - ((amplitude - 50) / 50) * 22;
+                                  const waveformHeight = currentTrackHeight - 24;
+                                  const centerY = waveformHeight / 2;
+                                  const maxAmplitude = waveformHeight * 0.4; // Use 40% of available height for amplitude
+                                  const y = centerY - ((amplitude - 50) / 50) * maxAmplitude;
                                   return `L ${x},${y}`;
                                 }).join(' ')}`}
                                 stroke="rgba(255,255,255,0.8)"
