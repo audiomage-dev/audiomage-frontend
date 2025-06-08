@@ -3210,97 +3210,144 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               />
             )}
 
-            {/* Simple White Context Menu for Range Selection */}
+            {/* Accessible Context Menu for Range Selection */}
             {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
               <div
                 className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${Math.max(10, Math.min(window.innerWidth - 200, cursorPosition.x))}px`,
-                  top: `${Math.max(10, Math.min(window.innerHeight - 300, cursorPosition.y))}px`,
+                  left: `${Math.max(10, Math.min(window.innerWidth - 220, cursorPosition.x))}px`,
+                  top: `${Math.max(10, Math.min(window.innerHeight - 320, cursorPosition.y))}px`,
                 }}
+                role="menu"
+                aria-label="Range selection actions"
+                data-range-actions
               >
-                {/* Simple white context menu */}
-                <div className="bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[180px]">
-                  {/* AI-powered actions */}
-                  <div className="px-3 py-1 text-xs font-medium text-gray-500 border-b border-gray-100">
-                    AI-Powered
+                {/* Accessible context menu with improved design */}
+                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl py-2 min-w-[200px] backdrop-blur-sm">
+                  {/* Header with range duration */}
+                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      Range Actions
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                      {(rangeSelection.endTime - rangeSelection.startTime).toFixed(2)}s duration
+                    </div>
                   </div>
+                  
+                  {/* AI-powered actions */}
+                  <div className="px-3 py-1">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      AI-Powered Tools
+                    </div>
+                  </div>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('AI Generate Music for range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <Sparkles className="w-4 h-4 text-purple-500" />
-                    Generate AI Music
+                    <Sparkles className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-gray-800 dark:text-gray-200">Generate AI Music</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Create music for this range</div>
+                    </div>
                   </button>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-green-50 dark:hover:bg-green-900/20 focus:bg-green-50 dark:focus:bg-green-900/20 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('AI Enhance Audio for range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <TrendingUp className="w-4 h-4 text-green-500" />
-                    AI Enhance Audio
+                    <TrendingUp className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-gray-800 dark:text-gray-200">AI Enhance Audio</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Improve audio quality</div>
+                    </div>
                   </button>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('AI Mix for range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <BarChart3 className="w-4 h-4 text-blue-500" />
-                    AI Smart Mix
+                    <BarChart3 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-gray-800 dark:text-gray-200">AI Smart Mix</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Auto-balance levels</div>
+                    </div>
                   </button>
                   
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                   
                   {/* Standard editing actions */}
-                  <div className="px-3 py-1 text-xs font-medium text-gray-500">
-                    Edit
+                  <div className="px-3 py-1">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Edit Operations
+                    </div>
                   </div>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('Cut range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <Scissors className="w-4 h-4 text-gray-600" />
-                    Cut
+                    <Scissors className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                    <div className="text-gray-800 dark:text-gray-200">Cut</div>
                   </button>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('Copy range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <Copy className="w-4 h-4 text-gray-600" />
-                    Copy
+                    <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                    <div className="text-gray-800 dark:text-gray-200">Copy</div>
                   </button>
+                  
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20 focus:outline-none flex items-center gap-3 transition-colors"
                     onClick={() => {
                       console.log('Delete range:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                    Delete
+                    <Trash2 className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <div className="text-gray-800 dark:text-gray-200">Delete</div>
                   </button>
                   
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                   
                   <button
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 font-medium"
+                    role="menuitem"
+                    className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none font-medium text-gray-800 dark:text-gray-200 transition-colors"
                     onClick={() => {
                       console.log('Show full range options for:', rangeSelection);
                       setShowRangeActions(false);
                     }}
+                    tabIndex={0}
                   >
                     More Options...
                   </button>
