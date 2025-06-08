@@ -2307,7 +2307,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         }}
                       >
                         {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-4">
+                        <div className="flex items-center space-x-2 mb-8">
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
@@ -2315,7 +2315,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="flex flex-col">
                             <div 
                               className="text-sm font-medium text-[var(--foreground)] leading-tight"
-                              style={{ maxWidth: `${240}px` }}
+                              style={{ maxWidth: `${180}px` }}
                             >
                               {track.name.split(' ').map((word, index) => (
                                 <div key={index} className="break-words">
@@ -2468,10 +2468,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col" style={{ maxWidth: `${240}px` }}>
+                          <div className="flex flex-col" style={{ maxWidth: `${180}px` }}>
                             <div 
                               className="text-sm font-medium text-[var(--foreground)] leading-tight"
-                              style={{ maxWidth: `${240}px` }}
+                              style={{ maxWidth: `${180}px` }}
                             >
                               {track.name.split(' ').map((word, index) => (
                                 <div key={index} className="break-words">
