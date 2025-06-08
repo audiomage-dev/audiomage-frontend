@@ -2168,7 +2168,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
 
       {/* Left Sidebar - Track Headers */}
-      <div className="w-80 border-r border-[var(--border)] flex flex-col">
+      <div className="w-96 border-r border-[var(--border)] flex flex-col">
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
           <div className="flex items-center justify-between px-3 h-full w-full">
@@ -2304,7 +2304,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-all leading-tight w-16">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight w-40">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
@@ -2453,7 +2453,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-all leading-tight w-16">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight w-40">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
