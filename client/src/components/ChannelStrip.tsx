@@ -100,6 +100,8 @@ export function ChannelStrip({ channel, onVolumeChange, onMuteToggle, onSoloTogg
             className="w-4 h-20 bg-[hsl(var(--nord-3))] rounded-full relative fader-track cursor-pointer"
             onClick={handleFaderChange}
           >
+            {/* Horizontal center line */}
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-black/20 transform -translate-y-1/2"></div>
             <div 
               className="absolute left-1/2 transform -translate-x-1/2 w-3 h-4 bg-[hsl(var(--frost-3))] rounded-sm border border-[hsl(var(--nord-3))] cursor-pointer"
               style={{ bottom: `${faderPosition * 0.8}%` }}

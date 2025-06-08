@@ -702,13 +702,15 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
                   <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Volume</h4>
                   <div className="flex items-center space-x-3">
                     <div className="flex-1">
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        defaultValue={track.volume.toString()}
-                        className="w-full h-2 bg-[var(--muted)] rounded-lg"
-                      />
+                      <div className="range-with-centerline">
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="100" 
+                          defaultValue={track.volume.toString()}
+                          className="w-full h-2 bg-[var(--muted)] rounded-lg"
+                        />
+                      </div>
                       <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1">
                         <span>-∞</span>
                         <span>0</span>
@@ -724,13 +726,15 @@ export function TrackInspector({ track, onTrackMute, onTrackSolo, onClose }: Tra
                   <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Pan</h4>
                   <div className="flex items-center space-x-2">
                     <span className="text-xs">L</span>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="100" 
-                      defaultValue={track.pan.toString()}
-                      className="flex-1 h-1 bg-[var(--muted)] rounded-lg"
-                    />
+                    <div className="flex-1 range-with-centerline">
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        defaultValue={track.pan.toString()}
+                        className="w-full h-1 bg-[var(--muted)] rounded-lg"
+                      />
+                    </div>
                     <span className="text-xs">R</span>
                     <span className="text-xs font-mono w-8 text-center">
                       {track.pan === 50 ? 'C' : track.pan < 50 ? `L${50 - track.pan}` : `R${track.pan - 50}`}
