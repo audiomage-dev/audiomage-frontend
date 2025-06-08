@@ -2168,7 +2168,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
 
       {/* Left Sidebar - Track Headers */}
-      <div className="w-[480px] border-r border-[var(--border)] flex flex-col">
+      <div className="w-[600px] border-r border-[var(--border)] flex flex-col">
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
           <div className="flex items-center justify-between px-3 h-full w-full">
@@ -2278,14 +2278,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       
                       {/* Parent track header - vertically centered */}
                       <div 
-                        className="absolute left-3 flex flex-col z-10 max-w-md" 
+                        className="absolute left-3 flex flex-col z-10 max-w-lg" 
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)' 
                         }}
                       >
                         {/* Header section with responsive layout */}
-                        <div className="flex flex-wrap items-start gap-2 mb-2 max-w-full">
+                        <div className="flex flex-wrap items-start gap-3 mb-2 max-w-full">
                           <div className="flex items-center space-x-2 min-w-0">
                             <Button
                               onClick={(e) => {
@@ -2308,7 +2308,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                               className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
                               style={{ 
                                 wordBreak: 'break-word',
-                                maxWidth: '320px'
+                                maxWidth: '420px'
                               }}
                             >
                               {track.name}
