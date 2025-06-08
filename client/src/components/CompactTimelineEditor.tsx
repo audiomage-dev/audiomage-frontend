@@ -66,6 +66,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
+  const [isHoveringEmptySpace, setIsHoveringEmptySpace] = useState(false);
+  const [rangeSelection, setRangeSelection] = useState<{ startTime: number; endTime: number; isActive: boolean } | null>(null);
   
   // Track resizing state
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
@@ -692,18 +694,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     if (!timelineContainer) return;
     
     const timelineRect = timelineContainer.getBoundingClientRect();
-    const selectionStartX = e.clientX - timelineRect.left;
+    const selectionStartX = e.clientX - timelineRect.left + scrollX;
     const selectionStartY = e.clientY - timelineRect.top;
-    const startTrackIndex = Math.floor(selectionStartY / 96);
     
     // Calculate time position on timeline
     const pixelsPerSecond = 60 * zoomLevel;
-    const absoluteStartTime = selectionStartX / pixelsPerSecond;
+    const startTime = selectionStartX / pixelsPerSecond;
     
-    console.log('Starting timeline range selection:', {
-      absoluteStartTime: absoluteStartTime.toFixed(3),
-      startTrackIndex
-    });
+    // Initialize range selection
+    setRangeSelection({ startTime, endTime: startTime, isActive: true });
+    
+    console.log('Starting timeline range selection at:', startTime.toFixed(3));
     
     let isSelecting = false;
     
@@ -713,65 +714,21 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       
       if (!isSelecting && (deltaX > 3 || deltaY > 3)) {
         isSelecting = true;
-        setCursorState('crosshair');
       }
       
       if (isSelecting) {
-        const currentX = moveEvent.clientX - timelineRect.left;
-        const currentY = moveEvent.clientY - timelineRect.top;
-        const currentTrackIndex = Math.floor(currentY / 96);
+        const currentX = moveEvent.clientX - timelineRect.left + scrollX;
         
-        // Calculate time range
-        const absoluteEndTime = currentX / pixelsPerSecond;
-        const selectionStartTime = Math.min(absoluteStartTime, absoluteEndTime);
-        const selectionEndTime = Math.max(absoluteStartTime, absoluteEndTime);
+        // Calculate end time for range selection
+        const endTime = currentX / pixelsPerSecond;
+        const selectionStartTime = Math.min(startTime, endTime);
+        const selectionEndTime = Math.max(startTime, endTime);
         
-        // Only enable multi-track selection if user is dragging vertically significantly
-        const verticalDragThreshold = 48;
-        const isVerticalDrag = Math.abs(currentTrackIndex - startTrackIndex) > 0 && 
-                              Math.abs(currentY - selectionStartY) > verticalDragThreshold;
-        
-        let multiTrackData = undefined;
-        let primaryTrackId = tracks[startTrackIndex]?.id;
-        
-        if (isVerticalDrag) {
-          // Calculate affected tracks and filter by clips in time range
-          const minTrackIndex = Math.max(0, Math.min(startTrackIndex, currentTrackIndex));
-          const maxTrackIndex = Math.min(tracks.length - 1, Math.max(startTrackIndex, currentTrackIndex));
-          const candidateTracks = tracks.slice(minTrackIndex, maxTrackIndex + 1);
-          
-          // Filter tracks that have clips overlapping with the selection time range
-          const affectedTracks = candidateTracks.filter(candidateTrack => {
-            if (!candidateTrack.clips) return false;
-            
-            return candidateTrack.clips.some(trackClip => {
-              const clipStart = trackClip.startTime;
-              const clipEnd = trackClip.startTime + trackClip.duration;
-              
-              // Check if clip overlaps with selection time range
-              return clipStart < selectionEndTime && clipEnd > selectionStartTime;
-            });
-          });
-          
-          if (affectedTracks.length > 1) {
-            multiTrackData = {
-              startTrackIndex: minTrackIndex,
-              endTrackIndex: maxTrackIndex,
-              affectedTracks: affectedTracks.map(t => t.id)
-            };
-          }
-        }
-        
-        // Create timeline-based selection
-        setClipAreaSelection({
-          clipId: 'timeline-selection',
-          trackId: primaryTrackId || tracks[0]?.id || '',
-          startTime: selectionStartTime,
-          endTime: selectionEndTime,
-          startX: Math.min(selectionStartX, currentX),
-          endX: Math.max(selectionStartX, currentX),
-          isActive: true,
-          multiTrack: multiTrackData
+        // Update range selection
+        setRangeSelection({ 
+          startTime: selectionStartTime, 
+          endTime: selectionEndTime, 
+          isActive: true 
         });
       }
     };
@@ -779,11 +736,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     const handleMouseUp = (upEvent: MouseEvent) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      setCursorState('default');
       
       if (!isSelecting) {
-        // Clear any existing selection on timeline click
-        setClipAreaSelection(null);
+        // Clear range selection on simple click
+        setRangeSelection(null);
       }
     };
     
@@ -2750,7 +2706,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               handleMouseDown(e);
             }
           }}
-          onMouseMove={handleMouseMove}
+          onMouseMove={(e) => {
+            // Check if hovering over empty space for range selection
+            const target = e.target as HTMLElement;
+            const isClipElement = target.closest('[data-clip-id]');
+            const isOverEmptySpace = !isClipElement && currentTool === 'select';
+            
+            setIsHoveringEmptySpace(isOverEmptySpace);
+            
+            handleMouseMove(e);
+          }}
           onMouseUp={handleMouseUp}
           onWheel={handleScroll}
           onMouseLeave={() => {
@@ -2759,7 +2724,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             setSelectionBox(null);
             setDraggingClip(null);
           }}
-          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : currentTool === 'select' ? 'default' : 'default' }}
+          style={{ cursor: currentTool === 'hand' ? 'grab' : isDragging ? 'grabbing' : isHoveringEmptySpace ? 'text' : 'default' }}
         >
           <div 
             className="relative" 
