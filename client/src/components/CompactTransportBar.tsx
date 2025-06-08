@@ -341,6 +341,7 @@ export function CompactTransportBar({
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
   const [editTimeValue, setEditTimeValue] = useState('');
+  const [timeDisplayMode, setTimeDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
   const timeInputRef = useRef<HTMLInputElement>(null);
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -348,6 +349,10 @@ export function CompactTransportBar({
     const secs = Math.floor(seconds % 60);
     const frames = Math.floor((seconds % 1) * 30); // Using 30fps for SMPTE
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
+  };
+
+  const formatSeconds = (seconds: number) => {
+    return `${seconds.toFixed(2)}s`;
   };
 
   const formatMidiTime = (beats: number) => {
@@ -361,7 +366,7 @@ export function CompactTransportBar({
     if (viewMode === 'midi') {
       return formatMidiTime(midiPlaybackTime);
     }
-    return formatTime(transport.currentTime);
+    return timeDisplayMode === 'seconds' ? formatSeconds(transport.currentTime) : formatTime(transport.currentTime);
   };
 
   const parseTimeString = (timeStr: string): number => {
@@ -605,37 +610,18 @@ export function CompactTransportBar({
           }
         </Button>
 
-        {/* Snap Mode Toggle */}
+        {/* Time Display Mode Toggle */}
         <div className="relative">
           <Button
             variant="ghost"
             size="sm"
-            className={`h-6 w-8 px-1 hover:bg-[var(--muted)] transition-colors border ${
-              snapMode !== 'free' ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-[var(--primary)]/40' : 'border-[var(--border)]'
-            }`}
+            className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
             onClick={() => {
-              const modes: ('free' | 'grid' | 'beat' | 'measure')[] = ['free', 'grid', 'beat', 'measure'];
-              const currentIndex = modes.indexOf(snapMode);
-              const nextMode = modes[(currentIndex + 1) % modes.length];
-              console.log(`Snap mode changing from ${snapMode} to ${nextMode}`);
-              onSnapModeChange?.(nextMode);
+              setTimeDisplayMode(prev => prev === 'seconds' ? 'timecode' : 'seconds');
             }}
-            title={`Snap Mode: ${snapMode.toUpperCase()} - ${
-              snapMode === 'free' ? 'No snapping' :
-              snapMode === 'grid' ? 'Snap to 0.5-second grid' :
-              snapMode === 'beat' ? 'Snap to quarter note beats' :
-              'Snap to measures'
-            } (Click to cycle)`}
+            title={`Currently showing ${timeDisplayMode}. Click to switch to ${timeDisplayMode === 'seconds' ? 'timecode' : 'seconds'}`}
           >
-            <div className="flex flex-col items-center">
-              {snapMode === 'free' && <Move className="w-3 h-3" />}
-              {snapMode === 'grid' && <Grid3x3 className="w-3 h-3" />}
-              {snapMode === 'beat' && <Target className="w-3 h-3" />}
-              {snapMode === 'measure' && <Music className="w-3 h-3" />}
-              <span className="text-[6px] font-mono uppercase leading-none mt-0.5">
-                {snapMode.substring(0, 4)}
-              </span>
-            </div>
+            {timeDisplayMode === 'seconds' ? 'SEC' : 'TC'}
           </Button>
         </div>
 
