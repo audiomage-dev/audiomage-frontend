@@ -2905,9 +2905,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         data-clip-element="true"
                         className={`absolute top-1 rounded-md shadow-md border border-opacity-30 hover:shadow-lg transition-all duration-200 ${
                           draggingClip?.clipId === clip.id 
-                            ? 'opacity-60 scale-105 z-50' 
+                            ? 'opacity-60 z-50' 
                             : draggingClip?.selectedClips?.some(sc => sc.clipId === clip.id)
-                              ? 'opacity-70 scale-102 z-40 ring-2 ring-[var(--primary)]'
+                              ? 'opacity-70 z-40 ring-2 ring-[var(--primary)]'
                               : multiSelection && multiSelection.selectedClips.includes(clip.id)
                                 ? 'ring-2 ring-[var(--primary)]'
                                 : 'z-5'
