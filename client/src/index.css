@@ -9,18 +9,18 @@
   --nord1: #3b4252;
   --nord2: #434c5e;
   --nord3: #4c566a;
-  
+
   /* Nord Snow Storm */
   --nord4: #d8dee9;
   --nord5: #e5e9f0;
   --nord6: #eceff4;
-  
+
   /* Nord Frost */
   --frost1: #8fbcbb;
   --frost2: #88c0d0;
   --frost3: #81a1c1;
   --frost4: #5e81ac;
-  
+
   /* Nord Aurora */
   --red: #bf616a;
   --orange: #d08770;
@@ -30,7 +30,8 @@
 }
 
 /* Nord Light Theme (Default) */
-html, :root {
+html,
+:root {
   --background: #eceff4;
   --foreground: #2e3440;
   --muted: #e5e9f0;
@@ -50,7 +51,8 @@ html, :root {
 }
 
 /* Nord Dark Theme */
-html.nord-dark, .nord-dark {
+html.nord-dark,
+.nord-dark {
   --background: #2e3440;
   --foreground: #d8dee9;
   --muted: #3b4252;
@@ -70,7 +72,8 @@ html.nord-dark, .nord-dark {
 }
 
 /* Nord Light Theme */
-html.nord-light, .nord-light {
+html.nord-light,
+.nord-light {
   --background: #eceff4;
   --foreground: #2e3440;
   --muted: #e5e9f0;
@@ -97,11 +100,16 @@ html.nord-light, .nord-light {
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family:
+      'Inter',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
     margin: 0;
     padding: 0;
   }
-  
+
   html {
     background: var(--background);
   }
@@ -143,30 +151,30 @@ html.nord-light, .nord-light {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: var(--muted);
     border-radius: 4px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--muted-foreground);
     border-radius: 4px;
     border: 2px solid var(--muted);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
   }
 
   /* Hide scrollbar completely */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Safari and Chrome */
+    display: none; /* Safari and Chrome */
   }
 
   .waveform-bar {
@@ -174,26 +182,29 @@ html.nord-light, .nord-light {
   }
 
   .meter-bar {
-    background: linear-gradient(to top, 
-      hsl(var(--aurora-green)) 0%, 
-      hsl(var(--aurora-yellow)) 60%, 
-      hsl(var(--aurora-orange)) 80%, 
+    background: linear-gradient(
+      to top,
+      hsl(var(--aurora-green)) 0%,
+      hsl(var(--aurora-yellow)) 60%,
+      hsl(var(--aurora-orange)) 80%,
       hsl(var(--aurora-red)) 100%
     );
   }
 
   .fader-track {
-    background: linear-gradient(to bottom, 
-      hsl(var(--secondary)) 0%, 
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--secondary)) 0%,
       hsl(var(--muted)) 100%
     );
   }
 
   .knob {
-    background: conic-gradient(from 135deg, 
-      hsl(var(--muted)) 0deg, 
-      hsl(var(--primary)) 0deg, 
-      hsl(var(--muted)) 270deg, 
+    background: conic-gradient(
+      from 135deg,
+      hsl(var(--muted)) 0deg,
+      hsl(var(--primary)) 0deg,
+      hsl(var(--muted)) 270deg,
       hsl(var(--muted)) 360deg
     );
     border: 2px solid hsl(var(--muted-foreground));
@@ -205,15 +216,24 @@ html.nord-light, .nord-light {
   }
 
   .timeline-grid {
-    background-image: 
-      linear-gradient(to right, hsla(var(--muted-foreground), 0.3) 1px, transparent 1px),
-      linear-gradient(to bottom, hsla(var(--muted-foreground), 0.3) 1px, transparent 1px);
+    background-image:
+      linear-gradient(
+        to right,
+        hsla(var(--muted-foreground), 0.3) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        hsla(var(--muted-foreground), 0.3) 1px,
+        transparent 1px
+      );
     background-size: 40px 24px;
   }
 
   .plugin-slot {
-    background: linear-gradient(135deg, 
-      hsl(var(--muted)) 0%, 
+    background: linear-gradient(
+      135deg,
+      hsl(var(--muted)) 0%,
       hsl(var(--secondary)) 100%
     );
     border: 1px solid hsl(var(--border));
@@ -222,13 +242,14 @@ html.nord-light, .nord-light {
   .transport-btn {
     transition: all 0.2s ease;
   }
-  
+
   .transport-btn:hover {
     transform: scale(1.05);
   }
 
   .spectral-display {
-    background: linear-gradient(to top, 
+    background: linear-gradient(
+      to top,
       hsla(var(--frost-4), 0.8) 0%,
       hsla(var(--frost-3), 0.6) 30%,
       hsla(var(--frost-2), 0.4) 60%,
@@ -239,7 +260,7 @@ html.nord-light, .nord-light {
   .resizer {
     cursor: col-resize;
   }
-  
+
   .resizer:hover {
     background: hsl(var(--frost-4));
   }
@@ -252,13 +273,21 @@ html.nord-light, .nord-light {
 }
 
 @keyframes waveform {
-  0% { height: 20%; }
-  100% { height: 80%; }
+  0% {
+    height: 20%;
+  }
+  100% {
+    height: 80%;
+  }
 }
 
 @keyframes meter {
-  0% { transform: scaleY(0.3); }
-  100% { transform: scaleY(1); }
+  0% {
+    transform: scaleY(0.3);
+  }
+  100% {
+    transform: scaleY(1);
+  }
 }
 
 .animate-waveform {

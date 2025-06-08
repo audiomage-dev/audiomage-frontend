@@ -2,11 +2,11 @@ name: Security Scan
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM
+    - cron: '0 2 * * *' # Daily at 2 AM
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 env:
   NODE_VERSION: '20'
@@ -85,7 +85,7 @@ jobs:
             p/owasp-top-ten
             p/typescript
             p/react
-          generateSarif: "1"
+          generateSarif: '1'
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v2

@@ -20,12 +20,14 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 **Triggers**: Pull requests to main, master, or develop branches
 
 **Jobs**:
+
 - **PR Validation**: Unit tests, linting, build verification
 - **Automated Review**: SonarQube analysis, security scanning
 - **Size Analysis**: Bundle size monitoring
 - **Accessibility Check**: WCAG compliance testing
 
 **Quality Gates**:
+
 - All tests must pass
 - Code coverage > 80%
 - Zero ESLint errors
@@ -37,11 +39,13 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 **Triggers**: Push to develop/development branches
 
 **Jobs**:
+
 - **Fast Test Suite**: Unit tests and smoke E2E tests
 - **Code Quality**: ESLint, Prettier, TypeScript checks
 - **Deploy Development**: Automatic deployment to dev environment
 
 **Features**:
+
 - Preview deployment comments on PRs
 - Smoke test validation
 - Quick feedback loop (< 10 minutes)
@@ -51,6 +55,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 **Triggers**: Push to main/master branches
 
 **Jobs**:
+
 - **Comprehensive Test**: Full unit, integration, and E2E test suite
 - **Security Audit**: Production-grade security scanning
 - **Production Build**: Optimized build with compression
@@ -58,6 +63,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 - **GitHub Release**: Automated release creation
 
 **Security Features**:
+
 - OWASP ZAP security scanning
 - Critical vulnerability blocking
 - Production health checks
@@ -68,6 +74,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 **Triggers**: Git tags matching `v*.*.*` pattern
 
 **Jobs**:
+
 - **Validate Release**: Comprehensive testing including performance
 - **Build Release**: Production package creation
 - **Deploy Staging**: Staging environment validation
@@ -76,6 +83,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 - **GitHub Release**: Release notes and asset publishing
 
 **Quality Assurance**:
+
 - Performance benchmarking
 - Staging validation tests
 - Manual approval process
@@ -86,29 +94,34 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ### Test Layers
 
 1. **Unit Tests** (Vitest)
+
    - Component testing
    - Hook testing
    - Utility function testing
    - 80% coverage requirement
 
 2. **Integration Tests** (Vitest)
+
    - API integration
    - Audio processing workflows
    - Database interactions
 
 3. **End-to-End Tests** (Playwright)
+
    - Critical user journeys
    - Cross-browser testing
    - Mobile responsiveness
    - Audio workstation workflows
 
 4. **Accessibility Tests** (Playwright + axe-core)
+
    - WCAG 2.1 AA compliance
    - Keyboard navigation
    - Screen reader compatibility
    - Color contrast validation
 
 5. **Performance Tests** (Playwright)
+
    - Load time monitoring
    - Bundle size tracking
    - Memory usage validation
@@ -122,18 +135,21 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Environment Management
 
 ### Development Environment
+
 - **URL**: Configured via `DEVELOPMENT_URL` secret
 - **Database**: PostgreSQL development instance
 - **Features**: Hot reloading, debug mode, test data
 - **Deployment**: Automatic on develop branch
 
 ### Staging Environment
+
 - **URL**: Configured via `STAGING_URL` secret
 - **Database**: Production-like PostgreSQL instance
 - **Features**: Production build, real data subset
 - **Deployment**: Manual or release workflow
 
 ### Production Environment
+
 - **URL**: Configured via `PRODUCTION_URL` secret
 - **Database**: Production PostgreSQL instance
 - **Features**: Full optimization, monitoring, CDN
@@ -142,18 +158,21 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Security Implementation
 
 ### Code Scanning
+
 - **ESLint**: Static analysis for code quality
 - **Snyk**: Dependency vulnerability scanning
 - **npm audit**: Package security auditing
 - **SonarQube**: Code quality and security analysis
 
 ### Runtime Security
+
 - **OWASP ZAP**: Dynamic application security testing
 - **Content Security Policy**: XSS protection
 - **HTTPS Enforcement**: TLS/SSL security
 - **Input Validation**: Server-side validation
 
 ### Secrets Management
+
 - **GitHub Secrets**: API keys and credentials
 - **Environment Variables**: Runtime configuration
 - **Database URLs**: Secure connection strings
@@ -162,12 +181,14 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Monitoring and Alerting
 
 ### Health Checks
+
 - **Application Health**: `/health` endpoint monitoring
 - **Database Connectivity**: PostgreSQL health validation
 - **External Services**: API dependency checking
 - **Performance Metrics**: Response time monitoring
 
 ### Notifications
+
 - **Slack Integration**: Deployment and failure notifications
 - **Email Alerts**: Critical issue notifications
 - **GitHub Notifications**: PR and release updates
@@ -176,12 +197,14 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Performance Optimization
 
 ### Build Optimization
+
 - **Tree Shaking**: Unused code elimination
 - **Code Splitting**: Dynamic import optimization
 - **Bundle Compression**: Gzip/Brotli compression
 - **Asset Optimization**: Image and audio compression
 
 ### Caching Strategy
+
 - **Browser Caching**: Static asset caching
 - **CDN Distribution**: Global content delivery
 - **API Caching**: Response caching
@@ -190,6 +213,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Deployment Process
 
 ### Zero-Downtime Deployment
+
 1. **Pre-deployment**: Health check and backup
 2. **Blue-Green Deployment**: Parallel environment setup
 3. **Health Validation**: New environment testing
@@ -197,6 +221,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 5. **Rollback Capability**: Instant revert option
 
 ### Database Migrations
+
 - **Drizzle ORM**: Schema migration management
 - **Migration Testing**: Staging environment validation
 - **Rollback Scripts**: Migration reversal capability
@@ -205,12 +230,14 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Branch Protection Rules
 
 ### Main/Master Branch
+
 - **Required Reviews**: 2 approved reviews
 - **Status Checks**: All CI checks must pass
 - **Up-to-date**: Branch must be current
 - **Admin Override**: Disabled for security
 
 ### Develop Branch
+
 - **Required Reviews**: 1 approved review
 - **Status Checks**: Basic CI checks
 - **Auto-merge**: Enabled for minor updates
@@ -221,16 +248,19 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ### Common Issues
 
 1. **Test Failures**
+
    - Check test logs in GitHub Actions
    - Verify test data and mocks
    - Run tests locally to reproduce
 
 2. **Build Failures**
+
    - Check TypeScript compilation errors
    - Verify dependency versions
    - Clear node_modules and reinstall
 
 3. **Deployment Failures**
+
    - Check environment variables
    - Verify database connectivity
    - Review application logs
@@ -243,12 +273,14 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ### Recovery Procedures
 
 1. **Rollback Deployment**
+
    ```bash
    # Emergency rollback
    gh workflow run rollback.yml -f version=previous
    ```
 
 2. **Database Recovery**
+
    ```bash
    # Restore from backup
    pg_restore -d audiomage_prod backup.sql
@@ -263,18 +295,21 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Metrics and KPIs
 
 ### Deployment Metrics
+
 - **Deployment Frequency**: Daily average
 - **Lead Time**: Commit to production time
 - **Mean Time to Recovery**: Incident resolution time
 - **Change Failure Rate**: Failed deployment percentage
 
 ### Quality Metrics
+
 - **Test Coverage**: 80%+ requirement
 - **Bug Escape Rate**: Production bugs per release
 - **Security Vulnerabilities**: Zero critical/high
 - **Performance Budget**: Load time < 3 seconds
 
 ### Team Metrics
+
 - **Pull Request Size**: Lines of code per PR
 - **Review Time**: Time to first review
 - **Cycle Time**: Issue to deployment time
@@ -283,6 +318,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 ## Best Practices
 
 ### Code Quality
+
 1. Write comprehensive tests before implementation
 2. Follow TypeScript strict mode guidelines
 3. Use semantic commit messages
@@ -290,6 +326,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 5. Document complex business logic
 
 ### Security
+
 1. Never commit secrets or credentials
 2. Use environment variables for configuration
 3. Implement input validation and sanitization
@@ -297,6 +334,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 5. Regular security audits
 
 ### Performance
+
 1. Monitor bundle size continuously
 2. Implement lazy loading for components
 3. Optimize database queries
@@ -304,6 +342,7 @@ The Audiomage audio workstation uses a comprehensive CI/CD pipeline that ensures
 5. Test on various devices and networks
 
 ### Deployment
+
 1. Test thoroughly in staging environment
 2. Use feature flags for gradual rollouts
 3. Monitor application health post-deployment

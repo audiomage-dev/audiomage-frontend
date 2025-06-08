@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Wand2, 
-  Sparkles, 
-  Mic, 
-  Headphones, 
-  Radio, 
-  TrendingUp, 
-  Scissors, 
-  Copy, 
-  RotateCcw, 
-  Volume, 
+import {
+  Wand2,
+  Sparkles,
+  Mic,
+  Headphones,
+  Radio,
+  TrendingUp,
+  Scissors,
+  Copy,
+  RotateCcw,
+  Volume,
   VolumeX,
   Music,
   Sliders,
@@ -43,7 +43,7 @@ import {
   Shuffle,
   Archive,
   GitBranch,
-  Package
+  Package,
 } from 'lucide-react';
 
 interface MacroAction {
@@ -67,7 +67,7 @@ export function QuickActionsPanel() {
       description: 'Auto-balance volume levels across selected tracks',
       icon: <Gauge className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+N',
-      category: 'mixing'
+      category: 'mixing',
     },
     {
       id: 'auto-pan',
@@ -75,21 +75,21 @@ export function QuickActionsPanel() {
       description: 'Intelligently pan tracks for optimal stereo image',
       icon: <Target className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+P',
-      category: 'mixing'
+      category: 'mixing',
     },
     {
       id: 'ducking',
       name: 'Pump & Duck',
       description: 'Apply ducking compression to selected tracks',
       icon: <Waves className="w-4 h-4" />,
-      category: 'mixing'
+      category: 'mixing',
     },
     {
       id: 'vocal-enhance',
       name: 'Vocal Sparkle',
       description: 'Apply vocal clarity and presence enhancement',
       icon: <Crown className="w-4 h-4" />,
-      category: 'mixing'
+      category: 'mixing',
     },
 
     // AI Macros
@@ -99,28 +99,28 @@ export function QuickActionsPanel() {
       description: 'Intelligent mastering chain for professional sound',
       icon: <Gem className="w-4 h-4" />,
       shortcut: 'Cmd+Shift+M',
-      category: 'ai'
+      category: 'ai',
     },
     {
       id: 'ai-stem-separate',
       name: 'Stem Surgeon',
       description: 'AI-powered vocal and instrument separation',
       icon: <Puzzle className="w-4 h-4" />,
-      category: 'ai'
+      category: 'ai',
     },
     {
       id: 'ai-noise-reduce',
       name: 'Noise Ninja',
       description: 'Remove background noise using AI analysis',
       icon: <Shield className="w-4 h-4" />,
-      category: 'ai'
+      category: 'ai',
     },
     {
       id: 'ai-pitch-correct',
       name: 'Pitch Perfect',
       description: 'Automatic pitch correction and tuning',
       icon: <Bolt className="w-4 h-4" />,
-      category: 'ai'
+      category: 'ai',
     },
 
     // Editing Macros
@@ -130,7 +130,7 @@ export function QuickActionsPanel() {
       description: 'Add smooth crossfades between selected clips',
       icon: <Blend className="w-4 h-4" />,
       shortcut: 'Cmd+X',
-      category: 'editing'
+      category: 'editing',
     },
     {
       id: 'duplicate-pattern',
@@ -138,7 +138,7 @@ export function QuickActionsPanel() {
       description: 'Duplicate selected clips with spacing',
       icon: <GitBranch className="w-4 h-4" />,
       shortcut: 'Cmd+D',
-      category: 'editing'
+      category: 'editing',
     },
     {
       id: 'quantize-timing',
@@ -146,14 +146,14 @@ export function QuickActionsPanel() {
       description: 'Snap selected audio to grid timing',
       icon: <Clock className="w-4 h-4" />,
       shortcut: 'Cmd+Q',
-      category: 'editing'
+      category: 'editing',
     },
     {
       id: 'reverse-audio',
       name: 'Backwards Magic',
       description: 'Reverse selected audio clips',
       icon: <Shuffle className="w-4 h-4" />,
-      category: 'editing'
+      category: 'editing',
     },
 
     // Effects Macros
@@ -162,42 +162,42 @@ export function QuickActionsPanel() {
       name: 'Golden Age',
       description: 'Add analog tape saturation and warmth',
       icon: <Sun className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
     {
       id: 'space-verb',
       name: 'Hall of Fame',
       description: 'Add dimensional reverb to selected tracks',
       icon: <Mountain className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
     {
       id: 'lo-fi-texture',
       name: 'Retro Vibe',
       description: 'Apply lo-fi character and texture',
       icon: <Moon className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
     {
       id: 'stereo-widener',
       name: 'Wide & Wild',
       description: 'Enhance stereo width and presence',
       icon: <Wind className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
     {
       id: 'frost-effect',
       name: 'Frosty Touch',
       description: 'Add crystalline high-frequency shimmer',
       icon: <Snowflake className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
     {
       id: 'fire-drive',
       name: 'Fire Drive',
       description: 'Add aggressive harmonic distortion',
       icon: <Flame className="w-4 h-4" />,
-      category: 'effects'
+      category: 'effects',
     },
 
     // Workflow Macros
@@ -207,29 +207,29 @@ export function QuickActionsPanel() {
       description: 'Export individual track stems',
       icon: <Rocket className="w-4 h-4" />,
       shortcut: 'Cmd+E',
-      category: 'workflow'
+      category: 'workflow',
     },
     {
       id: 'create-bus',
       name: 'Bus Builder',
       description: 'Route selected tracks to new bus',
       icon: <Package className="w-4 h-4" />,
-      category: 'workflow'
+      category: 'workflow',
     },
     {
       id: 'quick-comp',
       name: 'Comp Wizard',
       description: 'Create comp track from selected takes',
       icon: <Wand2 className="w-4 h-4" />,
-      category: 'workflow'
+      category: 'workflow',
     },
     {
       id: 'backup-project',
       name: 'Time Machine',
       description: 'Create timestamped project backup',
       icon: <Archive className="w-4 h-4" />,
-      category: 'workflow'
-    }
+      category: 'workflow',
+    },
   ];
 
   const categories = [
@@ -237,10 +237,12 @@ export function QuickActionsPanel() {
     { id: 'ai', name: 'AI Tools', icon: <Sparkles className="w-5 h-5" /> },
     { id: 'editing', name: 'Editing', icon: <Scissors className="w-5 h-5" /> },
     { id: 'effects', name: 'Effects', icon: <Wand2 className="w-5 h-5" /> },
-    { id: 'workflow', name: 'Workflow', icon: <Zap className="w-5 h-5" /> }
+    { id: 'workflow', name: 'Workflow', icon: <Zap className="w-5 h-5" /> },
   ];
 
-  const filteredActions = macroActions.filter(action => action.category === selectedCategory);
+  const filteredActions = macroActions.filter(
+    (action) => action.category === selectedCategory
+  );
 
   const handleActionClick = (actionId: string) => {
     console.log(`Executing macro: ${actionId}`);
@@ -254,7 +256,9 @@ export function QuickActionsPanel() {
         {/* Category Pills */}
         <div className="flex flex-wrap gap-2 mb-3">
           {categories.map((category) => {
-            const categoryCount = macroActions.filter(a => a.category === category.id).length;
+            const categoryCount = macroActions.filter(
+              (a) => a.category === category.id
+            ).length;
             return (
               <button
                 key={category.id}
@@ -265,38 +269,40 @@ export function QuickActionsPanel() {
                     : 'bg-[var(--muted)] border border-[var(--border)] hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
                 }`}
               >
-                <div className="w-4 h-4">
-                  {category.icon}
-                </div>
+                <div className="w-4 h-4">{category.icon}</div>
                 <span className="text-xs font-medium">{category.name}</span>
-                <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                  selectedCategory === category.id
-                    ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
-                    : 'bg-[var(--background)] text-[var(--muted-foreground)]'
-                }`}>
+                <div
+                  className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--primary-foreground)]/20 text-[var(--primary-foreground)]'
+                      : 'bg-[var(--background)] text-[var(--muted-foreground)]'
+                  }`}
+                >
                   {categoryCount}
                 </div>
               </button>
             );
           })}
         </div>
-        
+
         {/* Active Category Header */}
         <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--muted)] border border-[var(--border)]">
           <div className="flex items-center space-x-3">
             <div className="p-2 rounded-md bg-[var(--primary)]/10 border border-[var(--primary)]/20">
               <div className="text-[var(--primary)] w-4 h-4">
-                {categories.find(c => c.id === selectedCategory)?.icon}
+                {categories.find((c) => c.id === selectedCategory)?.icon}
               </div>
             </div>
             <div>
               <span className="text-sm font-semibold text-[var(--foreground)]">
-                {categories.find(c => c.id === selectedCategory)?.name}
+                {categories.find((c) => c.id === selectedCategory)?.name}
               </span>
               <p className="text-xs text-[var(--muted-foreground)]">
-                {selectedCategory === 'mixing' && 'Balance and enhance your mix'}
+                {selectedCategory === 'mixing' &&
+                  'Balance and enhance your mix'}
                 {selectedCategory === 'ai' && 'AI-powered audio processing'}
-                {selectedCategory === 'editing' && 'Precision audio editing tools'}
+                {selectedCategory === 'editing' &&
+                  'Precision audio editing tools'}
                 {selectedCategory === 'effects' && 'Creative audio effects'}
                 {selectedCategory === 'workflow' && 'Streamline your workflow'}
               </p>
@@ -315,25 +321,23 @@ export function QuickActionsPanel() {
 
       {/* Selection Info */}
       <div className="px-3 py-2 text-xs text-[var(--muted-foreground)] bg-[var(--background)] border-b border-[var(--border)]">
-        {selectedItems.length > 0 ? (
-          `${selectedItems.length} items selected`
-        ) : (
-          'No items selected'
-        )}
+        {selectedItems.length > 0
+          ? `${selectedItems.length} items selected`
+          : 'No items selected'}
       </div>
 
       {/* Actions List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-2 space-y-1">
           {filteredActions.map((action) => (
-            <div
-              key={action.id}
-              className="group"
-            >
+            <div key={action.id} className="group">
               <Button
                 variant="ghost"
                 onClick={() => handleActionClick(action.id)}
-                disabled={selectedItems.length === 0 && !['ai-master', 'backup-project'].includes(action.id)}
+                disabled={
+                  selectedItems.length === 0 &&
+                  !['ai-master', 'backup-project'].includes(action.id)
+                }
                 className="w-full h-auto p-3 text-left justify-start disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[var(--accent)] transition-colors rounded-lg border border-transparent hover:border-[var(--border)]"
               >
                 <div className="flex items-start space-x-3 w-full">
@@ -384,15 +388,19 @@ export function QuickActionsPanel() {
             Reset
           </Button>
         </div>
-        
+
         <div className="mt-2 flex items-center justify-center space-x-2">
-          <div className={`w-2 h-2 rounded-full transition-colors ${
-            selectedItems.length > 0 
-              ? 'bg-[var(--primary)]' 
-              : 'bg-[var(--muted-foreground)]'
-          }`}></div>
+          <div
+            className={`w-2 h-2 rounded-full transition-colors ${
+              selectedItems.length > 0
+                ? 'bg-[var(--primary)]'
+                : 'bg-[var(--muted-foreground)]'
+            }`}
+          ></div>
           <span className="text-xs text-[var(--muted-foreground)]">
-            {selectedItems.length > 0 ? 'Ready to execute' : 'Select items to begin'}
+            {selectedItems.length > 0
+              ? 'Ready to execute'
+              : 'Select items to begin'}
           </span>
         </div>
       </div>

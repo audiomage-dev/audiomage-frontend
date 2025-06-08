@@ -107,7 +107,7 @@ import { useAudioWorkstation } from '../../../hooks/useAudioWorkstation';
 describe('useAudioWorkstation', () => {
   it('should initialize with default state', () => {
     const { result } = renderHook(() => useAudioWorkstation());
-    
+
     expect(result.current.transport.isPlaying).toBe(false);
     expect(result.current.transport.isStopped).toBe(true);
   });
@@ -124,7 +124,7 @@ import { AudioWorkstation } from '../../components/AudioWorkstation';
 describe('AudioWorkstation', () => {
   it('renders transport controls', () => {
     render(<AudioWorkstation />);
-    
+
     expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument();
   });
@@ -138,9 +138,11 @@ import { test, expect } from '@playwright/test';
 
 test('should load audio workstation @smoke', async ({ page }) => {
   await page.goto('/studio');
-  
+
   await expect(page.locator('[data-testid="audio-workstation"]')).toBeVisible();
-  await expect(page.locator('[data-testid="transport-controls"]')).toBeVisible();
+  await expect(
+    page.locator('[data-testid="transport-controls"]')
+  ).toBeVisible();
 });
 ```
 
@@ -149,6 +151,7 @@ test('should load audio workstation @smoke', async ({ page }) => {
 ### Audio Files for Testing
 
 Place test audio files in `client/src/test/fixtures/`:
+
 - `test-audio-short.wav` - 5 second test file
 - `test-audio-long.wav` - 30 second test file
 - `test-midi.mid` - MIDI test file
@@ -276,6 +279,7 @@ npx playwright show-trace trace.zip
 ### GitHub Actions
 
 Tests run automatically on:
+
 - Pull requests
 - Pushes to main/develop branches
 - Release tags

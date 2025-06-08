@@ -15,7 +15,7 @@ export default defineConfig({
   projects: [
     {
       name: 'accessibility-chromium',
-      use: { 
+      use: {
         ...baseConfig.projects?.[0]?.use,
         // Ensure high contrast mode is tested
         colorScheme: 'light',
@@ -23,7 +23,7 @@ export default defineConfig({
     },
     {
       name: 'accessibility-chromium-dark',
-      use: { 
+      use: {
         ...baseConfig.projects?.[0]?.use,
         colorScheme: 'dark',
       },

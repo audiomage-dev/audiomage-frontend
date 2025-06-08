@@ -40,12 +40,12 @@ export function LeftSidebar({
           onRecord={onRecord}
         />
       </div>
-      
+
       {/* Project Browser */}
       <div className="flex-1 min-h-0 border-y border-[var(--border)]">
         <ProjectBrowser />
       </div>
-      
+
       {/* AI Assistant Panel */}
       <div className="flex-none h-64">
         <AIAssistant

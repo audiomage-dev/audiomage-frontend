@@ -16,14 +16,20 @@ interface ContextMenuProps {
   onAction: (action: string, sessionId: string) => void;
 }
 
-function SessionContextMenu({ x, y, sessionId, onClose, onAction }: ContextMenuProps) {
+function SessionContextMenu({
+  x,
+  y,
+  sessionId,
+  onClose,
+  onAction,
+}: ContextMenuProps) {
   const menuItems = [
     { id: 'rename', label: 'Rename Session', icon: Edit },
     { id: 'duplicate', label: 'Duplicate Session', icon: Copy },
     { id: 'save', label: 'Save Session', icon: Save },
     { id: 'export', label: 'Export Session', icon: FolderOpen },
     { id: 'separator', label: '-' },
-    { id: 'close', label: 'Close Session', icon: X, destructive: true }
+    { id: 'close', label: 'Close Session', icon: X, destructive: true },
   ];
 
   useEffect(() => {
@@ -33,19 +39,21 @@ function SessionContextMenu({ x, y, sessionId, onClose, onAction }: ContextMenuP
   }, [onClose]);
 
   return (
-    <div 
+    <div
       className="fixed bg-[var(--popover)] border border-[var(--border)] rounded-md shadow-lg py-1 z-50 min-w-[160px]"
       style={{ left: x, top: y }}
       onClick={(e) => e.stopPropagation()}
     >
-      {menuItems.map((item) => 
+      {menuItems.map((item) =>
         item.id === 'separator' ? (
           <div key={item.id} className="border-t border-[var(--border)] my-1" />
         ) : (
           <button
             key={item.id}
             className={`w-full flex items-center px-3 py-2 text-sm text-left hover:bg-[var(--accent)] transition-colors ${
-              item.destructive ? 'text-[var(--destructive)] hover:text-[var(--destructive)]' : 'text-[var(--foreground)]'
+              item.destructive
+                ? 'text-[var(--destructive)] hover:text-[var(--destructive)]'
+                : 'text-[var(--foreground)]'
             }`}
             onClick={() => {
               onAction(item.id, sessionId);
@@ -62,14 +70,18 @@ function SessionContextMenu({ x, y, sessionId, onClose, onAction }: ContextMenuP
 }
 
 export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sessionId: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    sessionId: string;
+  } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, sessionId: string) => {
     e.preventDefault();
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
-      sessionId
+      sessionId,
     });
   };
 
@@ -108,7 +120,9 @@ export function SessionTabs({ sessions, onSwitchSession }: SessionTabsProps) {
             onClick={() => onSwitchSession(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
           >
-            <span className="font-mono text-xs truncate max-w-[120px]">{session.name}</span>
+            <span className="font-mono text-xs truncate max-w-[120px]">
+              {session.name}
+            </span>
             <Button
               variant="ghost"
               size="sm"

@@ -2,7 +2,7 @@ name: Master Branch Deployment
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
 
 env:
   NODE_VERSION: '20'
@@ -184,7 +184,7 @@ jobs:
           body: |
             ## Changes in this Release
             ${{ steps.changelog.outputs.CHANGELOG }}
-            
+
             ## Deployment Details
             - Environment: Production
             - Build Number: ${{ github.run_number }}

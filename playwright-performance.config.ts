@@ -18,14 +18,14 @@ export default defineConfig({
   projects: [
     {
       name: 'performance-desktop',
-      use: { 
+      use: {
         ...baseConfig.projects?.[0]?.use,
         viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'performance-mobile',
-      use: { 
+      use: {
         ...baseConfig.projects?.[4]?.use, // Mobile Chrome config
       },
     },

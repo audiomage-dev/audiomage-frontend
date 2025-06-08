@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  GitBranch, 
-  GitCommit, 
-  GitMerge, 
-  Circle, 
+import {
+  GitBranch,
+  GitCommit,
+  GitMerge,
+  Circle,
   ArrowRight,
   Tag,
   User,
   Clock,
   CheckCircle,
-  Archive
+  Archive,
 } from 'lucide-react';
 
 interface ProjectVersion {
@@ -47,8 +47,8 @@ export function ProjectVersionsPanel() {
       changes: {
         added: ['Lead_Vocal_take3.wav', 'Drums_Master.wav'],
         modified: [],
-        deleted: []
-      }
+        deleted: [],
+      },
     },
     {
       id: 'v2',
@@ -64,8 +64,8 @@ export function ProjectVersionsPanel() {
       changes: {
         added: ['Bass_DI_compressed.wav', 'Guitar_Clean.wav'],
         modified: ['Project.amg'],
-        deleted: []
-      }
+        deleted: [],
+      },
     },
     {
       id: 'v3',
@@ -81,8 +81,8 @@ export function ProjectVersionsPanel() {
       changes: {
         added: ['Piano_Chords.mid'],
         modified: [],
-        deleted: []
-      }
+        deleted: [],
+      },
     },
     {
       id: 'v4',
@@ -98,8 +98,8 @@ export function ProjectVersionsPanel() {
       changes: {
         added: [],
         modified: ['Project.amg'],
-        deleted: []
-      }
+        deleted: [],
+      },
     },
     {
       id: 'v5',
@@ -115,8 +115,8 @@ export function ProjectVersionsPanel() {
       changes: {
         added: ['Reverb_Hall.fxp', 'Compressor_Vintage.fxp'],
         modified: ['Lead_Vocal_take3.wav', 'Drums_Master.wav'],
-        deleted: []
-      }
+        deleted: [],
+      },
     },
     {
       id: 'v6',
@@ -132,9 +132,9 @@ export function ProjectVersionsPanel() {
       changes: {
         added: ['Demo_Mix_v1.0.wav'],
         modified: [],
-        deleted: []
-      }
-    }
+        deleted: [],
+      },
+    },
   ]);
 
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -166,7 +166,7 @@ export function ProjectVersionsPanel() {
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
     const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
-    
+
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -186,10 +186,14 @@ export function ProjectVersionsPanel() {
   return (
     <div className="p-3">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-[var(--foreground)]">Project Versions</h3>
+        <h3 className="text-sm font-medium text-[var(--foreground)]">
+          Project Versions
+        </h3>
         <div className="flex items-center space-x-1">
           <div className="w-1.5 h-1.5 rounded-full bg-[var(--green)] animate-pulse"></div>
-          <span className="text-xs text-[var(--muted-foreground)]">Auto-save</span>
+          <span className="text-xs text-[var(--muted-foreground)]">
+            Auto-save
+          </span>
         </div>
       </div>
 
@@ -197,12 +201,20 @@ export function ProjectVersionsPanel() {
       <div className="mb-2 p-1.5 bg-[var(--secondary)] rounded text-xs">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getBranchColor('main') }}></div>
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: getBranchColor('main') }}
+            ></div>
             <span className="text-[var(--foreground)]">main</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getBranchColor('feature/piano') }}></div>
-            <span className="text-[var(--muted-foreground)]">feature/piano</span>
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: getBranchColor('feature/piano') }}
+            ></div>
+            <span className="text-[var(--muted-foreground)]">
+              feature/piano
+            </span>
           </div>
         </div>
       </div>
@@ -213,35 +225,43 @@ export function ProjectVersionsPanel() {
           <div key={version.id} className="relative">
             {/* Connection lines */}
             {index < versions.length - 1 && (
-              <div 
+              <div
                 className="absolute left-2 top-5 w-px h-3 opacity-30"
                 style={{ backgroundColor: getBranchColor(version.branch) }}
               ></div>
             )}
-            
+
             {/* Merge lines for merge commits */}
             {version.type === 'merge' && version.parents.length > 1 && (
               <div className="absolute left-4 top-2">
-                <div 
+                <div
                   className="w-3 h-px opacity-30"
                   style={{ backgroundColor: getBranchColor('feature/piano') }}
                 ></div>
               </div>
             )}
 
-            <div 
+            <div
               className={`flex items-start space-x-2 p-1.5 rounded hover:bg-[var(--accent)] cursor-pointer transition-colors ${
-                selectedVersion === version.id ? 'bg-[var(--accent)] ring-1 ring-[var(--primary)]' : ''
+                selectedVersion === version.id
+                  ? 'bg-[var(--accent)] ring-1 ring-[var(--primary)]'
+                  : ''
               }`}
-              onClick={() => setSelectedVersion(selectedVersion === version.id ? null : version.id)}
+              onClick={() =>
+                setSelectedVersion(
+                  selectedVersion === version.id ? null : version.id
+                )
+              }
             >
               {/* Commit dot and icon */}
               <div className="relative flex-shrink-0">
-                <div 
+                <div
                   className="w-4 h-4 rounded-full border flex items-center justify-center"
-                  style={{ 
+                  style={{
                     borderColor: getBranchColor(version.branch),
-                    backgroundColor: version.isCurrent ? getBranchColor(version.branch) : 'var(--background)'
+                    backgroundColor: version.isCurrent
+                      ? getBranchColor(version.branch)
+                      : 'var(--background)',
                   }}
                 >
                   {version.type === 'merge' ? (
@@ -267,7 +287,7 @@ export function ProjectVersionsPanel() {
                     {version.hash}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 text-xs text-[var(--muted-foreground)] mt-0.5">
                   <span>{version.author}</span>
                   <span>•</span>
@@ -290,28 +310,47 @@ export function ProjectVersionsPanel() {
 
             {/* Expanded details */}
             {selectedVersion === version.id && (
-              <div className="ml-6 mt-1 p-2 bg-[var(--muted)] rounded border-l-2" 
-                   style={{ borderLeftColor: getBranchColor(version.branch) }}>
+              <div
+                className="ml-6 mt-1 p-2 bg-[var(--muted)] rounded border-l-2"
+                style={{ borderLeftColor: getBranchColor(version.branch) }}
+              >
                 {/* File changes */}
                 <div className="mb-2">
-                  <div className="text-xs font-medium text-[var(--foreground)] mb-1">Changes</div>
+                  <div className="text-xs font-medium text-[var(--foreground)] mb-1">
+                    Changes
+                  </div>
                   <div className="space-y-0.5">
                     {version.changes.added.map((file) => (
-                      <div key={file} className="flex items-center space-x-1 text-xs">
+                      <div
+                        key={file}
+                        className="flex items-center space-x-1 text-xs"
+                      >
                         <span className="text-[var(--green)] w-2">+</span>
-                        <span className="text-[var(--foreground)] truncate">{file}</span>
+                        <span className="text-[var(--foreground)] truncate">
+                          {file}
+                        </span>
                       </div>
                     ))}
                     {version.changes.modified.map((file) => (
-                      <div key={file} className="flex items-center space-x-1 text-xs">
+                      <div
+                        key={file}
+                        className="flex items-center space-x-1 text-xs"
+                      >
                         <span className="text-[var(--yellow)] w-2">~</span>
-                        <span className="text-[var(--foreground)] truncate">{file}</span>
+                        <span className="text-[var(--foreground)] truncate">
+                          {file}
+                        </span>
                       </div>
                     ))}
                     {version.changes.deleted.map((file) => (
-                      <div key={file} className="flex items-center space-x-1 text-xs">
+                      <div
+                        key={file}
+                        className="flex items-center space-x-1 text-xs"
+                      >
                         <span className="text-[var(--red)] w-2">-</span>
-                        <span className="text-[var(--foreground)] truncate">{file}</span>
+                        <span className="text-[var(--foreground)] truncate">
+                          {file}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -319,26 +358,26 @@ export function ProjectVersionsPanel() {
 
                 {/* Actions */}
                 <div className="flex space-x-1">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="text-xs h-6 px-2"
                     onClick={() => checkoutVersion(version.id)}
                     disabled={version.isCurrent}
                   >
                     {version.isCurrent ? 'Current' : 'Checkout'}
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="text-xs h-6 px-2"
                     onClick={() => createBranch(version.id)}
                   >
                     Branch
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="text-xs h-6 px-2"
                   >
                     <Archive className="w-3 h-3" />

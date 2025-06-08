@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
+import React from 'react';
 import { AudioWorkstation } from '../../components/AudioWorkstation';
 
 // Integration tests for audio processing workflows
@@ -52,7 +53,7 @@ describe('Audio Processing Integration', () => {
       return Promise.resolve({ ok: false });
     });
 
-    const { container } = render(<AudioWorkstation />);
+    const { container } = render(React.createElement(AudioWorkstation));
     
     // Simulate file upload
     const fileInput = container.querySelector('input[type="file"]');
@@ -131,7 +132,7 @@ describe('Audio Processing Integration', () => {
       ]),
     });
 
-    const { container } = render(<AudioWorkstation />);
+    const { container } = render(React.createElement(AudioWorkstation));
     
     // Start recording
     const recordButton = container.querySelector('[data-testid="record-button"]');

@@ -7,12 +7,12 @@ import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
 import { SpellbookModal } from './SpellbookModal';
-import { 
-  FolderOpen, 
-  Search, 
-  GitBranch, 
-  Terminal, 
-  Settings, 
+import {
+  FolderOpen,
+  Search,
+  GitBranch,
+  Terminal,
+  Settings,
   Layers,
   Sliders,
   Music,
@@ -67,7 +67,7 @@ import {
   FileAudio,
   BarChart3,
   Target,
-  BookOpen
+  BookOpen,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -106,13 +106,13 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       id: 'quick-actions',
       icon: <Wand2 className="w-5 h-5" />,
       label: 'Quick Actions',
-      component: <QuickActionsPanel />
+      component: <QuickActionsPanel />,
     },
     {
       id: 'files',
       icon: <FolderOpen className="w-5 h-5" />,
       label: 'Explorer',
-      component: <ProjectBrowser onFileSelect={onFileSelect} />
+      component: <ProjectBrowser onFileSelect={onFileSelect} />,
     },
     {
       id: 'search',
@@ -120,7 +120,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       label: 'Search',
       component: (
         <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Global Search</h3>
+          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+            Global Search
+          </h3>
           <div className="space-y-3">
             <input
               type="text"
@@ -132,13 +134,13 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'version',
       icon: <GitBranch className="w-5 h-5" />,
       label: 'Version Control',
-      component: <ProjectVersionsPanel />
+      component: <ProjectVersionsPanel />,
     },
     {
       id: 'tracks',
@@ -146,22 +148,33 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       label: 'Track Manager',
       component: (
         <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Track Overview</h3>
+          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+            Track Overview
+          </h3>
           <div className="space-y-2">
-            {['Vocal Lead', 'Guitar Rhythm', 'Bass Line', 'Drums'].map((track, index) => (
-              <div key={track} className="flex items-center justify-between p-2 bg-[var(--muted)] rounded-md">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full bg-[var(--${['blue', 'green', 'yellow', 'red'][index]})]`}></div>
-                  <span className="text-xs text-[var(--foreground)]">{track}</span>
+            {['Vocal Lead', 'Guitar Rhythm', 'Bass Line', 'Drums'].map(
+              (track, index) => (
+                <div
+                  key={track}
+                  className="flex items-center justify-between p-2 bg-[var(--muted)] rounded-md"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`w-3 h-3 rounded-full bg-[var(--${['blue', 'green', 'yellow', 'red'][index]})]`}
+                    ></div>
+                    <span className="text-xs text-[var(--foreground)]">
+                      {track}
+                    </span>
+                  </div>
+                  <div className="text-xs text-[var(--muted-foreground)]">
+                    {index === 0 ? 'REC' : 'PLAY'}
+                  </div>
                 </div>
-                <div className="text-xs text-[var(--muted-foreground)]">
-                  {index === 0 ? 'REC' : 'PLAY'}
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'mixer',
@@ -172,13 +185,19 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
           {/* Header with Mixing State */}
           <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--primary)]/5 to-[var(--secondary)]/5">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-[var(--foreground)]">Mix Engine</h3>
+              <h3 className="text-sm font-bold text-[var(--foreground)]">
+                Mix Engine
+              </h3>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></div>
-                <span className="text-xs text-[var(--muted-foreground)] font-mono">LIVE</span>
+                <span className="text-xs text-[var(--muted-foreground)] font-mono">
+                  LIVE
+                </span>
               </div>
             </div>
-            <div className="text-xs text-[var(--muted-foreground)]">Real-time processing active</div>
+            <div className="text-xs text-[var(--muted-foreground)]">
+              Real-time processing active
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-hide">
@@ -186,45 +205,81 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             <div className="grid grid-cols-2 gap-3">
               {/* Circular Master Volume */}
               <div className="text-center">
-                <div className="text-xs font-medium text-[var(--foreground)] mb-2">Master</div>
+                <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                  Master
+                </div>
                 <div className="relative w-16 h-16 mx-auto">
                   <div className="absolute inset-0 rounded-full border-2 border-[var(--muted)]"></div>
-                  <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" stroke="url(#volumeGradient)" strokeWidth="6" fill="none" strokeDasharray="264" strokeDashoffset="66" />
+                  <svg
+                    className="absolute inset-0 w-full h-full transform -rotate-90"
+                    viewBox="0 0 100 100"
+                  >
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke="url(#volumeGradient)"
+                      strokeWidth="6"
+                      fill="none"
+                      strokeDasharray="264"
+                      strokeDashoffset="66"
+                    />
                     <defs>
-                      <linearGradient id="volumeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <linearGradient
+                        id="volumeGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
                         <stop offset="0%" stopColor="var(--primary)" />
                         <stop offset="100%" stopColor="var(--secondary)" />
                       </linearGradient>
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-xs font-bold text-[var(--foreground)]">-6.2</div>
+                    <div className="text-xs font-bold text-[var(--foreground)]">
+                      -6.2
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Compact Level Meters */}
               <div className="text-center">
-                <div className="text-xs font-medium text-[var(--foreground)] mb-2">Levels</div>
+                <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                  Levels
+                </div>
                 <div className="flex justify-center space-x-2">
                   <div className="text-center">
                     <div className="text-xs mb-1 font-mono">L</div>
                     <div className="relative w-4 h-16 bg-[var(--muted)] rounded-full overflow-hidden">
                       {[...Array(8)].map((_, i) => (
-                        <div key={i} className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 rounded-full ${i < 6 ? 'bg-[var(--green)]' : i < 7 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'}`} style={{ height: `${(i + 1) * 12}%` }} />
+                        <div
+                          key={i}
+                          className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 rounded-full ${i < 6 ? 'bg-[var(--green)]' : i < 7 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'}`}
+                          style={{ height: `${(i + 1) * 12}%` }}
+                        />
                       ))}
                     </div>
-                    <div className="text-xs font-mono mt-1 text-[var(--green)]">-3.2</div>
+                    <div className="text-xs font-mono mt-1 text-[var(--green)]">
+                      -3.2
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs mb-1 font-mono">R</div>
                     <div className="relative w-4 h-16 bg-[var(--muted)] rounded-full overflow-hidden">
                       {[...Array(8)].map((_, i) => (
-                        <div key={i} className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 rounded-full ${i < 5 ? 'bg-[var(--green)]' : i < 6 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'}`} style={{ height: `${(i + 1) * 10}%` }} />
+                        <div
+                          key={i}
+                          className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 rounded-full ${i < 5 ? 'bg-[var(--green)]' : i < 6 ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'}`}
+                          style={{ height: `${(i + 1) * 10}%` }}
+                        />
                       ))}
                     </div>
-                    <div className="text-xs font-mono mt-1 text-[var(--green)]">-4.1</div>
+                    <div className="text-xs font-mono mt-1 text-[var(--green)]">
+                      -4.1
+                    </div>
                   </div>
                 </div>
               </div>
@@ -232,17 +287,27 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Compact EQ */}
             <div>
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">EQ</div>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">
+                EQ
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {['High', 'Mid', 'Low'].map((band, index) => (
                   <div key={band} className="text-center">
-                    <div className={`w-6 h-6 mx-auto rounded-full border-2 cursor-pointer ${
-                      band === 'High' ? 'border-[var(--blue)] bg-[var(--blue)]/20' :
-                      band === 'Mid' ? 'border-[var(--green)] bg-[var(--green)]/20' :
-                      'border-[var(--red)] bg-[var(--red)]/20'
-                    }`} />
+                    <div
+                      className={`w-6 h-6 mx-auto rounded-full border-2 cursor-pointer ${
+                        band === 'High'
+                          ? 'border-[var(--blue)] bg-[var(--blue)]/20'
+                          : band === 'Mid'
+                            ? 'border-[var(--green)] bg-[var(--green)]/20'
+                            : 'border-[var(--red)] bg-[var(--red)]/20'
+                      }`}
+                    />
                     <div className="text-xs font-mono mt-1">
-                      {band === 'High' ? '+0.0' : band === 'Mid' ? '-1.2' : '+2.1'}
+                      {band === 'High'
+                        ? '+0.0'
+                        : band === 'Mid'
+                          ? '-1.2'
+                          : '+2.1'}
                     </div>
                   </div>
                 ))}
@@ -251,15 +316,33 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Compact Processing Chain */}
             <div>
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">Chain</div>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">
+                Chain
+              </div>
               <div className="space-y-1">
                 {[
-                  { name: 'Compressor', value: '3:1', color: 'var(--green)', active: true },
-                  { name: 'Limiter', value: '-0.1dB', color: 'var(--blue)', active: true }
+                  {
+                    name: 'Compressor',
+                    value: '3:1',
+                    color: 'var(--green)',
+                    active: true,
+                  },
+                  {
+                    name: 'Limiter',
+                    value: '-0.1dB',
+                    color: 'var(--blue)',
+                    active: true,
+                  },
                 ].map((processor) => (
-                  <div key={processor.name} className="flex items-center justify-between p-2 rounded border border-[var(--primary)]/20 bg-[var(--muted)]/20">
+                  <div
+                    key={processor.name}
+                    className="flex items-center justify-between p-2 rounded border border-[var(--primary)]/20 bg-[var(--muted)]/20"
+                  >
                     <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${processor.active ? 'animate-pulse' : ''}`} style={{ backgroundColor: processor.color }} />
+                      <div
+                        className={`w-2 h-2 rounded-full ${processor.active ? 'animate-pulse' : ''}`}
+                        style={{ backgroundColor: processor.color }}
+                      />
                       <span className="text-xs">{processor.name}</span>
                     </div>
                     <span className="text-xs font-mono">{processor.value}</span>
@@ -270,7 +353,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Compact Analysis */}
             <div className="p-3 bg-gradient-to-br from-[var(--secondary)]/20 to-[var(--primary)]/10 rounded-lg border border-[var(--primary)]/20">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">Analysis</div>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2 text-center">
+                Analysis
+              </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="text-center">
                   <div className="text-[var(--muted-foreground)]">LUFS</div>
@@ -287,7 +372,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'ai',
@@ -297,29 +382,54 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
-            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">AI Production Suite</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">Advanced AI tools for audio production and post-production</p>
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">
+              AI Production Suite
+            </h3>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              Advanced AI tools for audio production and post-production
+            </p>
           </div>
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            
             {/* Real-time Processing */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Real-time Processing</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-eq')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                Real-time Processing
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('auto-eq')}
+              >
                 <Volume2 className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 AI Auto-EQ
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('smart-compressor')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('smart-compressor')}
+              >
                 <Zap className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Smart Compressor
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('noise-suppression')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('noise-suppression')}
+              >
                 <VolumeX className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Noise Suppression
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('de-esser')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('de-esser')}
+              >
                 <Headphones className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 De-esser Pro
               </Button>
@@ -327,20 +437,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Audio Enhancement */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Audio Enhancement</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('vocal-clarity')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                Audio Enhancement
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('vocal-clarity')}
+              >
                 <Sparkles className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Vocal Clarity AI
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('instrument-isolation')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('instrument-isolation')}
+              >
                 <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Instrument Isolation
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('harmonic-enhancer')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('harmonic-enhancer')}
+              >
                 <Waves className="w-3 h-3 mr-2 text-[var(--cyan)]" />
                 Harmonic Enhancer
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('stereo-widener')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('stereo-widener')}
+              >
                 <TrendingUp className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Stereo Widener
               </Button>
@@ -348,20 +480,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Stem Separation */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Stem Separation</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('isolate-vocals')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                Stem Separation
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('isolate-vocals')}
+              >
                 <Radio className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Isolate Vocals
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('extract-drums')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('extract-drums')}
+              >
                 <Music className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Extract Drums
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('separate-bass')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('separate-bass')}
+              >
                 <Piano className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Separate Bass
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('four-stem-split')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('four-stem-split')}
+              >
                 <Layers className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 4-Stem Split
               </Button>
@@ -369,20 +523,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Mix Analysis */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Mix Analysis</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('frequency-analysis')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                Mix Analysis
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('frequency-analysis')}
+              >
                 <BarChart3 className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Frequency Analysis
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('loudness-check')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('loudness-check')}
+              >
                 <Target className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Loudness Check
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('phase-correlation')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('phase-correlation')}
+              >
                 <Activity className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Phase Correlation
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('dynamic-range')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('dynamic-range')}
+              >
                 <Gauge className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 Dynamic Range
               </Button>
@@ -390,20 +566,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Mastering */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Mastering</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-master')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                AI Mastering
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('auto-master')}
+              >
                 <Crown className="w-3 h-3 mr-2 text-[var(--yellow)]" />
                 Auto-Master
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('genre-matching')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('genre-matching')}
+              >
                 <Sliders className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Genre Matching
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('limiting-ai')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('limiting-ai')}
+              >
                 <Minimize2 className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Limiting AI
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('platform-optimize')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('platform-optimize')}
+              >
                 <Globe className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Platform Optimize
               </Button>
@@ -411,20 +609,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Content Generation */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Generation</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('voice-synthesis')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                AI Generation
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('voice-synthesis')}
+              >
                 <Mic className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Voice Synthesis
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('ambient-generator')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('ambient-generator')}
+              >
                 <Wind className="w-3 h-3 mr-2 text-[var(--cyan)]" />
                 Ambient Generator
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('midi-composer')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('midi-composer')}
+              >
                 <Music2 className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 MIDI Composer
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('variation-creator')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('variation-creator')}
+              >
                 <Shuffle className="w-3 h-3 mr-2 text-[var(--orange)]" />
                 Variation Creator
               </Button>
@@ -432,20 +652,42 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* Post-Production */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">Post-Production</div>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('video-sync')}>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                Post-Production
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('video-sync')}
+              >
                 <Film className="w-3 h-3 mr-2 text-[var(--purple)]" />
                 Audio to Video Sync
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('speech-enhancement')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('speech-enhancement')}
+              >
                 <MessageSquare className="w-3 h-3 mr-2 text-[var(--blue)]" />
                 Speech Enhancement
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('auto-edit')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('auto-edit')}
+              >
                 <Scissors className="w-3 h-3 mr-2 text-[var(--red)]" />
                 Auto-Edit
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start text-xs h-8" onClick={() => handleAIToolClick('format-converter')}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start text-xs h-8"
+                onClick={() => handleAIToolClick('format-converter')}
+              >
                 <FileAudio className="w-3 h-3 mr-2 text-[var(--green)]" />
                 Format Converter
               </Button>
@@ -453,7 +695,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
             {/* AI Status */}
             <div className="p-3 bg-[var(--secondary)] rounded-md mt-4">
-              <div className="text-xs font-medium text-[var(--foreground)] mb-2">AI Engine Status</div>
+              <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                AI Engine Status
+              </div>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span>GPU Acceleration</span>
@@ -474,7 +718,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'terminal',
@@ -482,15 +726,21 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       label: 'Audio Console',
       component: (
         <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Audio Console</h3>
+          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+            Audio Console
+          </h3>
           <div className="bg-[var(--muted)] rounded-md p-3 font-mono text-xs">
             <div className="text-[var(--green)]">$ Audio Engine Ready</div>
-            <div className="text-[var(--muted-foreground)]">Sample Rate: 48kHz</div>
-            <div className="text-[var(--muted-foreground)]">Buffer: 256 samples</div>
+            <div className="text-[var(--muted-foreground)]">
+              Sample Rate: 48kHz
+            </div>
+            <div className="text-[var(--muted-foreground)]">
+              Buffer: 256 samples
+            </div>
             <div className="text-[var(--muted-foreground)]">Latency: 5.3ms</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'collab',
@@ -498,30 +748,34 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       label: 'Collaboration',
       component: (
         <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">Live Session</h3>
+          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+            Live Session
+          </h3>
           <div className="space-y-2">
             <div className="flex items-center space-x-2 p-2 bg-[var(--muted)] rounded-md">
               <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
-              <span className="text-xs text-[var(--foreground)]">You (Producer)</span>
+              <span className="text-xs text-[var(--foreground)]">
+                You (Producer)
+              </span>
             </div>
             <div className="text-xs text-[var(--muted-foreground)]">
               Invite collaborators to work on this project in real-time
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'suggestions',
       icon: <Lightbulb className="w-5 h-5" />,
       label: 'AI Suggestions',
-      component: <AISuggestionsPanel />
+      component: <AISuggestionsPanel />,
     },
     {
       id: 'changemaps',
       icon: <History className="w-5 h-5" />,
       label: 'Audio Changemaps',
-      component: <AudioChangemapsPanel />
+      component: <AudioChangemapsPanel />,
     },
     {
       id: 'library',
@@ -544,16 +798,18 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
               {/* Quick Filters */}
               <div className="flex flex-wrap gap-1">
-                {['SFX', 'Ambiance', 'Foley', 'Music', 'Voice'].map((filter) => (
-                  <Button
-                    key={filter}
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                  >
-                    {filter}
-                  </Button>
-                ))}
+                {['SFX', 'Ambiance', 'Foley', 'Music', 'Voice'].map(
+                  (filter) => (
+                    <Button
+                      key={filter}
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                    >
+                      {filter}
+                    </Button>
+                  )
+                )}
               </div>
 
               {/* Advanced Filters Toggle */}
@@ -562,14 +818,18 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                   <Filter className="w-3 h-3 mr-1" />
                   Advanced Filters
                 </Button>
-                <span className="text-xs text-[var(--muted-foreground)]">12,847 sounds</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  12,847 sounds
+                </span>
               </div>
             </div>
           </div>
 
           {/* Category Navigation */}
           <div className="p-4 border-b border-[var(--border)]">
-            <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">Categories</h4>
+            <h4 className="text-xs font-medium text-[var(--muted-foreground)] mb-2">
+              Categories
+            </h4>
             <div className="space-y-1">
               {[
                 { name: 'Nature & Weather', count: 2156, icon: '🌿' },
@@ -579,7 +839,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                 { name: 'Musical Elements', count: 987, icon: '🎵' },
                 { name: 'Abstract & Designed', count: 756, icon: '✨' },
                 { name: 'Animals & Creatures', count: 634, icon: '🦅' },
-                { name: 'Vehicles & Transport', count: 1245, icon: '🚗' }
+                { name: 'Vehicles & Transport', count: 1245, icon: '🚗' },
               ].map((category) => (
                 <div
                   key={category.name}
@@ -619,36 +879,36 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     category: 'Nature',
                     duration: '2:34',
                     tags: ['rain', 'nature', 'ambient'],
-                    popular: true
+                    popular: true,
                   },
                   {
                     name: 'City Traffic Morning.wav',
                     category: 'Urban',
                     duration: '1:47',
                     tags: ['traffic', 'urban', 'morning'],
-                    popular: false
+                    popular: false,
                   },
                   {
                     name: 'Footsteps Gravel Slow.wav',
                     category: 'Foley',
                     duration: '0:15',
                     tags: ['footsteps', 'gravel', 'walking'],
-                    popular: true
+                    popular: true,
                   },
                   {
                     name: 'Mechanical Hum Industrial.wav',
                     category: 'Tech',
                     duration: '4:12',
                     tags: ['mechanical', 'industrial', 'loop'],
-                    popular: false
+                    popular: false,
                   },
                   {
                     name: 'Ocean Waves Gentle.wav',
                     category: 'Nature',
                     duration: '3:56',
                     tags: ['ocean', 'waves', 'peaceful'],
-                    popular: true
-                  }
+                    popular: true,
+                  },
                 ].map((sound, index) => (
                   <div
                     key={sound.name}
@@ -656,8 +916,12 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2 min-w-0">
-                        {sound.popular && <Star className="w-3 h-3 text-[var(--yellow)] flex-shrink-0" />}
-                        <span className="text-sm font-medium truncate">{sound.name}</span>
+                        {sound.popular && (
+                          <Star className="w-3 h-3 text-[var(--yellow)] flex-shrink-0" />
+                        )}
+                        <span className="text-sm font-medium truncate">
+                          {sound.name}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Button
@@ -683,7 +947,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
                       <div className="flex items-center space-x-2">
                         <span className="px-2 py-1 bg-[var(--secondary)] rounded text-xs">
@@ -695,7 +959,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-1 mt-2">
                       {sound.tags.map((tag) => (
                         <span
@@ -728,8 +992,12 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                 <Pause className="w-3 h-3" />
               </Button>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium truncate">Rain on Leaves Heavy.wav</div>
-                <div className="text-xs text-[var(--muted-foreground)]">0:45 / 2:34</div>
+                <div className="text-xs font-medium truncate">
+                  Rain on Leaves Heavy.wav
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)]">
+                  0:45 / 2:34
+                </div>
               </div>
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <Volume2 className="w-3 h-3" />
@@ -742,8 +1010,8 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             </div>
           </div>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const handleItemClick = (itemId: string) => {
@@ -755,7 +1023,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
     }
   };
 
-  const activeItem = sidebarItems.find(item => item.id === activePanel);
+  const activeItem = sidebarItems.find((item) => item.id === activePanel);
 
   return (
     <div className="flex h-full">
@@ -831,21 +1099,19 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
           </div>
 
           {/* Panel Content */}
-          <div className="flex-1 overflow-hidden">
-            {activeItem.component}
-          </div>
+          <div className="flex-1 overflow-hidden">{activeItem.component}</div>
         </div>
       )}
-      
+
       {/* AI Tools Modal */}
-      <AIToolsModal 
+      <AIToolsModal
         isOpen={isAIToolsModalOpen}
         onClose={() => setIsAIToolsModalOpen(false)}
         initialTool={selectedAITool}
       />
 
       {/* Spellbook Modal */}
-      <SpellbookModal 
+      <SpellbookModal
         isOpen={isSpellbookModalOpen}
         onClose={() => setIsSpellbookModalOpen(false)}
       />
@@ -856,7 +1122,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
           <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[800px] max-h-[90vh] flex flex-col shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-              <h2 className="text-lg font-semibold text-[var(--foreground)]">Settings</h2>
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                Settings
+              </h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -881,14 +1149,16 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       { id: 'ai', icon: Sparkles, label: 'AI Assistant' },
                       { id: 'network', icon: Globe, label: 'Network' },
                       { id: 'privacy', icon: Shield, label: 'Privacy' },
-                      { id: 'storage', icon: Database, label: 'Storage' }
+                      { id: 'storage', icon: Database, label: 'Storage' },
                     ].map((category) => (
                       <button
                         key={category.id}
                         className="w-full flex items-center space-x-3 px-3 py-2 text-left text-sm hover:bg-[var(--accent)] rounded-md transition-colors"
                       >
                         <category.icon className="w-4 h-4 text-[var(--muted-foreground)]" />
-                        <span className="text-[var(--foreground)]">{category.label}</span>
+                        <span className="text-[var(--foreground)]">
+                          {category.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -900,13 +1170,19 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                 <div className="space-y-6">
                   {/* General Settings */}
                   <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">General</h3>
-                    
+                    <h3 className="text-base font-medium text-[var(--foreground)]">
+                      General
+                    </h3>
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="text-sm font-medium text-[var(--foreground)]">Auto-save</label>
-                          <p className="text-xs text-[var(--muted-foreground)]">Automatically save project changes</p>
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Auto-save
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Automatically save project changes
+                          </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
                           <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
@@ -915,8 +1191,12 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="text-sm font-medium text-[var(--foreground)]">Show AI suggestions</label>
-                          <p className="text-xs text-[var(--muted-foreground)]">Display AI-powered editing suggestions</p>
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Show AI suggestions
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Display AI-powered editing suggestions
+                          </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
                           <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
@@ -924,7 +1204,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Default project location</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Default project location
+                        </label>
                         <div className="flex space-x-2">
                           <input
                             type="text"
@@ -942,11 +1224,15 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
                   {/* Audio Settings */}
                   <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">Audio</h3>
-                    
+                    <h3 className="text-base font-medium text-[var(--foreground)]">
+                      Audio
+                    </h3>
+
                     <div className="space-y-3">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Sample Rate</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Sample Rate
+                        </label>
                         <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
                           <option>44.1 kHz</option>
                           <option>48 kHz</option>
@@ -956,7 +1242,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Buffer Size</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Buffer Size
+                        </label>
                         <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
                           <option>64 samples</option>
                           <option>128 samples</option>
@@ -966,7 +1254,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">Audio Driver</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Audio Driver
+                        </label>
                         <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
                           <option>ASIO</option>
                           <option>Core Audio</option>
@@ -979,13 +1269,19 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
                   {/* AI Settings */}
                   <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">AI Assistant</h3>
-                    
+                    <h3 className="text-base font-medium text-[var(--foreground)]">
+                      AI Assistant
+                    </h3>
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="text-sm font-medium text-[var(--foreground)]">Real-time analysis</label>
-                          <p className="text-xs text-[var(--muted-foreground)]">Analyze audio in real-time</p>
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Real-time analysis
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Analyze audio in real-time
+                          </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
                           <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
@@ -993,7 +1289,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">AI Processing Quality</label>
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          AI Processing Quality
+                        </label>
                         <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
                           <option>Fast</option>
                           <option>Balanced</option>
@@ -1024,17 +1322,14 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                 </Button>
               </div>
               <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsSettingsModalOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  size="sm"
-                  onClick={() => setIsSettingsModalOpen(false)}
-                >
+                <Button size="sm" onClick={() => setIsSettingsModalOpen(false)}>
                   <Check className="w-4 h-4 mr-2" />
                   Apply Changes
                 </Button>

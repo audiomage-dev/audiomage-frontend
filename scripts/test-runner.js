@@ -8,62 +8,67 @@ const tests = {
     name: 'Unit Tests',
     command: 'npx',
     args: ['vitest', 'run', '--coverage'],
-    description: 'Run unit tests with coverage reporting'
+    description: 'Run unit tests with coverage reporting',
   },
   components: {
     name: 'Component Tests',
     command: 'npx',
     args: ['vitest', 'run', 'client/src/test/components'],
-    description: 'Run React component tests'
+    description: 'Run React component tests',
   },
   integration: {
     name: 'Integration Tests',
     command: 'npx',
     args: ['vitest', 'run', 'client/src/test/integration'],
-    description: 'Run integration tests for audio processing'
+    description: 'Run integration tests for audio processing',
   },
   e2e: {
     name: 'End-to-End Tests',
     command: 'npx',
     args: ['playwright', 'test'],
-    description: 'Run E2E tests with Playwright'
+    description: 'Run E2E tests with Playwright',
   },
   'e2e-smoke': {
     name: 'Smoke Tests',
     command: 'npx',
     args: ['playwright', 'test', '--grep', '@smoke'],
-    description: 'Run critical smoke tests only'
+    description: 'Run critical smoke tests only',
   },
   accessibility: {
     name: 'Accessibility Tests',
     command: 'npx',
     args: ['playwright', 'test', '--config', 'playwright-a11y.config.ts'],
-    description: 'Run WCAG compliance tests'
+    description: 'Run WCAG compliance tests',
   },
   performance: {
     name: 'Performance Tests',
     command: 'npx',
-    args: ['playwright', 'test', '--config', 'playwright-performance.config.ts'],
-    description: 'Run performance and bundle size tests'
+    args: [
+      'playwright',
+      'test',
+      '--config',
+      'playwright-performance.config.ts',
+    ],
+    description: 'Run performance and bundle size tests',
   },
   lint: {
     name: 'Code Quality',
     command: 'npx',
     args: ['eslint', '.', '--ext', '.ts,.tsx'],
-    description: 'Run ESLint code quality checks'
+    description: 'Run ESLint code quality checks',
   },
   format: {
     name: 'Format Check',
     command: 'npx',
     args: ['prettier', '--check', '.'],
-    description: 'Check code formatting with Prettier'
+    description: 'Check code formatting with Prettier',
   },
   security: {
     name: 'Security Audit',
     command: 'npm',
     args: ['audit', '--audit-level', 'moderate'],
-    description: 'Run npm security audit'
-  }
+    description: 'Run npm security audit',
+  },
 };
 
 function runTest(testType) {
@@ -79,7 +84,7 @@ function runTest(testType) {
 
   const child = spawn(test.command, test.args, {
     stdio: 'inherit',
-    shell: true
+    shell: true,
   });
 
   child.on('close', (code) => {
@@ -99,7 +104,7 @@ function runTest(testType) {
 
 function runAllTests() {
   console.log('🚀 Running comprehensive test suite for Audiomage');
-  
+
   const testSequence = ['lint', 'format', 'unit', 'integration', 'e2e-smoke'];
   let currentIndex = 0;
 
@@ -111,12 +116,14 @@ function runAllTests() {
 
     const testType = testSequence[currentIndex];
     const test = tests[testType];
-    
-    console.log(`\n[${currentIndex + 1}/${testSequence.length}] Running ${test.name}`);
-    
+
+    console.log(
+      `\n[${currentIndex + 1}/${testSequence.length}] Running ${test.name}`
+    );
+
     const child = spawn(test.command, test.args, {
       stdio: 'inherit',
-      shell: true
+      shell: true,
     });
 
     child.on('close', (code) => {
@@ -143,11 +150,11 @@ function showHelp() {
   console.log('🎵 Audiomage Test Runner');
   console.log('\nUsage: node scripts/test-runner.js <test-type>');
   console.log('\nAvailable test types:');
-  
+
   Object.entries(tests).forEach(([key, test]) => {
     console.log(`  ${key.padEnd(15)} - ${test.description}`);
   });
-  
+
   console.log('\nSpecial commands:');
   console.log('  all              - Run full test suite');
   console.log('  help             - Show this help message');

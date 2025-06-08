@@ -99,7 +99,9 @@ describe('useAudioWorkstation', () => {
     });
 
     // Verify the track volume was updated in the tracks array
-    const updatedTrack = result.current.tracks.find(track => track.id === trackId);
+    const updatedTrack = result.current.tracks.find(
+      (track) => track.id === trackId
+    );
     expect(updatedTrack?.volume).toBe(newVolume);
   });
 
@@ -111,14 +113,16 @@ describe('useAudioWorkstation', () => {
       result.current.toggleTrackMute(trackId);
     });
 
-    const track = result.current.tracks.find(track => track.id === trackId);
+    const track = result.current.tracks.find((track) => track.id === trackId);
     expect(track?.muted).toBe(true);
 
     act(() => {
       result.current.toggleTrackMute(trackId);
     });
 
-    const unmutedTrack = result.current.tracks.find(track => track.id === trackId);
+    const unmutedTrack = result.current.tracks.find(
+      (track) => track.id === trackId
+    );
     expect(unmutedTrack?.muted).toBe(false);
   });
 

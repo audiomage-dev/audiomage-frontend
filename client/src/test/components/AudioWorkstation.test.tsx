@@ -52,29 +52,29 @@ describe('AudioWorkstation', () => {
 
   it('renders the main workstation interface', () => {
     render(<AudioWorkstation />);
-    
+
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
 
   it('displays the transport controls', () => {
     render(<AudioWorkstation />);
-    
+
     expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument();
   });
 
   it('shows the timeline editor by default', () => {
     render(<AudioWorkstation />);
-    
+
     expect(screen.getByTestId('timeline-editor')).toBeInTheDocument();
   });
 
   it('switches between view modes', async () => {
     render(<AudioWorkstation />);
-    
+
     const midiButton = screen.getByRole('button', { name: /midi/i });
     fireEvent.click(midiButton);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('midi-editor')).toBeInTheDocument();
     });
@@ -83,8 +83,10 @@ describe('AudioWorkstation', () => {
   it('handles transport controls', () => {
     const mockPlay = vi.fn();
     const mockStop = vi.fn();
-    
-    vi.mocked(require('../../hooks/useAudioWorkstation').useAudioWorkstation).mockReturnValue({
+
+    vi.mocked(
+      require('../../hooks/useAudioWorkstation').useAudioWorkstation
+    ).mockReturnValue({
       transport: { isPlaying: false, isStopped: true },
       play: mockPlay,
       stop: mockStop,
@@ -97,26 +99,26 @@ describe('AudioWorkstation', () => {
     });
 
     render(<AudioWorkstation />);
-    
+
     fireEvent.click(screen.getByRole('button', { name: /play/i }));
     expect(mockPlay).toHaveBeenCalled();
-    
+
     fireEvent.click(screen.getByRole('button', { name: /stop/i }));
     expect(mockStop).toHaveBeenCalled();
   });
 
   it('displays project information', () => {
     render(<AudioWorkstation />);
-    
+
     expect(screen.getByText('Test Project')).toBeInTheDocument();
   });
 
   it('handles accessibility requirements', () => {
     render(<AudioWorkstation />);
-    
+
     const mainElement = screen.getByRole('main');
     expect(mainElement).toHaveAttribute('aria-label');
-    
+
     const playButton = screen.getByRole('button', { name: /play/i });
     expect(playButton).toHaveAttribute('aria-label');
   });

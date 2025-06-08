@@ -52,8 +52,12 @@ const mockMediaDevices = {
 
 // Setup global mocks
 beforeEach(() => {
-  (global as any).AudioContext = vi.fn().mockImplementation(() => mockAudioContext);
-  (global as any).webkitAudioContext = vi.fn().mockImplementation(() => mockAudioContext);
+  (global as any).AudioContext = vi
+    .fn()
+    .mockImplementation(() => mockAudioContext);
+  (global as any).webkitAudioContext = vi
+    .fn()
+    .mockImplementation(() => mockAudioContext);
   Object.defineProperty(global.navigator, 'mediaDevices', {
     value: mockMediaDevices,
     writable: true,

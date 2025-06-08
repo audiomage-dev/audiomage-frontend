@@ -1,6 +1,12 @@
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import audiomageLogoPath from '@assets/audiomage-logo-transparent.png';
 import { Play, Mic, Activity, Sparkles, Users, FileAudio } from 'lucide-react';
 
@@ -12,12 +18,14 @@ export default function Home() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <img 
-                src={audiomageLogoPath} 
-                alt="Audiomage Logo" 
+              <img
+                src={audiomageLogoPath}
+                alt="Audiomage Logo"
                 className="w-10 h-10 object-contain"
               />
-              <h1 className="text-2xl font-bold text-[var(--foreground)]">Audiomage</h1>
+              <h1 className="text-2xl font-bold text-[var(--foreground)]">
+                Audiomage
+              </h1>
             </div>
             <Link href="/studio">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -35,11 +43,14 @@ export default function Home() {
             Professional AI Audio Workstation
           </h2>
           <p className="text-xl text-[var(--muted-foreground)] mb-8 max-w-2xl mx-auto">
-            Create, edit, and master audio with cutting-edge AI assistance. 
-            The future of music production is here.
+            Create, edit, and master audio with cutting-edge AI assistance. The
+            future of music production is here.
           </p>
           <Link href="/studio">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4">
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4"
+            >
               <Play className="mr-2 h-5 w-5" />
               Start Creating
             </Button>
@@ -56,9 +67,12 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <Sparkles className="h-8 w-8 text-blue-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">AI-Powered Production</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                AI-Powered Production
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
-                Advanced AI tools for mixing, mastering, and creative enhancement
+                Advanced AI tools for mixing, mastering, and creative
+                enhancement
               </CardDescription>
             </CardHeader>
           </Card>
@@ -66,9 +80,12 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <Activity className="h-8 w-8 text-green-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">Multi-Track Editor</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                Multi-Track Editor
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
-                Professional timeline and MIDI editing with real-time visualization
+                Professional timeline and MIDI editing with real-time
+                visualization
               </CardDescription>
             </CardHeader>
           </Card>
@@ -76,7 +93,9 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <Mic className="h-8 w-8 text-red-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">Recording Suite</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                Recording Suite
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
                 High-quality recording with intelligent noise reduction
               </CardDescription>
@@ -86,7 +105,9 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <Users className="h-8 w-8 text-purple-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">Collaboration</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                Collaboration
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
                 Real-time collaborative editing with session management
               </CardDescription>
@@ -96,7 +117,9 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <FileAudio className="h-8 w-8 text-orange-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">Format Support</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                Format Support
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
                 Support for all major audio formats and professional standards
               </CardDescription>
@@ -106,7 +129,9 @@ export default function Home() {
           <Card className="border-[var(--border)] bg-[var(--card)]">
             <CardHeader>
               <Play className="h-8 w-8 text-blue-500 mb-2" />
-              <CardTitle className="text-[var(--card-foreground)]">Real-time Processing</CardTitle>
+              <CardTitle className="text-[var(--card-foreground)]">
+                Real-time Processing
+              </CardTitle>
               <CardDescription className="text-[var(--muted-foreground)]">
                 Zero-latency monitoring and real-time effects processing
               </CardDescription>
@@ -122,10 +147,14 @@ export default function Home() {
             Ready to Create?
           </h3>
           <p className="text-lg text-[var(--muted-foreground)] mb-8">
-            Join thousands of creators using Audiomage to produce professional-quality audio.
+            Join thousands of creators using Audiomage to produce
+            professional-quality audio.
           </p>
           <Link href="/studio">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4">
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4"
+            >
               <Sparkles className="mr-2 h-5 w-5" />
               Launch Studio
             </Button>
@@ -137,9 +166,9 @@ export default function Home() {
       <footer className="border-t border-[var(--border)] bg-[var(--muted)]/30">
         <div className="container mx-auto px-6 py-8">
           <div className="flex items-center justify-center space-x-3">
-            <img 
-              src={audiomageLogoPath} 
-              alt="Audiomage Logo" 
+            <img
+              src={audiomageLogoPath}
+              alt="Audiomage Logo"
               className="w-6 h-6 object-contain"
             />
             <span className="text-[var(--muted-foreground)]">

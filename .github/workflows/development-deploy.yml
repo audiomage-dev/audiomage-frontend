@@ -2,7 +2,7 @@ name: Development Branch Deployment
 
 on:
   push:
-    branches: [ develop, development ]
+    branches: [develop, development]
 
 env:
   NODE_VERSION: '20'

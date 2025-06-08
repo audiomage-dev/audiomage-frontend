@@ -239,7 +239,7 @@ jobs:
           channel: '#releases'
           message: |
             🚀 Audiomage ${{ github.ref_name }} has been successfully released!
-            
+
             📦 Production deployment complete
             🔗 Release notes: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }}
         env:

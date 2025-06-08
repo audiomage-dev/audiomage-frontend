@@ -20,16 +20,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Remove all theme classes first
     document.documentElement.classList.remove('nord-light', 'nord-dark');
-    
+
     // Add the current theme class
     document.documentElement.classList.add(theme);
-    
+
     // Save to localStorage
     localStorage.setItem('audiomage-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'nord-light' ? 'nord-dark' : 'nord-light');
+    setTheme((prev) => (prev === 'nord-light' ? 'nord-dark' : 'nord-light'));
   };
 
   return (

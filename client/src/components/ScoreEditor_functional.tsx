@@ -34,16 +34,16 @@ interface ScoreEditorProps {
   isLocked?: boolean;
 }
 
-export function ScoreEditor({ 
-  tracks, 
-  transport, 
+export function ScoreEditor({
+  tracks,
+  transport,
   zoomLevel = 1,
   bpm = 120,
   timeSignature = [4, 4],
   onTrackMute,
   onTrackSolo,
   onTrackSelect,
-  isLocked = false
+  isLocked = false,
 }: ScoreEditorProps) {
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
@@ -51,8 +51,12 @@ export function ScoreEditor({
   const [noteValue, setNoteValue] = useState<number>(1);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number; noteId: string } | null>(null);
-  
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    noteId: string;
+  } | null>(null);
+
   const [staffs, setStaffs] = useState<Staff[]>([
     {
       id: 'staff-1',
@@ -67,8 +71,8 @@ export function ScoreEditor({
         { id: 'note-3', pitch: 67, startTime: 2, duration: 1, velocity: 75 },
         { id: 'note-4', pitch: 72, startTime: 3, duration: 1, velocity: 90 },
       ],
-      visible: true
-    }
+      visible: true,
+    },
   ]);
 
   const staffHeight = 100;
@@ -80,19 +84,20 @@ export function ScoreEditor({
     const initAudio = () => {
       if (!audioContext) {
         try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const ctx = new (window.AudioContext ||
+            (window as any).webkitAudioContext)();
           setAudioContext(ctx);
         } catch (error) {
           console.warn('Audio context not available:', error);
         }
       }
     };
-    
+
     const handleClick = () => {
       initAudio();
       document.removeEventListener('click', handleClick);
     };
-    
+
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, [audioContext]);
@@ -100,22 +105,25 @@ export function ScoreEditor({
   // Play note function
   const playNote = (note: Note) => {
     if (!audioContext) return;
-    
+
     try {
       const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
       oscillator.type = 'triangle';
-      
-      const volume = (note.velocity || 80) / 127 * 0.3;
+
+      const volume = ((note.velocity || 80) / 127) * 0.3;
       gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.5
+      );
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
@@ -123,21 +131,19 @@ export function ScoreEditor({
     }
   };
 
-
-
-
-
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLocked) return;
-      
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedNotes.size > 0) {
-          setStaffs(prev => prev.map(staff => ({
-            ...staff,
-            notes: staff.notes.filter(note => !selectedNotes.has(note.id))
-          })));
+          setStaffs((prev) =>
+            prev.map((staff) => ({
+              ...staff,
+              notes: staff.notes.filter((note) => !selectedNotes.has(note.id)),
+            }))
+          );
           setSelectedNotes(new Set());
         }
       } else if (e.key === 'Escape') {
@@ -156,15 +162,11 @@ export function ScoreEditor({
 
   return (
     <div className="h-full flex flex-col">
-
-
       {/* Main content */}
       <div className="flex-1 flex">
         <div className="flex-1 overflow-auto">
           <canvas className="w-full h-full bg-white" />
         </div>
-
-
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ name: Production Monitoring
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: '*/15 * * * *' # Every 15 minutes
   workflow_dispatch:
 
 env:
@@ -66,8 +66,8 @@ jobs:
       - name: Check uptime
         uses: upptime/uptime-monitor@v1
         with:
-          command: "curl"
-          args: "-f ${{ secrets.PRODUCTION_URL }}"
+          command: 'curl'
+          args: '-f ${{ secrets.PRODUCTION_URL }}'
 
       - name: Record metrics
         run: |

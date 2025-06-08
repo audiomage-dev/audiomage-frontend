@@ -1,7 +1,31 @@
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { Volume2, VolumeX, Edit3, Scissors, Copy, Grid3x3, BarChart3, Settings, Play, Pause, Square, MoreVertical, Trash2, ArrowUp, ArrowDown, RotateCcw, Volume1 } from 'lucide-react';
+import {
+  Volume2,
+  VolumeX,
+  Edit3,
+  Scissors,
+  Copy,
+  Grid3x3,
+  BarChart3,
+  Settings,
+  Play,
+  Pause,
+  Square,
+  MoreVertical,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  Volume1,
+} from 'lucide-react';
 
 interface MidiNote {
   id: string;
@@ -19,7 +43,11 @@ interface MidiEditorProps {
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
   onNoteAdd?: (trackId: string, note: MidiNote) => void;
-  onNoteEdit?: (trackId: string, noteId: string, note: Partial<MidiNote>) => void;
+  onNoteEdit?: (
+    trackId: string,
+    noteId: string,
+    note: Partial<MidiNote>
+  ) => void;
   onNoteDelete?: (trackId: string, noteId: string) => void;
   onMidiPlayingChange?: (isPlaying: boolean) => void;
   onMidiTimeChange?: (time: number) => void;
@@ -32,9 +60,9 @@ interface MidiEditorProps {
   isLocked?: boolean;
 }
 
-export function MidiEditor({ 
-  tracks, 
-  transport, 
+export function MidiEditor({
+  tracks,
+  transport,
   zoomLevel = 1,
   onTrackMute,
   onTrackSolo,
@@ -46,9 +74,11 @@ export function MidiEditor({
   onMidiTimeChange,
   onMidiControlsRegister,
   isMidiPlaying = false,
-  isLocked = false
+  isLocked = false,
 }: MidiEditorProps) {
-  const [selectedTrack, setSelectedTrack] = useState<string | null>(tracks.find(t => t.type === 'midi')?.id || null);
+  const [selectedTrack, setSelectedTrack] = useState<string | null>(
+    tracks.find((t) => t.type === 'midi')?.id || null
+  );
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -61,7 +91,9 @@ export function MidiEditor({
   } | null>(null);
   const [heldPianoKey, setHeldPianoKey] = useState<number | null>(null);
   const heldOscillatorRef = useRef<OscillatorNode | null>(null);
-  const [pianoMode, setPianoMode] = useState<'midi' | 'instrument'>('instrument');
+  const [pianoMode, setPianoMode] = useState<'midi' | 'instrument'>(
+    'instrument'
+  );
   const [midiNotes, setMidiNotes] = useState<Record<string, MidiNote[]>>({});
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [showVelocityEditor, setShowVelocityEditor] = useState(false);
@@ -70,7 +102,8 @@ export function MidiEditor({
   const [drawingNote, setDrawingNote] = useState<MidiNote | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
-  const [midiPlaybackInterval, setMidiPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
+  const [midiPlaybackInterval, setMidiPlaybackInterval] =
+    useState<NodeJS.Timeout | null>(null);
   const pauseTimeRef = useRef(0);
   const playbackStartTimeRef = useRef(0);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -80,7 +113,9 @@ export function MidiEditor({
     note: MidiNote;
     trackId: string;
   } | null>(null);
-  const [activeOscillators, setActiveOscillators] = useState<Set<OscillatorNode>>(new Set());
+  const [activeOscillators, setActiveOscillators] = useState<
+    Set<OscillatorNode>
+  >(new Set());
   const activeOscillatorsRef = useRef<Set<OscillatorNode>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
@@ -98,14 +133,27 @@ export function MidiEditor({
   const totalNotes = octaves * notesPerOctave + 1; // 121 notes total
   const beatWidth = 50 * zoomLevel;
   const totalBeats = 64; // 16 bars of 4/4 time
-  
+
   // Piano key configuration
   const whiteKeyPattern = [0, 2, 4, 5, 7, 9, 11]; // C, D, E, F, G, A, B
   const blackKeyPattern = [1, 3, 6, 8, 10]; // C#, D#, F#, G#, A#
 
   // Convert MIDI note number to note name
   const getNoteNameFromMidi = (midiNumber: number): string => {
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const noteNames = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ];
     const octave = Math.floor(midiNumber / 12) - 1;
     const noteIndex = midiNumber % 12;
     return `${noteNames[noteIndex]}${octave}`;
@@ -146,10 +194,12 @@ export function MidiEditor({
   // Generate realistic MIDI note data based on track content
   const getMidiNotesFromTrack = (track: AudioTrack): MidiNote[] => {
     if (track.type !== 'midi') return [];
-    
-    console.log(`Generating MIDI notes for track: "${track.name}" (type: ${track.type})`);
+
+    console.log(
+      `Generating MIDI notes for track: "${track.name}" (type: ${track.type})`
+    );
     const notes: MidiNote[] = [];
-    
+
     if (track.name === 'Piano') {
       // Piano chord progression in C major
       const chordProgression = [
@@ -162,7 +212,7 @@ export function MidiEditor({
         [67, 71, 74], // G major
         [60, 64, 67], // C major
       ];
-      
+
       chordProgression.forEach((chord, chordIndex) => {
         const startTime = chordIndex * 4; // 4 beats per chord
         chord.forEach((pitch, noteIndex) => {
@@ -171,9 +221,9 @@ export function MidiEditor({
             pitch,
             startTime,
             duration: 3.5,
-            velocity: 85 + (chordIndex * 3) % 20,
+            velocity: 85 + ((chordIndex * 3) % 20),
           });
-          
+
           // Add some arpeggiated notes
           if ((chordIndex + noteIndex) % 3 === 0) {
             notes.push({
@@ -181,39 +231,43 @@ export function MidiEditor({
               pitch: pitch + 12,
               startTime: startTime + 0.5 + noteIndex * 0.25,
               duration: 0.5,
-              velocity: 60 + (noteIndex * 5) % 15,
+              velocity: 60 + ((noteIndex * 5) % 15),
             });
           }
         });
       });
-      
+
       // Add melody line
-      const melody = [72, 74, 76, 77, 76, 74, 72, 69, 67, 69, 72, 71, 69, 67, 60];
+      const melody = [
+        72, 74, 76, 77, 76, 74, 72, 69, 67, 69, 72, 71, 69, 67, 60,
+      ];
       melody.forEach((pitch, index) => {
         notes.push({
           id: `piano_melody_${index}`,
           pitch,
           startTime: index * 2 + 0.5,
           duration: 1.5,
-          velocity: 95 + (index * 2) % 15,
+          velocity: 95 + ((index * 2) % 15),
         });
       });
     }
-    
+
     if (track.name === 'Synth Bass') {
       // Bass line pattern
-      const bassNotes = [36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38];
+      const bassNotes = [
+        36, 36, 43, 41, 38, 38, 45, 43, 36, 36, 43, 41, 33, 33, 40, 38,
+      ];
       bassNotes.forEach((pitch, index) => {
         notes.push({
           id: `bass_${index}`,
           pitch,
           startTime: index * 2,
           duration: 1.75,
-          velocity: 110 + (index * 2) % 10,
+          velocity: 110 + ((index * 2) % 10),
         });
       });
     }
-    
+
     if (track.name === 'Strings' || track.name === 'Strings Section') {
       // String pad chords
       const stringChords = [
@@ -222,7 +276,7 @@ export function MidiEditor({
         [50, 53, 57, 62], // D minor spread
         [55, 59, 62, 67], // G major spread
       ];
-      
+
       stringChords.forEach((chord, chordIndex) => {
         const startTime = chordIndex * 8;
         chord.forEach((pitch, noteIndex) => {
@@ -231,16 +285,18 @@ export function MidiEditor({
             pitch,
             startTime,
             duration: 7.5,
-            velocity: 70 + (chordIndex * 3 + noteIndex * 2) % 15,
+            velocity: 70 + ((chordIndex * 3 + noteIndex * 2) % 15),
           });
         });
       });
     }
-    
+
     // Fallback: Generate default notes for any MIDI track without specific patterns
     if (notes.length === 0) {
-      console.log(`No specific pattern found for "${track.name}", generating default MIDI notes`);
-      
+      console.log(
+        `No specific pattern found for "${track.name}", generating default MIDI notes`
+      );
+
       // Generate a simple melody pattern for any unmatched MIDI track
       const defaultNotes = [60, 62, 64, 65, 67, 69, 71, 72]; // C major scale
       defaultNotes.forEach((pitch, index) => {
@@ -249,11 +305,11 @@ export function MidiEditor({
           pitch,
           startTime: index * 2,
           duration: 1.5,
-          velocity: 80 + (index * 5) % 20,
+          velocity: 80 + ((index * 5) % 20),
         });
       });
     }
-    
+
     console.log(`Generated ${notes.length} MIDI notes for "${track.name}"`);
     return notes;
   };
@@ -262,20 +318,23 @@ export function MidiEditor({
   useEffect(() => {
     const initAudio = async () => {
       try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const ctx = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
         setAudioContext(ctx);
-        
+
         // Resume audio context if suspended (required by browsers)
         if (ctx.state === 'suspended') {
-          console.log('Audio context suspended, will resume on user interaction');
+          console.log(
+            'Audio context suspended, will resume on user interaction'
+          );
         }
       } catch (error) {
         console.error('Failed to initialize audio context:', error);
       }
     };
-    
+
     initAudio();
-    
+
     return () => {
       if (audioContext) {
         audioContext.close();
@@ -283,20 +342,18 @@ export function MidiEditor({
     };
   }, []);
 
-
-
   // Initialize MIDI notes when tracks change - only if not already initialized
   useEffect(() => {
     const newMidiNotes: Record<string, MidiNote[]> = { ...midiNotes };
     let hasChanges = false;
-    
-    tracks.forEach(track => {
+
+    tracks.forEach((track) => {
       if (track.type === 'midi' && !newMidiNotes[track.id]) {
         newMidiNotes[track.id] = getMidiNotesFromTrack(track);
         hasChanges = true;
       }
     });
-    
+
     if (hasChanges) {
       setMidiNotes(newMidiNotes);
     }
@@ -308,30 +365,34 @@ export function MidiEditor({
     if (isLocked) {
       return;
     }
-    
-    setMidiNotes(prev => ({
+
+    setMidiNotes((prev) => ({
       ...prev,
-      [trackId]: [...(prev[trackId] || []), note]
+      [trackId]: [...(prev[trackId] || []), note],
     }));
     onNoteAdd?.(trackId, note);
   };
 
   // Edit note function
-  const editNote = (trackId: string, noteId: string, updates: Partial<MidiNote>) => {
-    setMidiNotes(prev => ({
+  const editNote = (
+    trackId: string,
+    noteId: string,
+    updates: Partial<MidiNote>
+  ) => {
+    setMidiNotes((prev) => ({
       ...prev,
-      [trackId]: (prev[trackId] || []).map(note => 
+      [trackId]: (prev[trackId] || []).map((note) =>
         note.id === noteId ? { ...note, ...updates } : note
-      )
+      ),
     }));
     onNoteEdit?.(trackId, noteId, updates);
   };
 
   // Delete note function
   const deleteNote = (trackId: string, noteId: string) => {
-    setMidiNotes(prev => ({
+    setMidiNotes((prev) => ({
       ...prev,
-      [trackId]: (prev[trackId] || []).filter(note => note.id !== noteId)
+      [trackId]: (prev[trackId] || []).filter((note) => note.id !== noteId),
     }));
     onNoteDelete?.(trackId, noteId);
   };
@@ -339,11 +400,12 @@ export function MidiEditor({
   // Quantize selected notes
   const quantizeNotes = () => {
     if (!selectedTrack || selectedNotes.size === 0) return;
-    
-    selectedNotes.forEach(noteId => {
-      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+
+    selectedNotes.forEach((noteId) => {
+      const note = midiNotes[selectedTrack]?.find((n) => n.id === noteId);
       if (note) {
-        const quantizedStartTime = Math.round(note.startTime / quantizeValue) * quantizeValue;
+        const quantizedStartTime =
+          Math.round(note.startTime / quantizeValue) * quantizeValue;
         editNote(selectedTrack, noteId, { startTime: quantizedStartTime });
       }
     });
@@ -352,28 +414,35 @@ export function MidiEditor({
   // Adjust velocity for selected notes
   const adjustVelocity = (velocityChange: number) => {
     if (!selectedTrack || selectedNotes.size === 0) return;
-    
-    selectedNotes.forEach(noteId => {
-      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+
+    selectedNotes.forEach((noteId) => {
+      const note = midiNotes[selectedTrack]?.find((n) => n.id === noteId);
       if (note) {
-        const newVelocity = Math.max(1, Math.min(127, note.velocity + velocityChange));
+        const newVelocity = Math.max(
+          1,
+          Math.min(127, note.velocity + velocityChange)
+        );
         editNote(selectedTrack, noteId, { velocity: newVelocity });
       }
     });
   };
 
   // Play a single MIDI note
-  const playNote = async (pitch: number, velocity: number = 100, duration: number = 0.5) => {
+  const playNote = async (
+    pitch: number,
+    velocity: number = 100,
+    duration: number = 0.5
+  ) => {
     if (!audioContext) {
       console.warn('Audio context not available');
       return;
     }
-    
+
     // Don't play new notes if paused using ref for immediate detection
     if (isPausedRef.current) {
       return;
     }
-    
+
     try {
       // Ensure audio context is running
       if (audioContext.state === 'suspended') {
@@ -384,49 +453,60 @@ export function MidiEditor({
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       const filterNode = audioContext.createBiquadFilter();
-      
+
       // Connect audio nodes
       oscillator.connect(filterNode);
       filterNode.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       // Convert MIDI note to frequency
       const frequency = 440 * Math.pow(2, (pitch - 69) / 12);
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-      
+
       // Set oscillator type based on instrument
       const waveType = getInstrumentWaveType(currentInstrument);
       oscillator.type = waveType;
-      
+
       // Configure filter for more realistic sound
       filterNode.type = 'lowpass';
-      filterNode.frequency.setValueAtTime(frequency * 4, audioContext.currentTime);
+      filterNode.frequency.setValueAtTime(
+        frequency * 4,
+        audioContext.currentTime
+      );
       filterNode.Q.setValueAtTime(1, audioContext.currentTime);
-      
+
       // Set volume based on velocity with better dynamics
       const volume = Math.max(0.01, (velocity / 127) * 0.2);
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-      
+      gainNode.gain.linearRampToValueAtTime(
+        volume,
+        audioContext.currentTime + 0.01
+      );
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + duration
+      );
+
       // Track active oscillator in both state and ref
       activeOscillatorsRef.current.add(oscillator);
-      setActiveOscillators(prev => new Set(prev).add(oscillator));
-      
+      setActiveOscillators((prev) => new Set(prev).add(oscillator));
+
       // Remove oscillator from active set when it ends
       oscillator.onended = () => {
         activeOscillatorsRef.current.delete(oscillator);
-        setActiveOscillators(prev => {
+        setActiveOscillators((prev) => {
           const newSet = new Set(prev);
           newSet.delete(oscillator);
           return newSet;
         });
       };
-      
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + duration);
-      
-      console.log(`Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
+
+      console.log(
+        `Playing note: ${getNoteNameFromMidi(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`
+      );
     } catch (error) {
       console.error('Error playing note:', error);
     }
@@ -435,13 +515,13 @@ export function MidiEditor({
   // Play all notes in the current track (transport play functionality)
   const playAllNotes = () => {
     if (!selectedTrack || !audioContext) return;
-    
+
     const trackNotes = midiNotes[selectedTrack] || [];
     if (trackNotes.length === 0) return;
-    
+
     console.log(`Playing ${trackNotes.length} notes from track`);
-    
-    trackNotes.forEach(note => {
+
+    trackNotes.forEach((note) => {
       const delay = note.startTime * 0.5; // Convert beats to seconds (simplified)
       setTimeout(() => {
         playNote(note.pitch, note.velocity, note.duration * 0.5);
@@ -449,23 +529,21 @@ export function MidiEditor({
     });
   };
 
-
-
   // Transport integration disabled to prevent interference with MIDI playback
   // MIDI playback is independent and controlled by MIDI transport controls
 
   // Handle note click - now plays the note
   const handleNoteClick = (noteId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    
+
     // Find and play the clicked note
     if (selectedTrack) {
-      const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+      const note = midiNotes[selectedTrack]?.find((n) => n.id === noteId);
       if (note) {
         playNote(note.pitch, note.velocity, note.duration * 0.5);
       }
     }
-    
+
     // Handle selection
     if (event.ctrlKey || event.metaKey) {
       const newSelected = new Set(selectedNotes);
@@ -483,15 +561,15 @@ export function MidiEditor({
   // Note dragging functionality
   const handleNoteMouseDown = (noteId: string, event: React.MouseEvent) => {
     if (isLocked) return;
-    
+
     event.stopPropagation();
     event.preventDefault();
-    
+
     if (!selectedTrack) return;
-    
-    const note = midiNotes[selectedTrack]?.find(n => n.id === noteId);
+
+    const note = midiNotes[selectedTrack]?.find((n) => n.id === noteId);
     if (!note) return;
-    
+
     // Start dragging
     setIsDragging(true);
     setDragState({
@@ -499,9 +577,9 @@ export function MidiEditor({
       trackId: selectedTrack,
       startX: event.clientX,
       startY: event.clientY,
-      originalNote: { ...note }
+      originalNote: { ...note },
     });
-    
+
     // Add selected note if not already selected
     if (!selectedNotes.has(noteId)) {
       setSelectedNotes(new Set([noteId]));
@@ -510,29 +588,41 @@ export function MidiEditor({
 
   const handleMouseMove = (event: React.MouseEvent) => {
     if (!dragState || !isDragging) return;
-    
+
     event.preventDefault();
-    
+
     const deltaX = event.clientX - dragState.startX;
     const deltaY = event.clientY - dragState.startY;
-    
+
     // Calculate new position
     const beatsPerPixel = 1 / beatWidth;
     const pitchPerPixel = 1 / noteHeight;
-    
-    const newStartTime = Math.max(0, dragState.originalNote.startTime + (deltaX * beatsPerPixel));
-    const newPitch = Math.max(0, Math.min(127, dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)));
-    
+
+    const newStartTime = Math.max(
+      0,
+      dragState.originalNote.startTime + deltaX * beatsPerPixel
+    );
+    const newPitch = Math.max(
+      0,
+      Math.min(
+        127,
+        dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)
+      )
+    );
+
     // Update note position
-    setMidiNotes(prevNotes => {
+    setMidiNotes((prevNotes) => {
       const updatedNotes = { ...prevNotes };
       if (updatedNotes[dragState.trackId]) {
-        updatedNotes[dragState.trackId] = updatedNotes[dragState.trackId].map(note => 
-          note.id === dragState.noteId ? {
-            ...note,
-            startTime: newStartTime,
-            pitch: newPitch
-          } : note
+        updatedNotes[dragState.trackId] = updatedNotes[dragState.trackId].map(
+          (note) =>
+            note.id === dragState.noteId
+              ? {
+                  ...note,
+                  startTime: newStartTime,
+                  pitch: newPitch,
+                }
+              : note
         );
       }
       return updatedNotes;
@@ -543,21 +633,21 @@ export function MidiEditor({
     if (dragState) {
       // Notify parent component of note changes
       if (onNoteEdit && dragState.trackId) {
-        const updatedNote = midiNotes[dragState.trackId]?.find(n => n.id === dragState.noteId);
+        const updatedNote = midiNotes[dragState.trackId]?.find(
+          (n) => n.id === dragState.noteId
+        );
         if (updatedNote) {
           onNoteEdit(dragState.trackId, dragState.noteId, {
             startTime: updatedNote.startTime,
-            pitch: updatedNote.pitch
+            pitch: updatedNote.pitch,
           });
         }
       }
     }
-    
+
     setIsDragging(false);
     setDragState(null);
   };
-
-
 
   // Global mouse event handlers for dragging
   useEffect(() => {
@@ -565,24 +655,37 @@ export function MidiEditor({
       if (dragState && isDragging) {
         const deltaX = e.clientX - dragState.startX;
         const deltaY = e.clientY - dragState.startY;
-        
+
         // Calculate new position
         const beatsPerPixel = 1 / beatWidth;
         const pitchPerPixel = 1 / noteHeight;
-        
-        const newStartTime = Math.max(0, dragState.originalNote.startTime + (deltaX * beatsPerPixel));
-        const newPitch = Math.max(0, Math.min(127, dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)));
-        
+
+        const newStartTime = Math.max(
+          0,
+          dragState.originalNote.startTime + deltaX * beatsPerPixel
+        );
+        const newPitch = Math.max(
+          0,
+          Math.min(
+            127,
+            dragState.originalNote.pitch - Math.round(deltaY * pitchPerPixel)
+          )
+        );
+
         // Update note position
-        setMidiNotes(prevNotes => {
+        setMidiNotes((prevNotes) => {
           const updatedNotes = { ...prevNotes };
           if (updatedNotes[dragState.trackId]) {
-            updatedNotes[dragState.trackId] = updatedNotes[dragState.trackId].map(note => 
-              note.id === dragState.noteId ? {
-                ...note,
-                startTime: newStartTime,
-                pitch: newPitch
-              } : note
+            updatedNotes[dragState.trackId] = updatedNotes[
+              dragState.trackId
+            ].map((note) =>
+              note.id === dragState.noteId
+                ? {
+                    ...note,
+                    startTime: newStartTime,
+                    pitch: newPitch,
+                  }
+                : note
             );
           }
           return updatedNotes;
@@ -594,16 +697,18 @@ export function MidiEditor({
       if (dragState) {
         // Notify parent component of note changes
         if (onNoteEdit && dragState.trackId) {
-          const updatedNote = midiNotes[dragState.trackId]?.find(n => n.id === dragState.noteId);
+          const updatedNote = midiNotes[dragState.trackId]?.find(
+            (n) => n.id === dragState.noteId
+          );
           if (updatedNote) {
             onNoteEdit(dragState.trackId, dragState.noteId, {
               startTime: updatedNote.startTime,
-              pitch: updatedNote.pitch
+              pitch: updatedNote.pitch,
             });
           }
         }
       }
-      
+
       setIsDragging(false);
       setDragState(null);
     };
@@ -611,7 +716,7 @@ export function MidiEditor({
     if (isDragging) {
       document.addEventListener('mousemove', handleGlobalMouseMove);
       document.addEventListener('mouseup', handleGlobalMouseUp);
-      
+
       return () => {
         document.removeEventListener('mousemove', handleGlobalMouseMove);
         document.removeEventListener('mouseup', handleGlobalMouseUp);
@@ -630,7 +735,7 @@ export function MidiEditor({
     if (heldPianoKey !== null) {
       document.addEventListener('mouseup', handleGlobalMouseUp);
       document.addEventListener('mouseleave', handleGlobalMouseUp);
-      
+
       return () => {
         document.removeEventListener('mouseup', handleGlobalMouseUp);
         document.removeEventListener('mouseleave', handleGlobalMouseUp);
@@ -642,20 +747,20 @@ export function MidiEditor({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedTrack) return;
-      
+
       // Delete selected notes
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        selectedNotes.forEach(noteId => {
+        selectedNotes.forEach((noteId) => {
           deleteNote(selectedTrack, noteId);
         });
         setSelectedNotes(new Set());
       }
-      
+
       // Quantize notes
       if (e.key === 'q' || e.key === 'Q') {
         quantizeNotes();
       }
-      
+
       // Velocity adjustments
       if (e.key === 'ArrowUp' && selectedNotes.size > 0) {
         e.preventDefault();
@@ -665,12 +770,12 @@ export function MidiEditor({
         e.preventDefault();
         adjustVelocity(-10);
       }
-      
+
       // Select all notes in current track
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
         const trackNotes = midiNotes[selectedTrack] || [];
-        setSelectedNotes(new Set(trackNotes.map(note => note.id)));
+        setSelectedNotes(new Set(trackNotes.map((note) => note.id)));
       }
     };
 
@@ -694,15 +799,16 @@ export function MidiEditor({
 
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     const beat = snapToBeat(getBeatFromX(x));
     const pitch = getMidiFromY(y);
 
     // Check if there's already a note at this position
     const existingNotes = midiNotes[selectedTrack] || [];
-    const noteAtPosition = existingNotes.find(note => 
-      Math.abs(note.pitch - pitch) < 0.5 && 
-      Math.abs(note.startTime - beat) < 0.25
+    const noteAtPosition = existingNotes.find(
+      (note) =>
+        Math.abs(note.pitch - pitch) < 0.5 &&
+        Math.abs(note.startTime - beat) < 0.25
     );
 
     if (noteAtPosition) {
@@ -735,10 +841,10 @@ export function MidiEditor({
     const currentX = event.clientX - rect.left;
     const startBeat = getBeatFromX(drawStartRef.current.x);
     const currentBeat = getBeatFromX(currentX);
-    
+
     const duration = Math.max(0.25, snapToBeat(currentBeat - startBeat));
 
-    setDrawingNote(prev => prev ? { ...prev, duration } : null);
+    setDrawingNote((prev) => (prev ? { ...prev, duration } : null));
   };
 
   // Handle grid mouse up to finalize note creation
@@ -747,8 +853,10 @@ export function MidiEditor({
 
     // Add the final note to the track
     addNote(selectedTrack, drawingNote);
-    console.log(`Added note: ${getNoteNameFromMidi(drawingNote.pitch)} at beat ${drawingNote.startTime} with duration ${drawingNote.duration}`);
-    
+    console.log(
+      `Added note: ${getNoteNameFromMidi(drawingNote.pitch)} at beat ${drawingNote.startTime} with duration ${drawingNote.duration}`
+    );
+
     // Play the created note
     playNote(drawingNote.pitch, drawingNote.velocity, 0.3);
 
@@ -761,11 +869,11 @@ export function MidiEditor({
   // Handle piano key click to play note and add to canvas
   const handlePianoKeyClick = (pitch: number) => {
     if (!selectedTrack) return;
-    
+
     // Get instrument type from selected track
-    const track = tracks.find(t => t.id === selectedTrack);
+    const track = tracks.find((t) => t.id === selectedTrack);
     let instrumentForSound = 'piano'; // Default
-    
+
     if (track) {
       const trackName = track.name.toLowerCase();
       if (trackName.includes('piano')) instrumentForSound = 'piano';
@@ -779,33 +887,35 @@ export function MidiEditor({
         else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
         else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
         else instrumentForSound = 'synth_lead';
-      }
-      else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+      } else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
       else if (trackName.includes('organ')) instrumentForSound = 'organ';
       else if (trackName.includes('brass')) instrumentForSound = 'brass';
       else if (trackName.includes('drum')) instrumentForSound = 'drums';
-      else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
+      else if (trackName.includes('percussion'))
+        instrumentForSound = 'percussion';
     }
-    
+
     // Play appropriate sound based on mode
     if (pianoMode === 'instrument') {
       // Use direct instrument sound generation instead of relying on state
       if (audioContext) {
         const waveType = getInstrumentWaveType(instrumentForSound);
         const frequency = midiToFrequency(pitch);
-        
-        console.log(`Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave for instrument: ${instrumentForSound}`);
-        
+
+        console.log(
+          `Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave for instrument: ${instrumentForSound}`
+        );
+
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.type = waveType;
         oscillator.frequency.value = frequency;
         gainNode.gain.value = 0.15;
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         oscillator.start();
         oscillator.stop(audioContext.currentTime + 0.8);
       }
@@ -814,24 +924,26 @@ export function MidiEditor({
       if (audioContext) {
         const waveType = getInstrumentWaveType(instrumentForSound);
         const frequency = midiToFrequency(pitch);
-        
-        console.log(`Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`);
-        
+
+        console.log(
+          `Playing note: ${midiToNoteName(pitch)} (${pitch}) at ${frequency.toFixed(1)}Hz with ${waveType} wave`
+        );
+
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.type = waveType;
         oscillator.frequency.value = frequency;
         gainNode.gain.value = 0.15;
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         oscillator.start();
         oscillator.stop(audioContext.currentTime + 0.3);
       }
     }
-    
+
     // Add note to canvas
     const currentTime = midiPlaybackTime || 0;
     const newNote: MidiNote = {
@@ -839,9 +951,9 @@ export function MidiEditor({
       pitch: pitch,
       startTime: Math.max(0, currentTime),
       duration: 1.0,
-      velocity: 80
+      velocity: 80,
     };
-    
+
     if (onNoteAdd) {
       onNoteAdd(selectedTrack, newNote);
     }
@@ -850,7 +962,7 @@ export function MidiEditor({
   const handlePianoKeyMouseDown = (pitch: number, event: React.MouseEvent) => {
     event.preventDefault();
     if (heldPianoKey === pitch || !selectedTrack) return;
-    
+
     // Stop any currently held note
     if (heldOscillatorRef.current) {
       try {
@@ -860,11 +972,11 @@ export function MidiEditor({
       }
       heldOscillatorRef.current = null;
     }
-    
+
     // Get instrument from track
-    const track = tracks.find(t => t.id === selectedTrack);
+    const track = tracks.find((t) => t.id === selectedTrack);
     let instrumentForSound = 'piano';
-    
+
     if (track) {
       const trackName = track.name.toLowerCase();
       if (trackName.includes('piano')) instrumentForSound = 'piano';
@@ -878,43 +990,43 @@ export function MidiEditor({
         else if (trackName.includes('pad')) instrumentForSound = 'synth_pad';
         else if (trackName.includes('bass')) instrumentForSound = 'synth_bass';
         else instrumentForSound = 'synth_lead';
-      }
-      else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
+      } else if (trackName.includes('guitar')) instrumentForSound = 'guitar';
       else if (trackName.includes('organ')) instrumentForSound = 'organ';
       else if (trackName.includes('brass')) instrumentForSound = 'brass';
       else if (trackName.includes('drum')) instrumentForSound = 'drums';
-      else if (trackName.includes('percussion')) instrumentForSound = 'percussion';
+      else if (trackName.includes('percussion'))
+        instrumentForSound = 'percussion';
     }
-    
+
     if (pianoMode === 'midi' && audioContext) {
       // Sustained MIDI oscillator
       const waveType = getInstrumentWaveType(instrumentForSound);
       const frequency = midiToFrequency(pitch);
-      
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.type = waveType;
       oscillator.frequency.value = frequency;
       gainNode.gain.value = 0.2;
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.start();
       heldOscillatorRef.current = oscillator;
     } else {
       // Instrument mode - use longer duration for hold effect
       const previousInstrument = currentInstrument;
       setCurrentInstrument(instrumentForSound);
-      
+
       const velocity = getInstrumentVelocity(instrumentForSound);
       playNote(pitch, velocity, 2.0);
-      
+
       // Restore previous instrument after a short delay
       setTimeout(() => setCurrentInstrument(previousInstrument), 10);
     }
-    
+
     setHeldPianoKey(pitch);
   };
 
@@ -926,9 +1038,12 @@ export function MidiEditor({
         heldOscillatorRef.current.disconnect();
         heldOscillatorRef.current.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.1
+        );
         heldOscillatorRef.current.stop(audioContext.currentTime + 0.1);
       } catch (e) {
         // Oscillator might already be stopped
@@ -962,7 +1077,7 @@ export function MidiEditor({
       synth_bass: 115,
       drums: 127,
       percussion: 100,
-      sound_fx: 95
+      sound_fx: 95,
     };
     return velocityMap[instrument] || 100;
   };
@@ -983,7 +1098,7 @@ export function MidiEditor({
       synth_bass: 0.8,
       drums: 0.3,
       percussion: 0.4,
-      sound_fx: 1.0
+      sound_fx: 1.0,
     };
     return durationMap[instrument] || 0.5;
   };
@@ -1007,14 +1122,27 @@ export function MidiEditor({
       synth_bass: 'square',
       drums: 'square',
       percussion: 'triangle',
-      sound_fx: 'square'
+      sound_fx: 'square',
     };
     return waveTypeMap[instrument] || 'sine';
   };
 
   // Helper function to convert MIDI note to note name
   const midiToNoteName = (midiNote: number): string => {
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const noteNames = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ];
     const octave = Math.floor(midiNote / 12) - 1;
     const noteName = noteNames[midiNote % 12];
     return `${noteName}${octave}`;
@@ -1027,108 +1155,126 @@ export function MidiEditor({
   };
 
   // Handle note right-click context menu
-  const handleNoteRightClick = (e: React.MouseEvent, note: MidiNote, trackId: string) => {
+  const handleNoteRightClick = (
+    e: React.MouseEvent,
+    note: MidiNote,
+    trackId: string
+  ) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setNoteContextMenu({
       x: e.clientX,
       y: e.clientY,
       note,
-      trackId
+      trackId,
     });
   };
 
   // Handle note context menu actions
-  const handleNoteContextAction = (action: string, note: MidiNote, trackId: string) => {
+  const handleNoteContextAction = (
+    action: string,
+    note: MidiNote,
+    trackId: string
+  ) => {
     // Prevent note editing when MIDI editor is locked
     if (isLocked && action !== 'play-note') {
       return;
     }
-    
+
     switch (action) {
       case 'duplicate':
         const duplicatedNote: MidiNote = {
           ...note,
           id: `${trackId}-${Date.now()}-${Math.random()}`,
-          startTime: note.startTime + note.duration
+          startTime: note.startTime + note.duration,
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: [...(prev[trackId] || []), duplicatedNote]
+          [trackId]: [...(prev[trackId] || []), duplicatedNote],
         }));
         console.log('Note duplicated');
         break;
-        
+
       case 'delete':
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).filter(n => n.id !== note.id)
+          [trackId]: (prev[trackId] || []).filter((n) => n.id !== note.id),
         }));
         console.log('Note deleted');
         break;
-        
+
       case 'quantize':
         const quantizedNote = {
           ...note,
           startTime: Math.round(note.startTime * 4) / 4, // Quantize to 16th notes
-          duration: Math.round(note.duration * 4) / 4
+          duration: Math.round(note.duration * 4) / 4,
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? quantizedNote : n)
+          [trackId]: (prev[trackId] || []).map((n) =>
+            n.id === note.id ? quantizedNote : n
+          ),
         }));
         console.log('Note quantized');
         break;
-        
+
       case 'velocity-up':
         const velocityUpNote = {
           ...note,
-          velocity: Math.min(127, note.velocity + 10)
+          velocity: Math.min(127, note.velocity + 10),
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? velocityUpNote : n)
+          [trackId]: (prev[trackId] || []).map((n) =>
+            n.id === note.id ? velocityUpNote : n
+          ),
         }));
         console.log('Note velocity increased');
         break;
-        
+
       case 'velocity-down':
         const velocityDownNote = {
           ...note,
-          velocity: Math.max(1, note.velocity - 10)
+          velocity: Math.max(1, note.velocity - 10),
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? velocityDownNote : n)
+          [trackId]: (prev[trackId] || []).map((n) =>
+            n.id === note.id ? velocityDownNote : n
+          ),
         }));
         console.log('Note velocity decreased');
         break;
-        
+
       case 'octave-up':
         const octaveUpNote = {
           ...note,
-          pitch: Math.min(127, note.pitch + 12)
+          pitch: Math.min(127, note.pitch + 12),
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? octaveUpNote : n)
+          [trackId]: (prev[trackId] || []).map((n) =>
+            n.id === note.id ? octaveUpNote : n
+          ),
         }));
         console.log('Note moved up one octave');
         break;
-        
+
       case 'octave-down':
         const octaveDownNote = {
           ...note,
-          pitch: Math.max(0, note.pitch - 12)
+          pitch: Math.max(0, note.pitch - 12),
         };
-        setMidiNotes(prev => ({
+        setMidiNotes((prev) => ({
           ...prev,
-          [trackId]: (prev[trackId] || []).map(n => n.id === note.id ? octaveDownNote : n)
+          [trackId]: (prev[trackId] || []).map((n) =>
+            n.id === note.id ? octaveDownNote : n
+          ),
         }));
         console.log('Note moved down one octave');
         break;
-        
+
       case 'play-note':
         const velocity = getInstrumentVelocity(currentInstrument);
         const duration = getInstrumentDuration(currentInstrument);
@@ -1136,7 +1282,7 @@ export function MidiEditor({
         console.log(`Playing note: ${getNoteNameFromMidi(note.pitch)}`);
         break;
     }
-    
+
     setNoteContextMenu(null);
   };
 
@@ -1152,14 +1298,15 @@ export function MidiEditor({
           top: noteContextMenu.y,
           transform: 'translate(-50%, -10px)',
           backgroundColor: 'var(--background)',
-          opacity: 1
+          opacity: 1,
         }}
         onMouseLeave={() => setNoteContextMenu(null)}
       >
         {/* Note Info Header */}
         <div className="px-3 py-2 border-b border-[var(--border)] bg-[var(--muted)]/30">
           <div className="text-xs font-medium text-[var(--foreground)]">
-            {getNoteNameFromMidi(noteContextMenu.note.pitch)} • Vel: {noteContextMenu.note.velocity}
+            {getNoteNameFromMidi(noteContextMenu.note.pitch)} • Vel:{' '}
+            {noteContextMenu.note.velocity}
           </div>
           <div className="text-xs text-[var(--muted-foreground)]">
             Duration: {noteContextMenu.note.duration.toFixed(2)} beats
@@ -1170,7 +1317,13 @@ export function MidiEditor({
         <div className="py-1">
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('play-note', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'play-note',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Play className="w-4 h-4" />
             <span>Play Note</span>
@@ -1183,15 +1336,27 @@ export function MidiEditor({
         <div className="py-1">
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('duplicate', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'duplicate',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Copy className="w-4 h-4" />
             <span>Duplicate Note</span>
           </button>
-          
+
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('quantize', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'quantize',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Grid3x3 className="w-4 h-4" />
             <span>Quantize to Grid</span>
@@ -1204,15 +1369,27 @@ export function MidiEditor({
         <div className="py-1">
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('velocity-up', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'velocity-up',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Volume2 className="w-4 h-4" />
             <span>Increase Velocity (+10)</span>
           </button>
-          
+
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('velocity-down', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'velocity-down',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Volume1 className="w-4 h-4" />
             <span>Decrease Velocity (-10)</span>
@@ -1225,15 +1402,27 @@ export function MidiEditor({
         <div className="py-1">
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('octave-up', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'octave-up',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <ArrowUp className="w-4 h-4" />
             <span>Octave Up (+12)</span>
           </button>
-          
+
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
-            onClick={() => handleNoteContextAction('octave-down', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'octave-down',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <ArrowDown className="w-4 h-4" />
             <span>Octave Down (-12)</span>
@@ -1246,7 +1435,13 @@ export function MidiEditor({
         <div className="py-1">
           <button
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--destructive)] hover:text-[var(--destructive-foreground)] flex items-center space-x-2 text-[var(--destructive)]"
-            onClick={() => handleNoteContextAction('delete', noteContextMenu.note, noteContextMenu.trackId)}
+            onClick={() =>
+              handleNoteContextAction(
+                'delete',
+                noteContextMenu.note,
+                noteContextMenu.trackId
+              )
+            }
           >
             <Trash2 className="w-4 h-4" />
             <span>Delete Note</span>
@@ -1271,55 +1466,66 @@ export function MidiEditor({
   // Helper function to start new playback
   const startNewPlayback = (trackId: string, startFromBeat: number = 0) => {
     if (!trackId || !midiNotes[trackId]) return;
-    
+
     const bpm = 120;
     const beatsPerSecond = bpm / 60;
-    
+
     // Set up timing
-    playbackStartTimeRef.current = Date.now() - (startFromBeat / beatsPerSecond * 1000);
+    playbackStartTimeRef.current =
+      Date.now() - (startFromBeat / beatsPerSecond) * 1000;
     currentPlayingTrackRef.current = trackId;
-    
+
     const interval = setInterval(() => {
       if (isPausedRef.current) return;
-      
+
       const elapsed = (Date.now() - playbackStartTimeRef.current) / 1000;
       const currentBeat = elapsed * beatsPerSecond;
-      
+
       setMidiPlaybackTime(currentBeat);
       onMidiTimeChange?.(currentBeat);
-      
+
       // Play notes
       const trackNotes = midiNotes[trackId] || [];
       trackNotes.forEach((note: MidiNote) => {
         const noteKey = `${trackId}_${note.id}`;
-        if (currentBeat >= note.startTime && 
-            currentBeat <= note.startTime + note.duration && 
-            !playedNotesRef.current.has(noteKey)) {
-          
+        if (
+          currentBeat >= note.startTime &&
+          currentBeat <= note.startTime + note.duration &&
+          !playedNotesRef.current.has(noteKey)
+        ) {
           playedNotesRef.current.add(noteKey);
           const waveType = getInstrumentWaveType(currentInstrument);
           const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
-          
+
           if (audioContext) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.type = waveType;
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            
+            oscillator.frequency.setValueAtTime(
+              frequency,
+              audioContext.currentTime
+            );
+
             const velocity = note.velocity / 127;
-            gainNode.gain.setValueAtTime(velocity * 0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.duration * 0.5);
-            
+            gainNode.gain.setValueAtTime(
+              velocity * 0.3,
+              audioContext.currentTime
+            );
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + note.duration * 0.5
+            );
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.start();
             oscillator.stop(audioContext.currentTime + note.duration * 0.5);
-            
+
             activeOscillatorsRef.current.add(oscillator);
             setActiveOscillators(new Set(activeOscillatorsRef.current));
-            
+
             oscillator.onended = () => {
               activeOscillatorsRef.current.delete(oscillator);
               setActiveOscillators(new Set(activeOscillatorsRef.current));
@@ -1327,9 +1533,11 @@ export function MidiEditor({
           }
         }
       });
-      
+
       // Stop at end
-      const maxEndTime = Math.max(...trackNotes.map(note => note.startTime + note.duration));
+      const maxEndTime = Math.max(
+        ...trackNotes.map((note) => note.startTime + note.duration)
+      );
       if (currentBeat >= maxEndTime) {
         clearInterval(interval);
         setMidiPlaybackInterval(null);
@@ -1341,63 +1549,88 @@ export function MidiEditor({
         setIsPaused(false);
       }
     }, 16);
-    
+
     setMidiPlaybackInterval(interval);
   };
 
   // MIDI-specific playback controls
   const playMidiTrack = () => {
-    console.log('playMidiTrack called - isPaused:', isPaused, 'isPausedRef:', isPausedRef.current, 'currentTrack:', currentPlayingTrackRef.current, 'selectedTrack:', selectedTrack);
-    
+    console.log(
+      'playMidiTrack called - isPaused:',
+      isPaused,
+      'isPausedRef:',
+      isPausedRef.current,
+      'currentTrack:',
+      currentPlayingTrackRef.current,
+      'selectedTrack:',
+      selectedTrack
+    );
+
     // If paused and same track, resume playback from pause position
-    if (isPausedRef.current && currentPlayingTrackRef.current === selectedTrack) {
-      console.log('Resuming MIDI playback from pause position:', pauseTimeRef.current);
-      
+    if (
+      isPausedRef.current &&
+      currentPlayingTrackRef.current === selectedTrack
+    ) {
+      console.log(
+        'Resuming MIDI playback from pause position:',
+        pauseTimeRef.current
+      );
+
       // Reset playback start time to continue from exact pause position
       const bpm = 120;
       const beatsPerSecond = bpm / 60;
       const pausedSeconds = pauseTimeRef.current / beatsPerSecond;
-      playbackStartTimeRef.current = Date.now() - (pausedSeconds * 1000);
-      console.log('Reset playback timing to continue from pause position:', pauseTimeRef.current);
-      
+      playbackStartTimeRef.current = Date.now() - pausedSeconds * 1000;
+      console.log(
+        'Reset playback timing to continue from pause position:',
+        pauseTimeRef.current
+      );
+
       // Clear pause state immediately
       isPausedRef.current = false;
       setIsPaused(false);
-      
+
       // Update UI state
       setMidiPlaybackTime(pauseTimeRef.current);
       onMidiPlayingChange?.(true);
       onMidiTimeChange?.(pauseTimeRef.current);
-      
+
       // The interval should already be running, just unpaused
       console.log('Resuming from pause - interval should continue');
       return;
     }
-    
+
     // If paused but different track, stop current and start new
-    if (isPausedRef.current && currentPlayingTrackRef.current !== selectedTrack) {
-      console.log('Switching tracks during pause, stopping current playback...');
+    if (
+      isPausedRef.current &&
+      currentPlayingTrackRef.current !== selectedTrack
+    ) {
+      console.log(
+        'Switching tracks during pause, stopping current playback...'
+      );
       stopMidiPlayback();
       // Continue to start new track
     }
-    
+
     // If playing, pause instead
     if (midiPlaybackInterval && !isPausedRef.current) {
       pauseMidiPlayback();
       return;
     }
-    
-    console.log('Debug playMidiTrack:', { 
-      selectedTrack, 
+
+    console.log('Debug playMidiTrack:', {
+      selectedTrack,
       midiNotesKeys: Object.keys(midiNotes),
       selectedTrackNotes: midiNotes[selectedTrack || '']?.length || 0,
-      trackNames: tracks.map(t => ({ id: t.id, name: t.name, type: t.type }))
+      trackNames: tracks.map((t) => ({ id: t.id, name: t.name, type: t.type })),
     });
-    
+
     // If no selected track, use the first available MIDI track
     let trackToPlay: string | null = selectedTrack;
     if (!trackToPlay || !midiNotes[trackToPlay]) {
-      const availableTracks = Object.keys(midiNotes).filter(trackId => midiNotes[trackId]?.length > 0);
+      const availableTracks = Object.keys(midiNotes).filter(
+        (trackId) => midiNotes[trackId]?.length > 0
+      );
       if (availableTracks.length > 0) {
         trackToPlay = availableTracks[0];
         console.log('Using first available track:', trackToPlay);
@@ -1406,72 +1639,85 @@ export function MidiEditor({
         return;
       }
     }
-    
+
     if (!trackToPlay) {
       console.log('No valid track to play');
       return;
     }
-    
+
     // Ensure trackToPlay is non-null for the rest of the function
     const activeTrack = trackToPlay;
-    
+
     console.log('Starting MIDI playback...');
     currentPlayingTrackRef.current = activeTrack;
     isPausedRef.current = false;
     setIsPaused(false);
     onMidiPlayingChange?.(true);
-    
+
     // Reset playback time, pause time, and played notes for new tracks
     setMidiPlaybackTime(0);
     pauseTimeRef.current = 0;
     playedNotesRef.current.clear();
-    
+
     playbackStartTimeRef.current = Date.now();
     const bpm = 120; // Default BPM for MIDI playback
     const beatsPerSecond = bpm / 60;
-    
+
     const interval = setInterval(() => {
       // Check if playback is paused using ref for immediate detection
       if (isPausedRef.current) {
         return;
       }
-      
+
       const elapsed = (Date.now() - playbackStartTimeRef.current) / 1000;
       const currentBeat = elapsed * beatsPerSecond;
       setMidiPlaybackTime(currentBeat);
       onMidiTimeChange?.(currentBeat);
-      
+
       // Play notes that should be triggered at this time
       const trackNotes = midiNotes[activeTrack] || [];
       trackNotes.forEach((note: MidiNote) => {
         const noteStartTime = note.startTime;
         const noteKey = `${note.id}-${noteStartTime}`;
-        
+
         // If we've reached this note's start time and haven't played it yet
-        if (currentBeat >= noteStartTime && !playedNotesRef.current.has(noteKey)) {
+        if (
+          currentBeat >= noteStartTime &&
+          !playedNotesRef.current.has(noteKey)
+        ) {
           playedNotesRef.current.add(noteKey);
-          const velocity = note.velocity || getInstrumentVelocity(currentInstrument);
-          const duration = note.duration * 0.4 || getInstrumentDuration(currentInstrument);
+          const velocity =
+            note.velocity || getInstrumentVelocity(currentInstrument);
+          const duration =
+            note.duration * 0.4 || getInstrumentDuration(currentInstrument);
           playNote(note.pitch, velocity, duration);
-          console.log(`Playing note at beat ${currentBeat.toFixed(2)}: ${getNoteNameFromMidi(note.pitch)}`);
+          console.log(
+            `Playing note at beat ${currentBeat.toFixed(2)}: ${getNoteNameFromMidi(note.pitch)}`
+          );
         }
       });
-      
+
       // Stop at end of track (32 beats for demo)
       if (currentBeat >= 32) {
         console.log('Reached end of track, stopping playback');
         stopMidiPlayback();
       }
     }, 25); // Update every 25ms for smoother playback
-    
+
     setMidiPlaybackInterval(interval);
-    console.log(`Started MIDI playback for track "${tracks.find(t => t.id === activeTrack)?.name}" with ${midiNotes[activeTrack]?.length || 0} notes`);
+    console.log(
+      `Started MIDI playback for track "${tracks.find((t) => t.id === activeTrack)?.name}" with ${midiNotes[activeTrack]?.length || 0} notes`
+    );
   };
 
   const pauseMidiPlayback = () => {
-    console.log('Pausing MIDI playback - stopping', activeOscillatorsRef.current.size, 'active notes');
+    console.log(
+      'Pausing MIDI playback - stopping',
+      activeOscillatorsRef.current.size,
+      'active notes'
+    );
     console.log('Current midiPlaybackTime:', midiPlaybackTime);
-    
+
     // Calculate current playback time more accurately if needed
     let currentTime = midiPlaybackTime;
     if (playbackStartTimeRef.current > 0) {
@@ -1481,22 +1727,27 @@ export function MidiEditor({
       currentTime = elapsed * beatsPerSecond;
       console.log('Calculated current time from elapsed:', currentTime);
     }
-    
+
     // Save current playback time for resume
     pauseTimeRef.current = Math.max(currentTime, 0);
     console.log('Saved pause time:', pauseTimeRef.current);
-    
+
     // Set pause state immediately in both state and ref
     isPausedRef.current = true;
     setIsPaused(true);
-    console.log('Pause state set to true - isPausedRef:', isPausedRef.current, 'currentTrack:', currentPlayingTrackRef.current);
-    
+    console.log(
+      'Pause state set to true - isPausedRef:',
+      isPausedRef.current,
+      'currentTrack:',
+      currentPlayingTrackRef.current
+    );
+
     // Don't clear the interval during pause - we need it for resume
     // The interval will check isPausedRef.current and skip execution
-    
+
     // Stop all active oscillators immediately using ref
     const oscillatorsToStop = Array.from(activeOscillatorsRef.current);
-    oscillatorsToStop.forEach(oscillator => {
+    oscillatorsToStop.forEach((oscillator) => {
       try {
         oscillator.stop(0); // Stop immediately
         console.log('Stopped oscillator');
@@ -1504,11 +1755,11 @@ export function MidiEditor({
         console.log('Error stopping oscillator:', error);
       }
     });
-    
+
     // Clear both ref and state
     activeOscillatorsRef.current.clear();
     setActiveOscillators(new Set());
-    
+
     onMidiPlayingChange?.(false);
     console.log('MIDI playback paused - all audio stopped');
   };
@@ -1519,9 +1770,9 @@ export function MidiEditor({
       clearInterval(midiPlaybackInterval);
       setMidiPlaybackInterval(null);
     }
-    
+
     // Stop all active oscillators
-    activeOscillators.forEach(oscillator => {
+    activeOscillators.forEach((oscillator) => {
       try {
         oscillator.stop();
       } catch (error) {
@@ -1529,7 +1780,7 @@ export function MidiEditor({
       }
     });
     setActiveOscillators(new Set());
-    
+
     onMidiPlayingChange?.(false);
     setMidiPlaybackTime(0);
     console.log('MIDI playback stopped');
@@ -1554,18 +1805,18 @@ export function MidiEditor({
   // Render piano keys
   const renderPianoKeys = () => {
     const keys = [];
-    
+
     for (let midiNote = 127; midiNote >= 0; midiNote--) {
       const isBlack = isBlackKey(midiNote);
       const noteName = getNoteNameFromMidi(midiNote);
       const y = getNoteY(midiNote);
-      
+
       keys.push(
         <div
           key={midiNote}
           className={`absolute flex items-center px-2 text-xs border-b cursor-pointer transition-colors ${
-            isBlack 
-              ? 'bg-gray-800 text-white border-gray-700 hover:bg-gray-700 w-20 shadow-inner' 
+            isBlack
+              ? 'bg-gray-800 text-white border-gray-700 hover:bg-gray-700 w-20 shadow-inner'
               : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 w-28 shadow-sm'
           }`}
           style={{
@@ -1573,27 +1824,29 @@ export function MidiEditor({
             height: noteHeight,
             zIndex: isBlack ? 2 : 1,
             borderRight: isBlack ? 'none' : '1px solid #e5e7eb',
-            boxShadow: isBlack 
-              ? 'inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.2)' 
+            boxShadow: isBlack
+              ? 'inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.2)'
               : 'inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.1)',
           }}
           onMouseDown={(e) => handlePianoKeyMouseDown(midiNote, e)}
           onMouseUp={handlePianoKeyMouseUp}
         >
-          <span className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}>
+          <span
+            className={`select-none font-mono text-xs ${isBlack ? 'text-gray-300' : 'text-gray-700'}`}
+          >
             {noteName}
           </span>
         </div>
       );
     }
-    
+
     return keys;
   };
 
   // Render grid lines
   const renderGrid = () => {
     const lines = [];
-    
+
     // Horizontal lines (one per semitone)
     for (let i = 0; i <= 127; i++) {
       const y = getNoteY(i);
@@ -1606,12 +1859,12 @@ export function MidiEditor({
           x2={totalBeats * beatWidth}
           y2={y + noteHeight}
           stroke="var(--border)"
-          strokeWidth={isBlack ? "0.5" : "1"}
-          opacity={isBlack ? "0.3" : "0.6"}
+          strokeWidth={isBlack ? '0.5' : '1'}
+          opacity={isBlack ? '0.3' : '0.6'}
         />
       );
     }
-    
+
     // Vertical lines (beat markers)
     for (let beat = 0; beat <= totalBeats; beat++) {
       const x = beat * beatWidth;
@@ -1624,37 +1877,39 @@ export function MidiEditor({
           x2={x}
           y2={totalNotes * noteHeight}
           stroke="var(--border)"
-          strokeWidth={isMeasure ? "2" : "1"}
-          opacity={isMeasure ? "0.8" : "0.4"}
+          strokeWidth={isMeasure ? '2' : '1'}
+          opacity={isMeasure ? '0.8' : '0.4'}
         />
       );
     }
-    
+
     return lines;
   };
 
   // Render MIDI notes
   const renderNotes = (): JSX.Element[] => {
     const noteElements: JSX.Element[] = [];
-    
+
     // Only render notes for selected track or all MIDI tracks if none selected
-    const tracksToRender = selectedTrack ? 
-      tracks.filter(t => t.id === selectedTrack) : 
-      tracks.filter(t => t.type === 'midi');
-    
-    tracksToRender.forEach(track => {
+    const tracksToRender = selectedTrack
+      ? tracks.filter((t) => t.id === selectedTrack)
+      : tracks.filter((t) => t.type === 'midi');
+
+    tracksToRender.forEach((track) => {
       const trackNotes = midiNotes[track.id] || [];
-      console.log(`Rendering ${trackNotes.length} notes for track "${track.name}"`);
-      
+      console.log(
+        `Rendering ${trackNotes.length} notes for track "${track.name}"`
+      );
+
       trackNotes.forEach((note: MidiNote) => {
         const x = note.startTime * beatWidth;
         const y = getNoteY(note.pitch);
         const width = note.duration * beatWidth - 2; // Small gap between notes
         const height = noteHeight - 2;
-        
+
         const isSelected = selectedNotes.has(note.id);
         const velocityOpacity = note.velocity / 127;
-        
+
         noteElements.push(
           <rect
             key={note.id}
@@ -1666,15 +1921,17 @@ export function MidiEditor({
             fill={isSelected ? 'var(--primary)' : track.color}
             fillOpacity={velocityOpacity * 0.7 + 0.3}
             stroke={isSelected ? 'var(--primary)' : 'rgba(0,0,0,0.3)'}
-            strokeWidth={isSelected ? "2" : "1"}
+            strokeWidth={isSelected ? '2' : '1'}
             rx="3"
             className="cursor-pointer hover:brightness-110 transition-all"
             onClick={(e) => !isDragging && handleNoteClick(note.id, e as any)}
-            onContextMenu={(e) => handleNoteRightClick(e, note, selectedTrack || '')}
+            onContextMenu={(e) =>
+              handleNoteRightClick(e, note, selectedTrack || '')
+            }
             onMouseDown={(e) => handleNoteMouseDown(note.id, e as any)}
           />
         );
-        
+
         // Note velocity indicator
         if (width > 20) {
           noteElements.push(
@@ -1695,7 +1952,7 @@ export function MidiEditor({
 
     // Render drawing note preview
     if (drawingNote && selectedTrack) {
-      const track = tracks.find(t => t.id === selectedTrack);
+      const track = tracks.find((t) => t.id === selectedTrack);
       if (track) {
         const x = drawingNote.startTime * beatWidth;
         const y = getNoteY(drawingNote.pitch);
@@ -1720,7 +1977,7 @@ export function MidiEditor({
         );
       }
     }
-    
+
     return noteElements;
   };
 
@@ -1728,7 +1985,7 @@ export function MidiEditor({
   const renderPlayhead = () => {
     // Use MIDI playback time for MIDI editor, measured in beats
     const x = midiPlaybackTime * beatWidth;
-    
+
     return (
       <line
         x1={x}
@@ -1748,8 +2005,10 @@ export function MidiEditor({
       {/* Track List Sidebar */}
       <div className="w-48 bg-[var(--muted)] border-r border-[var(--border)] flex flex-col">
         <div className="h-10 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-3">
-          <span className="text-sm font-medium text-[var(--foreground)]">MIDI Tracks</span>
-          
+          <span className="text-sm font-medium text-[var(--foreground)]">
+            MIDI Tracks
+          </span>
+
           {/* Piano Mode Toggle */}
           <div className="flex bg-[var(--muted)] rounded p-0.5">
             <button
@@ -1776,89 +2035,107 @@ export function MidiEditor({
             </button>
           </div>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto scrollbar-hide">
-          {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').map(track => (
-            <div
-              key={track.id}
-              className={`p-3 border-b border-[var(--border)] cursor-pointer transition-colors ${
-                selectedTrack === track.id 
-                  ? 'bg-[var(--muted)] border-l-4 border-l-[var(--primary)]' 
-                  : 'hover:bg-[var(--muted)]/50'
-              }`}
-              onClick={() => {
-                setSelectedTrack(track.id);
-                onTrackSelect?.(track.id);
-                
-                // Auto-select appropriate instrument based on track name
-                const trackName = track.name.toLowerCase();
-                if (trackName.includes('piano')) setCurrentInstrument('piano');
-                else if (trackName.includes('bass')) setCurrentInstrument('bass');
-                else if (trackName.includes('string')) setCurrentInstrument('strings');
-                else if (trackName.includes('synth')) {
-                  if (trackName.includes('lead')) setCurrentInstrument('synth_lead');
-                  else if (trackName.includes('pad')) setCurrentInstrument('synth_pad');
-                  else if (trackName.includes('bass')) setCurrentInstrument('synth_bass');
-                  else setCurrentInstrument('synth_lead');
-                }
-                else if (trackName.includes('guitar')) setCurrentInstrument('guitar');
-                else if (trackName.includes('organ')) setCurrentInstrument('organ');
-                else if (trackName.includes('brass')) setCurrentInstrument('brass');
-                else if (trackName.includes('drum')) setCurrentInstrument('drums');
-                else if (trackName.includes('percussion')) setCurrentInstrument('percussion');
-              }}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                  {track.name}
-                </span>
-                <div className="flex items-center space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackSolo(track.id);
-                    }}
-                    title={track.soloed ? "Unsolo" : "Solo"}
-                  >
-                    <span className={`text-xs font-bold ${track.soloed ? 'text-[var(--primary)]' : 'text-[var(--muted-foreground)]'}`}>
-                      S
-                    </span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackMute(track.id);
-                    }}
-                    title={track.muted ? "Unmute" : "Mute"}
-                  >
-                    {track.muted ? (
-                      <VolumeX className="h-3 w-3 text-[var(--muted-foreground)]" />
-                    ) : (
-                      <Volume2 className="h-3 w-3 text-[var(--muted-foreground)]" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="text-xs text-[var(--muted-foreground)]">
-                {midiNotes[track.id]?.length || 0} notes
-              </div>
-              
-              {/* Track color indicator */}
+          {tracks
+            .filter(
+              (track) => track.type === 'midi' || track.type === 'ai-generated'
+            )
+            .map((track) => (
               <div
-                className="w-full h-1 rounded mt-2"
-                style={{ backgroundColor: track.color }}
-              />
-            </div>
-          ))}
-          
-          {tracks.filter(track => track.type === 'midi' || track.type === 'ai-generated').length === 0 && (
+                key={track.id}
+                className={`p-3 border-b border-[var(--border)] cursor-pointer transition-colors ${
+                  selectedTrack === track.id
+                    ? 'bg-[var(--muted)] border-l-4 border-l-[var(--primary)]'
+                    : 'hover:bg-[var(--muted)]/50'
+                }`}
+                onClick={() => {
+                  setSelectedTrack(track.id);
+                  onTrackSelect?.(track.id);
+
+                  // Auto-select appropriate instrument based on track name
+                  const trackName = track.name.toLowerCase();
+                  if (trackName.includes('piano'))
+                    setCurrentInstrument('piano');
+                  else if (trackName.includes('bass'))
+                    setCurrentInstrument('bass');
+                  else if (trackName.includes('string'))
+                    setCurrentInstrument('strings');
+                  else if (trackName.includes('synth')) {
+                    if (trackName.includes('lead'))
+                      setCurrentInstrument('synth_lead');
+                    else if (trackName.includes('pad'))
+                      setCurrentInstrument('synth_pad');
+                    else if (trackName.includes('bass'))
+                      setCurrentInstrument('synth_bass');
+                    else setCurrentInstrument('synth_lead');
+                  } else if (trackName.includes('guitar'))
+                    setCurrentInstrument('guitar');
+                  else if (trackName.includes('organ'))
+                    setCurrentInstrument('organ');
+                  else if (trackName.includes('brass'))
+                    setCurrentInstrument('brass');
+                  else if (trackName.includes('drum'))
+                    setCurrentInstrument('drums');
+                  else if (trackName.includes('percussion'))
+                    setCurrentInstrument('percussion');
+                }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                    {track.name}
+                  </span>
+                  <div className="flex items-center space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTrackSolo(track.id);
+                      }}
+                      title={track.soloed ? 'Unsolo' : 'Solo'}
+                    >
+                      <span
+                        className={`text-xs font-bold ${track.soloed ? 'text-[var(--primary)]' : 'text-[var(--muted-foreground)]'}`}
+                      >
+                        S
+                      </span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTrackMute(track.id);
+                      }}
+                      title={track.muted ? 'Unmute' : 'Mute'}
+                    >
+                      {track.muted ? (
+                        <VolumeX className="h-3 w-3 text-[var(--muted-foreground)]" />
+                      ) : (
+                        <Volume2 className="h-3 w-3 text-[var(--muted-foreground)]" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="text-xs text-[var(--muted-foreground)]">
+                  {midiNotes[track.id]?.length || 0} notes
+                </div>
+
+                {/* Track color indicator */}
+                <div
+                  className="w-full h-1 rounded mt-2"
+                  style={{ backgroundColor: track.color }}
+                />
+              </div>
+            ))}
+
+          {tracks.filter(
+            (track) => track.type === 'midi' || track.type === 'ai-generated'
+          ).length === 0 && (
             <div className="p-6 text-center text-[var(--muted-foreground)]">
               <span className="text-sm">No MIDI tracks found</span>
               <p className="text-xs mt-1">Add MIDI tracks to start editing</p>
@@ -1873,7 +2150,7 @@ export function MidiEditor({
         <div className="h-12 bg-[var(--muted)] border-b border-[var(--border)] px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {/* Note: MIDI playback is now handled by the main transport controls */}
-            
+
             {/* Copy/Edit Tools */}
             <div className="flex items-center space-x-1">
               <Button
@@ -1942,10 +2219,9 @@ export function MidiEditor({
                   -
                 </Button>
                 <span className="text-xs text-[var(--muted-foreground)] min-w-[3rem] text-center">
-                  {selectedNotes.size > 0 && selectedTrack ? 
-                    `${midiNotes[selectedTrack]?.find(n => selectedNotes.has(n.id))?.velocity || 0}` : 
-                    'Vel'
-                  }
+                  {selectedNotes.size > 0 && selectedTrack
+                    ? `${midiNotes[selectedTrack]?.find((n) => selectedNotes.has(n.id))?.velocity || 0}`
+                    : 'Vel'}
                 </span>
                 <Button
                   variant="ghost"
@@ -1965,7 +2241,9 @@ export function MidiEditor({
             {/* Instrument Selector */}
             {selectedTrack && (
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-[var(--muted-foreground)]">Instrument:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Instrument:
+                </span>
                 <select
                   value={currentInstrument}
                   onChange={(e) => setCurrentInstrument(e.target.value)}
@@ -1989,9 +2267,11 @@ export function MidiEditor({
                 </select>
               </div>
             )}
-            
+
             <span className="text-xs text-[var(--muted-foreground)]">
-              {selectedNotes.size > 0 ? `${selectedNotes.size} selected` : 'No selection'}
+              {selectedNotes.size > 0
+                ? `${selectedNotes.size} selected`
+                : 'No selection'}
             </span>
             <Button
               variant="ghost"
@@ -2023,7 +2303,7 @@ export function MidiEditor({
                       x2={x}
                       y2="40"
                       stroke="var(--border)"
-                      strokeWidth={isMeasure ? "2" : "1"}
+                      strokeWidth={isMeasure ? '2' : '1'}
                     />
                     {isMeasure && (
                       <text
@@ -2046,15 +2326,15 @@ export function MidiEditor({
         {/* Main Editor Area */}
         <div className="flex-1 flex min-h-0">
           {/* Piano Keys - Fixed Position */}
-          <div 
+          <div
             ref={pianoKeysRef}
             className="w-28 bg-[var(--muted)] border-r border-[var(--border)] relative overflow-hidden"
           >
             <div
               className="relative"
-              style={{ 
+              style={{
                 height: totalNotes * noteHeight,
-                transform: `translateY(-${scrollOffset}px)`
+                transform: `translateY(-${scrollOffset}px)`,
               }}
             >
               {renderPianoKeys()}
@@ -2062,8 +2342,8 @@ export function MidiEditor({
           </div>
 
           {/* Note Grid - Scrollable Canvas */}
-          <div 
-            className="flex-1 overflow-y-auto select-none" 
+          <div
+            className="flex-1 overflow-y-auto select-none"
             style={{ overflowX: 'hidden' }}
             ref={pianoRollRef}
             onScroll={handleScrollSync}
