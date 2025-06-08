@@ -2464,15 +2464,15 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       </Button>
 
                       <div className="flex items-center justify-between min-w-0">
-                        <div className="flex items-center space-x-2 min-w-0 ml-6">
+                        <div className="flex items-center space-x-2 min-w-0 ml-6" style={{ maxWidth: `${384 - 80}px` }}>
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col" style={{ maxWidth: `${180}px` }}>
+                          <div className="flex flex-col" style={{ maxWidth: `${240}px` }}>
                             <div 
                               className="text-sm font-medium text-[var(--foreground)] leading-tight"
-                              style={{ maxWidth: `${180}px` }}
+                              style={{ maxWidth: `${240}px` }}
                             >
                               {track.name.split(' ').map((word, index) => (
                                 <div key={index} className="break-words">
@@ -2485,7 +2485,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1 mr-3">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -2574,7 +2574,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                         )}
                       </div>
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 mr-3">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
