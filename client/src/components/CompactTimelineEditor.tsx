@@ -620,6 +620,28 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     });
   }, [getTrackHeight]);
 
+  // Get all tracks affected by resizing (includes children for grouped tracks)
+  const getAffectedTracks = useCallback((trackId: string) => {
+    const track = tracks.find(t => t.id === trackId);
+    if (!track) return [trackId];
+
+    // If it's a parent track with children, include all child tracks
+    if (!track.parentId) {
+      const childTracks = tracks.filter(t => t.parentId === trackId);
+      if (childTracks.length > 0) {
+        return [trackId, ...childTracks.map(t => t.id)];
+      }
+    }
+    
+    // If it's a child track, include parent and all siblings
+    if (track.parentId) {
+      const siblings = tracks.filter(t => t.parentId === track.parentId);
+      return [track.parentId, ...siblings.map(t => t.id)];
+    }
+
+    return [trackId];
+  }, [tracks]);
+
   // Mouse move handler for track resizing
   useEffect(() => {
     if (!resizingTrack) return;
@@ -628,10 +650,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       const deltaY = e.clientY - resizingTrack.startY;
       const newHeight = Math.max(40, Math.min(200, resizingTrack.startHeight + deltaY)); // Min 40px, max 200px
       
-      setTrackHeights(prev => ({
-        ...prev,
-        [resizingTrack.trackId]: newHeight
-      }));
+      // Get all tracks that should be resized together
+      const affectedTracks = getAffectedTracks(resizingTrack.trackId);
+      
+      setTrackHeights(prev => {
+        const updated = { ...prev };
+        affectedTracks.forEach(trackId => {
+          updated[trackId] = newHeight;
+        });
+        return updated;
+      });
     };
 
     const handleMouseUp = () => {
@@ -645,7 +673,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [resizingTrack]);
+  }, [resizingTrack, getAffectedTracks]);
 
   // Handle timeline-based range selection across all clips and empty areas
   const handleTimelineRangeSelection = useCallback((e: React.MouseEvent) => {
@@ -2206,13 +2234,15 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 
                 // Calculate total height for the group - collapsed groups show only parent track height
                 const isCollapsed = collapsedGroups.has(track.id);
-                const groupHeight = isCollapsed ? 64 : allGroupTracks.length * 64; // 64px per track (h-16 = 4rem = 64px)
+                const groupHeight = isCollapsed 
+                  ? getTrackHeight(track.id) 
+                  : allGroupTracks.reduce((acc, t) => acc + getTrackHeight(t.id), 0);
                 
                 // Render single container for the entire group
                 renderedTracks.push(
                   <div
                     key={`track-group-${track.id}`}
-                    className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
+                    className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
                       allGroupTracks.some(t => selectedTrackIds.includes(t.id))
                         ? 'border-l-[var(--primary)]' 
                         : 'hover:brightness-110'
@@ -2237,6 +2267,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                   >
+                    {/* Resize Handle for Grouped Track Header */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onMouseDown={(e) => handleResizeStart(e, track.id)}
+                    />
                     {/* Parent track header positioned in the middle of the group */}
                     <div 
                       className="flex items-center justify-between min-w-0"
@@ -2313,15 +2348,17 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 i += isCollapsed ? 1 : allGroupTracks.length;
               } else if (!track.parentId) {
                 // Regular track (not grouped)
+                const trackHeight = getTrackHeight(track.id);
                 renderedTracks.push(
                   <div
                     key={`track-sidebar-${track.id}-${i}`}
-                    className={`h-16 border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group ${
+                    className={`border-b border-[var(--border)] border-l-4 px-3 py-1 cursor-pointer transition-colors group relative ${
                       selectedTrackIds.includes(track.id) 
                         ? 'border-l-[var(--primary)]' 
                         : 'hover:brightness-110'
                     }`}
                     style={{ 
+                      height: `${trackHeight}px`,
                       borderLeftColor: selectedTrackIds.includes(track.id) 
                         ? 'var(--primary)' 
                         : track.color,
@@ -2340,6 +2377,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                     onClick={(e) => handleTrackSelect(track.id, e)}
                     onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                   >
+                    {/* Resize Handle for Header */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1 cursor-row-resize bg-transparent hover:bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onMouseDown={(e) => handleResizeStart(e, track.id)}
+                    />
                     <div className="flex items-center justify-between min-w-0 mb-1">
                       <div className="flex items-center space-x-2 min-w-0">
                         <div 
