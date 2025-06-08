@@ -61,6 +61,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [scrollY, setScrollY] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [currentTool, setCurrentTool] = useState<'select' | 'hand' | 'edit'>('select');
+  const [gridDisplayMode, setGridDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
@@ -2218,6 +2219,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               >
                 <Link className="w-3 h-3" />
               </Button>
+              
+              <div className="w-px h-4 bg-[var(--border)]" />
+              
+              <Button
+                onClick={() => setGridDisplayMode(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds')}
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0"
+                title={`Grid display: ${gridDisplayMode} (click to toggle)`}
+              >
+                <BarChart3 className="w-3 h-3" />
+              </Button>
             </div>
           </div>
           
@@ -2753,7 +2766,60 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   onClick={(e) => handleTrackSelect(track.id, e)}
                   onContextMenu={(e) => handleTrackRightClick(e, track.id)}
                 >
-
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {(() => {
+                      const timelineWidth = getTimelineWidth();
+                      const pixelsPerSecond = 60 * zoomLevel;
+                      const totalTimelineSeconds = timelineWidth / pixelsPerSecond;
+                      
+                      // Grid interval based on zoom level and display mode
+                      let gridInterval: number;
+                      if (gridDisplayMode === 'timecode') {
+                        // Timecode mode: grid every 30 frames (assuming 30fps) = 1 second
+                        gridInterval = 1; // 1 second intervals
+                      } else {
+                        // Seconds mode: adaptive intervals based on zoom
+                        if (zoomLevel >= 4) {
+                          gridInterval = 0.5; // Half-second intervals at high zoom
+                        } else if (zoomLevel >= 2) {
+                          gridInterval = 1; // 1-second intervals at medium zoom
+                        } else {
+                          gridInterval = 5; // 5-second intervals at low zoom
+                        }
+                      }
+                      
+                      const gridCount = Math.ceil(totalTimelineSeconds / gridInterval);
+                      
+                      // Convert track color to rgba for grid lines
+                      const getGridColor = (color: string) => {
+                        const hex = color.replace('#', '');
+                        const r = parseInt(hex.substr(0, 2), 16);
+                        const g = parseInt(hex.substr(2, 2), 16);
+                        const b = parseInt(hex.substr(4, 2), 16);
+                        return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity
+                      };
+                      
+                      return Array.from({ length: gridCount + 1 }).map((_, index) => {
+                        const timePosition = index * gridInterval;
+                        const xPosition = timePosition * pixelsPerSecond;
+                        
+                        if (xPosition > timelineWidth) return null;
+                        
+                        return (
+                          <div
+                            key={`grid-${track.id}-${index}`}
+                            className="absolute top-0 bottom-0 w-px"
+                            style={{
+                              left: `${xPosition}px`,
+                              backgroundColor: getGridColor(track.color),
+                              transform: `translateX(-${scrollX}px)`
+                            }}
+                          />
+                        );
+                      }).filter(Boolean);
+                    })()}
+                  </div>
                   
                   {/* Resize Handle */}
                   <div
