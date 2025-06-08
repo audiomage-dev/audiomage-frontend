@@ -70,6 +70,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
   const [resizingTrack, setResizingTrack] = useState<{ trackId: string; startY: number; startHeight: number } | null>(null);
   
+  // Track resize functionality
+  const getTrackHeight = useCallback((trackId: string) => {
+    return trackHeights[trackId] || 64; // Default height
+  }, [trackHeights]);
+
   // Multi-track selection state
   const [multiSelection, setMultiSelection] = useState<{
     startTime: number;
@@ -408,7 +413,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     // Horizontal track lines with variable heights
     let cumulativeHeight = 0;
     for (let i = 0; i < tracks.length; i++) {
-      cumulativeHeight += getTrackHeight(tracks[i].id);
+      cumulativeHeight += trackHeights[tracks[i].id] || 64; // Default height
       if (i < tracks.length - 1) { // Don't draw line after last track
         ctx.beginPath();
         ctx.moveTo(0, cumulativeHeight);
@@ -418,7 +423,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks, zoomLevel, getTimelineWidth, snapMode, bpm, timeSignature]);
+  }, [tracks, zoomLevel, getTimelineWidth, snapMode, bpm, timeSignature, trackHeights]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
@@ -602,11 +607,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     }
     onTrackSelect?.(trackId);
   }, [onTrackSelect]);
-
-  // Track resize functionality
-  const getTrackHeight = useCallback((trackId: string) => {
-    return trackHeights[trackId] || 64; // Default height
-  }, [trackHeights]);
 
   const handleResizeStart = useCallback((e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
