@@ -70,10 +70,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [trackHeights, setTrackHeights] = useState<{ [trackId: string]: number }>({});
   const [resizingTrack, setResizingTrack] = useState<{ trackId: string; startY: number; startHeight: number } | null>(null);
   
-  // Panel resizing state
-  const [panelWidth, setPanelWidth] = useState(320); // Default w-80 = 320px
-  const [resizingPanel, setResizingPanel] = useState<{ startX: number; startWidth: number } | null>(null);
-  
   // Track resize functionality
   const getTrackHeight = useCallback((trackId: string) => {
     return trackHeights[trackId] || 64; // Default height
@@ -624,19 +620,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     });
   }, [getTrackHeight]);
 
-  // Panel resize handlers
-  const handlePanelResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('Panel resize started:', { startX: e.clientX, startWidth: panelWidth });
-    
-    setResizingPanel({
-      startX: e.clientX,
-      startWidth: panelWidth
-    });
-  }, [panelWidth]);
-
   // Get all tracks affected by resizing (includes children for grouped tracks)
   const getAffectedTracks = useCallback((trackId: string) => {
     const track = tracks.find(t => t.id === trackId);
@@ -691,33 +674,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [resizingTrack, getAffectedTracks]);
-
-  // Handle mouse events for panel resizing
-  useEffect(() => {
-    if (!resizingPanel) return;
-
-    console.log('Panel resize mode active');
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - resizingPanel.startX;
-      const newWidth = Math.max(240, Math.min(600, resizingPanel.startWidth + deltaX)); // Min 240px, Max 600px
-      console.log('Panel resizing:', { deltaX, newWidth, currentX: e.clientX, startX: resizingPanel.startX });
-      setPanelWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      console.log('Panel resize ended');
-      setResizingPanel(null);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [resizingPanel]);
 
   // Handle timeline-based range selection across all clips and empty areas
   const handleTimelineRangeSelection = useCallback((e: React.MouseEvent) => {
@@ -2212,10 +2168,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
     <div className="compact-timeline-editor flex h-full bg-[var(--background)]">
 
       {/* Left Sidebar - Track Headers */}
-      <div 
-        className="border-r border-[var(--border)] flex flex-col relative"
-        style={{ width: `${panelWidth}px` }}
-      >
+      <div className="w-96 border-r border-[var(--border)] flex flex-col">
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
           <div className="flex items-center justify-between px-3 h-full w-full">
@@ -2338,11 +2291,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
                       {/* Parent track header - vertically centered */}
                       <div 
-                        className="absolute left-6 flex flex-col z-10" 
+                        className="absolute left-6 flex flex-col z-10 max-w-48" 
                         style={{ 
                           top: '50%', 
-                          transform: 'translateY(-50%)',
-                          maxWidth: `${panelWidth - 120}px` // Responsive to panel width, accounting for controls
+                          transform: 'translateY(-50%)' 
                         }}
                       >
                         {/* Header section */}
@@ -2352,10 +2304,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span 
-                              className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
-                              style={{ maxWidth: `${panelWidth - 140}px` }}
-                            >
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight w-40">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
@@ -2503,11 +2452,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col" style={{ maxWidth: `${panelWidth - 140}px` }}>
-                            <span 
-                              className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
-                              style={{ maxWidth: `${panelWidth - 140}px` }}
-                            >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight w-40">
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
@@ -2648,23 +2594,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             
             return renderedTracks;
           })()}
-        </div>
-        
-        {/* Horizontal Resize Handle */}
-        <div
-          className="absolute top-0 right-0 w-3 h-full cursor-col-resize bg-red-500/20 hover:bg-[var(--primary)] hover:opacity-70 transition-all duration-200 z-50 group"
-          onMouseDown={handlePanelResizeStart}
-          style={{
-            cursor: 'col-resize',
-            right: '-2px' // Slightly overlap the border for better interaction
-          }}
-          title="Drag to resize panel"
-          onMouseEnter={() => console.log('Resize handle hovered')}
-          onClick={() => console.log('Resize handle clicked')}
-        >
-          {/* Visual indicator */}
-          <div className="absolute inset-0 bg-[var(--primary)] opacity-30 group-hover:opacity-50 transition-opacity" />
-          <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-[var(--primary)] opacity-60" />
         </div>
       </div>
 
