@@ -2371,7 +2371,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       </div>
 
                       {/* Individual child track controls on the right */}
-                      <div className="absolute top-0 flex flex-col justify-center h-full space-y-1" style={{ left: '280px', right: '12px', width: '80px' }}>
+                      <div className="absolute top-0 right-4 flex flex-col justify-start h-full space-y-1 bg-[var(--background)]/80 rounded p-1" style={{ width: '60px', zIndex: 30 }}>
                         {childTracks.map((childTrack, index) => (
                           <div 
                             key={`child-controls-${childTrack.id}`}
