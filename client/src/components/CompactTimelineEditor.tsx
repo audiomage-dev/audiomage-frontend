@@ -41,6 +41,7 @@ interface CompactTimelineEditorProps {
   bpm?: number;
   timeSignature?: [number, number];
   snapMode?: 'free' | 'grid' | 'beat' | 'measure';
+  gridDisplayMode?: 'seconds' | 'timecode';
   onTrackMute: (trackId: string) => void;
   onTrackSolo: (trackId: string) => void;
   onTrackSelect?: (trackId: string) => void;
@@ -52,7 +53,7 @@ interface CompactTimelineEditorProps {
   onToggleGroupCollapse?: (groupId: string) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false, collapsedGroups = new Set(), onToggleGroupCollapse }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', gridDisplayMode = 'seconds', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false, collapsedGroups = new Set(), onToggleGroupCollapse }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
@@ -61,7 +62,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
   const [scrollY, setScrollY] = useState(0);
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [currentTool, setCurrentTool] = useState<'select' | 'hand' | 'edit'>('select');
-  const [gridDisplayMode, setGridDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isSelecting, setIsSelecting] = useState(false);
@@ -2627,18 +2627,6 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       <div className="flex-1 flex flex-col">
         {/* Timeline Header with Ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
-          {/* Grid Display Mode Toggle - Top Right */}
-          <div className="absolute top-1 right-1 z-10">
-            <Button
-              onClick={() => setGridDisplayMode(gridDisplayMode === 'seconds' ? 'timecode' : 'seconds')}
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-xs hover:bg-[var(--accent)] transition-colors border border-[var(--border)]"
-              title={`Switch to ${gridDisplayMode === 'seconds' ? 'timecode' : 'seconds'} display`}
-            >
-              {gridDisplayMode === 'seconds' ? 'SEC' : 'TC'}
-            </Button>
-          </div>
           
           <div 
             className="absolute inset-0 flex items-center"

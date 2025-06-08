@@ -35,6 +35,9 @@ interface CompactTransportBarProps {
   // Metronome functions
   onBpmChange?: (bpm: number) => void;
   onTimeSignatureChange?: (timeSignature: [number, number]) => void;
+  // Grid display mode management
+  gridDisplayMode?: 'seconds' | 'timecode';
+  onGridDisplayModeChange?: (mode: 'seconds' | 'timecode') => void;
 
 }
 

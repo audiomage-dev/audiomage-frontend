@@ -71,6 +71,9 @@ export function AudioWorkstation() {
   // Snap mode state
   const [snapMode, setSnapMode] = useState<'free' | 'grid' | 'beat' | 'measure'>('grid');
   
+  // Grid display mode state
+  const [gridDisplayMode, setGridDisplayMode] = useState<'seconds' | 'timecode'>('seconds');
+  
   // Video player dimensions for sidebar container height calculation
   const [videoPlayerHeight, setVideoPlayerHeight] = useState(200);
   const [sidebarContainerHeight, setSidebarContainerHeight] = useState(400);
@@ -381,6 +384,8 @@ export function AudioWorkstation() {
                 onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
                 snapMode={snapMode}
                 onSnapModeChange={setSnapMode}
+                gridDisplayMode={gridDisplayMode}
+                onGridDisplayModeChange={setGridDisplayMode}
                 onBpmChange={(newBpm) => setCurrentProject(`${currentProject} - BPM: ${newBpm}`)}
                 onTimeSignatureChange={(newTimeSignature) => setCurrentProject(`${currentProject} - Time: ${newTimeSignature}`)}
               />
@@ -396,6 +401,7 @@ export function AudioWorkstation() {
                   bpm={120}
                   timeSignature={[4, 4] as [number, number]}
                   snapMode={snapMode}
+                  gridDisplayMode={gridDisplayMode}
                   onTrackMute={toggleTrackMute}
                   onTrackSolo={toggleTrackSolo}
                   onTrackSelect={setSelectedTrack}
