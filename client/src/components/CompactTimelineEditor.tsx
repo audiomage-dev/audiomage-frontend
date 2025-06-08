@@ -15,7 +15,6 @@ import {
   Move, 
   Hand, 
   MousePointer,
-  Type,
   Play,
   Pause,
   Square,
@@ -2160,7 +2159,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 size="sm"
                 className={`h-5 w-5 p-0 ${currentTool === 'select' ? 'bg-[var(--accent)]' : ''}`}
               >
-                <Type className="w-3 h-3" />
+                <MousePointer className="w-3 h-3" />
               </Button>
               <Button
                 onClick={() => setCurrentTool('hand')}
