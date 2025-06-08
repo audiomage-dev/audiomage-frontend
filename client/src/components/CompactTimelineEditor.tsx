@@ -2253,15 +2253,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         ? 'var(--primary)' 
                         : track.color,
                       backgroundColor: (() => {
-                        if (allGroupTracks.some(t => selectedTrackIds.includes(t.id))) {
-                          return 'var(--accent)';
-                        }
-                        // Convert track color to rgba with 10% opacity
+                        // Convert track color to rgba with appropriate opacity
                         const hex = track.color.replace('#', '');
                         const r = parseInt(hex.substr(0, 2), 16);
                         const g = parseInt(hex.substr(2, 2), 16);
                         const b = parseInt(hex.substr(4, 2), 16);
-                        return `rgba(${r}, ${g}, ${b}, 0.1)`;
+                        
+                        if (allGroupTracks.some(t => selectedTrackIds.includes(t.id))) {
+                          return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity for selected
+                        }
+                        return `rgba(${r}, ${g}, ${b}, 0.1)`; // 10% opacity for default
                       })()
                     }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
@@ -2363,15 +2364,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         ? 'var(--primary)' 
                         : track.color,
                       backgroundColor: (() => {
-                        if (selectedTrackIds.includes(track.id)) {
-                          return 'var(--accent)';
-                        }
-                        // Convert track color to rgba with 10% opacity
+                        // Convert track color to rgba with appropriate opacity
                         const hex = track.color.replace('#', '');
                         const r = parseInt(hex.substr(0, 2), 16);
                         const g = parseInt(hex.substr(2, 2), 16);
                         const b = parseInt(hex.substr(4, 2), 16);
-                        return `rgba(${r}, ${g}, ${b}, 0.1)`;
+                        
+                        if (selectedTrackIds.includes(track.id)) {
+                          return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity for selected
+                        }
+                        return `rgba(${r}, ${g}, ${b}, 0.1)`; // 10% opacity for default
                       })()
                     }}
                     onClick={(e) => handleTrackSelect(track.id, e)}
@@ -2534,15 +2536,19 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               }
               return true;
             }).map((track, index) => {
-              // Convert track color to rgba with 5% opacity
-              const getTrackBackgroundColor = (color: string) => {
+              // Convert track color to rgba with appropriate opacity
+              const getTrackBackgroundColor = (color: string, isSelected: boolean) => {
                 // Remove # if present
                 const hex = color.replace('#', '');
                 // Convert hex to rgb
                 const r = parseInt(hex.substr(0, 2), 16);
                 const g = parseInt(hex.substr(2, 2), 16);
                 const b = parseInt(hex.substr(4, 2), 16);
-                return `rgba(${r}, ${g}, ${b}, 0.05)`;
+                
+                if (isSelected) {
+                  return `rgba(${r}, ${g}, ${b}, 0.15)`; // 15% opacity for selected
+                }
+                return `rgba(${r}, ${g}, ${b}, 0.05)`; // 5% opacity for default
               };
 
               const trackHeight = getTrackHeight(track.id);
@@ -2561,7 +2567,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   style={{ 
                     top: `${cumulativeHeight}px`,
                     height: `${trackHeight}px`,
-                    backgroundColor: getTrackBackgroundColor(track.color)
+                    backgroundColor: getTrackBackgroundColor(track.color, selectedTrackIds.includes(track.id))
                   }}
                   onClick={(e) => handleTrackSelect(track.id, e)}
                   onContextMenu={(e) => handleTrackRightClick(e, track.id)}
