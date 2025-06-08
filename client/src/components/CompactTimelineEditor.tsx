@@ -183,7 +183,11 @@ export function CompactTimelineEditor({
       >
         {/* Track Header */}
         <div 
-          className="w-48 flex-shrink-0 flex items-center px-3 bg-[var(--muted)]/20 border-r border-[var(--border)]"
+          className="w-48 flex-shrink-0 flex items-center px-3 border-r border-[var(--border)] relative"
+          style={{ 
+            backgroundColor: `${track.color}1A`, // 10% transparency
+            borderLeft: `4px solid ${track.color}`
+          }}
           onContextMenu={(e) => handleRightClick(e, 'track-header', { 
             trackId: track.id, 
             trackName: track.name, 
@@ -223,6 +227,9 @@ export function CompactTimelineEditor({
         {/* Track Content */}
         <div 
           className="flex-1 relative"
+          style={{ 
+            backgroundColor: `${track.color}0D` // 5% transparency
+          }}
           onContextMenu={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const timePosition = pixelsToTime(e.clientX - rect.left);
@@ -237,12 +244,14 @@ export function CompactTimelineEditor({
           {track.clips?.map((clip) => (
             <div
               key={clip.id}
-              className={`absolute top-1 bottom-1 bg-blue-500/80 border border-blue-600 rounded cursor-pointer transition-colors hover:bg-blue-600/80 ${
-                selectedClips.has(clip.id) ? 'ring-2 ring-blue-400' : ''
+              className={`absolute top-1 bottom-1 rounded cursor-pointer transition-colors ${
+                selectedClips.has(clip.id) ? 'ring-2 ring-white/50' : ''
               }`}
               style={{
                 left: timeToPixels(clip.startTime),
                 width: timeToPixels(clip.duration),
+                backgroundColor: `${track.color}CC`, // 80% opacity
+                border: `1px solid ${track.color}`,
               }}
               onContextMenu={(e) => {
                 e.stopPropagation();
@@ -255,7 +264,7 @@ export function CompactTimelineEditor({
                 });
               }}
             >
-              <div className="px-2 py-1 text-xs text-white font-medium truncate">
+              <div className="px-2 py-1 text-xs text-white font-medium truncate drop-shadow-sm">
                 {clip.name}
               </div>
             </div>
