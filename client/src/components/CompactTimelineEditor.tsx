@@ -3222,12 +3222,20 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             )}
 
             {/* Multi-Track Range Context Menu */}
-            {rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime && (
+            {(() => {
+              console.log('Menu render check:', {
+                rangeSelection: rangeSelection,
+                showRangeActions: showRangeActions,
+                cursorPosition: cursorPosition,
+                timeDiff: rangeSelection ? rangeSelection.endTime - rangeSelection.startTime : 0
+              });
+              return rangeSelection && rangeSelection.isActive && showRangeActions && rangeSelection.startTime !== rangeSelection.endTime;
+            })() && (
               <div
                 className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${Math.min(cursorPosition.x, window.innerWidth - 240)}px`,
-                  top: `${Math.min(cursorPosition.y, window.innerHeight - 400)}px`,
+                  left: `${cursorPosition.x}px`,
+                  top: `${cursorPosition.y}px`,
                 }}
                 role="menu"
                 aria-label="Multi-track range operations"
@@ -3412,9 +3420,12 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Right-click at:', e.clientX, e.clientY);
+                  console.log('Right-click detected at:', e.clientX, e.clientY);
+                  console.log('Current range selection:', rangeSelection);
+                  console.log('Show range actions before:', showRangeActions);
                   setCursorPosition({ x: e.clientX, y: e.clientY });
                   setShowRangeActions(true);
+                  console.log('Show range actions after setting to true');
                 }}
                 data-range-actions
               >
