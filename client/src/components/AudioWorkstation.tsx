@@ -122,14 +122,20 @@ export function AudioWorkstation() {
 
   // Define handler functions with useCallback first
   const handleZoomIn = useCallback(() => {
-    const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
+    const newZoomLevel = Math.min(zoomLevel + 0.05, 5.0); // 5% increments, max 500%
     setZoomLevel(newZoomLevel);
   }, [zoomLevel]);
 
   const handleZoomOut = useCallback(() => {
-    const newZoomLevel = Math.max(zoomLevel / 1.5, 0.1);
+    const newZoomLevel = Math.max(zoomLevel - 0.05, 0.05); // 5% decrements, min 5%
     setZoomLevel(newZoomLevel);
   }, [zoomLevel]);
+
+  // Standard zoom presets
+  const handleZoomToPercent = useCallback((percent: number) => {
+    const zoomLevel = percent / 100;
+    setZoomLevel(zoomLevel);
+  }, []);
 
   const handleZoomChange = useCallback((newZoomLevel: number) => {
     // If zoom level is set to 1.0 (100%), automatically fit all clips to window
@@ -430,6 +436,8 @@ export function AudioWorkstation() {
                 onSeek={seekTo}
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
+                onZoomToPercent={handleZoomToPercent}
+                onZoomToFit={handleZoomToFit}
                 onViewModeChange={setViewMode}
                 onMidiPlay={() => {
                   midiPlaybackFunctions.playMidiTrack?.();
