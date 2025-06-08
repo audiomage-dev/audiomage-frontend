@@ -272,14 +272,15 @@ export function AudioWorkstation() {
                   <div className="absolute left-0 right-0 top-3/4 h-px bg-gray-500"></div>
                 </div>
                 
-                {/* Red Fader Handle - Clean */}
+                {/* Metallic Fader Handle - Professional */}
                 <div 
-                  className="absolute w-5 h-8 bg-gradient-to-b from-red-400 via-red-500 to-red-700 border-2 border-red-600 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+                  className="absolute w-5 h-8 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-600 border-2 border-gray-500 rounded-sm cursor-grab active:cursor-grabbing shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
                   style={{ 
                     top: '25%',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4)'
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.5)',
+                    background: 'linear-gradient(to bottom, #e5e7eb 0%, #9ca3af 50%, #6b7280 100%)'
                   }}
                   title="Master Volume: 0dB"
                   onMouseDown={(e) => {
