@@ -426,6 +426,9 @@ export function useAudioWorkstation() {
   // Audio tracks - initialize with session 1 tracks
   const [tracks, setTracks] = useState<AudioTrack[]>(() => getTracksForSession('1'));
 
+  // Track group collapse state
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
   // Mixer channels
   const [mixerChannels, setMixerChannels] = useState<MixerChannel[]>([
     {
@@ -650,6 +653,19 @@ export function useAudioWorkstation() {
     }));
   }, []);
 
+  // Toggle group collapse state
+  const toggleGroupCollapse = useCallback((groupId: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+  }, []);
+
   return {
     // State
     transport,
@@ -659,6 +675,7 @@ export function useAudioWorkstation() {
     mixerChannels,
     aiAnalysis,
     aiSuggestions,
+    collapsedGroups,
     
     // Actions
     play,
