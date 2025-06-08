@@ -3105,43 +3105,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                   width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
                   height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
                 }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/80 flex items-center justify-center">
-                  <span className="text-xs text-white font-mono font-semibold">
-                    {multiSelection.selectedClips.length} clips
-                  </span>
-                </div>
-              </div>
+              />
             )}
 
-            {/* Draggable Selection Box (when not actively selecting) */}
-            {multiSelection && !multiSelection.isActive && multiSelection.selectedClips.length > 0 && (
-              <div
-                className="absolute border-2 border-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 rounded-sm cursor-move transition-colors pointer-events-auto"
-                style={{
-                  left: `${Math.min(multiSelection.startX, multiSelection.endX)}px`,
-                  top: `${Math.min(multiSelection.startY, multiSelection.endY)}px`,
-                  width: `${Math.abs(multiSelection.endX - multiSelection.startX)}px`,
-                  height: `${Math.abs(multiSelection.endY - multiSelection.startY)}px`,
-                  zIndex: 100, // High z-index to be above clips
-                  transform: draggingClip && draggingClip.selectedClips ? 
-                    `translate(${draggingClip.currentOffsetX || 0}px, ${draggingClip.currentOffsetY || 0}px)` : 
-                    'none'
-                }}
-                onMouseDown={(e) => handleSelectionBoxDragStart(e)}
-              >
-                <div className="absolute top-0 left-0 right-0 h-5 bg-[var(--primary)]/80 flex items-center justify-center">
-                  <span className="text-xs text-white font-mono font-semibold">
-                    {multiSelection.selectedClips.length} clips selected
-                  </span>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs text-[var(--primary)] font-semibold bg-white/80 px-2 py-1 rounded">
-                    {draggingClip && draggingClip.selectedClips ? 'Moving...' : 'Drag to move'}
-                  </span>
-                </div>
-              </div>
-            )}
+
 
             {/* Virtual Extension Overlay */}
             {virtualExtension && (
