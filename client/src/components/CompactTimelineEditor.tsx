@@ -2497,8 +2497,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col max-w-40">
-                            <span className="text-sm font-medium text-[var(--foreground)] break-words leading-tight">
+                          <div className="flex flex-col" style={{ maxWidth: `${panelWidth - 140}px` }}>
+                            <span 
+                              className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
+                              style={{ maxWidth: `${panelWidth - 140}px` }}
+                            >
                               {track.name}
                             </span>
                             {track.type === 'ai-generated' && (
