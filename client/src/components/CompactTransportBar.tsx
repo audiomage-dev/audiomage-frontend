@@ -555,27 +555,7 @@ export function CompactTransportBar({
           <Sliders className="w-4 h-4" />
         </Button>
 
-        {/* Tool Selection */}
-        <div className="flex items-center bg-[var(--background)] border border-[var(--border)] rounded overflow-hidden">
-          <button
-            className="h-7 px-2 flex items-center justify-center transition-colors bg-[var(--primary)] text-[var(--primary-foreground)]"
-            title="Select Tool"
-          >
-            <MousePointer className="w-3 h-3" />
-          </button>
-          <button
-            className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)]"
-            title="Hand Tool"
-          >
-            <Hand className="w-3 h-3" />
-          </button>
-          <button
-            className="h-7 px-2 flex items-center justify-center transition-colors hover:bg-[var(--accent)] text-[var(--foreground)]"
-            title="Edit Tool"
-          >
-            <Edit3 className="w-3 h-3" />
-          </button>
-        </div>
+
 
         {/* Tempo Tap */}
         <Button
