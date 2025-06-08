@@ -2175,7 +2175,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
 
       {/* Left Sidebar - Track Headers */}
       <div 
-        className="w-80 border-r border-[var(--border)] flex flex-col relative"
+        className="w-96 border-r border-[var(--border)] flex flex-col relative"
       >
         {/* Header */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30">
@@ -2303,11 +2303,11 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                         style={{ 
                           top: '50%', 
                           transform: 'translateY(-50%)',
-                          maxWidth: `${320 - 120}px` // Responsive to panel width, accounting for controls
+                          maxWidth: `${384 - 120}px` // Responsive to panel width, accounting for controls
                         }}
                       >
                         {/* Header section */}
-                        <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex items-center space-x-2 mb-4">
                           <div 
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
@@ -2315,7 +2315,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="flex flex-col">
                             <div 
                               className="text-sm font-medium text-[var(--foreground)] leading-tight"
-                              style={{ maxWidth: `${180}px` }}
+                              style={{ maxWidth: `${240}px` }}
                             >
                               {track.name.split(' ').map((word, index) => (
                                 <div key={index} className="break-words">
@@ -2468,10 +2468,10 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             className="w-2 h-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: track.color }}
                           ></div>
-                          <div className="flex flex-col" style={{ maxWidth: `${180}px` }}>
+                          <div className="flex flex-col" style={{ maxWidth: `${240}px` }}>
                             <div 
                               className="text-sm font-medium text-[var(--foreground)] leading-tight"
-                              style={{ maxWidth: `${180}px` }}
+                              style={{ maxWidth: `${240}px` }}
                             >
                               {track.name.split(' ').map((word, index) => (
                                 <div key={index} className="break-words">
