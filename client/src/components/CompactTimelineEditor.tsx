@@ -343,7 +343,18 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       });
     });
     
-    // Add reasonable buffer (20% or minimum 60 seconds)
+    // Special handling for zoom level 1.0 (100%) - fit all content to viewport
+    if (Math.abs(zoomLevel - 1.0) < 0.01) {
+      // Get available viewport width for timeline
+      const sidebarWidth = 280;
+      const padding = 40;
+      const availableWidth = window.innerWidth - sidebarWidth - padding;
+      
+      // Return width that fits all content in viewport
+      return Math.max(availableWidth, maxTime * 60); // Ensure content is never smaller than its actual duration
+    }
+    
+    // Normal zoom behavior - add buffer for better UX
     const bufferTime = Math.max(maxTime * 0.2, 60);
     const totalTime = maxTime + bufferTime;
     

@@ -89,6 +89,37 @@ export function AudioWorkstation() {
     stopMidiPlayback?: () => void;
   }>({});
 
+  // Calculate optimal zoom level for fit-to-window
+  const calculateFitToWindowZoom = useCallback(() => {
+    // Find the longest clip end time
+    let maxContentTime = 0;
+    tracks.forEach(track => {
+      track.clips?.forEach(clip => {
+        const clipEndTime = clip.startTime + clip.duration;
+        if (clipEndTime > maxContentTime) {
+          maxContentTime = clipEndTime;
+        }
+      });
+    });
+
+    // If no clips, use default
+    if (maxContentTime === 0) {
+      return 1;
+    }
+
+    // Get available timeline width (subtract sidebar and padding)
+    const sidebarWidth = 280; // Left sidebar width
+    const padding = 40; // Timeline padding
+    const availableWidth = window.innerWidth - sidebarWidth - padding;
+
+    // Calculate zoom level that fits all content
+    const pixelsPerSecond = availableWidth / maxContentTime;
+    const baseZoomLevel = pixelsPerSecond / 60; // 60 is the base pixels per second
+
+    // Ensure reasonable zoom bounds
+    return Math.max(0.1, Math.min(5, baseZoomLevel));
+  }, [tracks]);
+
   // Define handler functions with useCallback first
   const handleZoomIn = useCallback(() => {
     const newZoomLevel = Math.min(zoomLevel * 1.5, 10);
@@ -101,8 +132,30 @@ export function AudioWorkstation() {
   }, [zoomLevel]);
 
   const handleZoomChange = useCallback((newZoomLevel: number) => {
-    setZoomLevel(newZoomLevel);
-  }, []);
+    // If zoom level is set to 1.0 (100%), automatically fit all clips to window
+    if (Math.abs(newZoomLevel - 1.0) < 0.01) {
+      const fitZoomLevel = calculateFitToWindowZoom();
+      setZoomLevel(fitZoomLevel);
+    } else {
+      setZoomLevel(newZoomLevel);
+    }
+  }, [calculateFitToWindowZoom]);
+
+  // Handle zoom to fit (100% zoom shows all clips)
+  const handleZoomToFit = useCallback(() => {
+    const fitZoomLevel = calculateFitToWindowZoom();
+    setZoomLevel(fitZoomLevel);
+  }, [calculateFitToWindowZoom]);
+
+  // Initialize zoom to fit on component mount or when tracks change
+  useEffect(() => {
+    if (tracks.length > 0) {
+      const fitZoomLevel = calculateFitToWindowZoom();
+      if (fitZoomLevel !== zoomLevel) {
+        setZoomLevel(fitZoomLevel);
+      }
+    }
+  }, [tracks, calculateFitToWindowZoom]);
 
   // Calculate sidebar container height based on video player height
   useEffect(() => {
