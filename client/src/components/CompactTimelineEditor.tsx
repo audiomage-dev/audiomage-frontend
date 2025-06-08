@@ -2485,7 +2485,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1 mr-3">
+                        <div className="flex items-center space-x-1 mr-1">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -2574,7 +2574,7 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                           <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
                         )}
                       </div>
-                      <div className="flex items-center space-x-1 mr-3">
+                      <div className="flex items-center space-x-1 mr-1">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
