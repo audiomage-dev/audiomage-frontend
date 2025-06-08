@@ -2313,12 +2313,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col">
-                            <span 
-                              className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
+                            <div 
+                              className="text-sm font-medium text-[var(--foreground)] leading-tight"
                               style={{ maxWidth: `${180}px` }}
                             >
-                              {track.name}
-                            </span>
+                              {track.name.split(' ').map((word, index) => (
+                                <div key={index} className="break-words">
+                                  {word}
+                                </div>
+                              ))}
+                            </div>
                             {track.type === 'ai-generated' && (
                               <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full mt-0.5"></div>
                             )}
@@ -2465,12 +2469,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                             style={{ backgroundColor: track.color }}
                           ></div>
                           <div className="flex flex-col" style={{ maxWidth: `${180}px` }}>
-                            <span 
-                              className="text-sm font-medium text-[var(--foreground)] break-words leading-tight"
+                            <div 
+                              className="text-sm font-medium text-[var(--foreground)] leading-tight"
                               style={{ maxWidth: `${180}px` }}
                             >
-                              {track.name}
-                            </span>
+                              {track.name.split(' ').map((word, index) => (
+                                <div key={index} className="break-words">
+                                  {word}
+                                </div>
+                              ))}
+                            </div>
                             {track.type === 'ai-generated' && (
                               <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full mt-0.5"></div>
                             )}
