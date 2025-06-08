@@ -765,15 +765,29 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
       const target = e.target as HTMLElement;
       const isRangeElement = target.closest('[data-range-actions]');
       
-      // Only close on left-click, not right-click
-      if (!isRangeElement && showRangeActions && e.button !== 2) {
+      // Only close context menu on left-click outside
+      if (!isRangeElement && showRangeActions && e.button === 0) {
+        setShowRangeActions(false);
+      }
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      // Close context menu on right-click outside range elements
+      const target = e.target as HTMLElement;
+      const isRangeElement = target.closest('[data-range-actions]');
+      
+      if (!isRangeElement && showRangeActions) {
         setShowRangeActions(false);
       }
     };
 
     if (showRangeActions) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('contextmenu', handleContextMenu);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('contextmenu', handleContextMenu);
+      };
     }
   }, [showRangeActions]);
 
@@ -2814,15 +2828,16 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
             const isClipElement = target.closest('[data-clip-id]');
             const isRangeActionElement = target.closest('[data-range-actions]');
             
-            // Clear range selection if clicking elsewhere (but not on right-click)
-            if (!isRangeActionElement && rangeSelection && e.button !== 2) {
+            // Only clear range selection on left-click elsewhere, preserve on right-click
+            if (!isRangeActionElement && rangeSelection && e.button === 0) {
               setRangeSelection(null);
               setShowRangeActions(false);
             }
             
-            if (!isClipElement && currentTool === 'select') {
+            // Don't start new range selection on right-click
+            if (!isClipElement && currentTool === 'select' && e.button === 0) {
               handleTimelineRangeSelection(e);
-            } else {
+            } else if (e.button === 0) {
               handleMouseDown(e);
             }
           }}
