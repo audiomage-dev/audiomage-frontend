@@ -289,9 +289,6 @@ export function CompactTimelineEditor({
           {/* Track Header Space */}
           <div className="w-48 flex-shrink-0 border-r border-[var(--border)] flex items-center justify-between px-3">
             <div className="flex items-center space-x-2">
-              <div className="text-xs font-medium text-[var(--muted-foreground)]">
-                TRACKS
-              </div>
               <button
                 onClick={() => {
                   // Toggle grid view - could be passed as prop or managed in parent
