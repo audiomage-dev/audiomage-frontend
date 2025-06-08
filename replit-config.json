@@ -1,0 +1,117 @@
+{
+  "name": "Audiomage Audio Workstation",
+  "description": "AI-powered audio workstation with comprehensive CI/CD pipeline",
+  "version": "1.0.0",
+  "environment": "replit",
+  "workflows": {
+    "development": {
+      "start": {
+        "command": "./scripts/replit-workflows.sh dev",
+        "description": "Start development server with hot reload",
+        "port": 5000
+      },
+      "dev-test": {
+        "command": "./scripts/replit-workflows.sh dev-test",
+        "description": "Development server with live testing"
+      },
+      "hot-reload": {
+        "command": "./scripts/replit-workflows.sh hot-reload",
+        "description": "Enhanced hot reload with HMR"
+      }
+    },
+    "testing": {
+      "unit": {
+        "command": "./scripts/replit-workflows.sh test",
+        "description": "Run unit tests"
+      },
+      "watch": {
+        "command": "./scripts/replit-workflows.sh test-watch",
+        "description": "Run tests in watch mode"
+      },
+      "coverage": {
+        "command": "./scripts/replit-workflows.sh test-coverage",
+        "description": "Run tests with coverage report"
+      },
+      "full-suite": {
+        "command": "./scripts/replit-workflows.sh test-all",
+        "description": "Complete test suite including lint and format"
+      },
+      "ci": {
+        "command": "./scripts/replit-workflows.sh test-ci",
+        "description": "CI-style testing without watch mode"
+      }
+    },
+    "quality": {
+      "lint": {
+        "command": "./scripts/replit-workflows.sh lint",
+        "description": "Run ESLint with auto-fix"
+      },
+      "format": {
+        "command": "./scripts/replit-workflows.sh format",
+        "description": "Format code with Prettier"
+      },
+      "typecheck": {
+        "command": "./scripts/replit-workflows.sh typecheck",
+        "description": "TypeScript type checking"
+      },
+      "audit": {
+        "command": "./scripts/replit-workflows.sh audit",
+        "description": "Security vulnerability audit"
+      }
+    },
+    "build": {
+      "production": {
+        "command": "./scripts/replit-workflows.sh build",
+        "description": "Build production bundle"
+      },
+      "analyze": {
+        "command": "./scripts/replit-workflows.sh build-analyze",
+        "description": "Build with bundle analysis"
+      },
+      "preview": {
+        "command": "./scripts/replit-workflows.sh preview",
+        "description": "Preview production build"
+      },
+      "deploy-check": {
+        "command": "./scripts/replit-workflows.sh deploy-check",
+        "description": "Pre-deployment validation"
+      }
+    }
+  },
+  "shortcuts": {
+    "start": "./scripts/replit-workflows.sh dev",
+    "test": "./scripts/replit-workflows.sh test",
+    "build": "./scripts/replit-workflows.sh build",
+    "deploy": "./scripts/replit-workflows.sh deploy-check"
+  },
+  "ci_cd": {
+    "github_actions": {
+      "workflows": 8,
+      "coverage_threshold": "80%",
+      "security_level": "moderate",
+      "accessibility": "WCAG 2.1 AA"
+    },
+    "testing_layers": [
+      "Unit Tests (Vitest)",
+      "Integration Tests",
+      "E2E Tests (Playwright)",
+      "Accessibility Tests",
+      "Performance Tests",
+      "Security Audits"
+    ],
+    "audio_specific": [
+      "Web Audio API mocking",
+      "MIDI processing validation",
+      "Audio file format testing",
+      "Real-time processing simulation"
+    ]
+  },
+  "quick_commands": {
+    "help": "./scripts/replit-workflows.sh help",
+    "start_dev": "./scripts/replit-workflows.sh dev",
+    "run_tests": "./scripts/replit-workflows.sh test",
+    "full_ci": "./scripts/replit-workflows.sh test-all",
+    "build_prod": "./scripts/replit-workflows.sh build",
+    "security_check": "./scripts/replit-workflows.sh audit"
+  }
+}
