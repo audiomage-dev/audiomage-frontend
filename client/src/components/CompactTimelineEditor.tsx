@@ -750,8 +750,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         setRangeSelection(null);
         setShowRangeActions(false);
       } else {
-        // Range was created, show quick actions
-        setShowRangeActions(true);
+        // Range was created, don't show actions automatically
+        setShowRangeActions(false);
       }
     };
     
@@ -845,8 +845,8 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
         setRangeSelection(null);
         setShowRangeActions(false);
       } else {
-        // Range was created, show quick actions
-        setShowRangeActions(true);
+        // Range was created, don't show actions automatically
+        setShowRangeActions(false);
       }
     };
     
