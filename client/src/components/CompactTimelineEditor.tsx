@@ -29,7 +29,9 @@ import {
   X,
   Files,
   Copy,
-  Link
+  Link,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -46,9 +48,11 @@ interface CompactTimelineEditorProps {
   onClipResize?: (clipId: string, trackId: string, newStartTime: number, newDuration: number) => void;
   onZoomChange?: (zoomLevel: number) => void;
   isLocked?: boolean;
+  collapsedGroups?: Set<string>;
+  onToggleGroupCollapse?: (groupId: string) => void;
 }
 
-export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false }: CompactTimelineEditorProps) {
+export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZoomLevel = 1, bpm = 120, timeSignature = [4, 4], snapMode = 'grid', onTrackMute, onTrackSolo, onTrackSelect, onClipMove, onClipResize, onZoomChange, isLocked = false, collapsedGroups = new Set(), onToggleGroupCollapse }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(`timeline-${Math.random().toString(36).substr(2, 9)}`).current;
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
@@ -2190,6 +2194,22 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
                       }}
                     >
                       <div className="flex items-center space-x-2 min-w-0">
+                        {/* Collapse/Expand Icon */}
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleGroupCollapse?.(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                        >
+                          {collapsedGroups.has(track.id) ? (
+                            <ChevronRight className="w-3 h-3 text-[var(--muted-foreground)]" />
+                          ) : (
+                            <ChevronDown className="w-3 h-3 text-[var(--muted-foreground)]" />
+                          )}
+                        </Button>
                         <div 
                           className="w-2 h-2 rounded-sm flex-shrink-0" 
                           style={{ backgroundColor: track.color }}

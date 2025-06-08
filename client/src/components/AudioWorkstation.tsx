@@ -27,6 +27,7 @@ export function AudioWorkstation() {
     mixerChannels,
     aiAnalysis,
     aiSuggestions,
+    collapsedGroups,
     play,
     pause,
     stop,
@@ -41,6 +42,7 @@ export function AudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
+    toggleGroupCollapse,
   } = useAudioWorkstation();
 
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);

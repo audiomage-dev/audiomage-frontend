@@ -692,5 +692,6 @@ export function useAudioWorkstation() {
     setCurrentProject,
     updateClipPosition,
     updateClipProperties,
+    toggleGroupCollapse,
   };
 }
