@@ -2675,11 +2675,14 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               height={tracks.reduce((acc, track) => acc + getTrackHeight(track.id), 0)}
             />
             {tracks.filter(track => {
+              // Only show child tracks (not parent tracks)
               // If it's a child track, check if its parent is collapsed
               if (track.parentId) {
                 return !collapsedGroups.has(track.parentId);
               }
-              return true;
+              // Skip parent tracks entirely - they don't get their own timeline row
+              const hasChildren = tracks.some(t => t.parentId === track.id);
+              return !hasChildren;
             }).map((track, index) => {
               // Convert track color to rgba with appropriate opacity
               const getTrackBackgroundColor = (color: string, isSelected: boolean) => {
