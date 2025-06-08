@@ -3226,8 +3226,9 @@ export function CompactTimelineEditor({ tracks, transport, zoomLevel: externalZo
               <div
                 className="fixed z-50 pointer-events-auto"
                 style={{
-                  left: `${Math.max(10, Math.min(window.innerWidth - 220, cursorPosition.x))}px`,
-                  top: `${Math.max(10, Math.min(window.innerHeight - 320, cursorPosition.y))}px`,
+                  left: `${cursorPosition.x}px`,
+                  top: `${cursorPosition.y}px`,
+                  transform: `translate(${cursorPosition.x + 220 > window.innerWidth ? '-100%' : '0'}, ${cursorPosition.y + 320 > window.innerHeight ? '-100%' : '0'})`,
                 }}
                 role="menu"
                 aria-label="Range selection actions"
