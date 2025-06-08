@@ -1,0 +1,75 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  health-check:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check application health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PRODUCTION_URL }}/health)
+          if [ $response -ne 200 ]; then
+            echo "Health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Check database connectivity
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PRODUCTION_URL }}/api/health/db)
+          if [ $response -ne 200 ]; then
+            echo "Database health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          message: 'Production health check failed - immediate attention required'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            ${{ secrets.PRODUCTION_URL }}
+            ${{ secrets.PRODUCTION_URL }}/studio
+          budgetPath: './lighthouse-budget.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results
+          path: '.lighthouseci'
+
+  uptime-monitoring:
+    name: Uptime Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check uptime
+        uses: upptime/uptime-monitor@v1
+        with:
+          command: "curl"
+          args: "-f ${{ secrets.PRODUCTION_URL }}"
+
+      - name: Record metrics
+        run: |
+          echo "Recording uptime metrics for $(date)"
+          # Integration with monitoring service would go here
