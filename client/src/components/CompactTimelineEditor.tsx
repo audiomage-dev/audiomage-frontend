@@ -1966,28 +1966,42 @@ export function CompactTimelineEditor({
 
       {/* Right Side - Timeline */}
       <div className="flex-1 flex flex-col">
-        {/* Timeline Header with Ruler */}
+        {/* Timeline Header with Continuous Ruler */}
         <div className="h-8 border-b border-[var(--border)] bg-[var(--muted)]/30 relative overflow-hidden">
           <div
-            className="absolute inset-0 flex items-center"
+            className="absolute inset-0"
             style={{
               width: `${Math.max(1200, 1200 * zoomLevel)}px`,
               transform: `translateX(-${scrollX}px)`,
             }}
           >
-            {Array.from({ length: Math.ceil(1200 / 60) + 1 }).map((_, i) => {
-              const timeSeconds = i * 60;
-              const minutes = Math.floor(timeSeconds / 60);
-              const seconds = timeSeconds % 60;
-              const position = (timeSeconds / 1200) * 100;
-
+            {/* Continuous ruler marks */}
+            {Array.from({ length: Math.ceil((Math.max(1200, 1200 * zoomLevel)) / 20) }).map((_, i) => {
+              const position = i * 20;
+              const isMajorTick = i % 5 === 0;
+              
               return (
                 <div
-                  key={`${componentId}-timeline-marker-${i}-${timeSeconds}`}
-                  className="absolute text-xs text-[var(--muted-foreground)] font-mono"
-                  style={{ left: `${position}%` }}
+                  key={`${componentId}-ruler-mark-${i}`}
+                  className="absolute"
+                  style={{ left: `${position}px` }}
                 >
-                  {minutes}:{seconds.toString().padStart(2, '0')}
+                  {/* Tick mark */}
+                  <div
+                    className={`bg-[var(--muted-foreground)] ${
+                      isMajorTick ? 'h-4 w-px' : 'h-2 w-px'
+                    }`}
+                    style={{ top: isMajorTick ? '8px' : '12px' }}
+                  />
+                  {/* Position marker for major ticks */}
+                  {isMajorTick && (
+                    <div
+                      className="absolute text-xs text-[var(--muted-foreground)] font-mono"
+                      style={{ left: '2px', top: '14px' }}
+                    >
+                      {i * 5}
+                    </div>
+                  )}
                 </div>
               );
             })}
