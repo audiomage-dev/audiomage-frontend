@@ -2139,11 +2139,8 @@ export function CompactTimelineEditor({
                         }
                       >
                         {/* Clip Header */}
-                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center justify-between text-xs text-white font-medium">
+                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center text-xs text-white font-medium">
                           <span className="truncate flex-1">{clip.name}</span>
-                          <span className="text-xs opacity-75">
-                            {clip.duration.toFixed(1)}s
-                          </span>
                         </div>
 
                         {/* Line Waveform */}
@@ -2356,7 +2353,7 @@ export function CompactTimelineEditor({
 
                 {/* Extension info */}
                 <div className="absolute bottom-0.5 left-1.5 text-[10px] text-[var(--muted-foreground)] font-mono pointer-events-none">
-                  +{virtualExtension.extensionLength.toFixed(1)}s
+                  Extension
                 </div>
               </div>
             )}
@@ -2440,17 +2437,8 @@ export function CompactTimelineEditor({
             <div className="font-medium">
               {audioContextMenu.selection.trackName}
             </div>
-            <div className="font-mono">
-              {audioContextMenu.selection.startTime.toFixed(2)}s -{' '}
-              {audioContextMenu.selection.endTime.toFixed(2)}s
-            </div>
             <div className="text-[var(--primary)]">
-              Duration:{' '}
-              {(
-                audioContextMenu.selection.endTime -
-                audioContextMenu.selection.startTime
-              ).toFixed(2)}
-              s
+              Audio Selection
             </div>
           </div>
 
