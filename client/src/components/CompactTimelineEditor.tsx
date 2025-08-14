@@ -1976,10 +1976,12 @@ export function CompactTimelineEditor({
             }}
           >
             {/* Continuous ruler marks */}
-            {Array.from({ length: Math.ceil((Math.max(1200, 1200 * zoomLevel)) / 20) }).map((_, i) => {
+            {Array.from({
+              length: Math.ceil(Math.max(1200, 1200 * zoomLevel) / 20),
+            }).map((_, i) => {
               const position = i * 20;
               const isMajorTick = i % 5 === 0;
-              
+
               return (
                 <div
                   key={`${componentId}-ruler-mark-${i}`}
@@ -2437,9 +2439,7 @@ export function CompactTimelineEditor({
             <div className="font-medium">
               {audioContextMenu.selection.trackName}
             </div>
-            <div className="text-[var(--primary)]">
-              Audio Selection
-            </div>
+            <div className="text-[var(--primary)]">Audio Selection</div>
           </div>
 
           {[

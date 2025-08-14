@@ -41,9 +41,7 @@
         "name": "performance-desktop",
         "testDir": "/home/runner/workspace/client/src/test/performance",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 60000
       },
       {
@@ -55,9 +53,7 @@
         "name": "performance-mobile",
         "testDir": "/home/runner/workspace/client/src/test/performance",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 60000
       }
     ],

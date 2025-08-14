@@ -68,6 +68,10 @@ import {
   BarChart3,
   Target,
   BookOpen,
+  FileText,
+  Trash2,
+  Archive,
+  HardDrive,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -96,14 +100,16 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{
-    id: string;
-    type: 'audio' | 'midi' | 'project' | 'track' | 'clip';
-    name: string;
-    path?: string;
-    description?: string;
-    lastModified?: string;
-  }>>([]);
+  const [searchResults, setSearchResults] = useState<
+    Array<{
+      id: string;
+      type: 'audio' | 'midi' | 'project' | 'track' | 'clip';
+      name: string;
+      path?: string;
+      description?: string;
+      lastModified?: string;
+    }>
+  >([]);
   const [searchFilters, setSearchFilters] = useState<{
     audio: boolean;
     midi: boolean;
@@ -116,12 +122,43 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
     tracks: true,
   });
   const [collaborators, setCollaborators] = useState([
-    { id: '1', name: 'Alex Chen', role: 'Producer', status: 'online', avatar: '👨‍🎵', lastSeen: 'now' },
-    { id: '2', name: 'Maya Rodriguez', role: 'Audio Engineer', status: 'online', avatar: '👩‍🎤', lastSeen: 'now' },
-    { id: '3', name: 'Jordan Smith', role: 'Composer', status: 'away', avatar: '🎹', lastSeen: '5 min ago' },
-    { id: '4', name: 'Sam Taylor', role: 'Mixing Engineer', status: 'offline', avatar: '🎛️', lastSeen: '2 hours ago' }
+    {
+      id: '1',
+      name: 'Alex Chen',
+      role: 'Producer',
+      status: 'online',
+      avatar: '👨‍🎵',
+      lastSeen: 'now',
+    },
+    {
+      id: '2',
+      name: 'Maya Rodriguez',
+      role: 'Audio Engineer',
+      status: 'online',
+      avatar: '👩‍🎤',
+      lastSeen: 'now',
+    },
+    {
+      id: '3',
+      name: 'Jordan Smith',
+      role: 'Composer',
+      status: 'away',
+      avatar: '🎹',
+      lastSeen: '5 min ago',
+    },
+    {
+      id: '4',
+      name: 'Sam Taylor',
+      role: 'Mixing Engineer',
+      status: 'offline',
+      avatar: '🎛️',
+      lastSeen: '2 hours ago',
+    },
   ]);
-  const [sessionStatus, setSessionStatus] = useState<'active' | 'idle' | 'offline'>('active');
+  const [sessionStatus, setSessionStatus] = useState<
+    'active' | 'idle' | 'offline'
+  >('active');
+  const [activeSettingsCategory, setActiveSettingsCategory] = useState('general');
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -142,7 +179,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         name: 'Vocal_Lead_Take_3.wav',
         path: '/project/vocals/',
         description: 'Main vocal recording, take 3',
-        lastModified: '2 hours ago'
+        lastModified: '2 hours ago',
       },
       {
         id: '2',
@@ -150,14 +187,14 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         name: 'Piano_Melody.mid',
         path: '/project/midi/',
         description: 'Main piano melody track',
-        lastModified: '1 day ago'
+        lastModified: '1 day ago',
       },
       {
         id: '3',
         type: 'track' as const,
         name: 'Drums - Full Kit',
         description: 'Complete drum kit setup with 8 channels',
-        lastModified: '3 hours ago'
+        lastModified: '3 hours ago',
       },
       {
         id: '4',
@@ -165,24 +202,26 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
         name: 'Summer Song Project.ap',
         path: '/projects/',
         description: 'Main project file for summer track',
-        lastModified: '30 minutes ago'
+        lastModified: '30 minutes ago',
       },
       {
         id: '5',
         type: 'clip' as const,
         name: 'Guitar Solo Clip',
         description: 'Guitar solo recorded in take 2',
-        lastModified: '1 hour ago'
-      }
+        lastModified: '1 hour ago',
+      },
     ];
 
     // Simple search filter based on query
-    const filtered = mockData.filter(item => {
+    const filtered = mockData.filter((item) => {
       const searchTerm = query.toLowerCase();
       const matchesName = item.name.toLowerCase().includes(searchTerm);
-      const matchesDescription = item.description?.toLowerCase().includes(searchTerm) || false;
-      const matchesType = searchFilters[item.type as keyof typeof searchFilters];
-      
+      const matchesDescription =
+        item.description?.toLowerCase().includes(searchTerm) || false;
+      const matchesType =
+        searchFilters[item.type as keyof typeof searchFilters];
+
       return (matchesName || matchesDescription) && matchesType;
     });
 
@@ -195,11 +234,11 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   };
 
   const toggleFilter = (filterType: keyof typeof searchFilters) => {
-    setSearchFilters(prev => ({
+    setSearchFilters((prev) => ({
       ...prev,
-      [filterType]: !prev[filterType]
+      [filterType]: !prev[filterType],
     }));
-    
+
     // Re-run search with new filters
     if (searchQuery) {
       performSearch(searchQuery);
@@ -238,16 +277,18 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
               />
-              
+
               {/* Search Filters */}
               <div className="flex flex-wrap gap-2">
                 {Object.entries(searchFilters).map(([key, enabled]) => (
                   <button
                     key={key}
-                    onClick={() => toggleFilter(key as keyof typeof searchFilters)}
+                    onClick={() =>
+                      toggleFilter(key as keyof typeof searchFilters)
+                    }
                     className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                      enabled 
-                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                      enabled
+                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
                         : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--accent)]'
                     }`}
                   >
@@ -307,11 +348,21 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       >
                         <div className="flex items-start space-x-2">
                           <div className="flex-shrink-0 mt-1">
-                            {result.type === 'audio' && <FileAudio className="w-4 h-4 text-[var(--blue)]" />}
-                            {result.type === 'midi' && <Piano className="w-4 h-4 text-[var(--green)]" />}
-                            {result.type === 'project' && <FolderOpen className="w-4 h-4 text-[var(--purple)]" />}
-                            {result.type === 'track' && <Layers className="w-4 h-4 text-[var(--orange)]" />}
-                            {result.type === 'clip' && <Film className="w-4 h-4 text-[var(--pink)]" />}
+                            {result.type === 'audio' && (
+                              <FileAudio className="w-4 h-4 text-[var(--blue)]" />
+                            )}
+                            {result.type === 'midi' && (
+                              <Piano className="w-4 h-4 text-[var(--green)]" />
+                            )}
+                            {result.type === 'project' && (
+                              <FolderOpen className="w-4 h-4 text-[var(--purple)]" />
+                            )}
+                            {result.type === 'track' && (
+                              <Layers className="w-4 h-4 text-[var(--orange)]" />
+                            )}
+                            {result.type === 'clip' && (
+                              <Film className="w-4 h-4 text-[var(--pink)]" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-[var(--foreground)] truncate">
@@ -977,27 +1028,40 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
           <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--primary)]/5 to-[var(--secondary)]/5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${sessionStatus === 'active' ? 'bg-[var(--green)]' : sessionStatus === 'idle' ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'} animate-pulse`}></div>
+                <div
+                  className={`w-3 h-3 rounded-full ${sessionStatus === 'active' ? 'bg-[var(--green)]' : sessionStatus === 'idle' ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'} animate-pulse`}
+                ></div>
                 <h3 className="text-sm font-medium text-[var(--foreground)]">
                   Live Session
                 </h3>
               </div>
               <div className="flex space-x-1">
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Session Settings">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  title="Session Settings"
+                >
                   <Settings className="w-3 h-3" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Record Session">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  title="Record Session"
+                >
                   <Radio className="w-3 h-3 text-[var(--red)]" />
                 </Button>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between text-xs">
               <span className="text-[var(--muted-foreground)]">
                 Session: Summer Song Mix
               </span>
               <span className="text-[var(--green)] font-mono">
-                {collaborators.filter(c => c.status === 'online').length} online
+                {collaborators.filter((c) => c.status === 'online').length}{' '}
+                online
               </span>
             </div>
           </div>
@@ -1025,10 +1089,15 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       <div className="flex items-center space-x-3 min-w-0">
                         <div className="relative">
                           <div className="text-lg">{collaborator.avatar}</div>
-                          <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[var(--background)] ${
-                            collaborator.status === 'online' ? 'bg-[var(--green)]' : 
-                            collaborator.status === 'away' ? 'bg-[var(--yellow)]' : 'bg-[var(--muted-foreground)]'
-                          }`}></div>
+                          <div
+                            className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[var(--background)] ${
+                              collaborator.status === 'online'
+                                ? 'bg-[var(--green)]'
+                                : collaborator.status === 'away'
+                                  ? 'bg-[var(--yellow)]'
+                                  : 'bg-[var(--muted-foreground)]'
+                            }`}
+                          ></div>
                         </div>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-[var(--foreground)] truncate">
@@ -1039,23 +1108,35 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-1">
                         {collaborator.status === 'online' && (
                           <div className="flex space-x-1">
-                            <Button variant="ghost" size="sm" className="h-5 w-5 p-0" title="Start Voice Chat">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0"
+                              title="Start Voice Chat"
+                            >
                               <Mic className="w-3 h-3" />
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-5 w-5 p-0" title="Send Message">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0"
+                              title="Send Message"
+                            >
                               <MessageSquare className="w-3 h-3" />
                             </Button>
                           </div>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="mt-2 text-xs text-[var(--muted-foreground)]">
-                      {collaborator.status === 'online' ? 'Active now' : `Last seen ${collaborator.lastSeen}`}
+                      {collaborator.status === 'online'
+                        ? 'Active now'
+                        : `Last seen ${collaborator.lastSeen}`}
                     </div>
                   </div>
                 ))}
@@ -1069,22 +1150,53 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
               </h4>
               <div className="space-y-3">
                 {[
-                  { user: 'Maya', action: 'adjusted EQ on Track 3', time: '2 min ago', type: 'edit' },
-                  { user: 'Alex', action: 'added reverb effect', time: '5 min ago', type: 'edit' },
-                  { user: 'Jordan', action: 'uploaded new MIDI file', time: '12 min ago', type: 'upload' },
-                  { user: 'Maya', action: 'left a comment on Verse 2', time: '15 min ago', type: 'comment' },
-                  { user: 'Sam', action: 'joined the session', time: '23 min ago', type: 'join' }
+                  {
+                    user: 'Maya',
+                    action: 'adjusted EQ on Track 3',
+                    time: '2 min ago',
+                    type: 'edit',
+                  },
+                  {
+                    user: 'Alex',
+                    action: 'added reverb effect',
+                    time: '5 min ago',
+                    type: 'edit',
+                  },
+                  {
+                    user: 'Jordan',
+                    action: 'uploaded new MIDI file',
+                    time: '12 min ago',
+                    type: 'upload',
+                  },
+                  {
+                    user: 'Maya',
+                    action: 'left a comment on Verse 2',
+                    time: '15 min ago',
+                    type: 'comment',
+                  },
+                  {
+                    user: 'Sam',
+                    action: 'joined the session',
+                    time: '23 min ago',
+                    type: 'join',
+                  },
                 ].map((activity, index) => (
                   <div key={index} className="flex items-start space-x-2">
-                    <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${
-                      activity.type === 'edit' ? 'bg-[var(--blue)]' :
-                      activity.type === 'upload' ? 'bg-[var(--green)]' :
-                      activity.type === 'comment' ? 'bg-[var(--purple)]' :
-                      'bg-[var(--yellow)]'
-                    }`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${
+                        activity.type === 'edit'
+                          ? 'bg-[var(--blue)]'
+                          : activity.type === 'upload'
+                            ? 'bg-[var(--green)]'
+                            : activity.type === 'comment'
+                              ? 'bg-[var(--purple)]'
+                              : 'bg-[var(--yellow)]'
+                      }`}
+                    ></div>
                     <div className="min-w-0">
                       <div className="text-xs text-[var(--foreground)]">
-                        <span className="font-medium">{activity.user}</span> {activity.action}
+                        <span className="font-medium">{activity.user}</span>{' '}
+                        {activity.action}
                       </div>
                       <div className="text-xs text-[var(--muted-foreground)]">
                         {activity.time}
@@ -1111,27 +1223,38 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     Follow Me
                   </Button>
                 </div>
-                
+
                 <Button variant="outline" size="sm" className="w-full text-xs">
                   <MessageSquare className="w-3 h-3 mr-1" />
                   Open Chat
                 </Button>
-                
+
                 <div className="flex items-center justify-between pt-2">
                   <div className="text-xs text-[var(--muted-foreground)]">
                     Permissions:
                   </div>
                   <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Edit Permissions">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      title="Edit Permissions"
+                    >
                       <Shield className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-1">
-                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Edit Tracks</span>
-                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Add Effects</span>
-                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Mix Controls</span>
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">
+                    Edit Tracks
+                  </span>
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">
+                    Add Effects
+                  </span>
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">
+                    Mix Controls
+                  </span>
                 </div>
               </div>
             </div>
@@ -1511,7 +1634,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       {/* Settings Modal */}
       {isSettingsModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[800px] max-h-[90vh] flex flex-col shadow-xl">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg w-[900px] max-h-[90vh] flex flex-col shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
               <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -1530,7 +1653,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
             {/* Content */}
             <div className="flex flex-1 min-h-0">
               {/* Settings Categories */}
-              <div className="w-64 border-r border-[var(--border)] bg-[var(--muted)]/30">
+              <div className="w-56 border-r border-[var(--border)] bg-[var(--muted)]/30">
                 <div className="p-3">
                   <div className="space-y-1">
                     {[
@@ -1545,9 +1668,18 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     ].map((category) => (
                       <button
                         key={category.id}
-                        className="w-full flex items-center space-x-3 px-3 py-2 text-left text-sm hover:bg-[var(--accent)] rounded-md transition-colors"
+                        onClick={() => setActiveSettingsCategory(category.id)}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 text-left text-sm rounded-md transition-colors ${
+                          activeSettingsCategory === category.id 
+                            ? 'bg-[var(--accent)] text-[var(--primary)]' 
+                            : 'hover:bg-[var(--accent)]'
+                        }`}
                       >
-                        <category.icon className="w-4 h-4 text-[var(--muted-foreground)]" />
+                        <category.icon className={`w-4 h-4 ${
+                          activeSettingsCategory === category.id 
+                            ? 'text-[var(--primary)]' 
+                            : 'text-[var(--muted-foreground)]'
+                        }`} />
                         <span className="text-[var(--foreground)]">
                           {category.label}
                         </span>
@@ -1559,75 +1691,129 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
               {/* Settings Panel */}
               <div className="flex-1 p-6 overflow-y-auto">
-                <div className="space-y-6">
-                  {/* General Settings */}
-                  <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">
-                      General
+                {activeSettingsCategory === 'general' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      General Settings
                     </h3>
-
-                    <div className="space-y-3">
+                    
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <label className="text-sm font-medium text-[var(--foreground)]">
-                            Auto-save
+                            Auto-save Projects
                           </label>
                           <p className="text-xs text-[var(--muted-foreground)]">
-                            Automatically save project changes
+                            Automatically save project changes every 5 minutes
                           </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
-                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
                         </button>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <label className="text-sm font-medium text-[var(--foreground)]">
-                            Show AI suggestions
+                            Show Tooltips
                           </label>
                           <p className="text-xs text-[var(--muted-foreground)]">
-                            Display AI-powered editing suggestions
+                            Display helpful tooltips on hover
                           </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
-                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
                         </button>
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--foreground)]">
-                          Default project location
-                        </label>
-                        <div className="flex space-x-2">
-                          <input
-                            type="text"
-                            value="/home/user/AudioProjects"
-                            className="flex-1 px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-                            readOnly
-                          />
-                          <Button variant="outline" size="sm">
-                            <FolderOpen className="w-4 h-4" />
-                          </Button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Confirm Destructive Actions
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Ask for confirmation before deleting tracks or projects
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Default Project Location
+                          </label>
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              value="/home/user/AudioProjects"
+                              className="flex-1 px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md"
+                              readOnly
+                            />
+                            <Button variant="outline" size="sm">
+                              <FolderOpen className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 mt-4">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Language
+                          </label>
+                          <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                            <option>English (US)</option>
+                            <option>English (UK)</option>
+                            <option>Spanish</option>
+                            <option>French</option>
+                            <option>German</option>
+                            <option>Japanese</option>
+                            <option>Chinese (Simplified)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2 mt-4">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Time Format
+                          </label>
+                          <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                            <option>12-hour (AM/PM)</option>
+                            <option>24-hour</option>
+                          </select>
                         </div>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Audio Settings */}
-                  <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">
-                      Audio
+                {activeSettingsCategory === 'audio' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Audio Settings
                     </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Audio Driver
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Web Audio API (Default)</option>
+                          <option>ASIO</option>
+                          <option>CoreAudio</option>
+                          <option>WASAPI</option>
+                        </select>
+                      </div>
 
-                    <div className="space-y-3">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-[var(--foreground)]">
                           Sample Rate
                         </label>
-                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
                           <option>44.1 kHz</option>
                           <option>48 kHz</option>
+                          <option>88.2 kHz</option>
                           <option>96 kHz</option>
                           <option>192 kHz</option>
                         </select>
@@ -1637,63 +1823,568 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         <label className="text-sm font-medium text-[var(--foreground)]">
                           Buffer Size
                         </label>
-                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
-                          <option>64 samples</option>
-                          <option>128 samples</option>
-                          <option>256 samples</option>
-                          <option>512 samples</option>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>64 samples (1.5ms)</option>
+                          <option>128 samples (2.9ms)</option>
+                          <option>256 samples (5.8ms)</option>
+                          <option>512 samples (11.6ms)</option>
+                          <option>1024 samples (23.2ms)</option>
+                          <option>2048 samples (46.4ms)</option>
+                        </select>
+                        <p className="text-xs text-[var(--muted-foreground)]">
+                          Lower values reduce latency but increase CPU usage
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Bit Depth
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>16-bit</option>
+                          <option>24-bit</option>
+                          <option>32-bit Float</option>
+                        </select>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <label className="text-sm font-medium text-[var(--foreground)]">
+                              Enable Audio Pre-loading
+                            </label>
+                            <p className="text-xs text-[var(--muted-foreground)]">
+                              Pre-load audio files for faster playback
+                            </p>
+                          </div>
+                          <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                            <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex-1">
+                            <label className="text-sm font-medium text-[var(--foreground)]">
+                              Record Monitoring
+                            </label>
+                            <p className="text-xs text-[var(--muted-foreground)]">
+                              Enable input monitoring during recording
+                            </p>
+                          </div>
+                          <button className="w-10 h-6 bg-[var(--muted)] rounded-full relative">
+                            <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSettingsCategory === 'display' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Display Settings
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Theme
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Nord (Default)</option>
+                          <option>Dark</option>
+                          <option>Light</option>
+                          <option>High Contrast</option>
                         </select>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-[var(--foreground)]">
-                          Audio Driver
+                          UI Scale
                         </label>
-                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
-                          <option>ASIO</option>
-                          <option>Core Audio</option>
-                          <option>DirectSound</option>
-                          <option>WASAPI</option>
+                        <div className="flex items-center space-x-4">
+                          <input 
+                            type="range" 
+                            min="75" 
+                            max="150" 
+                            defaultValue="100" 
+                            className="flex-1"
+                          />
+                          <span className="text-sm text-[var(--muted-foreground)] w-12">100%</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Waveform Display
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Peaks and RMS</option>
+                          <option>Peaks Only</option>
+                          <option>Spectral</option>
                         </select>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* AI Settings */}
-                  <div className="space-y-4">
-                    <h3 className="text-base font-medium text-[var(--foreground)]">
-                      AI Assistant
-                    </h3>
-
-                    <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <label className="text-sm font-medium text-[var(--foreground)]">
-                            Real-time analysis
+                            Show Grid Lines
                           </label>
                           <p className="text-xs text-[var(--muted-foreground)]">
-                            Analyze audio in real-time
+                            Display grid lines in timeline and editors
                           </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
-                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Smooth Scrolling
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Enable smooth scrolling animations
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Show Peak Meters
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Display real-time level meters on tracks
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSettingsCategory === 'keyboard' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Keyboard Shortcuts
+                    </h3>
+                    
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        placeholder="Search shortcuts..."
+                        className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">Transport</h4>
+                        <div className="space-y-1">
+                          {[
+                            { action: 'Play/Pause', shortcut: 'Space' },
+                            { action: 'Stop', shortcut: 'Shift + Space' },
+                            { action: 'Record', shortcut: 'R' },
+                            { action: 'Loop Toggle', shortcut: 'L' },
+                            { action: 'Jump to Start', shortcut: 'Home' },
+                            { action: 'Jump to End', shortcut: 'End' },
+                          ].map((item) => (
+                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                              <span className="text-sm">{item.action}</span>
+                              <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
+                                {item.shortcut}
+                              </kbd>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">Editing</h4>
+                        <div className="space-y-1">
+                          {[
+                            { action: 'Cut', shortcut: 'Ctrl + X' },
+                            { action: 'Copy', shortcut: 'Ctrl + C' },
+                            { action: 'Paste', shortcut: 'Ctrl + V' },
+                            { action: 'Undo', shortcut: 'Ctrl + Z' },
+                            { action: 'Redo', shortcut: 'Ctrl + Shift + Z' },
+                            { action: 'Delete', shortcut: 'Delete' },
+                            { action: 'Select All', shortcut: 'Ctrl + A' },
+                            { action: 'Duplicate', shortcut: 'Ctrl + D' },
+                          ].map((item) => (
+                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                              <span className="text-sm">{item.action}</span>
+                              <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
+                                {item.shortcut}
+                              </kbd>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">View</h4>
+                        <div className="space-y-1">
+                          {[
+                            { action: 'Zoom In', shortcut: 'Ctrl + +' },
+                            { action: 'Zoom Out', shortcut: 'Ctrl + -' },
+                            { action: 'Fit to Window', shortcut: 'Ctrl + 0' },
+                            { action: 'Toggle Mixer', shortcut: 'M' },
+                            { action: 'Toggle Piano Roll', shortcut: 'P' },
+                          ].map((item) => (
+                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                              <span className="text-sm">{item.action}</span>
+                              <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
+                                {item.shortcut}
+                              </kbd>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSettingsCategory === 'ai' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      AI Assistant Settings
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Enable AI Assistant
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Use AI-powered features and suggestions
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Auto-suggestions
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Automatically show AI suggestions while editing
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
                         </button>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-[var(--foreground)]">
-                          AI Processing Quality
+                          AI Model
                         </label>
-                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]">
-                          <option>Fast</option>
-                          <option>Balanced</option>
-                          <option>High Quality</option>
-                          <option>Maximum Quality</option>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Audiomage Pro (Recommended)</option>
+                          <option>Audiomage Fast</option>
+                          <option>Audiomage Accurate</option>
+                          <option>Custom Model</option>
                         </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Processing Priority
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Balanced</option>
+                          <option>Speed</option>
+                          <option>Quality</option>
+                          <option>Low Latency</option>
+                        </select>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">
+                          AI Features
+                        </h4>
+                        <div className="space-y-3">
+                          {[
+                            { feature: 'Smart EQ', description: 'Automatic frequency balancing' },
+                            { feature: 'Noise Reduction', description: 'Remove background noise' },
+                            { feature: 'Voice Enhancement', description: 'Improve vocal clarity' },
+                            { feature: 'Auto-mastering', description: 'Professional mastering chain' },
+                            { feature: 'Stem Separation', description: 'Isolate instruments and vocals' },
+                            { feature: 'Tempo Detection', description: 'Automatic BPM analysis' },
+                          ].map((item) => (
+                            <div key={item.feature} className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <label className="text-sm text-[var(--foreground)]">
+                                  {item.feature}
+                                </label>
+                                <p className="text-xs text-[var(--muted-foreground)]">
+                                  {item.description}
+                                </p>
+                              </div>
+                              <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                                <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {activeSettingsCategory === 'network' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Network Settings
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Cloud Sync
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Sync projects across devices
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Auto-backup to Cloud
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Automatically backup projects online
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Collaboration Port
+                        </label>
+                        <input
+                          type="text"
+                          value="8080"
+                          className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Max Upload Bandwidth
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>Unlimited</option>
+                          <option>10 Mbps</option>
+                          <option>5 Mbps</option>
+                          <option>2 Mbps</option>
+                          <option>1 Mbps</option>
+                        </select>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">
+                          Connected Services
+                        </h4>
+                        <div className="space-y-2">
+                          {[
+                            { service: 'SoundCloud', status: 'Connected', icon: '☁️' },
+                            { service: 'Spotify for Artists', status: 'Not Connected', icon: '🎵' },
+                            { service: 'YouTube', status: 'Connected', icon: '📺' },
+                            { service: 'Dropbox', status: 'Not Connected', icon: '📦' },
+                          ].map((item) => (
+                            <div key={item.service} className="flex items-center justify-between p-2 border border-[var(--border)] rounded">
+                              <div className="flex items-center space-x-2">
+                                <span>{item.icon}</span>
+                                <span className="text-sm">{item.service}</span>
+                              </div>
+                              <Button
+                                variant={item.status === 'Connected' ? 'outline' : 'default'}
+                                size="sm"
+                                className="text-xs"
+                              >
+                                {item.status === 'Connected' ? 'Disconnect' : 'Connect'}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSettingsCategory === 'privacy' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Privacy Settings
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Analytics
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Share usage data to improve the application
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--muted)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Crash Reports
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Automatically send crash reports
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-[var(--foreground)]">
+                            Public Profile
+                          </label>
+                          <p className="text-xs text-[var(--muted-foreground)]">
+                            Allow others to see your profile
+                          </p>
+                        </div>
+                        <button className="w-10 h-6 bg-[var(--muted)] rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1" />
+                        </button>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">
+                          Data Management
+                        </h4>
+                        <div className="space-y-3">
+                          <Button variant="outline" className="w-full justify-start">
+                            <Download className="w-4 h-4 mr-2" />
+                            Export My Data
+                          </Button>
+                          <Button variant="outline" className="w-full justify-start">
+                            <FileText className="w-4 h-4 mr-2" />
+                            View Privacy Policy
+                          </Button>
+                          <Button variant="outline" className="w-full justify-start text-[var(--destructive)]">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete All Data
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSettingsCategory === 'storage' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
+                      Storage Settings
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="p-4 bg-[var(--muted)] rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Storage Usage</span>
+                          <span className="text-sm text-[var(--muted-foreground)]">
+                            68.4 GB / 100 GB
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-[var(--background)] rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] rounded-full" style={{ width: '68.4%' }}></div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-[var(--foreground)]">
+                          Storage Breakdown
+                        </h4>
+                        <div className="space-y-2">
+                          {[
+                            { type: 'Audio Files', size: '42.1 GB', color: 'bg-[var(--blue)]' },
+                            { type: 'Projects', size: '18.3 GB', color: 'bg-[var(--green)]' },
+                            { type: 'Plugins', size: '4.2 GB', color: 'bg-[var(--purple)]' },
+                            { type: 'Samples', size: '3.8 GB', color: 'bg-[var(--yellow)]' },
+                          ].map((item) => (
+                            <div key={item.type} className="flex items-center justify-between p-2 border border-[var(--border)] rounded">
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded ${item.color}`}></div>
+                                <span className="text-sm">{item.type}</span>
+                              </div>
+                              <span className="text-sm text-[var(--muted-foreground)]">
+                                {item.size}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--foreground)]">
+                          Cache Size Limit
+                        </label>
+                        <select className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md">
+                          <option>1 GB</option>
+                          <option>2 GB</option>
+                          <option>5 GB</option>
+                          <option>10 GB</option>
+                          <option>Unlimited</option>
+                        </select>
+                      </div>
+
+                      <div className="border-t border-[var(--border)] pt-4">
+                        <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">
+                          Storage Actions
+                        </h4>
+                        <div className="space-y-2">
+                          <Button variant="outline" className="w-full justify-start">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Clear Cache
+                          </Button>
+                          <Button variant="outline" className="w-full justify-start">
+                            <Archive className="w-4 h-4 mr-2" />
+                            Archive Old Projects
+                          </Button>
+                          <Button variant="outline" className="w-full justify-start">
+                            <HardDrive className="w-4 h-4 mr-2" />
+                            Manage External Storage
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

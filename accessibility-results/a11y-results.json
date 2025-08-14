@@ -41,9 +41,7 @@
         "name": "accessibility-chromium",
         "testDir": "/home/runner/workspace/client/src/test/a11y",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       },
       {
@@ -55,9 +53,7 @@
         "name": "accessibility-chromium-dark",
         "testDir": "/home/runner/workspace/client/src/test/a11y",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       }
     ],
