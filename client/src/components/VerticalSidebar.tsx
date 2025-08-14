@@ -158,7 +158,8 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   const [sessionStatus, setSessionStatus] = useState<
     'active' | 'idle' | 'offline'
   >('active');
-  const [activeSettingsCategory, setActiveSettingsCategory] = useState('general');
+  const [activeSettingsCategory, setActiveSettingsCategory] =
+    useState('general');
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -1670,16 +1671,18 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         key={category.id}
                         onClick={() => setActiveSettingsCategory(category.id)}
                         className={`w-full flex items-center space-x-3 px-3 py-2 text-left text-sm rounded-md transition-colors ${
-                          activeSettingsCategory === category.id 
-                            ? 'bg-[var(--accent)] text-[var(--primary)]' 
+                          activeSettingsCategory === category.id
+                            ? 'bg-[var(--accent)] text-[var(--primary)]'
                             : 'hover:bg-[var(--accent)]'
                         }`}
                       >
-                        <category.icon className={`w-4 h-4 ${
-                          activeSettingsCategory === category.id 
-                            ? 'text-[var(--primary)]' 
-                            : 'text-[var(--muted-foreground)]'
-                        }`} />
+                        <category.icon
+                          className={`w-4 h-4 ${
+                            activeSettingsCategory === category.id
+                              ? 'text-[var(--primary)]'
+                              : 'text-[var(--muted-foreground)]'
+                          }`}
+                        />
                         <span className="text-[var(--foreground)]">
                           {category.label}
                         </span>
@@ -1696,7 +1699,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       General Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -1732,7 +1735,8 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                             Confirm Destructive Actions
                           </label>
                           <p className="text-xs text-[var(--muted-foreground)]">
-                            Ask for confirmation before deleting tracks or projects
+                            Ask for confirmation before deleting tracks or
+                            projects
                           </p>
                         </div>
                         <button className="w-10 h-6 bg-[var(--primary)] rounded-full relative">
@@ -1792,7 +1796,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Audio Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-[var(--foreground)]">
@@ -1885,7 +1889,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Display Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-[var(--foreground)]">
@@ -1904,14 +1908,16 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                           UI Scale
                         </label>
                         <div className="flex items-center space-x-4">
-                          <input 
-                            type="range" 
-                            min="75" 
-                            max="150" 
-                            defaultValue="100" 
+                          <input
+                            type="range"
+                            min="75"
+                            max="150"
+                            defaultValue="100"
                             className="flex-1"
                           />
-                          <span className="text-sm text-[var(--muted-foreground)] w-12">100%</span>
+                          <span className="text-sm text-[var(--muted-foreground)] w-12">
+                            100%
+                          </span>
                         </div>
                       </div>
 
@@ -1976,7 +1982,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Keyboard Shortcuts
                     </h3>
-                    
+
                     <div className="space-y-2">
                       <input
                         type="text"
@@ -1987,7 +1993,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">Transport</h4>
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">
+                          Transport
+                        </h4>
                         <div className="space-y-1">
                           {[
                             { action: 'Play/Pause', shortcut: 'Space' },
@@ -1997,7 +2005,10 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                             { action: 'Jump to Start', shortcut: 'Home' },
                             { action: 'Jump to End', shortcut: 'End' },
                           ].map((item) => (
-                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                            <div
+                              key={item.action}
+                              className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded"
+                            >
                               <span className="text-sm">{item.action}</span>
                               <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
                                 {item.shortcut}
@@ -2008,7 +2019,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">Editing</h4>
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">
+                          Editing
+                        </h4>
                         <div className="space-y-1">
                           {[
                             { action: 'Cut', shortcut: 'Ctrl + X' },
@@ -2020,7 +2033,10 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                             { action: 'Select All', shortcut: 'Ctrl + A' },
                             { action: 'Duplicate', shortcut: 'Ctrl + D' },
                           ].map((item) => (
-                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                            <div
+                              key={item.action}
+                              className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded"
+                            >
                               <span className="text-sm">{item.action}</span>
                               <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
                                 {item.shortcut}
@@ -2031,7 +2047,9 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                       </div>
 
                       <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">View</h4>
+                        <h4 className="text-sm font-medium text-[var(--muted-foreground)]">
+                          View
+                        </h4>
                         <div className="space-y-1">
                           {[
                             { action: 'Zoom In', shortcut: 'Ctrl + +' },
@@ -2040,7 +2058,10 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                             { action: 'Toggle Mixer', shortcut: 'M' },
                             { action: 'Toggle Piano Roll', shortcut: 'P' },
                           ].map((item) => (
-                            <div key={item.action} className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded">
+                            <div
+                              key={item.action}
+                              className="flex items-center justify-between p-2 hover:bg-[var(--accent)] rounded"
+                            >
                               <span className="text-sm">{item.action}</span>
                               <kbd className="px-2 py-1 text-xs bg-[var(--muted)] rounded">
                                 {item.shortcut}
@@ -2058,7 +2079,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       AI Assistant Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -2118,14 +2139,35 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         </h4>
                         <div className="space-y-3">
                           {[
-                            { feature: 'Smart EQ', description: 'Automatic frequency balancing' },
-                            { feature: 'Noise Reduction', description: 'Remove background noise' },
-                            { feature: 'Voice Enhancement', description: 'Improve vocal clarity' },
-                            { feature: 'Auto-mastering', description: 'Professional mastering chain' },
-                            { feature: 'Stem Separation', description: 'Isolate instruments and vocals' },
-                            { feature: 'Tempo Detection', description: 'Automatic BPM analysis' },
+                            {
+                              feature: 'Smart EQ',
+                              description: 'Automatic frequency balancing',
+                            },
+                            {
+                              feature: 'Noise Reduction',
+                              description: 'Remove background noise',
+                            },
+                            {
+                              feature: 'Voice Enhancement',
+                              description: 'Improve vocal clarity',
+                            },
+                            {
+                              feature: 'Auto-mastering',
+                              description: 'Professional mastering chain',
+                            },
+                            {
+                              feature: 'Stem Separation',
+                              description: 'Isolate instruments and vocals',
+                            },
+                            {
+                              feature: 'Tempo Detection',
+                              description: 'Automatic BPM analysis',
+                            },
                           ].map((item) => (
-                            <div key={item.feature} className="flex items-center justify-between">
+                            <div
+                              key={item.feature}
+                              className="flex items-center justify-between"
+                            >
                               <div className="flex-1">
                                 <label className="text-sm text-[var(--foreground)]">
                                   {item.feature}
@@ -2150,7 +2192,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Network Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -2210,22 +2252,47 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         </h4>
                         <div className="space-y-2">
                           {[
-                            { service: 'SoundCloud', status: 'Connected', icon: '☁️' },
-                            { service: 'Spotify for Artists', status: 'Not Connected', icon: '🎵' },
-                            { service: 'YouTube', status: 'Connected', icon: '📺' },
-                            { service: 'Dropbox', status: 'Not Connected', icon: '📦' },
+                            {
+                              service: 'SoundCloud',
+                              status: 'Connected',
+                              icon: '☁️',
+                            },
+                            {
+                              service: 'Spotify for Artists',
+                              status: 'Not Connected',
+                              icon: '🎵',
+                            },
+                            {
+                              service: 'YouTube',
+                              status: 'Connected',
+                              icon: '📺',
+                            },
+                            {
+                              service: 'Dropbox',
+                              status: 'Not Connected',
+                              icon: '📦',
+                            },
                           ].map((item) => (
-                            <div key={item.service} className="flex items-center justify-between p-2 border border-[var(--border)] rounded">
+                            <div
+                              key={item.service}
+                              className="flex items-center justify-between p-2 border border-[var(--border)] rounded"
+                            >
                               <div className="flex items-center space-x-2">
                                 <span>{item.icon}</span>
                                 <span className="text-sm">{item.service}</span>
                               </div>
                               <Button
-                                variant={item.status === 'Connected' ? 'outline' : 'default'}
+                                variant={
+                                  item.status === 'Connected'
+                                    ? 'outline'
+                                    : 'default'
+                                }
                                 size="sm"
                                 className="text-xs"
                               >
-                                {item.status === 'Connected' ? 'Disconnect' : 'Connect'}
+                                {item.status === 'Connected'
+                                  ? 'Disconnect'
+                                  : 'Connect'}
                               </Button>
                             </div>
                           ))}
@@ -2240,7 +2307,7 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Privacy Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -2289,15 +2356,24 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                           Data Management
                         </h4>
                         <div className="space-y-3">
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
                             <Download className="w-4 h-4 mr-2" />
                             Export My Data
                           </Button>
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
                             <FileText className="w-4 h-4 mr-2" />
                             View Privacy Policy
                           </Button>
-                          <Button variant="outline" className="w-full justify-start text-[var(--destructive)]">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-[var(--destructive)]"
+                          >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete All Data
                           </Button>
@@ -2312,17 +2388,22 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                     <h3 className="text-base font-medium text-[var(--foreground)] mb-4">
                       Storage Settings
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="p-4 bg-[var(--muted)] rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">Storage Usage</span>
+                          <span className="text-sm font-medium">
+                            Storage Usage
+                          </span>
                           <span className="text-sm text-[var(--muted-foreground)]">
                             68.4 GB / 100 GB
                           </span>
                         </div>
                         <div className="w-full h-2 bg-[var(--background)] rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] rounded-full" style={{ width: '68.4%' }}></div>
+                          <div
+                            className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] rounded-full"
+                            style={{ width: '68.4%' }}
+                          ></div>
                         </div>
                       </div>
 
@@ -2332,14 +2413,35 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                         </h4>
                         <div className="space-y-2">
                           {[
-                            { type: 'Audio Files', size: '42.1 GB', color: 'bg-[var(--blue)]' },
-                            { type: 'Projects', size: '18.3 GB', color: 'bg-[var(--green)]' },
-                            { type: 'Plugins', size: '4.2 GB', color: 'bg-[var(--purple)]' },
-                            { type: 'Samples', size: '3.8 GB', color: 'bg-[var(--yellow)]' },
+                            {
+                              type: 'Audio Files',
+                              size: '42.1 GB',
+                              color: 'bg-[var(--blue)]',
+                            },
+                            {
+                              type: 'Projects',
+                              size: '18.3 GB',
+                              color: 'bg-[var(--green)]',
+                            },
+                            {
+                              type: 'Plugins',
+                              size: '4.2 GB',
+                              color: 'bg-[var(--purple)]',
+                            },
+                            {
+                              type: 'Samples',
+                              size: '3.8 GB',
+                              color: 'bg-[var(--yellow)]',
+                            },
                           ].map((item) => (
-                            <div key={item.type} className="flex items-center justify-between p-2 border border-[var(--border)] rounded">
+                            <div
+                              key={item.type}
+                              className="flex items-center justify-between p-2 border border-[var(--border)] rounded"
+                            >
                               <div className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 rounded ${item.color}`}></div>
+                                <div
+                                  className={`w-3 h-3 rounded ${item.color}`}
+                                ></div>
                                 <span className="text-sm">{item.type}</span>
                               </div>
                               <span className="text-sm text-[var(--muted-foreground)]">
@@ -2368,15 +2470,24 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
                           Storage Actions
                         </h4>
                         <div className="space-y-2">
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Clear Cache
                           </Button>
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
                             <Archive className="w-4 h-4 mr-2" />
                             Archive Old Projects
                           </Button>
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
                             <HardDrive className="w-4 h-4 mr-2" />
                             Manage External Storage
                           </Button>

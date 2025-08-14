@@ -133,10 +133,24 @@ Audiomage is an AI-powered audio workstation built as a full-stack web applicati
 - **Performance**: Bundle size monitoring and Lighthouse CI integration
 - **Testing Infrastructure**: Web Audio API mocking with 78% test coverage
 
+## Documentation Architecture
+
+### API Documentation (`docs/panel/`)
+
+Comprehensive documentation for all panel features with precise API schemas:
+
+- **Core Panels**: Project Browser, Search, Quick Actions
+- **AI Features**: AI Suggestions, Audio Changemaps, AI Tools Modal
+- **Collaboration**: Real-time collaboration, Project Versions
+- **System**: Settings Modal, Spellbook Documentation
+
+Each document contains complete user journeys and exact API request/response schemas for backend implementation.
+
 ## Changelog
 
 ```
 Changelog:
+- August 14, 2025. Created comprehensive API documentation for all 10 panel features under docs/panel/ with precise schemas and user journeys
 - August 14, 2025. Enhanced collaboration panel with comprehensive real-time collaboration features including live session management, team member profiles, activity feeds, and professional session controls
 - August 14, 2025. Added comprehensive search capabilities to vertical sidebar panel with content filtering, real-time results, and rich result display
 - August 14, 2025. Repositioned MediaPreviewPane from above editor to left sidebar for better editor visibility
