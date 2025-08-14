@@ -120,6 +120,9 @@ Audiomage is an AI-powered audio workstation built as a full-stack web applicati
 
 ```
 Changelog:
+- August 14, 2025. Enhanced collaboration panel with comprehensive real-time collaboration features including live session management, team member profiles, activity feeds, and professional session controls
+- August 14, 2025. Added comprehensive search capabilities to vertical sidebar panel with content filtering, real-time results, and rich result display
+- August 14, 2025. Repositioned MediaPreviewPane from above editor to left sidebar for better editor visibility
 - July 10, 2025. Implemented comprehensive CI/CD pipeline with 8 GitHub Actions workflows
 - July 10, 2025. Configured 16 Replit environment workflows for development and testing
 - July 10, 2025. Enhanced timeline editor to use continuous positioning instead of time-based domains

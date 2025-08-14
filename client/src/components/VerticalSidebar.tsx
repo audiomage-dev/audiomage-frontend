@@ -115,6 +115,13 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
     projects: true,
     tracks: true,
   });
+  const [collaborators, setCollaborators] = useState([
+    { id: '1', name: 'Alex Chen', role: 'Producer', status: 'online', avatar: '👨‍🎵', lastSeen: 'now' },
+    { id: '2', name: 'Maya Rodriguez', role: 'Audio Engineer', status: 'online', avatar: '👩‍🎤', lastSeen: 'now' },
+    { id: '3', name: 'Jordan Smith', role: 'Composer', status: 'away', avatar: '🎹', lastSeen: '5 min ago' },
+    { id: '4', name: 'Sam Taylor', role: 'Mixing Engineer', status: 'offline', avatar: '🎛️', lastSeen: '2 hours ago' }
+  ]);
+  const [sessionStatus, setSessionStatus] = useState<'active' | 'idle' | 'offline'>('active');
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
@@ -965,19 +972,186 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       icon: <Users className="w-5 h-5" />,
       label: 'Collaboration',
       component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
-            Live Session
-          </h3>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 p-2 bg-[var(--muted)] rounded-md">
-              <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
-              <span className="text-xs text-[var(--foreground)]">
-                You (Producer)
+        <div className="h-full flex flex-col">
+          {/* Session Header */}
+          <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--primary)]/5 to-[var(--secondary)]/5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${sessionStatus === 'active' ? 'bg-[var(--green)]' : sessionStatus === 'idle' ? 'bg-[var(--yellow)]' : 'bg-[var(--red)]'} animate-pulse`}></div>
+                <h3 className="text-sm font-medium text-[var(--foreground)]">
+                  Live Session
+                </h3>
+              </div>
+              <div className="flex space-x-1">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Session Settings">
+                  <Settings className="w-3 h-3" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Record Session">
+                  <Radio className="w-3 h-3 text-[var(--red)]" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[var(--muted-foreground)]">
+                Session: Summer Song Mix
+              </span>
+              <span className="text-[var(--green)] font-mono">
+                {collaborators.filter(c => c.status === 'online').length} online
               </span>
             </div>
-            <div className="text-xs text-[var(--muted-foreground)]">
-              Invite collaborators to work on this project in real-time
+          </div>
+
+          {/* Collaborators List */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
+                  Team Members ({collaborators.length})
+                </h4>
+                <Button variant="ghost" size="sm" className="h-6 text-xs">
+                  <Users className="w-3 h-3 mr-1" />
+                  Invite
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {collaborators.map((collaborator) => (
+                  <div
+                    key={collaborator.id}
+                    className="p-3 bg-[var(--muted)]/30 rounded-lg border border-transparent hover:border-[var(--border)] hover:bg-[var(--accent)] transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <div className="relative">
+                          <div className="text-lg">{collaborator.avatar}</div>
+                          <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[var(--background)] ${
+                            collaborator.status === 'online' ? 'bg-[var(--green)]' : 
+                            collaborator.status === 'away' ? 'bg-[var(--yellow)]' : 'bg-[var(--muted-foreground)]'
+                          }`}></div>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-[var(--foreground)] truncate">
+                            {collaborator.name}
+                          </div>
+                          <div className="text-xs text-[var(--muted-foreground)]">
+                            {collaborator.role}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-1">
+                        {collaborator.status === 'online' && (
+                          <div className="flex space-x-1">
+                            <Button variant="ghost" size="sm" className="h-5 w-5 p-0" title="Start Voice Chat">
+                              <Mic className="w-3 h-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-5 w-5 p-0" title="Send Message">
+                              <MessageSquare className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 text-xs text-[var(--muted-foreground)]">
+                      {collaborator.status === 'online' ? 'Active now' : `Last seen ${collaborator.lastSeen}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Real-time Activity Feed */}
+            <div className="border-t border-[var(--border)] p-4">
+              <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider mb-3">
+                Recent Activity
+              </h4>
+              <div className="space-y-3">
+                {[
+                  { user: 'Maya', action: 'adjusted EQ on Track 3', time: '2 min ago', type: 'edit' },
+                  { user: 'Alex', action: 'added reverb effect', time: '5 min ago', type: 'edit' },
+                  { user: 'Jordan', action: 'uploaded new MIDI file', time: '12 min ago', type: 'upload' },
+                  { user: 'Maya', action: 'left a comment on Verse 2', time: '15 min ago', type: 'comment' },
+                  { user: 'Sam', action: 'joined the session', time: '23 min ago', type: 'join' }
+                ].map((activity, index) => (
+                  <div key={index} className="flex items-start space-x-2">
+                    <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${
+                      activity.type === 'edit' ? 'bg-[var(--blue)]' :
+                      activity.type === 'upload' ? 'bg-[var(--green)]' :
+                      activity.type === 'comment' ? 'bg-[var(--purple)]' :
+                      'bg-[var(--yellow)]'
+                    }`}></div>
+                    <div className="min-w-0">
+                      <div className="text-xs text-[var(--foreground)]">
+                        <span className="font-medium">{activity.user}</span> {activity.action}
+                      </div>
+                      <div className="text-xs text-[var(--muted-foreground)]">
+                        {activity.time}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Session Controls */}
+            <div className="border-t border-[var(--border)] p-4">
+              <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider mb-3">
+                Session Controls
+              </h4>
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Shuffle className="w-3 h-3 mr-1" />
+                    Sync Play
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Target className="w-3 h-3 mr-1" />
+                    Follow Me
+                  </Button>
+                </div>
+                
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <MessageSquare className="w-3 h-3 mr-1" />
+                  Open Chat
+                </Button>
+                
+                <div className="flex items-center justify-between pt-2">
+                  <div className="text-xs text-[var(--muted-foreground)]">
+                    Permissions:
+                  </div>
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Edit Permissions">
+                      <Shield className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-1">
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Edit Tracks</span>
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Add Effects</span>
+                  <span className="px-2 py-1 bg-[var(--muted)] text-xs rounded">Mix Controls</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Session Status Bar */}
+          <div className="border-t border-[var(--border)] p-3 bg-[var(--muted)]/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></div>
+                <span className="text-xs text-[var(--foreground)] font-medium">
+                  Connected
+                </span>
+              </div>
+              <div className="text-xs text-[var(--muted-foreground)] font-mono">
+                24:36 session time
+              </div>
+            </div>
+            <div className="mt-1 text-xs text-[var(--muted-foreground)]">
+              Auto-save enabled • Low latency mode
             </div>
           </div>
         </div>
