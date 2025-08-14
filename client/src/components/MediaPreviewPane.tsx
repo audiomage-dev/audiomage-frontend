@@ -155,7 +155,7 @@ export function MediaPreviewPane({
         {/* Media Content */}
         <div className="space-y-4">
           {file.type === 'video' && (
-            <div className="relative rounded-lg overflow-hidden max-h-64 flex justify-center">
+            <div className="relative rounded-lg overflow-hidden max-h-64 flex justify-start">
               <video
                 ref={videoRef}
                 src={file.url}
