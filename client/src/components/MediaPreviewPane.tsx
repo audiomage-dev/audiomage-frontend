@@ -110,7 +110,7 @@ export function MediaPreviewPane({
   }
 
   return (
-    <div className="flex-none bg-[var(--background)] border-b border-[var(--border)] shadow-lg">
+    <div className="flex-none w-80 h-full bg-[var(--background)] border-r border-[var(--border)] shadow-lg overflow-y-auto">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

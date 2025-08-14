@@ -137,15 +137,19 @@ export function AudioWorkstation() {
           <VerticalSidebar onFileSelect={setSelectedMediaFile} />
         </div>
 
+        {/* Media Preview Panel - Left Side */}
+        {selectedMediaFile && (
+          <div className="flex-none">
+            <MediaPreviewPane
+              file={selectedMediaFile}
+              onClose={() => setSelectedMediaFile(null)}
+              isVisible={!!selectedMediaFile}
+            />
+          </div>
+        )}
+
         {/* Center Panel - Timeline */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Media Preview Pane */}
-          <MediaPreviewPane
-            file={selectedMediaFile}
-            onClose={() => setSelectedMediaFile(null)}
-            isVisible={!!selectedMediaFile}
-          />
-
           {/* Transport Bar */}
           <div className="flex-none">
             <CompactTransportBar
