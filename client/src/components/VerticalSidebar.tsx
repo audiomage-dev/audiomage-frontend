@@ -95,10 +95,108 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isSpellbookModalOpen, setIsSpellbookModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{
+    id: string;
+    type: 'audio' | 'midi' | 'project' | 'track' | 'clip';
+    name: string;
+    path?: string;
+    description?: string;
+    lastModified?: string;
+  }>>([]);
+  const [searchFilters, setSearchFilters] = useState<{
+    audio: boolean;
+    midi: boolean;
+    projects: boolean;
+    tracks: boolean;
+  }>({
+    audio: true,
+    midi: true,
+    projects: true,
+    tracks: true,
+  });
 
   const handleAIToolClick = (toolId: string) => {
     setSelectedAITool(toolId);
     setIsAIToolsModalOpen(true);
+  };
+
+  // Mock search function - in a real app, this would query your backend/database
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const mockData = [
+      {
+        id: '1',
+        type: 'audio' as const,
+        name: 'Vocal_Lead_Take_3.wav',
+        path: '/project/vocals/',
+        description: 'Main vocal recording, take 3',
+        lastModified: '2 hours ago'
+      },
+      {
+        id: '2',
+        type: 'midi' as const,
+        name: 'Piano_Melody.mid',
+        path: '/project/midi/',
+        description: 'Main piano melody track',
+        lastModified: '1 day ago'
+      },
+      {
+        id: '3',
+        type: 'track' as const,
+        name: 'Drums - Full Kit',
+        description: 'Complete drum kit setup with 8 channels',
+        lastModified: '3 hours ago'
+      },
+      {
+        id: '4',
+        type: 'project' as const,
+        name: 'Summer Song Project.ap',
+        path: '/projects/',
+        description: 'Main project file for summer track',
+        lastModified: '30 minutes ago'
+      },
+      {
+        id: '5',
+        type: 'clip' as const,
+        name: 'Guitar Solo Clip',
+        description: 'Guitar solo recorded in take 2',
+        lastModified: '1 hour ago'
+      }
+    ];
+
+    // Simple search filter based on query
+    const filtered = mockData.filter(item => {
+      const searchTerm = query.toLowerCase();
+      const matchesName = item.name.toLowerCase().includes(searchTerm);
+      const matchesDescription = item.description?.toLowerCase().includes(searchTerm) || false;
+      const matchesType = searchFilters[item.type as keyof typeof searchFilters];
+      
+      return (matchesName || matchesDescription) && matchesType;
+    });
+
+    setSearchResults(filtered);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    performSearch(query);
+  };
+
+  const toggleFilter = (filterType: keyof typeof searchFilters) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      [filterType]: !prev[filterType]
+    }));
+    
+    // Re-run search with new filters
+    if (searchQuery) {
+      performSearch(searchQuery);
+    }
   };
 
   const sidebarItems: SidebarItem[] = [
@@ -119,19 +217,139 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       icon: <Search className="w-5 h-5" />,
       label: 'Search',
       component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
-            Global Search
-          </h3>
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Search in project..."
-              className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-            />
-            <div className="text-xs text-[var(--muted-foreground)]">
-              Search across all audio files, MIDI, and project data
+        <div className="h-full flex flex-col">
+          {/* Search Header */}
+          <div className="p-4 border-b border-[var(--border)]">
+            <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+              Global Search
+            </h3>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Search in project..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-[var(--input)] border border-[var(--border)] rounded-md text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+              />
+              
+              {/* Search Filters */}
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(searchFilters).map(([key, enabled]) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleFilter(key as keyof typeof searchFilters)}
+                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                      enabled 
+                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--accent)]'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-1">
+                      {key === 'audio' && <FileAudio className="w-3 h-3" />}
+                      {key === 'midi' && <Piano className="w-3 h-3" />}
+                      {key === 'projects' && <FolderOpen className="w-3 h-3" />}
+                      {key === 'tracks' && <Layers className="w-3 h-3" />}
+                      <span className="capitalize">{key}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
+          </div>
+
+          {/* Search Results */}
+          <div className="flex-1 overflow-y-auto">
+            {searchQuery && (
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-[var(--muted-foreground)]">
+                    {searchResults.length} results for "{searchQuery}"
+                  </span>
+                  {searchResults.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+
+                {searchResults.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Search className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2" />
+                    <div className="text-sm text-[var(--muted-foreground)]">
+                      No results found
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {searchResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className="p-3 bg-[var(--muted)]/30 rounded-lg hover:bg-[var(--accent)] cursor-pointer transition-colors border border-transparent hover:border-[var(--border)]"
+                        onClick={() => {
+                          // Handle result click - could open file, navigate, etc.
+                          console.log('Selected search result:', result);
+                        }}
+                      >
+                        <div className="flex items-start space-x-2">
+                          <div className="flex-shrink-0 mt-1">
+                            {result.type === 'audio' && <FileAudio className="w-4 h-4 text-[var(--blue)]" />}
+                            {result.type === 'midi' && <Piano className="w-4 h-4 text-[var(--green)]" />}
+                            {result.type === 'project' && <FolderOpen className="w-4 h-4 text-[var(--purple)]" />}
+                            {result.type === 'track' && <Layers className="w-4 h-4 text-[var(--orange)]" />}
+                            {result.type === 'clip' && <Film className="w-4 h-4 text-[var(--pink)]" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-[var(--foreground)] truncate">
+                              {result.name}
+                            </div>
+                            {result.description && (
+                              <div className="text-xs text-[var(--muted-foreground)] mt-1 truncate">
+                                {result.description}
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between mt-2">
+                              {result.path && (
+                                <span className="text-xs text-[var(--muted-foreground)] truncate">
+                                  {result.path}
+                                </span>
+                              )}
+                              {result.lastModified && (
+                                <span className="text-xs text-[var(--muted-foreground)] flex-shrink-0">
+                                  {result.lastModified}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!searchQuery && (
+              <div className="p-4 text-center">
+                <div className="py-8">
+                  <Search className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-4" />
+                  <div className="text-sm text-[var(--foreground)] mb-2">
+                    Search across your project
+                  </div>
+                  <div className="text-xs text-[var(--muted-foreground)]">
+                    Find audio files, MIDI tracks, project files, and more
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ),
