@@ -1107,11 +1107,17 @@ export function CompactTimelineEditor({
           const minY = Math.min(selectionBox.startY, endY);
           const maxY = Math.max(selectionBox.startY, endY);
 
-          // Calculate which tracks are in selection
+          // Calculate which tracks are in selection accounting for expanded tracks
           const selectedIds = tracks
-            .filter((_, index) => {
-              const trackTop = index * 96;
-              const trackBottom = trackTop + 96;
+            .filter((track, index) => {
+              const trackTop = calculateTrackTop(index);
+              const hasMultipleClips = (track.clips?.length || 0) > 1;
+              const isExpanded = expandedTracks.has(track.id);
+              const trackHeight =
+                isExpanded && hasMultipleClips
+                  ? 96 + (track.clips?.length || 0) * 80
+                  : 96;
+              const trackBottom = trackTop + trackHeight;
               return trackTop < maxY && trackBottom > minY;
             })
             .map((t) => t.id);
@@ -1129,7 +1135,24 @@ export function CompactTimelineEditor({
           const timelineWidth = getTimelineWidth();
           const totalTime = timelineWidth / zoomLevel;
           const currentTime = (currentX / timelineWidth) * totalTime;
-          const currentTrackIndex = Math.floor(currentY / 96);
+          // Calculate track index accounting for expanded tracks
+          let currentTrackIndex = 0;
+          let runningY = 0;
+          for (let i = 0; i < tracks.length; i++) {
+            const track = tracks[i];
+            const hasMultipleClips = (track.clips?.length || 0) > 1;
+            const isExpanded = expandedTracks.has(track.id);
+            const trackHeight =
+              isExpanded && hasMultipleClips
+                ? 96 + (track.clips?.length || 0) * 80
+                : 96;
+
+            if (currentY >= runningY && currentY < runningY + trackHeight) {
+              currentTrackIndex = i;
+              break;
+            }
+            runningY += trackHeight;
+          }
 
           // Calculate which clips are within the selection area
           const startTime = Math.min(multiSelection.startTime, currentTime);
@@ -2373,10 +2396,11 @@ export function CompactTimelineEditor({
                         <Fragment
                           key={`${componentId}-selection-overlay-${track.id}`}
                         >
-                          {track.clips?.map((clip) => {
-                            if (
+                          {track.clips
+                            ?.filter((clip) =>
                               multiSelection.selectedClips.includes(clip.id)
-                            ) {
+                            )
+                            .map((clip) => {
                               const timelineWidth = getTimelineWidth();
                               const totalTime = timelineWidth / zoomLevel;
                               const leftPosition =
@@ -2395,9 +2419,7 @@ export function CompactTimelineEditor({
                                   }}
                                 />
                               );
-                            }
-                            return null;
-                          })}
+                            })}
                         </Fragment>
                       )}
                     </div>
@@ -2822,7 +2844,7 @@ export function CompactTimelineEditor({
                     selectedClipForLLM.name
                   ).map((preset, index) => (
                     <button
-                      key={`preset-${index}-${preset.substring(0, 10)}`}
+                      key={`preset-${componentId}-${index}`}
                       onClick={() => setLLMPrompt(preset)}
                       className="text-left text-xs p-2 rounded-md bg-[var(--muted)]/20 hover:bg-[var(--muted)]/40 border border-[var(--border)]/50 hover:border-[var(--border)] transition-colors"
                     >
