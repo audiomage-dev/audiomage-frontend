@@ -150,6 +150,9 @@ Each document contains complete user journeys and exact API request/response sch
 
 ```
 Changelog:
+- August 17, 2025. Created comprehensive AI Production Agent plan (docs/features/agent.md) outlining transformation of basic chatbot into intelligent co-producer integrated throughout entire audio workflow
+- August 17, 2025. Fixed timeline grid rendering to properly display when tracks are expanded into separate clip lanes
+- August 17, 2025. Implemented expandable track functionality with clips displayed on separate vertical lanes in timeline canvas
 - August 14, 2025. Created comprehensive API documentation for all 10 panel features under docs/panel/ with precise schemas and user journeys
 - August 14, 2025. Enhanced collaboration panel with comprehensive real-time collaboration features including live session management, team member profiles, activity feeds, and professional session controls
 - August 14, 2025. Added comprehensive search capabilities to vertical sidebar panel with content filtering, real-time results, and rich result display
