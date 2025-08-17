@@ -1,5 +1,27 @@
-import { X, Play, Pause, Volume2, RotateCcw } from 'lucide-react';
+import {
+  X,
+  Play,
+  Pause,
+  Volume2,
+  RotateCcw,
+  MoreVertical,
+  ZoomIn,
+  ZoomOut,
+  Monitor,
+  PictureInPicture2,
+  ExternalLink,
+  Fullscreen,
+  Minimize2,
+  Maximize2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState, useRef, useEffect } from 'react';
 
 interface MediaFile {
@@ -28,6 +50,13 @@ export function MediaPreviewPane({
   const [volume, setVolume] = useState(0.8);
   const [error, setError] = useState<string | null>(null);
 
+  // Video-specific states
+  const [videoMode, setVideoMode] = useState<'normal' | 'mini' | 'fullscreen'>(
+    'normal'
+  );
+  const [videoZoom, setVideoZoom] = useState(1);
+  const [isInPictureInPicture, setIsInPictureInPicture] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -37,8 +66,46 @@ export function MediaPreviewPane({
       setCurrentTime(0);
       setDuration(0);
       setError(null);
+      setVideoMode('normal');
+      setVideoZoom(1);
+      setIsInPictureInPicture(false);
     }
   }, [file]);
+
+  // Handle fullscreen and picture-in-picture events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setVideoMode('normal');
+      }
+    };
+
+    const handlePictureInPictureChange = () => {
+      setIsInPictureInPicture(!!document.pictureInPictureElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener(
+      'enterpictureinpicture',
+      handlePictureInPictureChange
+    );
+    document.addEventListener(
+      'leavepictureinpicture',
+      handlePictureInPictureChange
+    );
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener(
+        'enterpictureinpicture',
+        handlePictureInPictureChange
+      );
+      document.removeEventListener(
+        'leavepictureinpicture',
+        handlePictureInPictureChange
+      );
+    };
+  }, []);
 
   const handlePlayPause = () => {
     const mediaElement =
@@ -105,6 +172,79 @@ export function MediaPreviewPane({
     }
   };
 
+  // Video-specific handlers
+  const handleZoomIn = () => {
+    setVideoZoom((prev) => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOut = () => {
+    setVideoZoom((prev) => Math.max(prev - 0.25, 0.25));
+  };
+
+  const handleResetZoom = () => {
+    setVideoZoom(1);
+  };
+
+  const handleToggleMiniPlayer = () => {
+    setVideoMode((prev) => (prev === 'mini' ? 'normal' : 'mini'));
+  };
+
+  const handleToggleFullscreen = () => {
+    if (videoRef.current) {
+      if (!document.fullscreenElement) {
+        videoRef.current.requestFullscreen().catch(console.error);
+        setVideoMode('fullscreen');
+      } else {
+        document.exitFullscreen();
+        setVideoMode('normal');
+      }
+    }
+  };
+
+  const handlePictureInPicture = async () => {
+    if (videoRef.current) {
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+          setIsInPictureInPicture(false);
+        } else {
+          await videoRef.current.requestPictureInPicture();
+          setIsInPictureInPicture(true);
+        }
+      } catch (error) {
+        console.error('Picture-in-picture failed:', error);
+      }
+    }
+  };
+
+  const handleIndependentWindow = () => {
+    if (videoRef.current && file?.url) {
+      const newWindow = window.open(
+        '',
+        '_blank',
+        'width=800,height=600,resizable=yes,scrollbars=yes'
+      );
+      if (newWindow) {
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${file.name}</title>
+              <style>
+                body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+                video { max-width: 100%; max-height: 100%; }
+              </style>
+            </head>
+            <body>
+              <video controls autoplay src="${file.url}"></video>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
+
   if (!isVisible || !file) {
     return null;
   }
@@ -155,17 +295,104 @@ export function MediaPreviewPane({
         {/* Media Content */}
         <div className="space-y-4">
           {file.type === 'video' && (
-            <div className="relative rounded-lg overflow-hidden max-h-64 flex justify-center w-fit mx-0">
-              <video
-                ref={videoRef}
-                src={file.url}
-                className="max-h-64 object-contain rounded-lg"
-                onTimeUpdate={handleTimeUpdate}
-                onLoadedMetadata={handleTimeUpdate}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onError={() => setError('Failed to load video file')}
-              />
+            <div className="space-y-3">
+              {/* Video Container with Enhanced Controls */}
+              <div
+                className={`relative rounded-lg overflow-hidden ${
+                  videoMode === 'mini' ? 'max-h-32' : 'max-h-64'
+                } flex justify-center w-fit mx-0 group`}
+              >
+                <video
+                  ref={videoRef}
+                  src={file.url}
+                  className={`${
+                    videoMode === 'mini' ? 'max-h-32' : 'max-h-64'
+                  } object-contain rounded-lg transition-all duration-300`}
+                  style={{ transform: `scale(${videoZoom})` }}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleTimeUpdate}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onError={() => setError('Failed to load video file')}
+                />
+
+                {/* Video Overlay Controls */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 w-8 p-0 bg-black/50 hover:bg-black/70 border-none"
+                      >
+                        <MoreVertical className="w-4 h-4 text-white" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onClick={handleZoomIn}>
+                        <ZoomIn className="w-4 h-4 mr-2" />
+                        Zoom In ({Math.round(videoZoom * 100)}%)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleZoomOut}>
+                        <ZoomOut className="w-4 h-4 mr-2" />
+                        Zoom Out
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleResetZoom}>
+                        <Monitor className="w-4 h-4 mr-2" />
+                        Reset Zoom (100%)
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleToggleMiniPlayer}>
+                        {videoMode === 'mini' ? (
+                          <Maximize2 className="w-4 h-4 mr-2" />
+                        ) : (
+                          <Minimize2 className="w-4 h-4 mr-2" />
+                        )}
+                        {videoMode === 'mini'
+                          ? 'Exit Mini Player'
+                          : 'Toggle Mini-Player Mode'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handlePictureInPicture}>
+                        <PictureInPicture2 className="w-4 h-4 mr-2" />
+                        Picture in Picture
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleToggleFullscreen}>
+                        <Fullscreen className="w-4 h-4 mr-2" />
+                        Fullscreen Mode
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleIndependentWindow}>
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Move to Independent Screen
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Video Mode Indicator */}
+                {videoMode !== 'normal' && (
+                  <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    {videoMode === 'mini'
+                      ? 'Mini Player'
+                      : videoMode === 'fullscreen'
+                        ? 'Fullscreen'
+                        : ''}
+                    {isInPictureInPicture && ' • PiP'}
+                  </div>
+                )}
+              </div>
+
+              {/* Video Info Panel (hidden in mini mode) */}
+              {videoMode !== 'mini' && (
+                <div className="bg-[var(--muted)]/30 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between text-xs text-[var(--muted-foreground)]">
+                    <span>Zoom: {Math.round(videoZoom * 100)}%</span>
+                    <span>
+                      Mode: {videoMode === 'normal' ? 'Normal' : videoMode}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
