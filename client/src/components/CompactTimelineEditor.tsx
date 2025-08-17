@@ -379,9 +379,9 @@ export function CompactTimelineEditor({
       ctx.stroke();
     }
 
-    // Horizontal track lines
+    // Horizontal track lines - use the same logic as track positioning
     for (let i = 1; i < tracks.length; i++) {
-      const y = i * 96;
+      const y = calculateTrackTop(i);
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
@@ -389,7 +389,7 @@ export function CompactTimelineEditor({
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks, zoomLevel, getTimelineWidth]);
+  }, [tracks, zoomLevel, getTimelineWidth, calculateTrackTop]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
