@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
@@ -2098,6 +2098,7 @@ export function CompactTimelineEditor({
                 >
                   {/* Tick mark */}
                   <div
+                    key={`${componentId}-tick-${i}`}
                     className={`bg-[var(--muted-foreground)] ${
                       isMajorTick ? 'h-4 w-px' : 'h-2 w-px'
                     }`}
@@ -2106,6 +2107,7 @@ export function CompactTimelineEditor({
                   {/* Position marker for major ticks */}
                   {isMajorTick && (
                     <div
+                      key={`${componentId}-marker-${i}`}
                       className="absolute text-xs text-[var(--muted-foreground)] font-mono"
                       style={{ left: '2px', top: '14px' }}
                     >
@@ -2193,8 +2195,6 @@ export function CompactTimelineEditor({
                         handleMultiSelectionRightClick(e, track.id)
                       }
                     >
-
-
                       {track.clips?.map((clip, clipIndex) => {
                         const timelineWidth = getTimelineWidth();
                         const totalTime = timelineWidth / zoomLevel;
@@ -2370,7 +2370,9 @@ export function CompactTimelineEditor({
 
                       {/* Multi-track Selection Overlay - highlight selected clips */}
                       {multiSelection && !multiSelection.isActive && (
-                        <>
+                        <Fragment
+                          key={`${componentId}-selection-overlay-${track.id}`}
+                        >
                           {track.clips?.map((clip) => {
                             if (
                               multiSelection.selectedClips.includes(clip.id)
@@ -2396,7 +2398,7 @@ export function CompactTimelineEditor({
                             }
                             return null;
                           })}
-                        </>
+                        </Fragment>
                       )}
                     </div>
                   </div>
@@ -2556,31 +2558,33 @@ export function CompactTimelineEditor({
               action: 'delete',
               destructive: true,
             },
-          ].map(({ label, icon: Icon, action, disabled, destructive }) => (
-            <button
-              key={label}
-              disabled={disabled}
-              onClick={() => {
-                console.log(`${action} tracks:`, contextMenu.trackIds);
-                if (action === 'mute') {
-                  contextMenu.trackIds.forEach((id) => onTrackMute(id));
-                } else if (action === 'solo') {
-                  contextMenu.trackIds.forEach((id) => onTrackSolo(id));
-                }
-                setContextMenu(null);
-              }}
-              className={`w-full px-2 py-1 text-left text-xs flex items-center space-x-2 transition-colors ${
-                disabled
-                  ? 'opacity-50 cursor-not-allowed'
-                  : destructive
-                    ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]'
-                    : 'hover:bg-[var(--accent)]'
-              }`}
-            >
-              <Icon className="w-3 h-3" />
-              <span>{label}</span>
-            </button>
-          ))}
+          ].map(
+            ({ label, icon: Icon, action, disabled, destructive }, index) => (
+              <button
+                key={`${componentId}-track-action-${label}-${index}`}
+                disabled={disabled}
+                onClick={() => {
+                  console.log(`${action} tracks:`, contextMenu.trackIds);
+                  if (action === 'mute') {
+                    contextMenu.trackIds.forEach((id) => onTrackMute(id));
+                  } else if (action === 'solo') {
+                    contextMenu.trackIds.forEach((id) => onTrackSolo(id));
+                  }
+                  setContextMenu(null);
+                }}
+                className={`w-full px-2 py-1 text-left text-xs flex items-center space-x-2 transition-colors ${
+                  disabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : destructive
+                      ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]'
+                      : 'hover:bg-[var(--accent)]'
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                <span>{label}</span>
+              </button>
+            )
+          )}
         </div>
       )}
 
@@ -2632,7 +2636,7 @@ export function CompactTimelineEditor({
             if (item.separator) {
               return (
                 <div
-                  key={`separator-${index}`}
+                  key={`${componentId}-audio-separator-${index}`}
                   className="border-t border-[var(--border)] my-1"
                 />
               );
@@ -2648,7 +2652,7 @@ export function CompactTimelineEditor({
             } = item;
             return (
               <button
-                key={`action-${label}-${index}`}
+                key={`${componentId}-audio-action-${label}-${index}`}
                 onClick={() => {
                   console.log(
                     `${action} multi-track selection:`,
@@ -2726,7 +2730,7 @@ export function CompactTimelineEditor({
             if (item.type === 'separator') {
               return (
                 <div
-                  key={`clip-separator-${index}`}
+                  key={`${componentId}-clip-separator-${index}`}
                   className="h-px bg-[var(--border)] my-1"
                 />
               );
@@ -2742,7 +2746,7 @@ export function CompactTimelineEditor({
             } = item;
             return (
               <button
-                key={`clip-action-${label}-${index}`}
+                key={`${componentId}-clip-action-${label}-${index}`}
                 onClick={() => {
                   if (action === 'ai-prompt') {
                     const track = tracks.find(
