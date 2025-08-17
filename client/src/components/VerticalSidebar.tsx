@@ -1045,19 +1045,240 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
       icon: <Terminal className="w-5 h-5" />,
       label: 'Audio Console',
       component: (
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
-            Audio Console
-          </h3>
-          <div className="bg-[var(--muted)] rounded-md p-3 font-mono text-xs">
-            <div className="text-[var(--green)]">$ Audio Engine Ready</div>
-            <div className="text-[var(--muted-foreground)]">
-              Sample Rate: 48kHz
+        <div className="h-full flex flex-col bg-gradient-to-b from-[var(--background)] to-[var(--muted)]/10">
+          {/* Header with System Status */}
+          <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--primary)]/5 to-[var(--secondary)]/5">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-[var(--foreground)]">
+                Audio Console
+              </h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></div>
+                <span className="text-xs text-[var(--green)] font-mono">LIVE</span>
+              </div>
             </div>
-            <div className="text-[var(--muted-foreground)]">
-              Buffer: 256 samples
+            <div className="text-xs text-[var(--muted-foreground)]">
+              Real-time audio system monitoring
             </div>
-            <div className="text-[var(--muted-foreground)]">Latency: 5.3ms</div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3 space-y-4">
+            {/* Engine Status Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+                <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                  Audio Engine
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Status</span>
+                    <span className="text-[var(--green)] font-mono">ACTIVE</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Driver</span>
+                    <span className="font-mono">WebAudio</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Version</span>
+                    <span className="font-mono">2.1.3</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+                <div className="text-xs font-medium text-[var(--foreground)] mb-2">
+                  Performance
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">CPU</span>
+                    <span className="text-[var(--blue)] font-mono">12.4%</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Memory</span>
+                    <span className="font-mono">145MB</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Uptime</span>
+                    <span className="font-mono">2h 34m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Audio Settings */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3">
+                Current Audio Settings
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Sample Rate</span>
+                    <span className="text-[var(--green)] font-mono">48 kHz</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Buffer Size</span>
+                    <span className="font-mono">256 samples</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Bit Depth</span>
+                    <span className="font-mono">24-bit</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Latency</span>
+                    <span className="text-[var(--blue)] font-mono">5.3ms</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Channels</span>
+                    <span className="font-mono">2 (Stereo)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted-foreground)]">Format</span>
+                    <span className="font-mono">Float32</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Real-time Meters */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3">
+                Audio Levels
+              </div>
+              <div className="space-y-2">
+                {/* Master Output */}
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-[var(--muted-foreground)] w-12">Master</span>
+                  <div className="flex-1 flex space-x-1">
+                    <div className="flex-1 bg-[var(--background)] rounded-full h-2 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[var(--green)] via-[var(--yellow)] to-[var(--red)] w-3/5"></div>
+                    </div>
+                    <span className="text-xs font-mono text-[var(--green)] w-10">-6.2dB</span>
+                  </div>
+                </div>
+                
+                {/* Input Monitor */}
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-[var(--muted-foreground)] w-12">Input</span>
+                  <div className="flex-1 flex space-x-1">
+                    <div className="flex-1 bg-[var(--background)] rounded-full h-2 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[var(--green)] to-[var(--yellow)] w-2/5"></div>
+                    </div>
+                    <span className="text-xs font-mono text-[var(--muted-foreground)] w-10">-12dB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Device Information */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3">
+                Audio Devices
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Headphones className="w-3 h-3 text-[var(--blue)]" />
+                    <span className="text-xs">Default Output Device</span>
+                  </div>
+                  <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)] ml-5 mb-2">
+                  Built-in Audio (MacBook Pro Speakers)
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Mic className="w-3 h-3 text-[var(--red)]" />
+                    <span className="text-xs">Default Input Device</span>
+                  </div>
+                  <div className="w-2 h-2 bg-[var(--green)] rounded-full"></div>
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)] ml-5">
+                  Built-in Microphone (Internal Mic)
+                </div>
+              </div>
+            </div>
+
+            {/* System Log */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs font-medium text-[var(--foreground)]">
+                  System Log
+                </div>
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
+                  <RefreshCw className="w-3 h-3" />
+                </Button>
+              </div>
+              <div className="space-y-1 max-h-32 overflow-y-auto text-xs font-mono">
+                <div className="text-[var(--green)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:23]</span> Audio engine initialized successfully
+                </div>
+                <div className="text-[var(--blue)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:24]</span> Connected to output device
+                </div>
+                <div className="text-[var(--yellow)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:25]</span> Buffer underrun detected (recovered)
+                </div>
+                <div className="text-[var(--green)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:26]</span> Project loaded: Summer Song Mix.ap
+                </div>
+                <div className="text-[var(--blue)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:27]</span> 4 tracks initialized
+                </div>
+                <div className="text-[var(--green)]">
+                  <span className="text-[var(--muted-foreground)]">[13:45:28]</span> Real-time processing enabled
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3">
+                Quick Actions
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <Activity className="w-3 h-3 mr-1" />
+                  Test Audio
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  Restart Engine
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <Settings className="w-3 h-3 mr-1" />
+                  Preferences
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <BarChart3 className="w-3 h-3 mr-1" />
+                  Diagnostics
+                </Button>
+              </div>
+            </div>
+
+            {/* Command Input */}
+            <div className="bg-[var(--muted)]/30 rounded-lg p-3 border border-[var(--border)]/50">
+              <div className="text-xs font-medium text-[var(--foreground)] mb-3">
+                Command Line
+              </div>
+              <div className="bg-[var(--background)] rounded border border-[var(--border)] p-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-mono text-[var(--green)]">$</span>
+                  <input
+                    type="text"
+                    placeholder="Enter audio command..."
+                    className="flex-1 bg-transparent text-xs font-mono text-[var(--foreground)] outline-none placeholder-[var(--muted-foreground)]"
+                  />
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-[var(--muted-foreground)]">
+                Try: <span className="font-mono">status</span>, <span className="font-mono">devices</span>, <span className="font-mono">help</span>
+              </div>
+            </div>
           </div>
         </div>
       ),
