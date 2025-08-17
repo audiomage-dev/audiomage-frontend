@@ -2709,7 +2709,7 @@ export function CompactTimelineEditor({
       {/* Clip Context Menu */}
       {clipContextMenu && (
         <div
-          className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-1 z-50 min-w-48"
+          className="fixed bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-xl py-1 z-50 min-w-64"
           style={{ left: clipContextMenu.x, top: clipContextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -2720,92 +2720,168 @@ export function CompactTimelineEditor({
             </div>
           </div>
 
-          {[
-            { label: 'Cut', icon: Scissors, action: 'cut', shortcut: 'Ctrl+X' },
-            { label: 'Copy', icon: Copy, action: 'copy', shortcut: 'Ctrl+C' },
-            {
-              label: 'Duplicate',
-              icon: Files,
-              action: 'duplicate',
-              shortcut: 'Ctrl+D',
-            },
-            { type: 'separator' },
-            { label: 'Fade In', icon: TrendingUp, action: 'fade-in' },
-            { label: 'Fade Out', icon: TrendingDown, action: 'fade-out' },
-            { label: 'Normalize', icon: BarChart3, action: 'normalize' },
-            { type: 'separator' },
-            {
-              label: 'AI Prompt',
-              icon: Sparkles,
-              action: 'ai-prompt',
-              ai: true,
-            },
-            { type: 'separator' },
-            {
-              label: 'Delete',
-              icon: Trash2,
-              action: 'delete',
-              destructive: true,
-              shortcut: 'Del',
-            },
-          ].map((item, index) => {
-            if (item.type === 'separator') {
-              return (
-                <div
-                  key={`${componentId}-clip-separator-${index}`}
-                  className="h-px bg-[var(--border)] my-1"
-                />
-              );
-            }
+          {/* AI Prompt Input */}
+          <div className="px-3 py-2 border-b border-[var(--border)]">
+            <div className="flex items-center space-x-2 mb-2">
+              <Sparkles className="w-3 h-3 text-[var(--purple)]" />
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">
+                AI PROMPT
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="Enter AI instruction..."
+              className="w-full px-2 py-1 text-xs bg-[var(--muted)]/20 border border-[var(--border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--purple)] focus:border-[var(--purple)]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  const track = tracks.find(
+                    (t) => t.id === clipContextMenu.clip.trackId
+                  );
+                  console.log(
+                    'AI Prompt:',
+                    e.currentTarget.value,
+                    'for clip:',
+                    clipContextMenu.clip
+                  );
+                  setClipContextMenu(null);
+                }
+              }}
+            />
+          </div>
 
-            const {
-              label,
-              icon: Icon,
-              action,
-              shortcut,
-              destructive,
-              ai,
-            } = item;
-            return (
+          {/* SPLIT Section */}
+          <div>
+            <div className="px-3 py-1 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/10">
+              SPLIT
+            </div>
+            {[
+              { label: 'Split at 25%', icon: Scissors, action: 'split-25' },
+              {
+                label: 'Split at Middle',
+                icon: Scissors,
+                action: 'split-middle',
+              },
+            ].map((item, index) => (
               <button
-                key={`${componentId}-clip-action-${label}-${index}`}
+                key={`${componentId}-split-${index}`}
                 onClick={() => {
-                  if (action === 'ai-prompt') {
-                    const track = tracks.find(
-                      (t) => t.id === clipContextMenu.clip.trackId
-                    );
-                    setSelectedClipForLLM({
-                      id: clipContextMenu.clip.id,
-                      name: clipContextMenu.clip.name,
-                      trackName: clipContextMenu.clip.trackName,
-                      trackType: track?.type || 'audio',
-                    });
-                    setShowLLMPrompt(true);
-                  } else {
-                    console.log(`${action} clip:`, clipContextMenu.clip);
-                  }
+                  console.log(`${item.action} clip:`, clipContextMenu.clip);
+                  setClipContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[var(--accent)] transition-colors"
+              >
+                <item.icon className="w-3 h-3" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* TRIM Section */}
+          <div>
+            <div className="px-3 py-1 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/10">
+              TRIM
+            </div>
+            {[
+              { label: 'Trim Start', icon: Play, action: 'trim-start' },
+              { label: 'Trim End', icon: Square, action: 'trim-end' },
+            ].map((item, index) => (
+              <button
+                key={`${componentId}-trim-${index}`}
+                onClick={() => {
+                  console.log(`${item.action} clip:`, clipContextMenu.clip);
+                  setClipContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[var(--accent)] transition-colors"
+              >
+                <item.icon className="w-3 h-3" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* FADES Section */}
+          <div>
+            <div className="px-3 py-1 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/10">
+              FADES
+            </div>
+            {[
+              { label: 'Add Fade In', icon: TrendingUp, action: 'fade-in' },
+              { label: 'Add Fade Out', icon: TrendingDown, action: 'fade-out' },
+              { label: 'Add Both Fades', icon: Activity, action: 'fade-both' },
+              { label: 'Remove Fades', icon: X, action: 'fade-remove' },
+            ].map((item, index) => (
+              <button
+                key={`${componentId}-fades-${index}`}
+                onClick={() => {
+                  console.log(`${item.action} clip:`, clipContextMenu.clip);
+                  setClipContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[var(--accent)] transition-colors"
+              >
+                <item.icon className="w-3 h-3" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* ANALYSIS Section */}
+          <div>
+            <div className="px-3 py-1 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/10">
+              ANALYSIS
+            </div>
+            <button
+              onClick={() => {
+                console.log('View spectrogram for clip:', clipContextMenu.clip);
+                setClipContextMenu(null);
+              }}
+              className="w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[var(--accent)] transition-colors"
+            >
+              <BarChart3 className="w-3 h-3" />
+              <span>View Spectrogram</span>
+            </button>
+          </div>
+
+          {/* Bottom Actions */}
+          <div className="border-t border-[var(--border)] mt-1">
+            {[
+              {
+                label: 'Duplicate',
+                icon: Files,
+                action: 'duplicate',
+                shortcut: 'Ctrl+D',
+              },
+              {
+                label: 'Delete',
+                icon: Trash2,
+                action: 'delete',
+                destructive: true,
+                shortcut: 'Del',
+              },
+            ].map((item, index) => (
+              <button
+                key={`${componentId}-action-${index}`}
+                onClick={() => {
+                  console.log(`${item.action} clip:`, clipContextMenu.clip);
                   setClipContextMenu(null);
                 }}
                 className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition-colors ${
-                  destructive
+                  item.destructive
                     ? 'hover:bg-[var(--red)]/10 hover:text-[var(--red)]'
-                    : ai
-                      ? 'hover:bg-[var(--purple)]/10 hover:text-[var(--purple)]'
-                      : 'hover:bg-[var(--accent)]'
+                    : 'hover:bg-[var(--accent)]'
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <Icon className="w-3 h-3" />
-                  <span>{label}</span>
+                  <item.icon className="w-3 h-3" />
+                  <span>{item.label}</span>
                 </div>
-                {shortcut && (
+                {item.shortcut && (
                   <span className="text-[var(--muted-foreground)] text-xs">
-                    {shortcut}
+                    {item.shortcut}
                   </span>
                 )}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
       )}
 
