@@ -7,6 +7,7 @@ import { ProjectVersionsPanel } from './ProjectVersionsPanel';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { AIToolsModal } from './AIToolsModal';
 import { SpellbookModal } from './SpellbookModal';
+import { AudioTrack } from '../types/audio';
 import {
   FolderOpen,
   Search,
@@ -90,9 +91,10 @@ interface VerticalSidebarProps {
     duration?: number;
     size?: number;
   }) => void;
+  tracks?: AudioTrack[];
 }
 
-export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
+export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
@@ -425,31 +427,72 @@ export function VerticalSidebar({ onFileSelect }: VerticalSidebarProps = {}) {
       label: 'Track Manager',
       component: (
         <div className="p-4">
-          <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
-            Track Overview
-          </h3>
-          <div className="space-y-2">
-            {['Vocal Lead', 'Guitar Rhythm', 'Bass Line', 'Drums'].map(
-              (track, index) => (
-                <div
-                  key={track}
-                  className="flex items-center justify-between p-2 bg-[var(--muted)] rounded-md"
-                >
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className={`w-3 h-3 rounded-full bg-[var(--${['blue', 'green', 'yellow', 'red'][index]})]`}
-                    ></div>
-                    <span className="text-xs text-[var(--foreground)]">
-                      {track}
-                    </span>
-                  </div>
-                  <div className="text-xs text-[var(--muted-foreground)]">
-                    {index === 0 ? 'REC' : 'PLAY'}
-                  </div>
-                </div>
-              )
-            )}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-[var(--foreground)]">
+              Track Overview
+            </h3>
+            <span className="text-xs text-[var(--muted-foreground)]">
+              {tracks.length} tracks
+            </span>
           </div>
+          
+          {tracks.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-xs text-[var(--muted-foreground)] mb-2">
+                No tracks in project
+              </div>
+              <div className="text-xs text-[var(--muted-foreground)]">
+                Add audio files to get started
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {tracks.map((track) => {
+                const clipCount = track.clips?.length || 0;
+                const isRecording = !track.muted && !track.soloed && clipCount === 0;
+                const isPlaying = !track.muted && clipCount > 0;
+                
+                return (
+                  <div
+                    key={track.id}
+                    className="flex items-center justify-between p-2 bg-[var(--muted)] rounded-md hover:bg-[var(--accent)] transition-colors"
+                  >
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: track.color }}
+                      ></div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-[var(--foreground)] truncate font-medium">
+                          {track.name}
+                        </div>
+                        <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                          {track.type} • {clipCount} clip{clipCount !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      {track.muted && (
+                        <div className="w-4 h-4 rounded-full bg-[var(--red)]/20 border border-[var(--red)] flex items-center justify-center">
+                          <VolumeX className="w-2 h-2 text-[var(--red)]" />
+                        </div>
+                      )}
+                      {track.soloed && (
+                        <div className="w-4 h-4 rounded-full bg-[var(--yellow)]/20 border border-[var(--yellow)] flex items-center justify-center">
+                          <Volume2 className="w-2 h-2 text-[var(--yellow)]" />
+                        </div>
+                      )}
+                      
+                      <div className="text-xs font-mono text-[var(--muted-foreground)] min-w-[32px] text-right">
+                        {track.muted ? 'MUTE' : track.soloed ? 'SOLO' : isRecording ? 'REC' : isPlaying ? 'PLAY' : 'IDLE'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ),
     },
