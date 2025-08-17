@@ -2193,22 +2193,7 @@ export function CompactTimelineEditor({
                         handleMultiSelectionRightClick(e, track.id)
                       }
                     >
-                      {/* Lane separators for expanded tracks */}
-                      {isExpanded && hasMultipleClips && (
-                        <>
-                          {Array.from({ length: track.clips?.length || 0 }).map(
-                            (_, laneIndex) => (
-                              <div
-                                key={`lane-${laneIndex}`}
-                                className="absolute left-0 right-0 border-b border-[var(--border)]/30"
-                                style={{
-                                  top: `${laneIndex * 82 + 81}px`, // Position at bottom of each lane
-                                }}
-                              />
-                            )
-                          )}
-                        </>
-                      )}
+
 
                       {track.clips?.map((clip, clipIndex) => {
                         const timelineWidth = getTimelineWidth();
