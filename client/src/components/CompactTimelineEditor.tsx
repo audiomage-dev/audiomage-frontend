@@ -2044,7 +2044,7 @@ export function CompactTimelineEditor({
                     {track.clips?.map((clip, clipIndex) => (
                       <div
                         key={clip.id}
-                        className="h-5 px-6 py-1 border-b border-[var(--border)]/30 flex items-center justify-between text-xs hover:bg-[var(--accent)]/20 cursor-pointer"
+                        className="h-5 px-6 py-1 flex items-center justify-between text-xs hover:bg-[var(--accent)]/20 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log('Select clip:', clip.name);
