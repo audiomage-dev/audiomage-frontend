@@ -134,7 +134,10 @@ export function AudioWorkstation() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Vertical Sidebar */}
         <div className="flex-none">
-          <VerticalSidebar onFileSelect={setSelectedMediaFile} tracks={tracks} />
+          <VerticalSidebar
+            onFileSelect={setSelectedMediaFile}
+            tracks={tracks}
+          />
         </div>
 
         {/* Media Preview Panel - Left Side */}

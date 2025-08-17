@@ -73,6 +73,7 @@ import {
   Trash2,
   Archive,
   HardDrive,
+  Maximize2,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -94,9 +95,13 @@ interface VerticalSidebarProps {
   tracks?: AudioTrack[];
 }
 
-export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarProps = {}) {
+export function VerticalSidebar({
+  onFileSelect,
+  tracks = [],
+}: VerticalSidebarProps = {}) {
   const [activePanel, setActivePanel] = useState<string>('quick-actions');
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isPanelMaximized, setIsPanelMaximized] = useState(false);
   const [isAIToolsModalOpen, setIsAIToolsModalOpen] = useState(false);
   const [selectedAITool, setSelectedAITool] = useState<string>('auto-eq');
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -435,7 +440,7 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               {tracks.length} tracks
             </span>
           </div>
-          
+
           {tracks.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-xs text-[var(--muted-foreground)] mb-2">
@@ -449,9 +454,10 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
             <div className="space-y-2">
               {tracks.map((track) => {
                 const clipCount = track.clips?.length || 0;
-                const isRecording = !track.muted && !track.soloed && clipCount === 0;
+                const isRecording =
+                  !track.muted && !track.soloed && clipCount === 0;
                 const isPlaying = !track.muted && clipCount > 0;
-                
+
                 return (
                   <div
                     key={track.id}
@@ -467,11 +473,12 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                           {track.name}
                         </div>
                         <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                          {track.type} • {clipCount} clip{clipCount !== 1 ? 's' : ''}
+                          {track.type} • {clipCount} clip
+                          {clipCount !== 1 ? 's' : ''}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       {track.muted && (
                         <div className="w-4 h-4 rounded-full bg-[var(--red)]/20 border border-[var(--red)] flex items-center justify-center">
@@ -483,9 +490,17 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                           <Volume2 className="w-2 h-2 text-[var(--yellow)]" />
                         </div>
                       )}
-                      
+
                       <div className="text-xs font-mono text-[var(--muted-foreground)] min-w-[32px] text-right">
-                        {track.muted ? 'MUTE' : track.soloed ? 'SOLO' : isRecording ? 'REC' : isPlaying ? 'PLAY' : 'IDLE'}
+                        {track.muted
+                          ? 'MUTE'
+                          : track.soloed
+                            ? 'SOLO'
+                            : isRecording
+                              ? 'REC'
+                              : isPlaying
+                                ? 'PLAY'
+                                : 'IDLE'}
                       </div>
                     </div>
                   </div>
@@ -1054,7 +1069,9 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               </h3>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-[var(--green)] rounded-full animate-pulse"></div>
-                <span className="text-xs text-[var(--green)] font-mono">LIVE</span>
+                <span className="text-xs text-[var(--green)] font-mono">
+                  LIVE
+                </span>
               </div>
             </div>
             <div className="text-xs text-[var(--muted-foreground)]">
@@ -1071,15 +1088,23 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Status</span>
-                    <span className="text-[var(--green)] font-mono">ACTIVE</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Status
+                    </span>
+                    <span className="text-[var(--green)] font-mono">
+                      ACTIVE
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Driver</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Driver
+                    </span>
                     <span className="font-mono">WebAudio</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Version</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Version
+                    </span>
                     <span className="font-mono">2.1.3</span>
                   </div>
                 </div>
@@ -1095,11 +1120,15 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                     <span className="text-[var(--blue)] font-mono">12.4%</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Memory</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Memory
+                    </span>
                     <span className="font-mono">145MB</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Uptime</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Uptime
+                    </span>
                     <span className="font-mono">2h 34m</span>
                   </div>
                 </div>
@@ -1114,29 +1143,43 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Sample Rate</span>
-                    <span className="text-[var(--green)] font-mono">48 kHz</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Sample Rate
+                    </span>
+                    <span className="text-[var(--green)] font-mono">
+                      48 kHz
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Buffer Size</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Buffer Size
+                    </span>
                     <span className="font-mono">256 samples</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Bit Depth</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Bit Depth
+                    </span>
                     <span className="font-mono">24-bit</span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Latency</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Latency
+                    </span>
                     <span className="text-[var(--blue)] font-mono">5.3ms</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Channels</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Channels
+                    </span>
                     <span className="font-mono">2 (Stereo)</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)]">Format</span>
+                    <span className="text-[var(--muted-foreground)]">
+                      Format
+                    </span>
                     <span className="font-mono">Float32</span>
                   </div>
                 </div>
@@ -1151,23 +1194,31 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               <div className="space-y-2">
                 {/* Master Output */}
                 <div className="flex items-center space-x-3">
-                  <span className="text-xs text-[var(--muted-foreground)] w-12">Master</span>
+                  <span className="text-xs text-[var(--muted-foreground)] w-12">
+                    Master
+                  </span>
                   <div className="flex-1 flex space-x-1">
                     <div className="flex-1 bg-[var(--background)] rounded-full h-2 overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-[var(--green)] via-[var(--yellow)] to-[var(--red)] w-3/5"></div>
                     </div>
-                    <span className="text-xs font-mono text-[var(--green)] w-10">-6.2dB</span>
+                    <span className="text-xs font-mono text-[var(--green)] w-10">
+                      -6.2dB
+                    </span>
                   </div>
                 </div>
-                
+
                 {/* Input Monitor */}
                 <div className="flex items-center space-x-3">
-                  <span className="text-xs text-[var(--muted-foreground)] w-12">Input</span>
+                  <span className="text-xs text-[var(--muted-foreground)] w-12">
+                    Input
+                  </span>
                   <div className="flex-1 flex space-x-1">
                     <div className="flex-1 bg-[var(--background)] rounded-full h-2 overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-[var(--green)] to-[var(--yellow)] w-2/5"></div>
                     </div>
-                    <span className="text-xs font-mono text-[var(--muted-foreground)] w-10">-12dB</span>
+                    <span className="text-xs font-mono text-[var(--muted-foreground)] w-10">
+                      -12dB
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1189,7 +1240,7 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                 <div className="text-xs text-[var(--muted-foreground)] ml-5 mb-2">
                   Built-in Audio (MacBook Pro Speakers)
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Mic className="w-3 h-3 text-[var(--red)]" />
@@ -1215,22 +1266,40 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               </div>
               <div className="space-y-1 max-h-32 overflow-y-auto text-xs font-mono">
                 <div className="text-[var(--green)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:23]</span> Audio engine initialized successfully
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:23]
+                  </span>{' '}
+                  Audio engine initialized successfully
                 </div>
                 <div className="text-[var(--blue)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:24]</span> Connected to output device
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:24]
+                  </span>{' '}
+                  Connected to output device
                 </div>
                 <div className="text-[var(--yellow)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:25]</span> Buffer underrun detected (recovered)
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:25]
+                  </span>{' '}
+                  Buffer underrun detected (recovered)
                 </div>
                 <div className="text-[var(--green)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:26]</span> Project loaded: Summer Song Mix.ap
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:26]
+                  </span>{' '}
+                  Project loaded: Summer Song Mix.ap
                 </div>
                 <div className="text-[var(--blue)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:27]</span> 4 tracks initialized
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:27]
+                  </span>{' '}
+                  4 tracks initialized
                 </div>
                 <div className="text-[var(--green)]">
-                  <span className="text-[var(--muted-foreground)]">[13:45:28]</span> Real-time processing enabled
+                  <span className="text-[var(--muted-foreground)]">
+                    [13:45:28]
+                  </span>{' '}
+                  Real-time processing enabled
                 </div>
               </div>
             </div>
@@ -1267,7 +1336,9 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
               </div>
               <div className="bg-[var(--background)] rounded border border-[var(--border)] p-2">
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-mono text-[var(--green)]">$</span>
+                  <span className="text-xs font-mono text-[var(--green)]">
+                    $
+                  </span>
                   <input
                     type="text"
                     placeholder="Enter audio command..."
@@ -1276,7 +1347,9 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
                 </div>
               </div>
               <div className="mt-2 text-xs text-[var(--muted-foreground)]">
-                Try: <span className="font-mono">status</span>, <span className="font-mono">devices</span>, <span className="font-mono">help</span>
+                Try: <span className="font-mono">status</span>,{' '}
+                <span className="font-mono">devices</span>,{' '}
+                <span className="font-mono">help</span>
               </div>
             </div>
           </div>
@@ -1797,9 +1870,11 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
   const handleItemClick = (itemId: string) => {
     if (activePanel === itemId && isExpanded) {
       setIsExpanded(false);
+      setIsPanelMaximized(false);
     } else {
       setActivePanel(itemId);
       setIsExpanded(true);
+      setIsPanelMaximized(false); // Reset maximized state when switching panels
     }
   };
 
@@ -1862,20 +1937,42 @@ export function VerticalSidebar({ onFileSelect, tracks = [] }: VerticalSidebarPr
 
       {/* Expandable Panel */}
       {isExpanded && activeItem && (
-        <div className="w-80 bg-[var(--background)] border-r border-[var(--border)] flex flex-col">
+        <div
+          className={`${
+            isPanelMaximized ? 'flex-1' : 'w-80'
+          } bg-[var(--background)] border-r border-[var(--border)] flex flex-col transition-all duration-300`}
+        >
           {/* Panel Header */}
           <div className="h-8 px-3 py-2 border-b border-[var(--border)] bg-[var(--muted)] flex items-center justify-between">
             <span className="text-xs font-medium text-[var(--foreground)] uppercase tracking-wider">
               {activeItem.label}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(false)}
-              className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
-            >
-              <span className="text-xs">×</span>
-            </Button>
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsPanelMaximized(!isPanelMaximized)}
+                className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                title={isPanelMaximized ? 'Restore' : 'Maximize'}
+              >
+                {isPanelMaximized ? (
+                  <Minimize2 className="w-3 h-3" />
+                ) : (
+                  <Maximize2 className="w-3 h-3" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsExpanded(false);
+                  setIsPanelMaximized(false);
+                }}
+                className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+              >
+                <span className="text-xs">×</span>
+              </Button>
+            </div>
           </div>
 
           {/* Panel Content */}
