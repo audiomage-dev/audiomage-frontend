@@ -2193,7 +2193,24 @@ export function CompactTimelineEditor({
                         handleMultiSelectionRightClick(e, track.id)
                       }
                     >
-                      {track.clips?.map((clip) => {
+                      {/* Lane separators for expanded tracks */}
+                      {isExpanded && hasMultipleClips && (
+                        <>
+                          {Array.from({ length: track.clips?.length || 0 }).map(
+                            (_, laneIndex) => (
+                              <div
+                                key={`lane-${laneIndex}`}
+                                className="absolute left-0 right-0 border-b border-[var(--border)]/30"
+                                style={{
+                                  top: `${laneIndex * 82 + 81}px`, // Position at bottom of each lane
+                                }}
+                              />
+                            )
+                          )}
+                        </>
+                      )}
+
+                      {track.clips?.map((clip, clipIndex) => {
                         const timelineWidth = getTimelineWidth();
                         const totalTime = timelineWidth / zoomLevel;
                         const clipStartX =
@@ -2201,10 +2218,19 @@ export function CompactTimelineEditor({
                         const clipWidth =
                           (clip.duration / totalTime) * timelineWidth;
 
+                        // Calculate vertical position for expanded tracks
+                        let clipTopOffset = 1; // Default top offset for normal tracks
+                        let clipHeight = 80; // Default height for normal tracks
+
+                        if (isExpanded && hasMultipleClips) {
+                          clipTopOffset = 1 + clipIndex * 82; // 82px per lane (80px clip + 2px spacing)
+                          clipHeight = 80; // Keep same height for individual clips
+                        }
+
                         return (
                           <div
                             key={clip.id}
-                            className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                            className={`absolute rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
                               draggingClip?.clipId === clip.id
                                 ? 'opacity-60 scale-105 z-50'
                                 : draggingClip?.selectedClips?.some(
@@ -2221,6 +2247,8 @@ export function CompactTimelineEditor({
                             style={{
                               left: `${clipStartX}px`,
                               width: `${clipWidth}px`,
+                              top: `${clipTopOffset}px`,
+                              height: `${clipHeight}px`,
                               backgroundColor: clip.color,
                               borderColor: clip.color,
                               transform: (() => {
