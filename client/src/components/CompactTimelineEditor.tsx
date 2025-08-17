@@ -30,6 +30,8 @@ import {
   Files,
   Copy,
   Link,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
@@ -145,6 +147,56 @@ export function CompactTimelineEditor({
     y: number;
     width: number;
   } | null>(null);
+
+  // Track expansion state
+  const [expandedTracks, setExpandedTracks] = useState<Set<string>>(new Set());
+
+  // Toggle track expansion
+  const toggleTrackExpansion = useCallback((trackId: string) => {
+    setExpandedTracks((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(trackId)) {
+        newSet.delete(trackId);
+      } else {
+        newSet.add(trackId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Calculate the top position of a track in the timeline
+  const calculateTrackTop = useCallback(
+    (trackIndex: number) => {
+      let top = 0;
+      for (let i = 0; i < trackIndex; i++) {
+        const track = tracks[i];
+        const hasMultipleClips = (track.clips?.length || 0) > 1;
+        const isExpanded = expandedTracks.has(track.id);
+        if (isExpanded && hasMultipleClips) {
+          top += 96 + (track.clips?.length || 0) * 80;
+        } else {
+          top += 96;
+        }
+      }
+      return top;
+    },
+    [tracks, expandedTracks]
+  );
+
+  // Calculate total timeline height
+  const calculateTotalTimelineHeight = useCallback(() => {
+    let height = 0;
+    tracks.forEach((track) => {
+      const hasMultipleClips = (track.clips?.length || 0) > 1;
+      const isExpanded = expandedTracks.has(track.id);
+      if (isExpanded && hasMultipleClips) {
+        height += 96 + (track.clips?.length || 0) * 80;
+      } else {
+        height += 96;
+      }
+    });
+    return height;
+  }, [tracks, expandedTracks]);
 
   // Context menu states
   const [contextMenu, setContextMenu] = useState<{
@@ -1898,69 +1950,125 @@ export function CompactTimelineEditor({
         </div>
 
         <div className="flex-1 overflow-hidden">
-          {tracks.map((track, index) => (
-            <div
-              key={track.id}
-              className={`h-24 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
-                selectedTrackIds.includes(track.id)
-                  ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]'
-                  : 'hover:bg-[var(--accent)]/50'
-              }`}
-              onClick={(e) => handleTrackSelect(track.id, e)}
-              onContextMenu={(e) => handleTrackRightClick(e, track.id)}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center space-x-2 min-w-0">
-                  <div
-                    className="w-2 h-2 rounded-sm flex-shrink-0"
-                    style={{ backgroundColor: track.color }}
-                  ></div>
-                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                    {track.name}
-                  </span>
-                  {track.type === 'ai-generated' && (
-                    <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
-                  )}
+          {tracks.map((track, index) => {
+            const hasMultipleClips = (track.clips?.length || 0) > 1;
+            const isExpanded = expandedTracks.has(track.id);
+            const trackHeight =
+              isExpanded && hasMultipleClips
+                ? 24 + (track.clips?.length || 0) * 20
+                : 24;
+
+            return (
+              <div key={track.id}>
+                <div
+                  className={`h-24 border-b border-[var(--border)] px-3 py-2 cursor-pointer transition-colors group ${
+                    selectedTrackIds.includes(track.id)
+                      ? 'bg-[var(--accent)] border-l-2 border-l-[var(--primary)]'
+                      : 'hover:bg-[var(--accent)]/50'
+                  }`}
+                  onClick={(e) => handleTrackSelect(track.id, e)}
+                  onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      {hasMultipleClips && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTrackExpansion(track.id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-[var(--accent)]"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                      <div
+                        className="w-2 h-2 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: track.color }}
+                      ></div>
+                      <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                        {track.name}
+                      </span>
+                      {track.type === 'ai-generated' && (
+                        <div className="w-1.5 h-1.5 bg-[var(--purple)] rounded-full"></div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTrackMute(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-5 w-5 p-0 rounded text-xs ${
+                          track.muted
+                            ? 'bg-[var(--red)] text-white'
+                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                        }`}
+                      >
+                        M
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTrackSolo(track.id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-5 w-5 p-0 rounded text-xs ${
+                          track.soloed
+                            ? 'bg-[var(--yellow)] text-black'
+                            : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
+                        }`}
+                      >
+                        S
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                    <span>{track.type}</span>
+                    <span>{track.clips?.length || 0} clips</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackMute(track.id);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs ${
-                      track.muted
-                        ? 'bg-[var(--red)] text-white'
-                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                    }`}
-                  >
-                    M
-                  </Button>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTrackSolo(track.id);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className={`h-5 w-5 p-0 rounded text-xs ${
-                      track.soloed
-                        ? 'bg-[var(--yellow)] text-black'
-                        : 'hover:bg-[var(--accent)] opacity-60 group-hover:opacity-100'
-                    }`}
-                  >
-                    S
-                  </Button>
-                </div>
+
+                {/* Expanded clip lanes */}
+                {isExpanded && hasMultipleClips && (
+                  <div className="bg-[var(--muted)]/10 border-b border-[var(--border)]">
+                    {track.clips?.map((clip, clipIndex) => (
+                      <div
+                        key={clip.id}
+                        className="h-5 px-6 py-1 border-b border-[var(--border)]/30 flex items-center justify-between text-xs hover:bg-[var(--accent)]/20 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Select clip:', clip.name);
+                        }}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: clip.color }}
+                          ></div>
+                          <span className="text-[var(--muted-foreground)] truncate">
+                            {clipIndex + 1}. {clip.name}
+                          </span>
+                        </div>
+                        <span className="text-[var(--muted-foreground)] opacity-60">
+                          {Math.round(clip.startTime)}s
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
-                <span>{track.type}</span>
-                <span>{track.clips?.length || 0} clips</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -2037,7 +2145,7 @@ export function CompactTimelineEditor({
             className="relative"
             style={{
               width: `${getTimelineWidth()}px`,
-              height: `${tracks.length * 96}px`,
+              height: `${calculateTotalTimelineHeight()}px`,
               transform: `translateX(-${scrollX}px)`,
             }}
           >
@@ -2046,207 +2154,242 @@ export function CompactTimelineEditor({
               ref={canvasRef}
               className="absolute top-0 left-0 pointer-events-none z-0"
               width={getTimelineWidth()}
-              height={tracks.length * 96}
+              height={calculateTotalTimelineHeight()}
             />
-            {tracks.map((track, index) => (
-              <div
-                key={track.id}
-                className={`absolute left-0 right-0 h-24 transition-colors ${
-                  selectedTrackIds.includes(track.id)
-                    ? 'bg-[var(--accent)]/20'
-                    : draggingClip && draggingClip.currentTrackIndex === index
-                      ? 'bg-[var(--primary)]/20 border-2 border-[var(--primary)] border-dashed'
-                      : 'hover:bg-[var(--muted)]/20'
-                }`}
-                style={{ top: `${index * 96}px` }}
-                onClick={(e) => handleTrackSelect(track.id, e)}
-                onContextMenu={(e) => handleTrackRightClick(e, track.id)}
-              >
-                {/* Audio Clips */}
-                <div
-                  className="h-full relative cursor-crosshair"
-                  onMouseDown={(e) => handleMultiSelectionStart(e, index)}
-                  onContextMenu={(e) =>
-                    handleMultiSelectionRightClick(e, track.id)
-                  }
-                >
-                  {track.clips?.map((clip) => {
-                    const timelineWidth = getTimelineWidth();
-                    const totalTime = timelineWidth / zoomLevel;
-                    const clipStartX =
-                      (clip.startTime / totalTime) * timelineWidth;
-                    const clipWidth =
-                      (clip.duration / totalTime) * timelineWidth;
+            {tracks.map((track, trackIndex) => {
+              const hasMultipleClips = (track.clips?.length || 0) > 1;
+              const isExpanded = expandedTracks.has(track.id);
+              const trackHeight =
+                isExpanded && hasMultipleClips
+                  ? 96 + (track.clips?.length || 0) * 80
+                  : 96;
+              const trackTop = calculateTrackTop(trackIndex);
 
-                    return (
-                      <div
-                        key={clip.id}
-                        className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
-                          draggingClip?.clipId === clip.id
-                            ? 'opacity-60 scale-105 z-50'
-                            : draggingClip?.selectedClips?.some(
-                                  (sc) => sc.clipId === clip.id
-                                )
-                              ? 'opacity-70 scale-102 z-40 ring-2 ring-[var(--primary)]'
-                              : multiSelection &&
-                                  multiSelection.selectedClips.includes(clip.id)
-                                ? 'ring-2 ring-[var(--primary)]'
-                                : 'z-5'
-                        }`}
-                        style={{
-                          left: `${clipStartX}px`,
-                          width: `${clipWidth}px`,
-                          backgroundColor: clip.color,
-                          borderColor: clip.color,
-                          transform: (() => {
-                            // If this clip is being dragged and is part of a group selection, use group offset
-                            if (
-                              draggingClip?.clipId === clip.id &&
-                              draggingClip.selectedClips &&
-                              draggingClip.selectedClips.length > 0
-                            ) {
-                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
-                            }
-                            // If this clip is being dragged individually
-                            else if (draggingClip?.clipId === clip.id) {
-                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
-                            }
-                            // If this clip is part of a dragged group but not the primary clip
-                            else if (
-                              draggingClip?.selectedClips?.some(
-                                (sc) => sc.clipId === clip.id
-                              )
-                            ) {
-                              return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
-                            }
-                            return 'none';
-                          })(),
-                          zIndex:
-                            draggingClip?.clipId === clip.id
-                              ? 50
-                              : draggingClip?.selectedClips?.some(
+              return (
+                <div key={track.id}>
+                  <div
+                    className={`absolute left-0 right-0 transition-colors ${
+                      selectedTrackIds.includes(track.id)
+                        ? 'bg-[var(--accent)]/20'
+                        : draggingClip &&
+                            draggingClip.currentTrackIndex === trackIndex
+                          ? 'bg-[var(--primary)]/20 border-2 border-[var(--primary)] border-dashed'
+                          : 'hover:bg-[var(--muted)]/20'
+                    }`}
+                    style={{
+                      top: `${trackTop}px`,
+                      height: `${trackHeight}px`,
+                    }}
+                    onClick={(e) => handleTrackSelect(track.id, e)}
+                    onContextMenu={(e) => handleTrackRightClick(e, track.id)}
+                  >
+                    {/* Audio Clips */}
+                    <div
+                      className="h-full relative cursor-crosshair"
+                      onMouseDown={(e) =>
+                        handleMultiSelectionStart(e, trackIndex)
+                      }
+                      onContextMenu={(e) =>
+                        handleMultiSelectionRightClick(e, track.id)
+                      }
+                    >
+                      {track.clips?.map((clip) => {
+                        const timelineWidth = getTimelineWidth();
+                        const totalTime = timelineWidth / zoomLevel;
+                        const clipStartX =
+                          (clip.startTime / totalTime) * timelineWidth;
+                        const clipWidth =
+                          (clip.duration / totalTime) * timelineWidth;
+
+                        return (
+                          <div
+                            key={clip.id}
+                            className={`absolute top-1 h-20 rounded-md shadow-md border border-opacity-30 cursor-move hover:shadow-lg transition-all duration-200 ${
+                              draggingClip?.clipId === clip.id
+                                ? 'opacity-60 scale-105 z-50'
+                                : draggingClip?.selectedClips?.some(
+                                      (sc) => sc.clipId === clip.id
+                                    )
+                                  ? 'opacity-70 scale-102 z-40 ring-2 ring-[var(--primary)]'
+                                  : multiSelection &&
+                                      multiSelection.selectedClips.includes(
+                                        clip.id
+                                      )
+                                    ? 'ring-2 ring-[var(--primary)]'
+                                    : 'z-5'
+                            }`}
+                            style={{
+                              left: `${clipStartX}px`,
+                              width: `${clipWidth}px`,
+                              backgroundColor: clip.color,
+                              borderColor: clip.color,
+                              transform: (() => {
+                                // If this clip is being dragged and is part of a group selection, use group offset
+                                if (
+                                  draggingClip?.clipId === clip.id &&
+                                  draggingClip.selectedClips &&
+                                  draggingClip.selectedClips.length > 0
+                                ) {
+                                  return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                                }
+                                // If this clip is being dragged individually
+                                else if (draggingClip?.clipId === clip.id) {
+                                  return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                                }
+                                // If this clip is part of a dragged group but not the primary clip
+                                else if (
+                                  draggingClip?.selectedClips?.some(
                                     (sc) => sc.clipId === clip.id
                                   )
-                                ? 40
-                                : 5,
-                        }}
-                        onMouseDown={(e) =>
-                          handleClipDragStart(e, clip.id, track.id)
-                        }
-                        onContextMenu={(e) =>
-                          handleClipRightClick(e, clip.id, track.id)
-                        }
-                        onDoubleClick={() =>
-                          console.log('Edit clip:', clip.name)
-                        }
-                      >
-                        {/* Clip Header */}
-                        <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center text-xs text-white font-medium">
-                          <span className="truncate flex-1">{clip.name}</span>
-                        </div>
-
-                        {/* Line Waveform */}
-                        <div className="h-14 px-2 py-1 relative">
-                          {clip.waveformData && (
-                            <svg
-                              className="w-full h-full"
-                              viewBox={`0 0 ${clipWidth} 52`}
-                              preserveAspectRatio="none"
-                            >
-                              <path
-                                d={`M 0,26 ${clip.waveformData
-                                  .map((amplitude, i) => {
-                                    const x =
-                                      (i / (clip.waveformData!.length - 1)) *
-                                      clipWidth;
-                                    const y = 26 - ((amplitude - 50) / 50) * 25;
-                                    return `L ${x},${y}`;
-                                  })
-                                  .join(' ')}`}
-                                stroke="rgba(255,255,255,0.8)"
-                                strokeWidth="1"
-                                fill="none"
-                                vectorEffect="non-scaling-stroke"
-                              />
-                              <line
-                                x1="0"
-                                y1="26"
-                                x2={clipWidth}
-                                y2="26"
-                                stroke="rgba(255,255,255,0.2)"
-                                strokeWidth="0.5"
-                                vectorEffect="non-scaling-stroke"
-                              />
-                            </svg>
-                          )}
-                        </div>
-
-                        {/* Fade In/Out Indicators */}
-                        {clip.fadeIn && clip.fadeIn > 0 && (
-                          <div
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
-                            style={{
-                              width: `${(clip.fadeIn / clip.duration) * 100}%`,
+                                ) {
+                                  return `translate(${draggingClip.currentOffsetX}px, ${draggingClip.currentOffsetY}px)`;
+                                }
+                                return 'none';
+                              })(),
+                              zIndex:
+                                draggingClip?.clipId === clip.id
+                                  ? 50
+                                  : draggingClip?.selectedClips?.some(
+                                        (sc) => sc.clipId === clip.id
+                                      )
+                                    ? 40
+                                    : 5,
                             }}
-                          />
-                        )}
-                        {clip.fadeOut && clip.fadeOut > 0 && (
-                          <div
-                            className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
-                            style={{
-                              width: `${(clip.fadeOut / clip.duration) * 100}%`,
-                            }}
-                          />
-                        )}
+                            onMouseDown={(e) =>
+                              handleClipDragStart(e, clip.id, track.id)
+                            }
+                            onContextMenu={(e) =>
+                              handleClipRightClick(e, clip.id, track.id)
+                            }
+                            onDoubleClick={() =>
+                              console.log('Edit clip:', clip.name)
+                            }
+                          >
+                            {/* Clip Header */}
+                            <div className="h-5 bg-black bg-opacity-20 rounded-t-md px-2 flex items-center text-xs text-white font-medium">
+                              <span className="truncate flex-1">
+                                {clip.name}
+                              </span>
+                            </div>
 
-                        {/* Resize Handles */}
-                        <div
-                          className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
-                          onMouseDown={(e) =>
-                            handleClipResizeStart(e, clip.id, track.id, 'left')
-                          }
-                        />
-                        <div
-                          className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
-                          onMouseDown={(e) =>
-                            handleClipResizeStart(e, clip.id, track.id, 'right')
-                          }
-                        />
-                      </div>
-                    );
-                  })}
+                            {/* Line Waveform */}
+                            <div className="h-14 px-2 py-1 relative">
+                              {clip.waveformData && (
+                                <svg
+                                  className="w-full h-full"
+                                  viewBox={`0 0 ${clipWidth} 52`}
+                                  preserveAspectRatio="none"
+                                >
+                                  <path
+                                    d={`M 0,26 ${clip.waveformData
+                                      .map((amplitude, i) => {
+                                        const x =
+                                          (i /
+                                            (clip.waveformData!.length - 1)) *
+                                          clipWidth;
+                                        const y =
+                                          26 - ((amplitude - 50) / 50) * 25;
+                                        return `L ${x},${y}`;
+                                      })
+                                      .join(' ')}`}
+                                    stroke="rgba(255,255,255,0.8)"
+                                    strokeWidth="1"
+                                    fill="none"
+                                    vectorEffect="non-scaling-stroke"
+                                  />
+                                  <line
+                                    x1="0"
+                                    y1="26"
+                                    x2={clipWidth}
+                                    y2="26"
+                                    stroke="rgba(255,255,255,0.2)"
+                                    strokeWidth="0.5"
+                                    vectorEffect="non-scaling-stroke"
+                                  />
+                                </svg>
+                              )}
+                            </div>
 
-                  {/* Multi-track Selection Overlay - highlight selected clips */}
-                  {multiSelection && !multiSelection.isActive && (
-                    <>
-                      {track.clips?.map((clip) => {
-                        if (multiSelection.selectedClips.includes(clip.id)) {
-                          const timelineWidth = getTimelineWidth();
-                          const totalTime = timelineWidth / zoomLevel;
-                          const leftPosition =
-                            (clip.startTime / totalTime) * timelineWidth;
-                          const clipWidth =
-                            (clip.duration / totalTime) * timelineWidth;
+                            {/* Fade In/Out Indicators */}
+                            {clip.fadeIn && clip.fadeIn > 0 && (
+                              <div
+                                className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent to-white opacity-20"
+                                style={{
+                                  width: `${(clip.fadeIn / clip.duration) * 100}%`,
+                                }}
+                              />
+                            )}
+                            {clip.fadeOut && clip.fadeOut > 0 && (
+                              <div
+                                className="absolute top-0 right-0 h-full bg-gradient-to-l from-transparent to-white opacity-20"
+                                style={{
+                                  width: `${(clip.fadeOut / clip.duration) * 100}%`,
+                                }}
+                              />
+                            )}
 
-                          return (
+                            {/* Resize Handles */}
                             <div
-                              key={`selection-${clip.id}`}
-                              className="absolute top-0 bottom-0 bg-[var(--primary)]/30 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
-                              style={{
-                                left: `${leftPosition}px`,
-                                width: `${clipWidth}px`,
-                                zIndex: 15,
-                              }}
+                              className="absolute left-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
+                              onMouseDown={(e) =>
+                                handleClipResizeStart(
+                                  e,
+                                  clip.id,
+                                  track.id,
+                                  'left'
+                                )
+                              }
                             />
-                          );
-                        }
-                        return null;
+                            <div
+                              className="absolute right-0 top-0 w-2 h-full cursor-ew-resize bg-white bg-opacity-0 hover:bg-opacity-30 transition-colors"
+                              onMouseDown={(e) =>
+                                handleClipResizeStart(
+                                  e,
+                                  clip.id,
+                                  track.id,
+                                  'right'
+                                )
+                              }
+                            />
+                          </div>
+                        );
                       })}
-                    </>
-                  )}
+
+                      {/* Multi-track Selection Overlay - highlight selected clips */}
+                      {multiSelection && !multiSelection.isActive && (
+                        <>
+                          {track.clips?.map((clip) => {
+                            if (
+                              multiSelection.selectedClips.includes(clip.id)
+                            ) {
+                              const timelineWidth = getTimelineWidth();
+                              const totalTime = timelineWidth / zoomLevel;
+                              const leftPosition =
+                                (clip.startTime / totalTime) * timelineWidth;
+                              const clipWidth =
+                                (clip.duration / totalTime) * timelineWidth;
+
+                              return (
+                                <div
+                                  key={`selection-${clip.id}`}
+                                  className="absolute top-0 bottom-0 bg-[var(--primary)]/30 border-2 border-[var(--primary)] pointer-events-none rounded-sm"
+                                  style={{
+                                    left: `${leftPosition}px`,
+                                    width: `${clipWidth}px`,
+                                    zIndex: 15,
+                                  }}
+                                />
+                              );
+                            }
+                            return null;
+                          })}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Multi-track Selection Box */}
             {multiSelection && multiSelection.isActive && (
