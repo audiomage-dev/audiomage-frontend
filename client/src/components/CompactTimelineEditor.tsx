@@ -2732,7 +2732,7 @@ export function CompactTimelineEditor({
             <input
               type="text"
               placeholder="Enter AI instruction..."
-              className="w-full px-2 py-1 text-xs bg-[var(--muted)]/20 border border-[var(--border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--purple)] focus:border-[var(--purple)]"
+              className="w-full px-2 py-1 text-xs bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--purple)] focus:border-[var(--purple)]"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                   const track = tracks.find(
