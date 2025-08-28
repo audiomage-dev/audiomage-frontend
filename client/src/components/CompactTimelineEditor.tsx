@@ -32,6 +32,7 @@ import {
   Link,
   ChevronDown,
   ChevronRight,
+  Activity,
 } from 'lucide-react';
 
 interface CompactTimelineEditorProps {
