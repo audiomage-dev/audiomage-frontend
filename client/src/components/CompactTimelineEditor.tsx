@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
@@ -31,7 +31,7 @@ import {
   Copy,
   Link,
 } from 'lucide-react';
-import { setupHiDPICanvas, clearCanvas } from '../lib/canvas-utils';
+import { setupHiDPICanvas, clearCanvas, optimizeDataSampling, renderWaveform } from '../lib/canvas-utils';
 
 interface CompactTimelineEditorProps {
   tracks: AudioTrack[];
@@ -297,6 +297,54 @@ export function CompactTimelineEditor({
     | null
   >(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const waveformCacheRef = useRef<Map<string, { w: number; min: number[]; max: number[] }>>(new Map());
+
+  // Spatial index of clips per track in pixel space for current zoom
+  type ClipSpan = {
+    id: string;
+    startX: number;
+    endX: number;
+    startTime: number;
+    duration: number;
+    color: string;
+    name: string;
+    trackIndex: number;
+  };
+  const clipSpansByTrack = useMemo(() => {
+    const spans: ClipSpan[][] = [];
+    const timelineWidth = getTimelineWidth();
+    const totalTime = timelineWidth / zoomLevel;
+    for (let ti = 0; ti < tracks.length; ti++) {
+      const track = tracks[ti];
+      const arr: ClipSpan[] = [];
+      track.clips?.forEach((clip) => {
+        const startX = (clip.startTime / totalTime) * timelineWidth;
+        const w = (clip.duration / totalTime) * timelineWidth;
+        arr.push({
+          id: clip.id,
+          startX,
+          endX: startX + w,
+          startTime: clip.startTime,
+          duration: clip.duration,
+          color: clip.color,
+          name: clip.name,
+          trackIndex: ti,
+        });
+      });
+      arr.sort((a, b) => a.startX - b.startX);
+      spans.push(arr);
+    }
+    return spans;
+  }, [tracks, zoomLevel, getTimelineWidth]);
+
+  const findFirstIndex = (arr: ClipSpan[], x: number): number => {
+    let lo = 0, hi = arr.length - 1, ans = arr.length;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      if (arr[mid].endX >= x) { ans = mid; hi = mid - 1; } else { lo = mid + 1; }
+    }
+    return ans;
+  };
 
   // Zoom functions
   const handleZoomIn = useCallback(() => {
@@ -390,6 +438,8 @@ export function CompactTimelineEditor({
 
     const timelineWidth = getTimelineWidth();
     const totalTime = timelineWidth / zoomLevel;
+    const viewStart = scrollX;
+    const viewEnd = scrollX + widthCss;
 
     // Draw track background stripes (subtle)
     for (let ti = 0; ti < tracks.length; ti++) {
@@ -406,17 +456,17 @@ export function CompactTimelineEditor({
       const headerHeight = 20;
       const innerHeight = clipHeight - headerHeight - 4;
 
-      track.clips?.forEach((clip) => {
-        const clipStartX = (clip.startTime / totalTime) * timelineWidth;
-        const clipWidth = (clip.duration / totalTime) * timelineWidth;
-        if (clipWidth <= 0) return;
-
-        const drawX = clipStartX - scrollX;
-        const drawW = clipWidth;
-        if (drawX > widthCss || drawX + drawW < 0) return; // cull
+      const spans = clipSpansByTrack[ti];
+      const startIdx = findFirstIndex(spans, viewStart);
+      for (let si = startIdx; si < spans.length; si++) {
+        const span = spans[si];
+        if (span.startX > viewEnd) break;
+        const drawX = span.startX - scrollX;
+        const drawW = span.endX - span.startX;
+        if (drawW <= 0) continue;
 
         // Clip body
-        ctx.fillStyle = clip.color || 'rgba(94,129,172,0.8)';
+        ctx.fillStyle = span.color || 'rgba(94,129,172,0.8)';
         const radius = 6;
         const x = drawX;
         const y = yTop;
@@ -452,20 +502,50 @@ export function CompactTimelineEditor({
         ctx.beginPath();
         ctx.rect(x + 6, y, w - 12, headerHeight);
         ctx.clip();
-        ctx.fillText(clip.name || 'Clip', x + 8, y + headerHeight / 2);
+        ctx.fillText(span.name || 'Clip', x + 8, y + headerHeight / 2);
         ctx.restore();
 
-        // Simple center line as placeholder waveform
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 1;
-        const centerY = y + headerHeight + innerHeight / 2;
-        ctx.beginPath();
-        ctx.moveTo(x + 4, centerY);
-        ctx.lineTo(x + w - 4, centerY);
-        ctx.stroke();
-      });
+        // Waveform rendering if available
+        const trackData = track.clips?.find(c => c.id === span.id)?.waveformData;
+        if (trackData && w > 12 && innerHeight > 8) {
+          const targetW = Math.max(16, Math.floor(w));
+          const cacheKey = `${span.id}:${targetW}`;
+          let env = waveformCacheRef.current.get(cacheKey);
+          if (!env) {
+            const sampled = optimizeDataSampling(trackData, targetW);
+            env = { w: targetW, min: sampled.min, max: sampled.max };
+            waveformCacheRef.current.set(cacheKey, env);
+          }
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(x + 2, y + headerHeight + 2, w - 4, innerHeight);
+          ctx.clip();
+          ctx.translate(x + 2, y + headerHeight + 2);
+          renderWaveform(ctx, {
+            width: w - 4,
+            height: innerHeight,
+            color: 'rgba(255,255,255,0.9)',
+            min: env.min,
+            max: env.max,
+            baseline: 0.5,
+            lineWidth: 1,
+            fillOpacity: 0.35,
+            strokeOpacity: 0.7,
+          });
+          ctx.restore();
+        } else {
+          // Simple center line as placeholder waveform
+          ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = 1;
+          const centerY = y + headerHeight + innerHeight / 2;
+          ctx.beginPath();
+          ctx.moveTo(x + 4, centerY);
+          ctx.lineTo(x + w - 4, centerY);
+          ctx.stroke();
+        }
+      }
     }
-  }, [tracks, zoomLevel, getTimelineWidth, viewportSize.w, scrollX]);
+  }, [tracks, zoomLevel, getTimelineWidth, viewportSize.w, scrollX, clipSpansByTrack]);
 
   // Overlay layer: playhead and selection guides
   const drawOverlayLayer = useCallback(() => {
@@ -557,16 +637,62 @@ export function CompactTimelineEditor({
         }
       }
     }
-  }, [viewportSize.w, tracks.length, transport.currentTime, zoomLevel, getTimelineWidth, scrollX, USE_CANVAS_TIMELINE]);
 
-  // Redraw canvas when dependencies change
-  useEffect(() => {
-    drawCanvasGrid();
+    // Selection overlays in canvas mode
     if (USE_CANVAS_TIMELINE) {
-      drawClipsLayer();
-      drawOverlayLayer();
+      // Multi-track selection active rectangle
+      if (multiSelection && multiSelection.isActive) {
+        const left = Math.min(multiSelection.startX, multiSelection.endX) - scrollX;
+        const top = Math.min(multiSelection.startY, multiSelection.endY);
+        const w = Math.abs(multiSelection.endX - multiSelection.startX);
+        const h = Math.abs(multiSelection.endY - multiSelection.startY);
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0ea5e9';
+        ctx.fillRect(left, top, w, h);
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0ea5e9';
+        ctx.strokeRect(left, top, w, h);
+        ctx.restore();
+      }
+
+      // Box selection from select tool
+      if (selectionBox) {
+        const rect = timelineRef.current?.getBoundingClientRect();
+        if (rect) {
+          const left = Math.min(selectionBox.startX, selectionBox.endX) - rect.left;
+          const top = Math.min(selectionBox.startY, selectionBox.endY) - rect.top;
+          const w = Math.abs(selectionBox.endX - selectionBox.startX);
+          const h = Math.abs(selectionBox.endY - selectionBox.startY);
+          ctx.save();
+          ctx.setLineDash([6, 4]);
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+          ctx.strokeRect(left, top, w, h);
+          ctx.restore();
+        }
+      }
     }
-  }, [drawCanvasGrid, drawClipsLayer, drawOverlayLayer]);
+  }, [viewportSize.w, tracks.length, transport.currentTime, zoomLevel, getTimelineWidth, scrollX, USE_CANVAS_TIMELINE, multiSelection, selectionBox]);
+
+  const requestOverlayRedraw = useCallback(() => {
+    if (overlayRafIdRef.current) return;
+    overlayRafIdRef.current = requestAnimationFrame(() => {
+      overlayRafIdRef.current = null;
+      drawOverlayLayer();
+    });
+  }, [drawOverlayLayer]);
+
+  const staticRafIdRef = useRef<number | null>(null);
+  const requestStaticRedraw = useCallback(() => {
+    if (staticRafIdRef.current) return;
+    staticRafIdRef.current = requestAnimationFrame(() => {
+      staticRafIdRef.current = null;
+      drawCanvasGrid();
+      drawClipsLayer();
+    });
+  }, [drawCanvasGrid, drawClipsLayer]);
 
   // Resize observer for viewport sizing
   useEffect(() => {
@@ -647,32 +773,21 @@ export function CompactTimelineEditor({
       const trackIndex = Math.floor(y / 96);
       if (trackIndex < 0 || trackIndex >= tracks.length) return null;
 
-      const timelineWidth = getTimelineWidth();
-      const totalTime = timelineWidth / zoomLevel;
-
-      // Check clips on this track
-      const track = tracks[trackIndex];
-      for (let i = 0; i < (track.clips?.length || 0); i++) {
-        const clip = track.clips![i];
-        const clipStartX = (clip.startTime / totalTime) * timelineWidth;
-        const clipWidth = (clip.duration / totalTime) * timelineWidth;
-        const left = clipStartX;
-        const right = clipStartX + clipWidth;
-        const top = trackIndex * 96 + 4;
-        const bottom = top + (96 - 8);
-        if (x >= left && x <= right && y >= top && y <= bottom) {
-          return {
-            type: 'clip',
-            trackIndex,
-            clipId: clip.id,
-            localX: x - left,
-            localY: y - top,
-          };
+      const spans = clipSpansByTrack[trackIndex];
+      const idx = findFirstIndex(spans, x);
+      for (let i = idx; i < spans.length && spans[i].startX <= x; i++) {
+        const span = spans[i];
+        if (x <= span.endX) {
+          const top = trackIndex * 96 + 4;
+          const bottom = top + (96 - 8);
+          if (y >= top && y <= bottom) {
+            return { type: 'clip', trackIndex, clipId: span.id, localX: x - span.startX, localY: y - top };
+          }
         }
       }
       return { type: 'track', trackIndex };
     },
-    [tracks, zoomLevel, scrollX, getTimelineWidth]
+    [tracks, scrollX, clipSpansByTrack]
   );
 
   const handleTrackSelect = useCallback(
@@ -1183,8 +1298,12 @@ export function CompactTimelineEditor({
       if (currentTool === 'hand') {
         // Hand tool - pan the timeline
         const deltaX = e.clientX - dragStart.x;
-        setScrollX((prev) => Math.max(0, prev - deltaX));
+        setScrollX((prev) => {
+          const next = Math.max(0, prev - deltaX);
+          return next;
+        });
         setDragStart({ x: e.clientX, y: e.clientY });
+        requestStaticRedraw();
       } else if (isSelecting && selectionBox) {
         // Update selection box
         setSelectionBox((prev) =>
@@ -1283,6 +1402,7 @@ export function CompactTimelineEditor({
       scrollX,
       draggingClip,
       getTimelineWidth,
+      requestStaticRedraw,
     ]
   );
 
@@ -1363,13 +1483,23 @@ export function CompactTimelineEditor({
         e.preventDefault();
         const delta = e.deltaY > 0 ? -0.1 : 0.1;
         const newZoomLevel = Math.max(0.1, Math.min(5, zoomLevel + delta));
+        // Zoom anchoring at mouse position
+        const rect = timelineRef.current?.getBoundingClientRect();
+        if (rect) {
+          const mouseX = e.clientX - rect.left;
+          const scale = newZoomLevel / zoomLevel;
+          const newScroll = Math.max(0, (scrollX + mouseX) * scale - mouseX);
+          setScrollX(newScroll);
+        }
         onZoomChange?.(newZoomLevel);
+        requestStaticRedraw();
       } else {
         // Horizontal scroll
         setScrollX((prev) => Math.max(0, prev + e.deltaX));
+        requestStaticRedraw();
       }
     },
-    [zoomLevel, onZoomChange]
+    [zoomLevel, onZoomChange, scrollX, requestStaticRedraw]
   );
 
   // Check if selected clips can be glued together
