@@ -513,6 +513,58 @@ export function CompactTimelineEditor({
     };
   }, [transport.isPlaying, drawOverlayLayer]);
 
+  // Hit-test utilities for canvas mode
+  interface HitTestResultClip {
+    type: 'clip';
+    trackIndex: number;
+    clipId: string;
+    localX: number;
+    localY: number;
+  }
+  interface HitTestResultTrack {
+    type: 'track';
+    trackIndex: number;
+  }
+  type HitResult = HitTestResultClip | HitTestResultTrack | null;
+
+  const hitTestAt = useCallback(
+    (clientX: number, clientY: number): HitResult => {
+      if (!timelineRef.current) return null;
+      const rect = timelineRef.current.getBoundingClientRect();
+      const x = clientX - rect.left + scrollX; // timeline coords
+      const y = clientY - rect.top; // 0..tracks*96
+
+      const trackIndex = Math.floor(y / 96);
+      if (trackIndex < 0 || trackIndex >= tracks.length) return null;
+
+      const timelineWidth = getTimelineWidth();
+      const totalTime = timelineWidth / zoomLevel;
+
+      // Check clips on this track
+      const track = tracks[trackIndex];
+      for (let i = 0; i < (track.clips?.length || 0); i++) {
+        const clip = track.clips![i];
+        const clipStartX = (clip.startTime / totalTime) * timelineWidth;
+        const clipWidth = (clip.duration / totalTime) * timelineWidth;
+        const left = clipStartX;
+        const right = clipStartX + clipWidth;
+        const top = trackIndex * 96 + 4;
+        const bottom = top + (96 - 8);
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+          return {
+            type: 'clip',
+            trackIndex,
+            clipId: clip.id,
+            localX: x - left,
+            localY: y - top,
+          };
+        }
+      }
+      return { type: 'track', trackIndex };
+    },
+    [tracks, zoomLevel, scrollX, getTimelineWidth]
+  );
+
   const handleTrackSelect = useCallback(
     (trackId: string, e?: React.MouseEvent) => {
       if (e?.ctrlKey || e?.metaKey) {
@@ -2181,7 +2233,20 @@ export function CompactTimelineEditor({
         <div
           className="flex-1 overflow-auto scrollbar-thin select-none relative"
           ref={timelineRef}
-          onMouseDown={handleMouseDown}
+          onMouseDown={(e) => {
+            if (USE_CANVAS_TIMELINE) {
+              const hit = hitTestAt(e.clientX, e.clientY);
+              if (hit && hit.type === 'clip') {
+                handleClipDragStart(e, hit.clipId, tracks[hit.trackIndex].id);
+                return;
+              }
+              if (hit && hit.type === 'track') {
+                handleTrackSelect(tracks[hit.trackIndex].id, e);
+                return;
+              }
+            }
+            handleMouseDown(e);
+          }}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onWheel={handleScroll}
