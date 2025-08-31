@@ -54,9 +54,8 @@ interface CompactTimelineEditorProps {
   ) => void;
   onZoomChange?: (zoomLevel: number) => void;
   isLocked?: boolean;
+  useCanvasRenderer?: boolean;
 }
-
-const USE_CANVAS_TIMELINE = true;
 
 export function CompactTimelineEditor({
   tracks,
@@ -69,11 +68,18 @@ export function CompactTimelineEditor({
   onClipResize,
   onZoomChange,
   isLocked = false,
+  useCanvasRenderer,
 }: CompactTimelineEditorProps) {
   // Generate unique component ID to prevent key conflicts
   const componentId = useRef(
     `timeline-${Math.random().toString(36).substr(2, 9)}`
   ).current;
+  const USE_CANVAS_TIMELINE = (() => {
+    if (typeof useCanvasRenderer === 'boolean') return useCanvasRenderer;
+    const env = (import.meta as any)?.env?.VITE_USE_CANVAS_TIMELINE;
+    if (typeof env === 'string') return env !== 'false' && env !== '0';
+    return true;
+  })();
   const [internalZoomLevel, setInternalZoomLevel] = useState(1);
   const zoomLevel = externalZoomLevel;
   const [scrollX, setScrollX] = useState(0);
@@ -511,7 +517,25 @@ export function CompactTimelineEditor({
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
     };
-  }, [transport.isPlaying, drawOverlayLayer]);
+  }, [transport.isPlaying, drawOverlayLayer, USE_CANVAS_TIMELINE]);
+
+  // Keyboard shortcuts (minimal): Escape cancels selection/menus
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectionBox(null);
+        setIsSelecting(false);
+        setMultiSelection(null);
+        setContextMenu(null);
+        setAudioContextMenu(null);
+        setClipContextMenu(null);
+        setDraggingClip(null);
+        setVirtualExtension(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Hit-test utilities for canvas mode
   interface HitTestResultClip {
@@ -2237,6 +2261,23 @@ export function CompactTimelineEditor({
             if (USE_CANVAS_TIMELINE) {
               const hit = hitTestAt(e.clientX, e.clientY);
               if (hit && hit.type === 'clip') {
+                // Determine if near edges for resize
+                const track = tracks[hit.trackIndex];
+                const timelineWidth = getTimelineWidth();
+                const totalTime = timelineWidth / zoomLevel;
+                const clip = track.clips.find((c) => c.id === hit.clipId);
+                if (clip) {
+                  const clipWidth = (clip.duration / totalTime) * timelineWidth;
+                  const handlePx = 6;
+                  if (hit.localX <= handlePx) {
+                    handleClipResizeStart(e as any, hit.clipId, track.id, 'left');
+                    return;
+                  }
+                  if (hit.localX >= clipWidth - handlePx) {
+                    handleClipResizeStart(e as any, hit.clipId, track.id, 'right');
+                    return;
+                  }
+                }
                 handleClipDragStart(e, hit.clipId, tracks[hit.trackIndex].id);
                 return;
               }
