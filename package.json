@@ -11,7 +11,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.5",
+    "@fontsource/inter": "^5.2.6",
     "@fontsource/jetbrains-mono": "^5.2.5",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
