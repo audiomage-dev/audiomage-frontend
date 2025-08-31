@@ -23,13 +23,18 @@ export function MixingConsole({
   onChannelSolo,
   onMasterVolumeChange,
 }: MixingConsoleProps) {
-  const [activeTab, setActiveTab] = useState<'mix' | 'fx' | 'ai' | 'meter'>('mix');
+  const [activeTab, setActiveTab] = useState<'mix' | 'fx' | 'ai' | 'meter'>(
+    'mix'
+  );
   const [masterFaderPosition, setMasterFaderPosition] = useState(masterVolume);
 
   const handleMasterFaderChange = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const percentage = Math.max(0, Math.min(100, ((rect.height - y) / rect.height) * 100));
+    const percentage = Math.max(
+      0,
+      Math.min(100, ((rect.height - y) / rect.height) * 100)
+    );
     setMasterFaderPosition(percentage);
     onMasterVolumeChange(percentage);
   };
@@ -77,24 +82,26 @@ export function MixingConsole({
         <div className="flex items-center space-x-2">
           {/* Master Fader */}
           <div className="flex flex-col items-center">
-            <div 
+            <div
               className="w-6 h-32 bg-[hsl(var(--secondary))] rounded-full relative fader-track cursor-pointer"
               onClick={handleMasterFaderChange}
             >
-              <div 
+              <div
                 className="absolute left-1/2 transform -translate-x-1/2 w-4 h-6 bg-[hsl(var(--primary))] rounded-sm border border-[hsl(var(--muted-foreground))] cursor-pointer"
                 style={{ bottom: `${masterFaderPosition * 0.75 + 8}%` }}
               />
             </div>
-            <span className="text-xs font-mono mt-1">{formatDb(masterFaderPosition)}</span>
+            <span className="text-xs font-mono mt-1">
+              {formatDb(masterFaderPosition)}
+            </span>
           </div>
-          
+
           {/* Master Meters */}
           <div className="flex space-x-1">
             <AudioMeter level={85} peak={92} height="h-32" />
             <AudioMeter level={78} peak={88} height="h-32" />
           </div>
-          
+
           {/* Master EQ */}
           <div className="flex-1 space-y-1">
             <div className="flex justify-between items-center">
@@ -138,12 +145,16 @@ export function MixingConsole({
               <div className="flex items-center space-x-2 mb-3">
                 <i className="fas fa-robot text-[hsl(var(--frost-1))]"></i>
                 <span className="text-sm font-semibold">AI Audio Analysis</span>
-                <div className={`w-2 h-2 rounded-full ${aiAnalysis.isProcessing ? 'bg-[hsl(var(--aurora-yellow))] animate-pulse' : 'bg-[hsl(var(--aurora-green))]'}`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${aiAnalysis.isProcessing ? 'bg-[hsl(var(--aurora-yellow))] animate-pulse' : 'bg-[hsl(var(--aurora-green))]'}`}
+                ></div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="bg-[hsl(var(--nord-3))] p-2 rounded">
-                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">Spectral Analysis:</div>
+                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">
+                    Spectral Analysis:
+                  </div>
                   <div className="h-16 spectral-display rounded mb-2 relative overflow-hidden">
                     {aiAnalysis.spectralData.map((value, index) => (
                       <div
@@ -160,26 +171,36 @@ export function MixingConsole({
                     Peak at {aiAnalysis.peakFrequency}Hz detected in vocal range
                   </div>
                 </div>
-                
+
                 <div className="bg-[hsl(var(--nord-3))] p-2 rounded">
-                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">AI Recommendations:</div>
+                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">
+                    AI Recommendations:
+                  </div>
                   <div className="space-y-1 text-xs">
                     {aiAnalysis.recommendations.slice(1).map((rec, index) => (
-                      <div key={index} className="text-[hsl(var(--nord-4))]">• {rec}</div>
+                      <div key={index} className="text-[hsl(var(--nord-4))]">
+                        • {rec}
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="bg-[hsl(var(--nord-3))] p-2 rounded">
-                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">Audio Metrics:</div>
+                  <div className="text-[hsl(var(--frost-1))] mb-2 text-xs font-semibold">
+                    Audio Metrics:
+                  </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-[hsl(var(--nord-3))]">LUFS:</span>
-                      <span className="font-mono text-[hsl(var(--frost-2))] ml-1">{aiAnalysis.lufs}</span>
+                      <span className="font-mono text-[hsl(var(--frost-2))] ml-1">
+                        {aiAnalysis.lufs}
+                      </span>
                     </div>
                     <div>
                       <span className="text-[hsl(var(--nord-3))]">Peak:</span>
-                      <span className="font-mono text-[hsl(var(--aurora-yellow))] ml-1">{aiAnalysis.peak}dB</span>
+                      <span className="font-mono text-[hsl(var(--aurora-yellow))] ml-1">
+                        {aiAnalysis.peak}dB
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -192,12 +213,30 @@ export function MixingConsole({
           <div className="p-3">
             <div className="text-sm font-semibold mb-3">Effects Rack</div>
             <div className="space-y-2">
-              {['Reverb - Hall', 'Delay - Analog', 'Chorus - Vintage', 'Limiter - Broadcast'].map((fx, index) => (
-                <div key={index} className="plugin-slot p-2 rounded flex items-center justify-between">
+              {[
+                'Reverb - Hall',
+                'Delay - Analog',
+                'Chorus - Vintage',
+                'Limiter - Broadcast',
+              ].map((fx, index) => (
+                <div
+                  key={index}
+                  className="plugin-slot p-2 rounded flex items-center justify-between"
+                >
                   <span className="text-xs">{fx}</span>
                   <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm" className="w-4 h-4 rounded text-xs h-auto p-0">●</Button>
-                    <Button variant="ghost" size="sm" className="w-4 h-4 rounded text-xs h-auto p-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-4 h-4 rounded text-xs h-auto p-0"
+                    >
+                      ●
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-4 h-4 rounded text-xs h-auto p-0"
+                    >
                       <i className="fas fa-cog"></i>
                     </Button>
                   </div>

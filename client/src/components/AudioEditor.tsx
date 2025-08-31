@@ -2,14 +2,14 @@ import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { WaveformVisualization } from './WaveformVisualization';
 import { AudioTrack, TransportState } from '../types/audio';
-import { 
-  Volume2, 
-  VolumeX, 
-  Radio, 
-  Circle, 
-  Edit3, 
-  Copy, 
-  Trash2, 
+import {
+  Volume2,
+  VolumeX,
+  Radio,
+  Circle,
+  Edit3,
+  Copy,
+  Trash2,
   MoreHorizontal,
   Play,
   Pause,
@@ -17,7 +17,7 @@ import {
   Scissors,
   Move,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
 } from 'lucide-react';
 
 interface AudioEditorProps {
@@ -35,7 +35,13 @@ interface ContextMenuProps {
   onAction: (action: string, trackId: string) => void;
 }
 
-function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps) {
+function TrackContextMenu({
+  x,
+  y,
+  trackId,
+  onClose,
+  onAction,
+}: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [submenuPosition, setSubmenuPosition] = useState({ x: 0, y: 0 });
@@ -50,7 +56,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
     setActiveSubmenu(submenu);
     setSubmenuPosition({
       x: rect.right + 5,
-      y: rect.top
+      y: rect.top,
     });
   };
 
@@ -60,18 +66,26 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
 
   const effectsSubmenu = [
     { name: 'EQ - Parametric', icon: 'sliders-h', color: 'var(--frost3)' },
-    { name: 'Compressor - Vintage', icon: 'compress-arrows-alt', color: 'var(--primary)' },
+    {
+      name: 'Compressor - Vintage',
+      icon: 'compress-arrows-alt',
+      color: 'var(--primary)',
+    },
     { name: 'Reverb - Hall', icon: 'water', color: 'var(--frost1)' },
     { name: 'Delay - Stereo', icon: 'clock', color: 'var(--orange)' },
     { name: 'Saturation - Tube', icon: 'fire', color: 'var(--red)' },
-    { name: 'AI DeNoise Pro', icon: 'robot', color: 'var(--purple)' }
+    { name: 'AI DeNoise Pro', icon: 'robot', color: 'var(--purple)' },
   ];
 
   const sendsSubmenu = [
     { name: 'Send to Reverb Bus', icon: 'share', color: 'var(--frost1)' },
     { name: 'Send to Delay Bus', icon: 'share-alt', color: 'var(--orange)' },
-    { name: 'Send to Parallel Comp', icon: 'code-branch', color: 'var(--primary)' },
-    { name: 'Create New Send...', icon: 'plus', color: 'var(--green)' }
+    {
+      name: 'Send to Parallel Comp',
+      icon: 'code-branch',
+      color: 'var(--primary)',
+    },
+    { name: 'Create New Send...', icon: 'plus', color: 'var(--green)' },
   ];
 
   return (
@@ -82,9 +96,11 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
         style={{ left: x, top: y }}
       >
         <div className="px-3 py-2 border-b border-[var(--border)]">
-          <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Track Actions</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            Track Actions
+          </span>
         </div>
-        
+
         <div className="py-1">
           <button
             onClick={() => handleAction('duplicate')}
@@ -93,7 +109,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             <i className="fas fa-copy text-[var(--primary)]"></i>
             <span>Duplicate Track</span>
           </button>
-          
+
           <button
             onClick={() => handleAction('rename')}
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
@@ -101,7 +117,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             <i className="fas fa-edit text-[var(--frost2)]"></i>
             <span>Rename Track</span>
           </button>
-          
+
           <button
             onClick={() => handleAction('color')}
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
@@ -109,9 +125,9 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             <i className="fas fa-palette text-[var(--purple)]"></i>
             <span>Change Color</span>
           </button>
-          
+
           <div className="border-t border-[var(--border)] my-1"></div>
-          
+
           <button
             onClick={() => handleAction('freeze')}
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
@@ -119,7 +135,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             <i className="fas fa-snowflake text-[var(--frost1)]"></i>
             <span>Freeze Track</span>
           </button>
-          
+
           <button
             onClick={() => handleAction('bounce')}
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
@@ -127,9 +143,9 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             <i className="fas fa-download text-[var(--green)]"></i>
             <span>Bounce to Audio</span>
           </button>
-          
+
           <div className="border-t border-[var(--border)] my-1"></div>
-          
+
           <button
             onMouseEnter={(e) => handleSubmenuHover('effects', e)}
             onMouseLeave={handleSubmenuLeave}
@@ -141,7 +157,7 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             </div>
             <i className="fas fa-chevron-right text-xs text-[var(--muted-foreground)]"></i>
           </button>
-          
+
           <button
             onMouseEnter={(e) => handleSubmenuHover('sends', e)}
             onMouseLeave={handleSubmenuLeave}
@@ -153,9 +169,9 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
             </div>
             <i className="fas fa-chevron-right text-xs text-[var(--muted-foreground)]"></i>
           </button>
-          
+
           <div className="border-t border-[var(--border)] my-1"></div>
-          
+
           <button
             onClick={() => handleAction('delete')}
             className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] hover:text-[var(--red)] flex items-center space-x-2"
@@ -175,7 +191,9 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
           onMouseLeave={handleSubmenuLeave}
         >
           <div className="px-3 py-2 border-b border-[var(--border)]">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Effects</span>
+            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+              Effects
+            </span>
           </div>
           {effectsSubmenu.map((effect, index) => (
             <button
@@ -183,7 +201,10 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
               onClick={() => handleAction(`effect:${effect.name}`)}
               className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
             >
-              <i className={`fas fa-${effect.icon}`} style={{ color: effect.color }}></i>
+              <i
+                className={`fas fa-${effect.icon}`}
+                style={{ color: effect.color }}
+              ></i>
               <span>{effect.name}</span>
             </button>
           ))}
@@ -198,7 +219,9 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
           onMouseLeave={handleSubmenuLeave}
         >
           <div className="px-3 py-2 border-b border-[var(--border)]">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Sends</span>
+            <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+              Sends
+            </span>
           </div>
           {sendsSubmenu.map((send, index) => (
             <button
@@ -206,7 +229,10 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
               onClick={() => handleAction(`send:${send.name}`)}
               className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--accent)] flex items-center space-x-2"
             >
-              <i className={`fas fa-${send.icon}`} style={{ color: send.color }}></i>
+              <i
+                className={`fas fa-${send.icon}`}
+                style={{ color: send.color }}
+              ></i>
               <span>{send.name}</span>
             </button>
           ))}
@@ -216,12 +242,21 @@ function TrackContextMenu({ x, y, trackId, onClose, onAction }: ContextMenuProps
   );
 }
 
-export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: AudioEditorProps) {
+export function AudioEditor({
+  tracks,
+  transport,
+  onTrackMute,
+  onTrackSolo,
+}: AudioEditorProps) {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; trackId: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    trackId: string;
+  } | null>(null);
   const [showChatBox, setShowChatBox] = useState(false);
   const [chatPrompt, setChatPrompt] = useState('');
-  
+
   const handleTrackSelect = (trackId: string) => {
     setSelectedTrackId(trackId);
   };
@@ -260,9 +295,19 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
         break;
       default:
         if (action.startsWith('effect:')) {
-          console.log('Adding effect:', action.replace('effect:', ''), 'to track', trackId);
+          console.log(
+            'Adding effect:',
+            action.replace('effect:', ''),
+            'to track',
+            trackId
+          );
         } else if (action.startsWith('send:')) {
-          console.log('Adding send:', action.replace('send:', ''), 'to track', trackId);
+          console.log(
+            'Adding send:',
+            action.replace('send:', ''),
+            'to track',
+            trackId
+          );
         }
         break;
     }
@@ -308,16 +353,32 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
       <div className="bg-[var(--muted)] border-b border-[var(--border)] px-3 py-1 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex space-x-0.5">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-[var(--primary)] text-white">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 bg-[var(--primary)] text-white"
+            >
               <Move className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-[var(--accent)]"
+            >
               <Scissors className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-[var(--accent)]"
+            >
               <ZoomIn className="w-3 h-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-[var(--accent)]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-[var(--accent)]"
+            >
               <ZoomOut className="w-3 h-3" />
             </Button>
           </div>
@@ -341,10 +402,10 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
             </div>
           </div>
         </div>
-        
+
         <Button
           onClick={() => setShowChatBox(!showChatBox)}
-          variant={showChatBox ? "default" : "outline"}
+          variant={showChatBox ? 'default' : 'outline'}
           size="sm"
           className="h-6 px-2 text-xs"
         >
@@ -358,9 +419,11 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-[var(--green)] rounded-full animate-pulse"></div>
-              <span className="text-sm font-semibold text-[var(--foreground)]">AI Assistant</span>
+              <span className="text-sm font-semibold text-[var(--foreground)]">
+                AI Assistant
+              </span>
             </div>
-            
+
             <div className="flex-1 flex items-center space-x-2">
               <div className="relative flex-1">
                 <i className="fas fa-magic absolute left-3 top-3 text-[var(--muted-foreground)] text-sm"></i>
@@ -374,7 +437,7 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                   autoFocus
                 />
               </div>
-              
+
               <Button
                 onClick={handleChatSubmit}
                 disabled={!chatPrompt.trim()}
@@ -384,7 +447,7 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                 <i className="fas fa-paper-plane mr-2"></i>
                 Send
               </Button>
-              
+
               <Button
                 onClick={() => setShowChatBox(false)}
                 variant="outline"
@@ -395,14 +458,21 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
               </Button>
             </div>
           </div>
-          
+
           <div className="mt-3 flex items-center space-x-4 text-xs text-[var(--muted-foreground)]">
-            <span>💡 Try: "Add EQ to track 2", "Create harmony for vocals", "Mix for streaming"</span>
+            <span>
+              💡 Try: "Add EQ to track 2", "Create harmony for vocals", "Mix for
+              streaming"
+            </span>
             <div className="flex items-center space-x-1">
               <span>Press</span>
-              <kbd className="px-2 py-1 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">Enter</kbd>
+              <kbd className="px-2 py-1 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">
+                Enter
+              </kbd>
               <span>to send,</span>
-              <kbd className="px-2 py-1 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">Esc</kbd>
+              <kbd className="px-2 py-1 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">
+                Esc
+              </kbd>
               <span>to close</span>
             </div>
           </div>
@@ -414,32 +484,56 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-semibold">Audio Editor</span>
-            <Button variant="ghost" size="sm" className="text-xs bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto"
+            >
               <i className="fas fa-search-plus mr-1"></i>Zoom
             </Button>
           </div>
           <div className="flex items-center space-x-2 text-xs">
-            <Button variant="ghost" size="sm" className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-2 py-1 rounded h-auto">Audio</Button>
-            <Button variant="ghost" size="sm" className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto">MIDI</Button>
-            <Button variant="ghost" size="sm" className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto">Video</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-2 py-1 rounded h-auto"
+            >
+              Audio
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto"
+            >
+              MIDI
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent))] px-2 py-1 rounded h-auto"
+            >
+              Video
+            </Button>
           </div>
         </div>
-        
+
         {/* Timeline Ruler */}
         <div className="bg-[hsl(var(--secondary))] p-2 rounded font-mono text-xs">
           <div className="flex justify-between items-center mb-1">
-            {[0, 60, 120, 180, 240].map(seconds => (
+            {[0, 60, 120, 180, 240].map((seconds) => (
               <span key={seconds}>{formatTime(seconds)}</span>
             ))}
           </div>
           <div className="h-4 bg-[hsl(var(--muted-foreground))] rounded relative overflow-hidden">
-            <div 
+            <div
               className="absolute top-0 w-0.5 h-full bg-[hsl(var(--frost-2))]"
               style={{ left: `${(transport.currentTime / 240) * 100}%` }}
             ></div>
-            <div 
+            <div
               className="absolute top-0 w-8 h-full bg-[hsl(var(--frost-2))] bg-opacity-20"
-              style={{ left: `${Math.max(0, (transport.currentTime / 240) * 100 - 2)}%` }}
+              style={{
+                left: `${Math.max(0, (transport.currentTime / 240) * 100 - 2)}%`,
+              }}
             ></div>
           </div>
         </div>
@@ -449,10 +543,12 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
       <div className="flex-1 bg-[hsl(var(--background))] timeline-grid overflow-auto scrollbar-thin">
         <div className="min-w-full">
           {tracks.map((track) => (
-            <div 
-              key={track.id} 
+            <div
+              key={track.id}
               className={`flex border-b border-[var(--border)] ${
-                selectedTrackId === track.id ? 'bg-[var(--accent)]' : 'hover:bg-[var(--muted)]/50'
+                selectedTrackId === track.id
+                  ? 'bg-[var(--accent)]'
+                  : 'hover:bg-[var(--muted)]/50'
               } transition-colors cursor-pointer`}
               onClick={() => handleTrackSelect(track.id)}
               onContextMenu={(e) => handleTrackRightClick(e, track.id)}
@@ -464,7 +560,9 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      !track.muted ? 'bg-[var(--green)]' : 'bg-[var(--secondary)]'
+                      !track.muted
+                        ? 'bg-[var(--green)]'
+                        : 'bg-[var(--secondary)]'
                     }`}
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -478,7 +576,9 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      track.muted ? 'bg-[var(--orange)]' : 'bg-[var(--secondary)] hover:bg-[var(--orange)]'
+                      track.muted
+                        ? 'bg-[var(--orange)]'
+                        : 'bg-[var(--secondary)] hover:bg-[var(--orange)]'
                     }`}
                   >
                     M
@@ -491,7 +591,9 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                     variant="ghost"
                     size="sm"
                     className={`w-4 h-4 rounded-sm text-xs h-auto p-0 ${
-                      track.soloed ? 'bg-[var(--yellow)]' : 'bg-[var(--secondary)] hover:bg-[var(--yellow)]'
+                      track.soloed
+                        ? 'bg-[var(--yellow)]'
+                        : 'bg-[var(--secondary)] hover:bg-[var(--yellow)]'
                     }`}
                   >
                     S
@@ -500,14 +602,17 @@ export function AudioEditor({ tracks, transport, onTrackMute, onTrackSolo }: Aud
                     <i className="fas fa-robot text-[var(--frost1)] text-xs"></i>
                   )}
                 </div>
-                <div className={`text-xs font-semibold`} style={{ color: track.color }}>
+                <div
+                  className={`text-xs font-semibold`}
+                  style={{ color: track.color }}
+                >
                   {track.name}
                 </div>
                 <div className="text-xs text-[var(--muted-foreground)]">
                   {track.type === 'ai-generated' ? 'Generated' : 'Input: 1-2'}
                 </div>
               </div>
-              
+
               {/* Track Content */}
               <div className="flex-1 h-16 relative">
                 {track.waveformData && (

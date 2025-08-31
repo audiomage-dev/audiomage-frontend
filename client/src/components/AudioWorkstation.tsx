@@ -41,10 +41,12 @@ export function AudioWorkstation() {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [inspectorHeight, setInspectorHeight] = useState(300); // Default height for track inspector
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>('timeline');
+  const [viewMode, setViewMode] = useState<'timeline' | 'midi' | 'score'>(
+    'timeline'
+  );
   const [isMidiPlaying, setIsMidiPlaying] = useState(false);
   const [midiPlaybackTime, setMidiPlaybackTime] = useState(0);
-  
+
   // Media preview state
   const [selectedMediaFile, setSelectedMediaFile] = useState<{
     id: string;
@@ -54,11 +56,11 @@ export function AudioWorkstation() {
     duration?: number;
     size?: number;
   } | null>(null);
-  
+
   // Lock states for Timeline and MIDI editors
   const [isTimelineLocked, setIsTimelineLocked] = useState(false);
   const [isMidiLocked, setIsMidiLocked] = useState(false);
-  
+
   // Global MIDI playback control functions
   const [midiPlaybackFunctions, setMidiPlaybackFunctions] = useState<{
     playMidiTrack: (() => void) | null;
@@ -109,14 +111,12 @@ export function AudioWorkstation() {
   // Auto-select first MIDI track when switching to MIDI mode
   useEffect(() => {
     if (viewMode === 'midi' && !selectedTrack) {
-      const midiTracks = tracks.filter(track => track.type === 'midi');
+      const midiTracks = tracks.filter((track) => track.type === 'midi');
       if (midiTracks.length > 0) {
         setSelectedTrack(midiTracks[0].id);
       }
     }
   }, [viewMode, selectedTrack, tracks]);
-
-
 
   return (
     <div className="h-screen flex flex-col select-none bg-[var(--background)]">
@@ -124,22 +124,19 @@ export function AudioWorkstation() {
       <div className="flex-none">
         <MenuBar />
       </div>
-      
+
       {/* Session Tabs */}
       <div className="flex-none h-10 border-b border-[var(--border)]">
-        <SessionTabs 
-          sessions={sessions} 
-          onSwitchSession={switchSession} 
-        />
+        <SessionTabs sessions={sessions} onSwitchSession={switchSession} />
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Vertical Sidebar */}
         <div className="flex-none">
           <VerticalSidebar onFileSelect={setSelectedMediaFile} />
         </div>
-        
+
         {/* Center Panel - Timeline */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Media Preview Pane */}
@@ -148,7 +145,7 @@ export function AudioWorkstation() {
             onClose={() => setSelectedMediaFile(null)}
             isVisible={!!selectedMediaFile}
           />
-          
+
           {/* Transport Bar */}
           <div className="flex-none">
             <CompactTransportBar
@@ -167,11 +164,17 @@ export function AudioWorkstation() {
               onZoomOut={handleZoomOut}
               onViewModeChange={setViewMode}
               onMidiPlay={() => {
-                console.log('onMidiPlay called, functions available:', !!midiPlaybackFunctions.playMidiTrack);
+                console.log(
+                  'onMidiPlay called, functions available:',
+                  !!midiPlaybackFunctions.playMidiTrack
+                );
                 midiPlaybackFunctions.playMidiTrack?.();
               }}
               onMidiPause={() => {
-                console.log('AudioWorkstation: onMidiPause called, functions available:', !!midiPlaybackFunctions.pauseMidiPlayback);
+                console.log(
+                  'AudioWorkstation: onMidiPause called, functions available:',
+                  !!midiPlaybackFunctions.pauseMidiPlayback
+                );
                 midiPlaybackFunctions.pauseMidiPlayback?.();
               }}
               onMidiStop={() => {
@@ -181,13 +184,22 @@ export function AudioWorkstation() {
               selectedTrack={selectedTrack}
               isTimelineLocked={isTimelineLocked}
               isMidiLocked={isMidiLocked}
-              onTimelineLockToggle={() => setIsTimelineLocked(!isTimelineLocked)}
+              onTimelineLockToggle={() =>
+                setIsTimelineLocked(!isTimelineLocked)
+              }
               onMidiLockToggle={() => setIsMidiLocked(!isMidiLocked)}
-              onBpmChange={(newBpm) => setCurrentProject(prev => ({ ...prev, bpm: newBpm }))}
-              onTimeSignatureChange={(newTimeSignature) => setCurrentProject(prev => ({ ...prev, timeSignature: newTimeSignature }))}
+              onBpmChange={(newBpm) =>
+                setCurrentProject((prev) => ({ ...prev, bpm: newBpm }))
+              }
+              onTimeSignatureChange={(newTimeSignature) =>
+                setCurrentProject((prev) => ({
+                  ...prev,
+                  timeSignature: newTimeSignature,
+                }))
+              }
             />
           </div>
-          
+
           {/* Editor Area - Timeline, MIDI, or Score */}
           <div className="flex-1 overflow-hidden">
             {viewMode === 'timeline' ? (
@@ -230,7 +242,7 @@ export function AudioWorkstation() {
 
           {/* Track Inspector Bottom Pane - Only show in timeline view */}
           {selectedTrack && viewMode === 'timeline' && (
-            <div 
+            <div
               className="flex-none relative border-t border-[var(--border)]"
               style={{ height: `${inspectorHeight}px` }}
             >
@@ -241,26 +253,29 @@ export function AudioWorkstation() {
                   e.preventDefault();
                   const startY = e.clientY;
                   const startHeight = inspectorHeight;
-                  
+
                   const handleMouseMove = (e: MouseEvent) => {
                     const deltaY = startY - e.clientY;
-                    const newHeight = Math.max(200, Math.min(600, startHeight + deltaY));
+                    const newHeight = Math.max(
+                      200,
+                      Math.min(600, startHeight + deltaY)
+                    );
                     setInspectorHeight(newHeight);
                   };
-                  
+
                   const handleMouseUp = () => {
                     document.removeEventListener('mousemove', handleMouseMove);
                     document.removeEventListener('mouseup', handleMouseUp);
                   };
-                  
+
                   document.addEventListener('mousemove', handleMouseMove);
                   document.addEventListener('mouseup', handleMouseUp);
                 }}
               />
-              
+
               <div className="h-full overflow-y-auto overflow-x-hidden">
                 <TrackInspector
-                  track={tracks.find(t => t.id === selectedTrack)!}
+                  track={tracks.find((t) => t.id === selectedTrack)!}
                   onTrackMute={toggleTrackMute}
                   onTrackSolo={toggleTrackSolo}
                   onClose={() => setSelectedTrack(null)}
@@ -268,10 +283,9 @@ export function AudioWorkstation() {
               </div>
             </div>
           )}
-
         </div>
       </div>
-      
+
       {/* Bottom Status Bar */}
       <div className="flex-none h-6">
         <StatusBar
@@ -286,7 +300,7 @@ export function AudioWorkstation() {
       <AIChatSidebar
         isOpen={isChatSidebarOpen}
         onToggle={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
-        currentSession={sessions.find(s => s.isActive)?.name}
+        currentSession={sessions.find((s) => s.isActive)?.name}
       />
     </div>
   );
