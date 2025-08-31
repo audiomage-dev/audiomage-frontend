@@ -31,6 +31,7 @@ import {
   Copy,
   Link,
 } from 'lucide-react';
+import { setupHiDPICanvas, clearCanvas } from '../lib/canvas-utils';
 
 interface CompactTimelineEditorProps {
   tracks: AudioTrack[];
@@ -54,6 +55,8 @@ interface CompactTimelineEditorProps {
   onZoomChange?: (zoomLevel: number) => void;
   isLocked?: boolean;
 }
+
+const USE_CANVAS_TIMELINE = true;
 
 export function CompactTimelineEditor({
   tracks,
@@ -259,7 +262,11 @@ export function CompactTimelineEditor({
   }, []);
 
   const timelineRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null); // grid layer
+  const clipsCanvasRef = useRef<HTMLCanvasElement>(null); // clips layer
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null); // UI/overlay layer
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentSize, setContentSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const headerRef = useRef<HTMLDivElement>(null);
 
   // Zoom functions
@@ -293,19 +300,17 @@ export function CompactTimelineEditor({
     return Math.max(1200, scaledWidth);
   }, [tracks, zoomLevel]);
 
-  // Canvas drawing function for grid background
+  // Canvas drawing function for grid background (HiDPI aware)
   const drawCanvasGrid = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const widthCss = contentSize.w;
+    const heightCss = contentSize.h;
+    if (widthCss <= 0 || heightCss <= 0) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    const { ctx } = setupHiDPICanvas(canvas, widthCss, heightCss);
+    clearCanvas(ctx, widthCss, heightCss);
 
     // Draw grid lines
     ctx.strokeStyle =
@@ -320,29 +325,132 @@ export function CompactTimelineEditor({
     const totalTime = timelineWidth / zoomLevel;
     const gridInterval = (30 / totalTime) * timelineWidth; // 30 seconds
 
-    for (let i = 0; i < width; i += gridInterval) {
+    for (let x = 0; x < widthCss; x += gridInterval) {
       ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
+      ctx.moveTo(x + 0.5, 0);
+      ctx.lineTo(x + 0.5, heightCss);
       ctx.stroke();
     }
 
     // Horizontal track lines
     for (let i = 1; i < tracks.length; i++) {
-      const y = i * 96;
+      const y = i * 96 + 0.5;
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
+      ctx.lineTo(widthCss, y);
       ctx.stroke();
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks, zoomLevel, getTimelineWidth]);
+  }, [tracks, zoomLevel, getTimelineWidth, contentSize.w, contentSize.h]);
+
+  // Canvas drawing for clips layer (basic rectangles)
+  const drawClipsLayer = useCallback(() => {
+    const canvas = clipsCanvasRef.current;
+    if (!canvas) return;
+
+    const widthCss = contentSize.w;
+    const heightCss = contentSize.h;
+    if (widthCss <= 0 || heightCss <= 0) return;
+
+    const { ctx } = setupHiDPICanvas(canvas, widthCss, heightCss);
+    clearCanvas(ctx, widthCss, heightCss);
+
+    const timelineWidth = getTimelineWidth();
+    const totalTime = timelineWidth / zoomLevel;
+
+    // Draw track background stripes (subtle)
+    for (let ti = 0; ti < tracks.length; ti++) {
+      const y = ti * 96;
+      ctx.fillStyle = ti % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)';
+      ctx.fillRect(0, y, widthCss, 96);
+    }
+
+    // Draw clips as rounded rectangles with header bar
+    for (let ti = 0; ti < tracks.length; ti++) {
+      const track = tracks[ti];
+      const yTop = ti * 96 + 4;
+      const clipHeight = 96 - 8;
+      const headerHeight = 20;
+      const innerHeight = clipHeight - headerHeight - 4;
+
+      track.clips?.forEach((clip) => {
+        const clipStartX = (clip.startTime / totalTime) * timelineWidth;
+        const clipWidth = (clip.duration / totalTime) * timelineWidth;
+        if (clipWidth <= 0) return;
+
+        // Clip body
+        ctx.fillStyle = clip.color || 'rgba(94,129,172,0.8)';
+        const radius = 6;
+        const x = clipStartX;
+        const y = yTop;
+        const w = clipWidth;
+        const h = clipHeight;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Header
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(x, y, w, headerHeight);
+
+        // Clip name
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.textBaseline = 'middle';
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x + 6, y, w - 12, headerHeight);
+        ctx.clip();
+        ctx.fillText(clip.name || 'Clip', x + 8, y + headerHeight / 2);
+        ctx.restore();
+
+        // Simple center line as placeholder waveform
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        const centerY = y + headerHeight + innerHeight / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + 4, centerY);
+        ctx.lineTo(x + w - 4, centerY);
+        ctx.stroke();
+      });
+    }
+  }, [tracks, zoomLevel, getTimelineWidth, contentSize.w, contentSize.h]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
     drawCanvasGrid();
-  }, [drawCanvasGrid]);
+    if (USE_CANVAS_TIMELINE) {
+      drawClipsLayer();
+    }
+  }, [drawCanvasGrid, drawClipsLayer]);
+
+  // Resize observer for content area sizing
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const update = () => {
+      setContentSize({ w: Math.max(1, Math.floor(el.clientWidth)), h: Math.max(1, Math.floor(el.clientHeight)) });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const handleTrackSelect = useCallback(
     (trackId: string, e?: React.MouseEvent) => {
@@ -2033,6 +2141,7 @@ export function CompactTimelineEditor({
         >
           <div
             className="relative"
+            ref={contentRef}
             style={{
               width: `${getTimelineWidth()}px`,
               height: `${tracks.length * 96}px`,
@@ -2046,7 +2155,16 @@ export function CompactTimelineEditor({
               width={getTimelineWidth()}
               height={tracks.length * 96}
             />
-            {tracks.map((track, index) => (
+            {/* Clips layer (canvas) */}
+            {USE_CANVAS_TIMELINE && (
+              <canvas
+                ref={clipsCanvasRef}
+                className="absolute top-0 left-0 pointer-events-none z-10"
+                width={getTimelineWidth()}
+                height={tracks.length * 96}
+              />
+            )}
+            {!USE_CANVAS_TIMELINE && tracks.map((track, index) => (
               <div
                 key={track.id}
                 className={`absolute left-0 right-0 h-24 transition-colors ${
