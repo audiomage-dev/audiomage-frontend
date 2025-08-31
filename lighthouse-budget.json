@@ -1,0 +1,39 @@
+{
+  "ci": {
+    "budget": [
+      {
+        "path": "/*",
+        "timings": [
+          {
+            "metric": "interactive",
+            "budget": 3000
+          },
+          {
+            "metric": "first-meaningful-paint",
+            "budget": 1500
+          },
+          {
+            "metric": "first-contentful-paint",
+            "budget": 1200
+          }
+        ],
+        "resourceSizes": [
+          {
+            "resourceType": "script",
+            "budget": 400
+          },
+          {
+            "resourceType": "total",
+            "budget": 1000
+          }
+        ],
+        "resourceCounts": [
+          {
+            "resourceType": "third-party",
+            "budget": 10
+          }
+        ]
+      }
+    ]
+  }
+}

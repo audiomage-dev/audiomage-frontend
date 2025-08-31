@@ -1,6 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { TransportState } from '../types/audio';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Repeat } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  Square,
+  Circle,
+  SkipBack,
+  SkipForward,
+  Repeat,
+} from 'lucide-react';
 
 interface TransportControlsProps {
   transport: TransportState;
@@ -38,7 +46,7 @@ export function TransportControls({
         >
           <SkipBack className="w-4 h-4" />
         </Button>
-        
+
         {transport.isPlaying ? (
           <Button
             onClick={onPause}
@@ -58,7 +66,7 @@ export function TransportControls({
             <Play className="w-6 h-6 ml-1" fill="currentColor" />
           </Button>
         )}
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -66,7 +74,7 @@ export function TransportControls({
         >
           <SkipForward className="w-4 h-4" />
         </Button>
-        
+
         <Button
           onClick={onStop}
           variant="outline"
@@ -75,46 +83,50 @@ export function TransportControls({
         >
           <Square className="w-4 h-4" fill="currentColor" />
         </Button>
-        
+
         <Button
           onClick={onRecord}
           variant="outline"
           size="sm"
           className={`w-10 h-10 rounded-xl border-2 transition-all duration-200 ${
-            transport.isRecording 
-              ? 'bg-[var(--red)] border-[var(--red)] text-white animate-pulse shadow-lg' 
+            transport.isRecording
+              ? 'bg-[var(--red)] border-[var(--red)] text-white animate-pulse shadow-lg'
               : 'border-[var(--red)] text-[var(--red)] hover:bg-[var(--red)] hover:text-white'
           }`}
         >
           <Circle className="w-4 h-4" fill="currentColor" />
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
           className={`w-10 h-10 rounded-xl border-2 transition-all duration-200 ${
-            transport.isLooping 
-              ? 'bg-[var(--primary)] border-[var(--primary)] text-white' 
+            transport.isLooping
+              ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
               : 'border-[var(--border)] hover:bg-[var(--accent)]'
           }`}
         >
           <Repeat className="w-4 h-4" />
         </Button>
       </div>
-      
+
       <div className="flex items-center justify-center space-x-8">
         <div className="text-center">
           <div className="text-2xl font-mono font-bold text-[var(--primary)] mb-1">
             {formatTime(transport.currentTime)}
           </div>
-          <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider">Position</span>
+          <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider">
+            Position
+          </span>
         </div>
-        
+
         <div className="w-px h-12 bg-[var(--border)]"></div>
-        
+
         <div className="flex items-center space-x-6 bg-[var(--secondary)] px-4 py-2 rounded-lg">
           <div className="text-center">
-            <div className="text-lg font-mono font-bold text-[var(--secondary-foreground)]">{bpm}</div>
+            <div className="text-lg font-mono font-bold text-[var(--secondary-foreground)]">
+              {bpm}
+            </div>
             <span className="text-xs text-[var(--muted-foreground)]">BPM</span>
           </div>
           <div className="text-center">

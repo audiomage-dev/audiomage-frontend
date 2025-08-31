@@ -1,15 +1,51 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AudioTrack, TransportState } from '../types/audio';
-import { 
-  Music, Play, Pause, Square, ZoomIn, ZoomOut, Save, FileDown, Settings,
-  VolumeX, Radio, Plus, MousePointer, Type, Eye, EyeOff, Lock, Unlock,
-  RotateCcw, RotateCw, Copy, Cut, Paste, Trash2, Edit, Move3D,
-  FileMusic, Piano, Guitar, Drum, Mic, Volume2, SkipBack, SkipForward
+import {
+  Music,
+  Play,
+  Pause,
+  Square,
+  ZoomIn,
+  ZoomOut,
+  Save,
+  FileDown,
+  Settings,
+  VolumeX,
+  Radio,
+  Plus,
+  MousePointer,
+  Type,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
+  RotateCcw,
+  RotateCw,
+  Copy,
+  Cut,
+  Paste,
+  Trash2,
+  Edit,
+  Move3D,
+  FileMusic,
+  Piano,
+  Guitar,
+  Drum,
+  Mic,
+  Volume2,
+  SkipBack,
+  SkipForward,
 } from 'lucide-react';
 
 // Comprehensive music notation interfaces
@@ -22,10 +58,10 @@ interface Note {
   voice: number; // 1-4 for multiple voices per staff
   accidental?: 'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat';
   articulation: string[]; // staccato, accent, tenuto, marcato, etc.
-  tie?: { start: boolean; end: boolean; };
+  tie?: { start: boolean; end: boolean };
   slur?: string; // slur group ID
   beam?: string; // beam group ID
-  tuplet?: { type: number; bracket: boolean; number: string; };
+  tuplet?: { type: number; bracket: boolean; number: string };
   lyrics?: { [verse: number]: string };
   fingering?: string;
   ornament?: 'trill' | 'mordent' | 'turn' | 'appoggiatura' | 'acciaccatura';
@@ -70,7 +106,15 @@ interface RehearsalMark {
 interface Barline {
   id: string;
   time: number;
-  type: 'single' | 'double' | 'final' | 'repeat-start' | 'repeat-end' | 'dashed' | 'heavy' | 'invisible';
+  type:
+    | 'single'
+    | 'double'
+    | 'final'
+    | 'repeat-start'
+    | 'repeat-end'
+    | 'dashed'
+    | 'heavy'
+    | 'invisible';
   repeatCount?: number;
 }
 
@@ -108,7 +152,7 @@ interface Staff {
   transposition: number; // Semitones
   capo?: number; // For guitar
   tuning?: string[]; // For string instruments
-  
+
   // Musical content
   notes: Note[];
   chords: Chord[];
@@ -119,19 +163,19 @@ interface Staff {
   keySignatures: KeySignature[];
   timeSignatures: TimeSignature[];
   textAnnotations: TextAnnotation[];
-  
+
   // Display properties
   visible: boolean;
   locked: boolean;
   color: string;
   lineSpacing: number;
-  
+
   // Audio properties
   volume: number;
   pan: number;
   mute: boolean;
   solo: boolean;
-  
+
   // Staff-specific settings
   voiceCount: number;
   showClef: boolean;
@@ -144,7 +188,7 @@ interface Staff {
 interface ScoreLayout {
   pageSize: 'A4' | 'letter' | 'legal' | 'tabloid';
   orientation: 'portrait' | 'landscape';
-  margins: { top: number; bottom: number; left: number; right: number; };
+  margins: { top: number; bottom: number; left: number; right: number };
   systemSpacing: number;
   staffSpacing: number;
   pageBreaks: number[];
@@ -156,15 +200,15 @@ interface ScoreSettings {
   composer: string;
   lyricist?: string;
   copyright?: string;
-  
+
   defaultTempo: number;
   defaultKeySignature: string;
   defaultTimeSignature: [number, number];
-  
+
   beamingRules: 'auto' | 'manual';
   stemDirection: 'auto' | 'up' | 'down';
   accidentalRules: 'modern' | 'traditional';
-  
+
   layout: ScoreLayout;
 }
 
@@ -180,19 +224,29 @@ interface AdvancedScoreEditorProps {
   isLocked?: boolean;
 }
 
-export function AdvancedScoreEditor({ 
-  tracks, 
-  transport, 
+export function AdvancedScoreEditor({
+  tracks,
+  transport,
   zoomLevel = 1,
   bpm = 120,
   timeSignature = [4, 4],
   onTrackMute,
   onTrackSolo,
   onTrackSelect,
-  isLocked = false
+  isLocked = false,
 }: AdvancedScoreEditorProps) {
   // UI State
-  const [selectedTool, setSelectedTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'text' | 'dynamic' | 'slur' | 'tie' | 'beam'>('select');
+  const [selectedTool, setSelectedTool] = useState<
+    | 'select'
+    | 'note'
+    | 'rest'
+    | 'chord'
+    | 'text'
+    | 'dynamic'
+    | 'slur'
+    | 'tie'
+    | 'beam'
+  >('select');
   const [selectedPalette, setSelectedPalette] = useState('notes');
   const [currentNoteValue, setCurrentNoteValue] = useState(1); // Quarter note
   const [currentVoice, setCurrentVoice] = useState(1);
@@ -219,8 +273,8 @@ export function AdvancedScoreEditor({
       systemSpacing: 120,
       staffSpacing: 80,
       pageBreaks: [],
-      systemBreaks: []
-    }
+      systemBreaks: [],
+    },
   });
 
   const [staves, setStaves] = useState<Staff[]>([
@@ -234,41 +288,68 @@ export function AdvancedScoreEditor({
       transposition: 0,
       notes: [
         {
-          id: 'note-1', pitch: 60, startTime: 0, duration: 1, velocity: 80, voice: 1,
-          articulation: [], tie: { start: false, end: false }
+          id: 'note-1',
+          pitch: 60,
+          startTime: 0,
+          duration: 1,
+          velocity: 80,
+          voice: 1,
+          articulation: [],
+          tie: { start: false, end: false },
         },
         {
-          id: 'note-2', pitch: 64, startTime: 1, duration: 1, velocity: 85, voice: 1,
-          articulation: ['staccato'], tie: { start: false, end: false }
+          id: 'note-2',
+          pitch: 64,
+          startTime: 1,
+          duration: 1,
+          velocity: 85,
+          voice: 1,
+          articulation: ['staccato'],
+          tie: { start: false, end: false },
         },
         {
-          id: 'note-3', pitch: 67, startTime: 2, duration: 1, velocity: 75, voice: 1,
-          articulation: ['accent'], tie: { start: false, end: false }
+          id: 'note-3',
+          pitch: 67,
+          startTime: 2,
+          duration: 1,
+          velocity: 75,
+          voice: 1,
+          articulation: ['accent'],
+          tie: { start: false, end: false },
         },
         {
-          id: 'note-4', pitch: 72, startTime: 3, duration: 1, velocity: 90, voice: 1,
-          articulation: [], tie: { start: false, end: false }, fermata: true
-        }
+          id: 'note-4',
+          pitch: 72,
+          startTime: 3,
+          duration: 1,
+          velocity: 90,
+          voice: 1,
+          articulation: [],
+          tie: { start: false, end: false },
+          fermata: true,
+        },
       ],
       chords: [],
       dynamics: [
         { id: 'dyn-1', time: 0, marking: 'mf', type: 'instant' },
-        { id: 'dyn-2', time: 2, marking: 'crescendo', type: 'hairpin-crescendo', endTime: 3 }
+        {
+          id: 'dyn-2',
+          time: 2,
+          marking: 'crescendo',
+          type: 'hairpin-crescendo',
+          endTime: 3,
+        },
       ],
       tempoMarkings: [
-        { id: 'tempo-1', time: 0, bpm: 120, noteValue: 1, text: 'Moderato' }
+        { id: 'tempo-1', time: 0, bpm: 120, noteValue: 1, text: 'Moderato' },
       ],
       rehearsalMarks: [],
       barlines: [
         { id: 'bar-1', time: 4, type: 'single' },
-        { id: 'bar-2', time: 8, type: 'final' }
+        { id: 'bar-2', time: 8, type: 'final' },
       ],
-      keySignatures: [
-        { id: 'key-1', time: 0, key: 'C', mode: 'major' }
-      ],
-      timeSignatures: [
-        { id: 'time-1', time: 0, numerator: 4, denominator: 4 }
-      ],
+      keySignatures: [{ id: 'key-1', time: 0, key: 'C', mode: 'major' }],
+      timeSignatures: [{ id: 'time-1', time: 0, numerator: 4, denominator: 4 }],
       textAnnotations: [],
       visible: true,
       locked: false,
@@ -283,64 +364,96 @@ export function AdvancedScoreEditor({
       showKeySignature: true,
       showTimeSignature: true,
       showMeasureNumbers: true,
-      hideEmptyStaves: false
-    }
+      hideEmptyStaves: false,
+    },
   ]);
 
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   // Music theory helpers
-  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const noteNames = [
+    'C',
+    'C#',
+    'D',
+    'D#',
+    'E',
+    'F',
+    'F#',
+    'G',
+    'G#',
+    'A',
+    'A#',
+    'B',
+  ];
   const keySignatures = {
-    'C': { sharps: 0, flats: 0, accidentals: [] },
-    'G': { sharps: 1, flats: 0, accidentals: ['F#'] },
-    'D': { sharps: 2, flats: 0, accidentals: ['F#', 'C#'] },
-    'A': { sharps: 3, flats: 0, accidentals: ['F#', 'C#', 'G#'] },
-    'E': { sharps: 4, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#'] },
-    'B': { sharps: 5, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#', 'A#'] },
-    'F#': { sharps: 6, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'] },
-    'C#': { sharps: 7, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'] },
-    'F': { sharps: 0, flats: 1, accidentals: ['Bb'] },
-    'Bb': { sharps: 0, flats: 2, accidentals: ['Bb', 'Eb'] },
-    'Eb': { sharps: 0, flats: 3, accidentals: ['Bb', 'Eb', 'Ab'] },
-    'Ab': { sharps: 0, flats: 4, accidentals: ['Bb', 'Eb', 'Ab', 'Db'] },
-    'Db': { sharps: 0, flats: 5, accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
-    'Gb': { sharps: 0, flats: 6, accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'] },
-    'Cb': { sharps: 0, flats: 7, accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'] }
+    C: { sharps: 0, flats: 0, accidentals: [] },
+    G: { sharps: 1, flats: 0, accidentals: ['F#'] },
+    D: { sharps: 2, flats: 0, accidentals: ['F#', 'C#'] },
+    A: { sharps: 3, flats: 0, accidentals: ['F#', 'C#', 'G#'] },
+    E: { sharps: 4, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#'] },
+    B: { sharps: 5, flats: 0, accidentals: ['F#', 'C#', 'G#', 'D#', 'A#'] },
+    'F#': {
+      sharps: 6,
+      flats: 0,
+      accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'],
+    },
+    'C#': {
+      sharps: 7,
+      flats: 0,
+      accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'],
+    },
+    F: { sharps: 0, flats: 1, accidentals: ['Bb'] },
+    Bb: { sharps: 0, flats: 2, accidentals: ['Bb', 'Eb'] },
+    Eb: { sharps: 0, flats: 3, accidentals: ['Bb', 'Eb', 'Ab'] },
+    Ab: { sharps: 0, flats: 4, accidentals: ['Bb', 'Eb', 'Ab', 'Db'] },
+    Db: { sharps: 0, flats: 5, accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
+    Gb: {
+      sharps: 0,
+      flats: 6,
+      accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'],
+    },
+    Cb: {
+      sharps: 0,
+      flats: 7,
+      accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'],
+    },
   };
 
   // Advanced note positioning with proper music theory
-  const getNoteStaffPosition = useCallback((pitch: number, clef: string) => {
-    const octave = Math.floor(pitch / 12);
-    const semitone = pitch % 12;
-    const noteName = noteNames[semitone];
-    
-    // Staff line positions (0 = middle line, negative = above, positive = below)
-    const staffPositions: { [clef: string]: { [note: string]: number } } = {
-      treble: {
-        'C': octave < 5 ? (5 - octave) * 7 + 6 : (5 - octave) * 7 + 6,
-        'D': octave < 5 ? (5 - octave) * 7 + 5 : (5 - octave) * 7 + 5,
-        'E': octave < 5 ? (5 - octave) * 7 + 4 : (5 - octave) * 7 + 4,
-        'F': octave < 5 ? (5 - octave) * 7 + 3 : (5 - octave) * 7 + 3,
-        'G': octave < 5 ? (5 - octave) * 7 + 2 : (5 - octave) * 7 + 2,
-        'A': octave < 5 ? (5 - octave) * 7 + 1 : (5 - octave) * 7 + 1,
-        'B': octave < 5 ? (5 - octave) * 7 + 0 : (5 - octave) * 7 + 0
-      },
-      bass: {
-        'C': octave < 3 ? (3 - octave) * 7 + 6 : (3 - octave) * 7 + 6,
-        'D': octave < 3 ? (3 - octave) * 7 + 5 : (3 - octave) * 7 + 5,
-        'E': octave < 3 ? (3 - octave) * 7 + 4 : (3 - octave) * 7 + 4,
-        'F': octave < 3 ? (3 - octave) * 7 + 3 : (3 - octave) * 7 + 3,
-        'G': octave < 3 ? (3 - octave) * 7 + 2 : (3 - octave) * 7 + 2,
-        'A': octave < 3 ? (3 - octave) * 7 + 1 : (3 - octave) * 7 + 1,
-        'B': octave < 3 ? (3 - octave) * 7 + 0 : (3 - octave) * 7 + 0
-      }
-    };
-    
-    const baseNote = noteName.replace('#', '').replace('b', '');
-    return staffPositions[clef]?.[baseNote] || 0;
-  }, [noteNames]);
+  const getNoteStaffPosition = useCallback(
+    (pitch: number, clef: string) => {
+      const octave = Math.floor(pitch / 12);
+      const semitone = pitch % 12;
+      const noteName = noteNames[semitone];
+
+      // Staff line positions (0 = middle line, negative = above, positive = below)
+      const staffPositions: { [clef: string]: { [note: string]: number } } = {
+        treble: {
+          C: octave < 5 ? (5 - octave) * 7 + 6 : (5 - octave) * 7 + 6,
+          D: octave < 5 ? (5 - octave) * 7 + 5 : (5 - octave) * 7 + 5,
+          E: octave < 5 ? (5 - octave) * 7 + 4 : (5 - octave) * 7 + 4,
+          F: octave < 5 ? (5 - octave) * 7 + 3 : (5 - octave) * 7 + 3,
+          G: octave < 5 ? (5 - octave) * 7 + 2 : (5 - octave) * 7 + 2,
+          A: octave < 5 ? (5 - octave) * 7 + 1 : (5 - octave) * 7 + 1,
+          B: octave < 5 ? (5 - octave) * 7 + 0 : (5 - octave) * 7 + 0,
+        },
+        bass: {
+          C: octave < 3 ? (3 - octave) * 7 + 6 : (3 - octave) * 7 + 6,
+          D: octave < 3 ? (3 - octave) * 7 + 5 : (3 - octave) * 7 + 5,
+          E: octave < 3 ? (3 - octave) * 7 + 4 : (3 - octave) * 7 + 4,
+          F: octave < 3 ? (3 - octave) * 7 + 3 : (3 - octave) * 7 + 3,
+          G: octave < 3 ? (3 - octave) * 7 + 2 : (3 - octave) * 7 + 2,
+          A: octave < 3 ? (3 - octave) * 7 + 1 : (3 - octave) * 7 + 1,
+          B: octave < 3 ? (3 - octave) * 7 + 0 : (3 - octave) * 7 + 0,
+        },
+      };
+
+      const baseNote = noteName.replace('#', '').replace('b', '');
+      return staffPositions[clef]?.[baseNote] || 0;
+    },
+    [noteNames]
+  );
 
   // Comprehensive score rendering
   const renderScore = useCallback(() => {
@@ -370,7 +483,7 @@ export function AdvancedScoreEditor({
       selected: '#3b82f6',
       measure: isDark ? '#555555' : '#999999',
       dynamic: '#8b5cf6',
-      tempo: '#f59e0b'
+      tempo: '#f59e0b',
     };
 
     // Clear and set background
@@ -390,7 +503,7 @@ export function AdvancedScoreEditor({
     ctx.font = 'bold 24px serif';
     ctx.textAlign = 'center';
     ctx.fillText(scoreSettings.title, canvasWidth / 2, 40);
-    
+
     if (scoreSettings.composer) {
       ctx.font = '16px serif';
       ctx.textAlign = 'right';
@@ -421,18 +534,30 @@ export function AdvancedScoreEditor({
         ctx.font = '32px serif';
         ctx.textAlign = 'center';
         const clefSymbols = {
-          treble: '𝄞', bass: '𝄢', alto: '𝄡', tenor: '𝄡', percussion: '𝄥'
+          treble: '𝄞',
+          bass: '𝄢',
+          alto: '𝄡',
+          tenor: '𝄡',
+          percussion: '𝄥',
         };
-        ctx.fillText(clefSymbols[staff.clef] || '𝄞', margins.left + 30, staffY + 20);
+        ctx.fillText(
+          clefSymbols[staff.clef] || '𝄞',
+          margins.left + 30,
+          staffY + 20
+        );
       }
 
       // Key signature
       if (staff.showKeySignature) {
         const currentKey = staff.keySignatures[staff.keySignatures.length - 1];
-        if (currentKey && keySignatures[currentKey.key as keyof typeof keySignatures]) {
-          const keyInfo = keySignatures[currentKey.key as keyof typeof keySignatures];
+        if (
+          currentKey &&
+          keySignatures[currentKey.key as keyof typeof keySignatures]
+        ) {
+          const keyInfo =
+            keySignatures[currentKey.key as keyof typeof keySignatures];
           ctx.font = '16px serif';
-          
+
           keyInfo.accidentals.forEach((acc, index) => {
             const symbol = acc.includes('#') ? '♯' : '♭';
             const x = margins.left + 65 + index * 8;
@@ -444,7 +569,8 @@ export function AdvancedScoreEditor({
 
       // Time signature
       if (staff.showTimeSignature) {
-        const currentTime = staff.timeSignatures[staff.timeSignatures.length - 1];
+        const currentTime =
+          staff.timeSignatures[staff.timeSignatures.length - 1];
         if (currentTime) {
           ctx.font = 'bold 20px serif';
           ctx.textAlign = 'center';
@@ -457,7 +583,8 @@ export function AdvancedScoreEditor({
       // Measure lines
       for (let i = 0; i <= measuresPerSystem; i++) {
         const x = margins.left + 140 + i * measureWidth;
-        ctx.strokeStyle = i === measuresPerSystem ? colors.staff : colors.measure;
+        ctx.strokeStyle =
+          i === measuresPerSystem ? colors.staff : colors.measure;
         ctx.lineWidth = i === measuresPerSystem ? 2 : 1;
         ctx.beginPath();
         ctx.moveTo(x, staffY);
@@ -466,27 +593,36 @@ export function AdvancedScoreEditor({
       }
 
       // Notes
-      staff.notes.forEach(note => {
-        const x = margins.left + 140 + (note.startTime / 4) * measureWidth + 
-                  ((note.startTime % 1) * (measureWidth / 4));
-        
+      staff.notes.forEach((note) => {
+        const x =
+          margins.left +
+          140 +
+          (note.startTime / 4) * measureWidth +
+          (note.startTime % 1) * (measureWidth / 4);
+
         const staffPos = getNoteStaffPosition(note.pitch, staff.clef);
         const y = staffY + 16 + staffPos * 2; // Convert staff position to pixels
 
-        ctx.fillStyle = selectedNotes.has(note.id) ? colors.selected : colors.notes;
+        ctx.fillStyle = selectedNotes.has(note.id)
+          ? colors.selected
+          : colors.notes;
 
         // Note head
         const noteHeads = {
-          4: '𝅝',    // whole
-          2: '𝅗𝅥',   // half  
-          1: '𝅘𝅥',   // quarter
+          4: '𝅝', // whole
+          2: '𝅗𝅥', // half
+          1: '𝅘𝅥', // quarter
           0.5: '𝅘𝅥𝅮', // eighth
-          0.25: '𝅘𝅥𝅯' // sixteenth
+          0.25: '𝅘𝅥𝅯', // sixteenth
         };
-        
+
         ctx.font = '20px serif';
         ctx.textAlign = 'center';
-        ctx.fillText(noteHeads[note.duration as keyof typeof noteHeads] || '𝅘𝅥', x, y);
+        ctx.fillText(
+          noteHeads[note.duration as keyof typeof noteHeads] || '𝅘𝅥',
+          x,
+          y
+        );
 
         // Stem
         if (note.duration <= 2) {
@@ -494,7 +630,7 @@ export function AdvancedScoreEditor({
           const stemX = x + (stemUp ? 7 : -7);
           const stemY1 = y - 3;
           const stemY2 = stemUp ? y - 28 : y + 28;
-          
+
           ctx.strokeStyle = colors.notes;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
@@ -513,8 +649,11 @@ export function AdvancedScoreEditor({
         // Accidentals
         if (note.accidental) {
           const accSymbols = {
-            'sharp': '♯', 'flat': '♭', 'natural': '♮',
-            'double-sharp': '𝄪', 'double-flat': '𝄫'
+            sharp: '♯',
+            flat: '♭',
+            natural: '♮',
+            'double-sharp': '𝄪',
+            'double-flat': '𝄫',
           };
           ctx.font = '16px serif';
           ctx.fillText(accSymbols[note.accidental], x - 20, y);
@@ -523,12 +662,19 @@ export function AdvancedScoreEditor({
         // Articulations
         note.articulation.forEach((art, index) => {
           const artSymbols = {
-            'staccato': '•', 'accent': '>', 'tenuto': '−',
-            'marcato': '∧', 'staccatissimo': '▼'
+            staccato: '•',
+            accent: '>',
+            tenuto: '−',
+            marcato: '∧',
+            staccatissimo: '▼',
           };
           ctx.font = '12px serif';
           const artY = y + (index + 1) * 12;
-          ctx.fillText(artSymbols[art as keyof typeof artSymbols] || art, x, artY);
+          ctx.fillText(
+            artSymbols[art as keyof typeof artSymbols] || art,
+            x,
+            artY
+          );
         });
 
         // Fermata
@@ -539,22 +685,23 @@ export function AdvancedScoreEditor({
       });
 
       // Dynamics
-      staff.dynamics.forEach(dynamic => {
+      staff.dynamics.forEach((dynamic) => {
         const x = margins.left + 140 + (dynamic.time / 4) * measureWidth;
         const y = staffY + staffHeight + 20;
-        
+
         ctx.fillStyle = colors.dynamic;
         ctx.font = 'italic 14px serif';
         ctx.textAlign = 'left';
-        
+
         if (dynamic.type === 'instant') {
           ctx.fillText(dynamic.marking, x, y);
         } else if (dynamic.type.includes('hairpin')) {
           // Draw hairpin crescendo/diminuendo
-          const endX = margins.left + 140 + (dynamic.endTime! / 4) * measureWidth;
+          const endX =
+            margins.left + 140 + (dynamic.endTime! / 4) * measureWidth;
           ctx.strokeStyle = colors.dynamic;
           ctx.lineWidth = 1;
-          
+
           if (dynamic.type === 'hairpin-crescendo') {
             ctx.beginPath();
             ctx.moveTo(x, y - 5);
@@ -574,17 +721,17 @@ export function AdvancedScoreEditor({
       });
 
       // Tempo markings
-      staff.tempoMarkings.forEach(tempo => {
+      staff.tempoMarkings.forEach((tempo) => {
         const x = margins.left + 140 + (tempo.time / 4) * measureWidth;
         const y = staffY - 20;
-        
+
         ctx.fillStyle = colors.tempo;
         ctx.font = 'bold 12px serif';
         ctx.textAlign = 'left';
-        
-        const tempoText = tempo.text ? 
-          `${tempo.text} (♩ = ${tempo.bpm})` : 
-          `♩ = ${tempo.bpm}`;
+
+        const tempoText = tempo.text
+          ? `${tempo.text} (♩ = ${tempo.bpm})`
+          : `♩ = ${tempo.bpm}`;
         ctx.fillText(tempoText, x, y);
       });
 
@@ -611,28 +758,38 @@ export function AdvancedScoreEditor({
       { id: 'quarter', symbol: '𝅘𝅥', label: 'Quarter Note', value: 1 },
       { id: 'eighth', symbol: '𝅘𝅥𝅮', label: 'Eighth Note', value: 0.5 },
       { id: 'sixteenth', symbol: '𝅘𝅥𝅯', label: 'Sixteenth Note', value: 0.25 },
-      { id: 'thirty-second', symbol: '𝅘𝅥𝅰', label: '32nd Note', value: 0.125 }
+      { id: 'thirty-second', symbol: '𝅘𝅥𝅰', label: '32nd Note', value: 0.125 },
     ],
     rests: [
       { id: 'whole-rest', symbol: '𝄻', label: 'Whole Rest', value: 4 },
       { id: 'half-rest', symbol: '𝄼', label: 'Half Rest', value: 2 },
       { id: 'quarter-rest', symbol: '𝄽', label: 'Quarter Rest', value: 1 },
       { id: 'eighth-rest', symbol: '𝄾', label: 'Eighth Rest', value: 0.5 },
-      { id: 'sixteenth-rest', symbol: '𝄿', label: '16th Rest', value: 0.25 }
+      { id: 'sixteenth-rest', symbol: '𝄿', label: '16th Rest', value: 0.25 },
     ],
     accidentals: [
       { id: 'sharp', symbol: '♯', label: 'Sharp', value: 'sharp' },
       { id: 'flat', symbol: '♭', label: 'Flat', value: 'flat' },
       { id: 'natural', symbol: '♮', label: 'Natural', value: 'natural' },
-      { id: 'double-sharp', symbol: '𝄪', label: 'Double Sharp', value: 'double-sharp' },
-      { id: 'double-flat', symbol: '𝄫', label: 'Double Flat', value: 'double-flat' }
+      {
+        id: 'double-sharp',
+        symbol: '𝄪',
+        label: 'Double Sharp',
+        value: 'double-sharp',
+      },
+      {
+        id: 'double-flat',
+        symbol: '𝄫',
+        label: 'Double Flat',
+        value: 'double-flat',
+      },
     ],
     articulations: [
       { id: 'staccato', symbol: '•', label: 'Staccato', value: 'staccato' },
       { id: 'accent', symbol: '>', label: 'Accent', value: 'accent' },
       { id: 'tenuto', symbol: '−', label: 'Tenuto', value: 'tenuto' },
       { id: 'marcato', symbol: '∧', label: 'Marcato', value: 'marcato' },
-      { id: 'fermata', symbol: '𝄐', label: 'Fermata', value: 'fermata' }
+      { id: 'fermata', symbol: '𝄐', label: 'Fermata', value: 'fermata' },
     ],
     dynamics: [
       { id: 'ppp', symbol: 'ppp', label: 'Pianissimo', value: 'ppp' },
@@ -642,36 +799,47 @@ export function AdvancedScoreEditor({
       { id: 'mf', symbol: 'mf', label: 'Mezzo Forte', value: 'mf' },
       { id: 'f', symbol: 'f', label: 'Forte', value: 'f' },
       { id: 'ff', symbol: 'ff', label: 'Fortissimo', value: 'ff' },
-      { id: 'fff', symbol: 'fff', label: 'Fortississimo', value: 'fff' }
+      { id: 'fff', symbol: 'fff', label: 'Fortississimo', value: 'fff' },
     ],
     clefs: [
       { id: 'treble', symbol: '𝄞', label: 'Treble Clef', value: 'treble' },
       { id: 'bass', symbol: '𝄢', label: 'Bass Clef', value: 'bass' },
       { id: 'alto', symbol: '𝄡', label: 'Alto Clef', value: 'alto' },
       { id: 'tenor', symbol: '𝄡', label: 'Tenor Clef', value: 'tenor' },
-      { id: 'percussion', symbol: '𝄥', label: 'Percussion', value: 'percussion' }
-    ]
+      {
+        id: 'percussion',
+        symbol: '𝄥',
+        label: 'Percussion',
+        value: 'percussion',
+      },
+    ],
   };
 
   return (
     <div className="h-full flex bg-white dark:bg-gray-900">
       {/* Advanced Tool Palette */}
       <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <Tabs value={selectedPalette} onValueChange={setSelectedPalette} className="flex-1 flex flex-col">
+        <Tabs
+          value={selectedPalette}
+          onValueChange={setSelectedPalette}
+          className="flex-1 flex flex-col"
+        >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="notes">Notes</TabsTrigger>
             <TabsTrigger value="symbols">Symbols</TabsTrigger>
             <TabsTrigger value="tools">Tools</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="notes" className="flex-1 p-2 space-y-4">
             <div>
               <h4 className="font-medium mb-2 text-sm">Note Values</h4>
               <div className="grid grid-cols-3 gap-1">
-                {toolPalettes.notes.map(note => (
+                {toolPalettes.notes.map((note) => (
                   <Button
                     key={note.id}
-                    variant={currentNoteValue === note.value ? 'default' : 'ghost'}
+                    variant={
+                      currentNoteValue === note.value ? 'default' : 'ghost'
+                    }
                     size="sm"
                     className="h-12 flex flex-col items-center justify-center"
                     onClick={() => setCurrentNoteValue(note.value)}
@@ -687,7 +855,7 @@ export function AdvancedScoreEditor({
             <div>
               <h4 className="font-medium mb-2 text-sm">Rests</h4>
               <div className="grid grid-cols-3 gap-1">
-                {toolPalettes.rests.map(rest => (
+                {toolPalettes.rests.map((rest) => (
                   <Button
                     key={rest.id}
                     variant="ghost"
@@ -704,7 +872,10 @@ export function AdvancedScoreEditor({
 
             <div>
               <h4 className="font-medium mb-2 text-sm">Voice</h4>
-              <Select value={currentVoice.toString()} onValueChange={(value) => setCurrentVoice(parseInt(value))}>
+              <Select
+                value={currentVoice.toString()}
+                onValueChange={(value) => setCurrentVoice(parseInt(value))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -722,7 +893,7 @@ export function AdvancedScoreEditor({
             <div>
               <h4 className="font-medium mb-2 text-sm">Accidentals</h4>
               <div className="grid grid-cols-3 gap-1">
-                {toolPalettes.accidentals.map(acc => (
+                {toolPalettes.accidentals.map((acc) => (
                   <Button
                     key={acc.id}
                     variant="ghost"
@@ -740,7 +911,7 @@ export function AdvancedScoreEditor({
             <div>
               <h4 className="font-medium mb-2 text-sm">Articulations</h4>
               <div className="grid grid-cols-3 gap-1">
-                {toolPalettes.articulations.map(art => (
+                {toolPalettes.articulations.map((art) => (
                   <Button
                     key={art.id}
                     variant="ghost"
@@ -758,7 +929,7 @@ export function AdvancedScoreEditor({
             <div>
               <h4 className="font-medium mb-2 text-sm">Dynamics</h4>
               <div className="grid grid-cols-2 gap-1">
-                {toolPalettes.dynamics.map(dyn => (
+                {toolPalettes.dynamics.map((dyn) => (
                   <Button
                     key={dyn.id}
                     variant="ghost"
@@ -775,7 +946,7 @@ export function AdvancedScoreEditor({
             <div>
               <h4 className="font-medium mb-2 text-sm">Clefs</h4>
               <div className="grid grid-cols-2 gap-1">
-                {toolPalettes.clefs.map(clef => (
+                {toolPalettes.clefs.map((clef) => (
                   <Button
                     key={clef.id}
                     variant="ghost"
@@ -848,32 +1019,56 @@ export function AdvancedScoreEditor({
         {/* Enhanced Toolbar */}
         <div className="h-14 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm"><Play className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><Pause className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><Square className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><SkipBack className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><SkipForward className="h-4 w-4" /></Button>
-            
+            <Button variant="ghost" size="sm">
+              <Play className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Pause className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Square className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <SkipBack className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <SkipForward className="h-4 w-4" />
+            </Button>
+
             <div className="w-px h-6 bg-gray-300 mx-2" />
-            
-            <Button variant="ghost" size="sm"><ZoomIn className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><ZoomOut className="h-4 w-4" /></Button>
-            <span className="text-sm text-gray-600">{Math.round(zoomLevel * 100)}%</span>
+
+            <Button variant="ghost" size="sm">
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-gray-600">
+              {Math.round(zoomLevel * 100)}%
+            </span>
           </div>
 
           <div className="flex items-center space-x-4">
             <Input
               value={scoreSettings.title}
-              onChange={(e) => setScoreSettings(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setScoreSettings((prev) => ({ ...prev, title: e.target.value }))
+              }
               placeholder="Score Title"
               className="w-48"
             />
-            
+
             <div className="w-px h-6 bg-gray-300 mx-2" />
-            
-            <Button variant="ghost" size="sm"><Save className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><FileDown className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm"><Settings className="h-4 w-4" /></Button>
+
+            <Button variant="ghost" size="sm">
+              <Save className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <FileDown className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm">
+              <Settings className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -895,58 +1090,88 @@ export function AdvancedScoreEditor({
             <TabsTrigger value="staves">Staves</TabsTrigger>
             <TabsTrigger value="properties">Properties</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="score" className="flex-1 p-4 space-y-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Composer</label>
               <Input
                 value={scoreSettings.composer}
-                onChange={(e) => setScoreSettings(prev => ({ ...prev, composer: e.target.value }))}
+                onChange={(e) =>
+                  setScoreSettings((prev) => ({
+                    ...prev,
+                    composer: e.target.value,
+                  }))
+                }
                 placeholder="Composer name"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Default Tempo</label>
+              <label className="text-sm font-medium mb-2 block">
+                Default Tempo
+              </label>
               <div className="flex items-center space-x-2">
                 <Slider
                   value={[scoreSettings.defaultTempo]}
-                  onValueChange={([value]) => setScoreSettings(prev => ({ ...prev, defaultTempo: value }))}
+                  onValueChange={([value]) =>
+                    setScoreSettings((prev) => ({
+                      ...prev,
+                      defaultTempo: value,
+                    }))
+                  }
                   min={60}
                   max={200}
                   step={1}
                   className="flex-1"
                 />
-                <span className="text-sm w-12 text-center">{scoreSettings.defaultTempo}</span>
+                <span className="text-sm w-12 text-center">
+                  {scoreSettings.defaultTempo}
+                </span>
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Key Signature</label>
+              <label className="text-sm font-medium mb-2 block">
+                Key Signature
+              </label>
               <Select
                 value={scoreSettings.defaultKeySignature}
-                onValueChange={(value) => setScoreSettings(prev => ({ ...prev, defaultKeySignature: value }))}
+                onValueChange={(value) =>
+                  setScoreSettings((prev) => ({
+                    ...prev,
+                    defaultKeySignature: value,
+                  }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(keySignatures).map(key => (
-                    <SelectItem key={key} value={key}>{key} Major</SelectItem>
+                  {Object.keys(keySignatures).map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {key} Major
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Time Signature</label>
+              <label className="text-sm font-medium mb-2 block">
+                Time Signature
+              </label>
               <div className="flex space-x-2">
                 <Select
                   value={scoreSettings.defaultTimeSignature[0].toString()}
-                  onValueChange={(value) => setScoreSettings(prev => ({ 
-                    ...prev, 
-                    defaultTimeSignature: [parseInt(value), prev.defaultTimeSignature[1]]
-                  }))}
+                  onValueChange={(value) =>
+                    setScoreSettings((prev) => ({
+                      ...prev,
+                      defaultTimeSignature: [
+                        parseInt(value),
+                        prev.defaultTimeSignature[1],
+                      ],
+                    }))
+                  }
                 >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
@@ -963,10 +1188,15 @@ export function AdvancedScoreEditor({
                 <span className="text-lg self-center">/</span>
                 <Select
                   value={scoreSettings.defaultTimeSignature[1].toString()}
-                  onValueChange={(value) => setScoreSettings(prev => ({ 
-                    ...prev, 
-                    defaultTimeSignature: [prev.defaultTimeSignature[0], parseInt(value)]
-                  }))}
+                  onValueChange={(value) =>
+                    setScoreSettings((prev) => ({
+                      ...prev,
+                      defaultTimeSignature: [
+                        prev.defaultTimeSignature[0],
+                        parseInt(value),
+                      ],
+                    }))
+                  }
                 >
                   <SelectTrigger className="flex-1">
                     <SelectValue />
@@ -987,7 +1217,9 @@ export function AdvancedScoreEditor({
               <div
                 key={staff.id}
                 className={`p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                  selectedStaffId === staff.id ? 'bg-blue-50 dark:bg-blue-900' : ''
+                  selectedStaffId === staff.id
+                    ? 'bg-blue-50 dark:bg-blue-900'
+                    : ''
                 }`}
                 onClick={() => setSelectedStaffId(staff.id)}
               >
@@ -1000,12 +1232,20 @@ export function AdvancedScoreEditor({
                       className="h-6 w-6 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setStaves(prev => prev.map(s => 
-                          s.id === staff.id ? {...s, visible: !s.visible} : s
-                        ));
+                        setStaves((prev) =>
+                          prev.map((s) =>
+                            s.id === staff.id
+                              ? { ...s, visible: !s.visible }
+                              : s
+                          )
+                        );
                       }}
                     >
-                      {staff.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                      {staff.visible ? (
+                        <Eye className="h-3 w-3" />
+                      ) : (
+                        <EyeOff className="h-3 w-3" />
+                      )}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1013,22 +1253,33 @@ export function AdvancedScoreEditor({
                       className="h-6 w-6 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setStaves(prev => prev.map(s => 
-                          s.id === staff.id ? {...s, locked: !s.locked} : s
-                        ));
+                        setStaves((prev) =>
+                          prev.map((s) =>
+                            s.id === staff.id ? { ...s, locked: !s.locked } : s
+                          )
+                        );
                       }}
                     >
-                      {staff.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                      {staff.locked ? (
+                        <Lock className="h-3 w-3" />
+                      ) : (
+                        <Unlock className="h-3 w-3" />
+                      )}
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  {staff.clef === 'treble' ? '𝄞' : staff.clef === 'bass' ? '𝄢' : '𝄡'} 
-                  {' '}{staff.keySignatures[0]?.key || 'C'} 
-                  {' '}{staff.timeSignatures[0]?.numerator || 4}/{staff.timeSignatures[0]?.denominator || 4}
+                  {staff.clef === 'treble'
+                    ? '𝄞'
+                    : staff.clef === 'bass'
+                      ? '𝄢'
+                      : '𝄡'}{' '}
+                  {staff.keySignatures[0]?.key || 'C'}{' '}
+                  {staff.timeSignatures[0]?.numerator || 4}/
+                  {staff.timeSignatures[0]?.denominator || 4}
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
@@ -1039,7 +1290,11 @@ export function AdvancedScoreEditor({
                       onTrackMute(staff.id);
                     }}
                   >
-                    {staff.mute ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                    {staff.mute ? (
+                      <VolumeX className="h-3 w-3" />
+                    ) : (
+                      <Volume2 className="h-3 w-3" />
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1055,9 +1310,11 @@ export function AdvancedScoreEditor({
                   <Slider
                     value={[staff.volume]}
                     onValueChange={([value]) => {
-                      setStaves(prev => prev.map(s => 
-                        s.id === staff.id ? {...s, volume: value} : s
-                      ));
+                      setStaves((prev) =>
+                        prev.map((s) =>
+                          s.id === staff.id ? { ...s, volume: value } : s
+                        )
+                      );
                     }}
                     min={0}
                     max={100}
@@ -1067,7 +1324,7 @@ export function AdvancedScoreEditor({
                 </div>
               </div>
             ))}
-            
+
             <div className="p-2">
               <Button
                 variant="outline"
@@ -1088,8 +1345,12 @@ export function AdvancedScoreEditor({
                     tempoMarkings: [],
                     rehearsalMarks: [],
                     barlines: [],
-                    keySignatures: [{ id: 'key-1', time: 0, key: 'C', mode: 'major' }],
-                    timeSignatures: [{ id: 'time-1', time: 0, numerator: 4, denominator: 4 }],
+                    keySignatures: [
+                      { id: 'key-1', time: 0, key: 'C', mode: 'major' },
+                    ],
+                    timeSignatures: [
+                      { id: 'time-1', time: 0, numerator: 4, denominator: 4 },
+                    ],
                     textAnnotations: [],
                     visible: true,
                     locked: false,
@@ -1104,9 +1365,9 @@ export function AdvancedScoreEditor({
                     showKeySignature: true,
                     showTimeSignature: true,
                     showMeasureNumbers: true,
-                    hideEmptyStaves: false
+                    hideEmptyStaves: false,
                   };
-                  setStaves(prev => [...prev, newStaff]);
+                  setStaves((prev) => [...prev, newStaff]);
                 }}
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -1124,10 +1385,12 @@ export function AdvancedScoreEditor({
                     <label className="text-sm">Page Size</label>
                     <Select
                       value={scoreSettings.layout.pageSize}
-                      onValueChange={(value: 'A4' | 'letter' | 'legal' | 'tabloid') => 
-                        setScoreSettings(prev => ({ 
-                          ...prev, 
-                          layout: { ...prev.layout, pageSize: value }
+                      onValueChange={(
+                        value: 'A4' | 'letter' | 'legal' | 'tabloid'
+                      ) =>
+                        setScoreSettings((prev) => ({
+                          ...prev,
+                          layout: { ...prev.layout, pageSize: value },
                         }))
                       }
                     >
@@ -1142,15 +1405,15 @@ export function AdvancedScoreEditor({
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm">System Spacing</label>
                     <Slider
                       value={[scoreSettings.layout.systemSpacing]}
-                      onValueChange={([value]) => 
-                        setScoreSettings(prev => ({ 
-                          ...prev, 
-                          layout: { ...prev.layout, systemSpacing: value }
+                      onValueChange={([value]) =>
+                        setScoreSettings((prev) => ({
+                          ...prev,
+                          layout: { ...prev.layout, systemSpacing: value },
                         }))
                       }
                       min={80}
@@ -1160,7 +1423,7 @@ export function AdvancedScoreEditor({
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium mb-2">Engraving Rules</h4>
                 <div className="space-y-2">
@@ -1168,8 +1431,11 @@ export function AdvancedScoreEditor({
                     <label className="text-sm">Beaming</label>
                     <Select
                       value={scoreSettings.beamingRules}
-                      onValueChange={(value: 'auto' | 'manual') => 
-                        setScoreSettings(prev => ({ ...prev, beamingRules: value }))
+                      onValueChange={(value: 'auto' | 'manual') =>
+                        setScoreSettings((prev) => ({
+                          ...prev,
+                          beamingRules: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1181,13 +1447,16 @@ export function AdvancedScoreEditor({
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm">Stem Direction</label>
                     <Select
                       value={scoreSettings.stemDirection}
-                      onValueChange={(value: 'auto' | 'up' | 'down') => 
-                        setScoreSettings(prev => ({ ...prev, stemDirection: value }))
+                      onValueChange={(value: 'auto' | 'up' | 'down') =>
+                        setScoreSettings((prev) => ({
+                          ...prev,
+                          stemDirection: value,
+                        }))
                       }
                     >
                       <SelectTrigger>

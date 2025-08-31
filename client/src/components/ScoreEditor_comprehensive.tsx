@@ -1,10 +1,31 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioTrack, TransportState } from '@/types/audio';
-import { 
-  Play, Pause, Square, Volume2, VolumeX, Edit3, Copy, Settings, 
-  ZoomIn, ZoomOut, RotateCcw, Save, FileMusic, Plus, Minus,
-  Music, Piano, Drum, Guitar, Mic, Upload, Printer, Undo, Redo
+import {
+  Play,
+  Pause,
+  Square,
+  Volume2,
+  VolumeX,
+  Edit3,
+  Copy,
+  Settings,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Save,
+  FileMusic,
+  Plus,
+  Minus,
+  Music,
+  Piano,
+  Drum,
+  Guitar,
+  Mic,
+  Upload,
+  Printer,
+  Undo,
+  Redo,
 } from 'lucide-react';
 
 interface Note {
@@ -70,24 +91,39 @@ interface ScoreEditorProps {
   isLocked?: boolean;
 }
 
-export function ScoreEditor({ 
-  tracks, 
-  transport, 
+export function ScoreEditor({
+  tracks,
+  transport,
   zoomLevel = 1,
   bpm = 120,
   timeSignature = [4, 4],
   onTrackMute,
   onTrackSolo,
   onTrackSelect,
-  isLocked = false
+  isLocked = false,
 }: ScoreEditorProps) {
   const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
-  const [selectedPaletteCategory, setSelectedPaletteCategory] = useState<string>('Notation');
-  const [currentTool, setCurrentTool] = useState<'select' | 'note' | 'rest' | 'chord' | 'dynamics' | 'text' | 'slur' | 'tie' | 'beam'>('select');
+  const [selectedPaletteCategory, setSelectedPaletteCategory] =
+    useState<string>('Notation');
+  const [currentTool, setCurrentTool] = useState<
+    | 'select'
+    | 'note'
+    | 'rest'
+    | 'chord'
+    | 'dynamics'
+    | 'text'
+    | 'slur'
+    | 'tie'
+    | 'beam'
+  >('select');
   const [noteValue, setNoteValue] = useState<number>(1);
-  const [currentAccidental, setCurrentAccidental] = useState<'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat' | null>(null);
-  const [currentArticulation, setCurrentArticulation] = useState<string | null>(null);
+  const [currentAccidental, setCurrentAccidental] = useState<
+    'sharp' | 'flat' | 'natural' | 'double-sharp' | 'double-flat' | null
+  >(null);
+  const [currentArticulation, setCurrentArticulation] = useState<string | null>(
+    null
+  );
   const [currentTheme, setCurrentTheme] = useState<string>('light');
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -104,7 +140,7 @@ export function ScoreEditor({
   } | null>(null);
   const [playbackTime, setPlaybackTime] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   const [staffs, setStaffs] = useState<Staff[]>([
     {
       id: 'staff-1',
@@ -125,13 +161,13 @@ export function ScoreEditor({
         { id: 'measure-1', number: 1, barline: 'single' },
         { id: 'measure-2', number: 2, barline: 'single' },
         { id: 'measure-3', number: 3, barline: 'single' },
-        { id: 'measure-4', number: 4, barline: 'final' }
+        { id: 'measure-4', number: 4, barline: 'final' },
       ],
       visible: true,
       locked: false,
       volume: 100,
-      pan: 0
-    }
+      pan: 0,
+    },
   ]);
 
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -145,21 +181,21 @@ export function ScoreEditor({
       const isDark = document.documentElement.classList.contains('dark');
       setCurrentTheme(isDark ? 'dark' : 'light');
     };
-    
+
     updateTheme();
     const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['class'] 
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
   // Update staffs when BPM or time signature changes
   useEffect(() => {
-    setStaffs(prevStaffs => 
-      prevStaffs.map(staff => ({
+    setStaffs((prevStaffs) =>
+      prevStaffs.map((staff) => ({
         ...staff,
         tempo: bpm,
         timeSignature: timeSignature,
@@ -172,23 +208,24 @@ export function ScoreEditor({
     const initAudio = () => {
       if (!audioContext) {
         try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const ctx = new (window.AudioContext ||
+            (window as any).webkitAudioContext)();
           setAudioContext(ctx);
         } catch (error) {
           console.warn('Audio context not available:', error);
         }
       }
     };
-    
+
     const handleFirstInteraction = () => {
       initAudio();
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
     };
-    
+
     document.addEventListener('click', handleFirstInteraction);
     document.addEventListener('keydown', handleFirstInteraction);
-    
+
     return () => {
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
@@ -198,51 +235,57 @@ export function ScoreEditor({
   // Get instrument waveform
   const getInstrumentWaveform = (instrument: string): OscillatorType => {
     const instrumentMap: { [key: string]: OscillatorType } = {
-      'Piano': 'triangle',
-      'Organ': 'sawtooth',
-      'Guitar': 'sawtooth',
-      'Violin': 'triangle',
-      'Flute': 'sine',
-      'Trumpet': 'square',
-      'Saxophone': 'sawtooth',
-      'Clarinet': 'triangle',
-      'Cello': 'sawtooth',
-      'Bass': 'triangle',
-      'Soprano': 'sine',
-      'Alto': 'sine',
-      'Tenor': 'triangle',
-      'Mixed Choir': 'sine'
+      Piano: 'triangle',
+      Organ: 'sawtooth',
+      Guitar: 'sawtooth',
+      Violin: 'triangle',
+      Flute: 'sine',
+      Trumpet: 'square',
+      Saxophone: 'sawtooth',
+      Clarinet: 'triangle',
+      Cello: 'sawtooth',
+      Bass: 'triangle',
+      Soprano: 'sine',
+      Alto: 'sine',
+      Tenor: 'triangle',
+      'Mixed Choir': 'sine',
     };
-    
+
     return instrumentMap[instrument] || 'triangle';
   };
 
   // Convert note duration to seconds based on BPM
-  const noteDurationToSeconds = (noteDuration: number, currentBpm: number = bpm) => {
+  const noteDurationToSeconds = (
+    noteDuration: number,
+    currentBpm: number = bpm
+  ) => {
     return (noteDuration * 60) / currentBpm;
   };
 
   // Play a note
   const playNote = (note: Note, instrument: string, duration: number = 0.5) => {
     if (!audioContext) return;
-    
+
     try {
       const frequency = 440 * Math.pow(2, (note.pitch - 69) / 12);
       const waveform = getInstrumentWaveform(instrument);
-      
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
       oscillator.type = waveform;
-      
-      const volume = (note.velocity || 80) / 127 * 0.3;
+
+      const volume = ((note.velocity || 80) / 127) * 0.3;
       gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-      
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + duration
+      );
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + duration);
     } catch (error) {
@@ -282,7 +325,7 @@ export function ScoreEditor({
       ctx.strokeStyle = foregroundColor;
       ctx.lineWidth = 1;
       for (let i = 0; i < 5; i++) {
-        const y = yOffset + (i * lineSpacing) + 24;
+        const y = yOffset + i * lineSpacing + 24;
         ctx.beginPath();
         ctx.moveTo(40, y);
         ctx.lineTo(canvas.width - 40, y);
@@ -290,16 +333,19 @@ export function ScoreEditor({
       }
 
       // Draw measure lines
-      const totalMeasures = Math.ceil(Math.max(8, ...staff.notes.map(n => n.startTime + n.duration)));
+      const totalMeasures = Math.ceil(
+        Math.max(8, ...staff.notes.map((n) => n.startTime + n.duration))
+      );
       for (let m = 0; m <= totalMeasures; m++) {
-        const measureX = 140 + (m * staff.timeSignature[0] * noteWidth * zoomLevel);
+        const measureX =
+          140 + m * staff.timeSignature[0] * noteWidth * zoomLevel;
         if (measureX > canvas.width - 40) break;
-        
+
         ctx.strokeStyle = foregroundColor;
         ctx.lineWidth = m === 0 ? 2 : 1;
         ctx.beginPath();
         ctx.moveTo(measureX, yOffset + 24);
-        ctx.lineTo(measureX, yOffset + 24 + (4 * lineSpacing));
+        ctx.lineTo(measureX, yOffset + 24 + 4 * lineSpacing);
         ctx.stroke();
       }
 
@@ -322,7 +368,7 @@ export function ScoreEditor({
 
       // Draw notes
       staff.notes.forEach((note) => {
-        const x = 140 + (note.startTime * noteWidth * zoomLevel);
+        const x = 140 + note.startTime * noteWidth * zoomLevel;
         const midiToLine = (pitch: number) => {
           if (staff.clef === 'treble') {
             return 6 - (pitch - 60) / 2;
@@ -333,7 +379,7 @@ export function ScoreEditor({
           }
         };
         const line = midiToLine(note.pitch);
-        const y = yOffset + (line * lineSpacing / 2) + 24;
+        const y = yOffset + (line * lineSpacing) / 2 + 24;
 
         // Note color
         let noteColor = foregroundColor;
@@ -360,8 +406,8 @@ export function ScoreEditor({
               ledgerLines.push(l);
             }
           }
-          ledgerLines.forEach(l => {
-            const ledgerY = yOffset + (l * lineSpacing / 2) + 24;
+          ledgerLines.forEach((l) => {
+            const ledgerY = yOffset + (l * lineSpacing) / 2 + 24;
             ctx.beginPath();
             ctx.moveTo(x - 12, ledgerY);
             ctx.lineTo(x + 12, ledgerY);
@@ -373,8 +419,12 @@ export function ScoreEditor({
         if (note.accidental) {
           ctx.font = '16px serif';
           ctx.fillStyle = noteColor;
-          const accSymbol = note.accidental === 'sharp' ? '♯' : 
-                           note.accidental === 'flat' ? '♭' : '♮';
+          const accSymbol =
+            note.accidental === 'sharp'
+              ? '♯'
+              : note.accidental === 'flat'
+                ? '♭'
+                : '♮';
           ctx.fillText(accSymbol, x - 20, y + 4);
         }
 
@@ -402,7 +452,12 @@ export function ScoreEditor({
             // Draw flags for eighth notes and shorter
             if (note.duration <= 0.5) {
               ctx.moveTo(x + 7, y - stemHeight);
-              ctx.quadraticCurveTo(x + 15, y - stemHeight + 8, x + 7, y - stemHeight + 12);
+              ctx.quadraticCurveTo(
+                x + 15,
+                y - stemHeight + 8,
+                x + 7,
+                y - stemHeight + 12
+              );
             }
           } else {
             ctx.moveTo(x - 7, y);
@@ -410,7 +465,12 @@ export function ScoreEditor({
             // Draw flags for eighth notes and shorter
             if (note.duration <= 0.5) {
               ctx.moveTo(x - 7, y + stemHeight);
-              ctx.quadraticCurveTo(x - 15, y + stemHeight - 8, x - 7, y + stemHeight - 12);
+              ctx.quadraticCurveTo(
+                x - 15,
+                y + stemHeight - 8,
+                x - 7,
+                y + stemHeight - 12
+              );
             }
           }
           ctx.stroke();
@@ -451,7 +511,7 @@ export function ScoreEditor({
 
     // Draw playback cursor
     if (isPlaying && playbackTime !== null) {
-      const cursorX = 140 + (playbackTime * noteWidth * zoomLevel);
+      const cursorX = 140 + playbackTime * noteWidth * zoomLevel;
       ctx.strokeStyle = '#10b981';
       ctx.lineWidth = 3;
       staffs.forEach((staff, staffIndex) => {
@@ -463,7 +523,17 @@ export function ScoreEditor({
         ctx.stroke();
       });
     }
-  }, [staffs, selectedNotes, zoomLevel, currentTheme, bpm, isDragging, dragState, isPlaying, playbackTime]);
+  }, [
+    staffs,
+    selectedNotes,
+    zoomLevel,
+    currentTheme,
+    bpm,
+    isDragging,
+    dragState,
+    isPlaying,
+    playbackTime,
+  ]);
 
   // Redraw when state changes
   useEffect(() => {
@@ -471,29 +541,39 @@ export function ScoreEditor({
   }, [drawScore]);
 
   // Helper functions
-  const pixelToMusicalPosition = (x: number, y: number, staffIndex: number, staffId: string) => {
+  const pixelToMusicalPosition = (
+    x: number,
+    y: number,
+    staffIndex: number,
+    staffId: string
+  ) => {
     const time = Math.max(0, (x - 140) / (noteWidth * zoomLevel));
-    const staff = staffs.find(s => s.id === staffId);
+    const staff = staffs.find((s) => s.id === staffId);
     if (!staff) return null;
 
     const staffY = staffIndex * (staffHeight + 60) + 40;
     const relativePitch = Math.round((staffY + 60 - y) / (lineSpacing / 2));
-    const pitch = staff.clef === 'treble' ? 60 + relativePitch : 40 + relativePitch;
+    const pitch =
+      staff.clef === 'treble' ? 60 + relativePitch : 40 + relativePitch;
 
     return {
       time: Math.round(time * 4) / 4, // Snap to quarter beats
-      pitch: Math.max(21, Math.min(108, pitch))
+      pitch: Math.max(21, Math.min(108, pitch)),
     };
   };
 
-  const getNoteAtPosition = (x: number, y: number, staffIndex: number): { note: Note; staffId: string } | null => {
+  const getNoteAtPosition = (
+    x: number,
+    y: number,
+    staffIndex: number
+  ): { note: Note; staffId: string } | null => {
     const staff = staffs[staffIndex];
     if (!staff) return null;
 
     const staffY = staffIndex * (staffHeight + 60) + 40;
-    
+
     for (const note of staff.notes) {
-      const noteX = 140 + (note.startTime * noteWidth * zoomLevel);
+      const noteX = 140 + note.startTime * noteWidth * zoomLevel;
       const midiToLine = (pitch: number) => {
         if (staff.clef === 'treble') {
           return 6 - (pitch - 60) / 2;
@@ -502,8 +582,8 @@ export function ScoreEditor({
         }
       };
       const line = midiToLine(note.pitch);
-      const noteY = staffY + (line * lineSpacing / 2) + 24;
-      
+      const noteY = staffY + (line * lineSpacing) / 2 + 24;
+
       if (Math.abs(x - noteX) <= 12 && Math.abs(y - noteY) <= 8) {
         return { note, staffId: staff.id };
       }
@@ -531,7 +611,7 @@ export function ScoreEditor({
         // Start dragging note
         if (e.ctrlKey || e.metaKey) {
           // Multi-select
-          setSelectedNotes(prev => {
+          setSelectedNotes((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(clickedNote.note.id)) {
               newSet.delete(clickedNote.note.id);
@@ -543,7 +623,9 @@ export function ScoreEditor({
         } else {
           setSelectedNotes(new Set([clickedNote.note.id]));
           // Play the clicked note
-          const noteDurationInSeconds = noteDurationToSeconds(clickedNote.note.duration);
+          const noteDurationInSeconds = noteDurationToSeconds(
+            clickedNote.note.duration
+          );
           playNote(clickedNote.note, staff.instrument, noteDurationInSeconds);
         }
 
@@ -554,7 +636,7 @@ export function ScoreEditor({
           staffId: clickedNote.staffId,
           startX: x,
           startY: y,
-          originalNote: { ...clickedNote.note }
+          originalNote: { ...clickedNote.note },
         });
       } else if (!clickedNote && currentTool === 'note') {
         // Add new note
@@ -567,18 +649,25 @@ export function ScoreEditor({
             duration: noteValue,
             velocity: 80,
             accidental: currentAccidental || undefined,
-            articulation: currentArticulation as any || undefined
+            articulation: (currentArticulation as any) || undefined,
           };
 
           // Play the note
           const noteDurationInSeconds = noteDurationToSeconds(newNote.duration);
           playNote(newNote, staff.instrument, noteDurationInSeconds);
 
-          setStaffs(prev => prev.map(s => 
-            s.id === staff.id 
-              ? { ...s, notes: [...s.notes, newNote].sort((a, b) => a.startTime - b.startTime) }
-              : s
-          ));
+          setStaffs((prev) =>
+            prev.map((s) =>
+              s.id === staff.id
+                ? {
+                    ...s,
+                    notes: [...s.notes, newNote].sort(
+                      (a, b) => a.startTime - b.startTime
+                    ),
+                  }
+                : s
+            )
+          );
         }
       } else if (!clickedNote && currentTool === 'select') {
         // Clear selection
@@ -600,18 +689,29 @@ export function ScoreEditor({
     const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
     if (staffIndex >= 0 && staffIndex < staffs.length) {
       const targetStaff = staffs[staffIndex];
-      const musicalPos = pixelToMusicalPosition(x, y, staffIndex, targetStaff.id);
-      
+      const musicalPos = pixelToMusicalPosition(
+        x,
+        y,
+        staffIndex,
+        targetStaff.id
+      );
+
       if (musicalPos) {
         // Update note position
-        setStaffs(prev => prev.map(staff => ({
-          ...staff,
-          notes: staff.notes.map(note => 
-            note.id === dragState.noteId
-              ? { ...note, startTime: musicalPos.time, pitch: musicalPos.pitch }
-              : note
-          )
-        })));
+        setStaffs((prev) =>
+          prev.map((staff) => ({
+            ...staff,
+            notes: staff.notes.map((note) =>
+              note.id === dragState.noteId
+                ? {
+                    ...note,
+                    startTime: musicalPos.time,
+                    pitch: musicalPos.pitch,
+                  }
+                : note
+            ),
+          }))
+        );
       }
     }
   };
@@ -636,28 +736,30 @@ export function ScoreEditor({
     const staffIndex = Math.floor((y - 40) / (staffHeight + 60));
     if (staffIndex >= 0 && staffIndex < staffs.length) {
       const clickedNote = getNoteAtPosition(x, y, staffIndex);
-      
+
       if (clickedNote) {
         // Cycle through note durations
         const durations = [4, 2, 1, 0.5, 0.25];
         const currentIndex = durations.indexOf(clickedNote.note.duration);
         const nextDuration = durations[(currentIndex + 1) % durations.length];
-        
-        const staff = staffs.find(s => s.id === clickedNote.staffId);
+
+        const staff = staffs.find((s) => s.id === clickedNote.staffId);
         if (staff) {
           const updatedNote = { ...clickedNote.note, duration: nextDuration };
           const noteDurationInSeconds = noteDurationToSeconds(nextDuration);
           playNote(updatedNote, staff.instrument, noteDurationInSeconds);
         }
-        
-        setStaffs(prev => prev.map(staff => ({
-          ...staff,
-          notes: staff.notes.map(note => 
-            note.id === clickedNote.note.id
-              ? { ...note, duration: nextDuration }
-              : note
-          )
-        })));
+
+        setStaffs((prev) =>
+          prev.map((staff) => ({
+            ...staff,
+            notes: staff.notes.map((note) =>
+              note.id === clickedNote.note.id
+                ? { ...note, duration: nextDuration }
+                : note
+            ),
+          }))
+        );
       }
     }
   };
@@ -666,13 +768,15 @@ export function ScoreEditor({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLocked) return;
-      
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedNotes.size > 0) {
-          setStaffs(prev => prev.map(staff => ({
-            ...staff,
-            notes: staff.notes.filter(note => !selectedNotes.has(note.id))
-          })));
+          setStaffs((prev) =>
+            prev.map((staff) => ({
+              ...staff,
+              notes: staff.notes.filter((note) => !selectedNotes.has(note.id)),
+            }))
+          );
           setSelectedNotes(new Set());
         }
       } else if (e.key === 'Escape') {
@@ -701,21 +805,23 @@ export function ScoreEditor({
       <div className="border-b border-[var(--border)] bg-[var(--background)]">
         {/* Category Tabs */}
         <div className="h-10 px-3 flex items-center border-b border-[var(--border)]">
-          {['Notation', 'Symbols', 'Dynamics', 'Structure', 'Playback'].map((category) => (
-            <Button
-              key={category}
-              variant="ghost"
-              size="sm"
-              className={`h-8 px-3 rounded-t-md rounded-b-none ${
-                selectedPaletteCategory === category 
-                  ? 'bg-[var(--accent)] border-b-2 border-[var(--primary)]' 
-                  : 'hover:bg-[var(--accent)]'
-              }`}
-              onClick={() => setSelectedPaletteCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
+          {['Notation', 'Symbols', 'Dynamics', 'Structure', 'Playback'].map(
+            (category) => (
+              <Button
+                key={category}
+                variant="ghost"
+                size="sm"
+                className={`h-8 px-3 rounded-t-md rounded-b-none ${
+                  selectedPaletteCategory === category
+                    ? 'bg-[var(--accent)] border-b-2 border-[var(--primary)]'
+                    : 'hover:bg-[var(--accent)]'
+                }`}
+                onClick={() => setSelectedPaletteCategory(category)}
+              >
+                {category}
+              </Button>
+            )
+          )}
         </div>
 
         {/* Control Palette Content */}
@@ -724,12 +830,14 @@ export function ScoreEditor({
             <div className="flex items-center space-x-2">
               {/* Clef Selection */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Clef:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Clef:
+                </span>
                 {[
                   { type: 'treble', symbol: '𝄞', name: 'Treble' },
                   { type: 'bass', symbol: '𝄢', name: 'Bass' },
                   { type: 'alto', symbol: '𝄡', name: 'Alto' },
-                  { type: 'tenor', symbol: '𝄡', name: 'Tenor' }
+                  { type: 'tenor', symbol: '𝄡', name: 'Tenor' },
                 ].map((clef) => (
                   <Button
                     key={clef.type}
@@ -739,9 +847,13 @@ export function ScoreEditor({
                     title={clef.name}
                     onClick={() => {
                       if (selectedStaff) {
-                        setStaffs(prev => prev.map(s => 
-                          s.id === selectedStaff ? { ...s, clef: clef.type as any } : s
-                        ));
+                        setStaffs((prev) =>
+                          prev.map((s) =>
+                            s.id === selectedStaff
+                              ? { ...s, clef: clef.type as any }
+                              : s
+                          )
+                        );
                       }
                     }}
                   >
@@ -752,14 +864,25 @@ export function ScoreEditor({
 
               {/* Key Signatures */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Key:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Key:
+                </span>
                 <select
-                  value={selectedStaff ? staffs.find(s => s.id === selectedStaff)?.keySignature || 'C' : 'C'}
+                  value={
+                    selectedStaff
+                      ? staffs.find((s) => s.id === selectedStaff)
+                          ?.keySignature || 'C'
+                      : 'C'
+                  }
                   onChange={(e) => {
                     if (selectedStaff) {
-                      setStaffs(prev => prev.map(s => 
-                        s.id === selectedStaff ? { ...s, keySignature: e.target.value } : s
-                      ));
+                      setStaffs((prev) =>
+                        prev.map((s) =>
+                          s.id === selectedStaff
+                            ? { ...s, keySignature: e.target.value }
+                            : s
+                        )
+                      );
                     }
                   }}
                   className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
@@ -781,9 +904,16 @@ export function ScoreEditor({
 
               {/* Time Signatures */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Time:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Time:
+                </span>
                 {[
-                  [4, 4], [3, 4], [2, 4], [6, 8], [9, 8], [12, 8]
+                  [4, 4],
+                  [3, 4],
+                  [2, 4],
+                  [6, 8],
+                  [9, 8],
+                  [12, 8],
                 ].map((timeSig) => (
                   <Button
                     key={`${timeSig[0]}-${timeSig[1]}`}
@@ -793,9 +923,16 @@ export function ScoreEditor({
                     title={`${timeSig[0]}/${timeSig[1]}`}
                     onClick={() => {
                       if (selectedStaff) {
-                        setStaffs(prev => prev.map(s => 
-                          s.id === selectedStaff ? { ...s, timeSignature: timeSig as [number, number] } : s
-                        ));
+                        setStaffs((prev) =>
+                          prev.map((s) =>
+                            s.id === selectedStaff
+                              ? {
+                                  ...s,
+                                  timeSignature: timeSig as [number, number],
+                                }
+                              : s
+                          )
+                        );
                       }
                     }}
                   >
@@ -813,7 +950,9 @@ export function ScoreEditor({
             <div className="flex items-center space-x-2">
               {/* Tools */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Tools:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Tools:
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -827,13 +966,15 @@ export function ScoreEditor({
 
               {/* Note Values */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Notes:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Notes:
+                </span>
                 {[
                   { value: 4, symbol: '𝅝', name: 'Whole Note' },
                   { value: 2, symbol: '𝅗𝅥', name: 'Half Note' },
                   { value: 1, symbol: '♩', name: 'Quarter Note' },
                   { value: 0.5, symbol: '♪', name: 'Eighth Note' },
-                  { value: 0.25, symbol: '♬', name: 'Sixteenth Note' }
+                  { value: 0.25, symbol: '♬', name: 'Sixteenth Note' },
                 ].map((note) => (
                   <Button
                     key={note.value}
@@ -853,11 +994,13 @@ export function ScoreEditor({
 
               {/* Accidentals */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Accidentals:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Accidentals:
+                </span>
                 {[
                   { type: 'sharp', symbol: '♯', name: 'Sharp' },
                   { type: 'flat', symbol: '♭', name: 'Flat' },
-                  { type: 'natural', symbol: '♮', name: 'Natural' }
+                  { type: 'natural', symbol: '♮', name: 'Natural' },
                 ].map((acc) => (
                   <Button
                     key={acc.type}
@@ -878,39 +1021,53 @@ export function ScoreEditor({
             <div className="flex items-center space-x-2">
               {/* Dynamic Markings */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Dynamics:</span>
-                {['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff'].map((dynamic) => (
-                  <Button
-                    key={dynamic}
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-xs font-bold"
-                    title={`${dynamic} - ${dynamic === 'ppp' ? 'pianississimo' : dynamic === 'pp' ? 'pianissimo' : dynamic === 'p' ? 'piano' : dynamic === 'mp' ? 'mezzo-piano' : dynamic === 'mf' ? 'mezzo-forte' : dynamic === 'f' ? 'forte' : dynamic === 'ff' ? 'fortissimo' : 'fortississimo'}`}
-                    onClick={() => {
-                      if (selectedStaff) {
-                        const time = editCursor?.time || 0;
-                        setStaffs(prev => prev.map(s => 
-                          s.id === selectedStaff 
-                            ? { ...s, dynamics: [...s.dynamics, { time, marking: dynamic }].sort((a, b) => a.time - b.time) }
-                            : s
-                        ));
-                      }
-                    }}
-                  >
-                    {dynamic}
-                  </Button>
-                ))}
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Dynamics:
+                </span>
+                {['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff'].map(
+                  (dynamic) => (
+                    <Button
+                      key={dynamic}
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs font-bold"
+                      title={`${dynamic} - ${dynamic === 'ppp' ? 'pianississimo' : dynamic === 'pp' ? 'pianissimo' : dynamic === 'p' ? 'piano' : dynamic === 'mp' ? 'mezzo-piano' : dynamic === 'mf' ? 'mezzo-forte' : dynamic === 'f' ? 'forte' : dynamic === 'ff' ? 'fortissimo' : 'fortississimo'}`}
+                      onClick={() => {
+                        if (selectedStaff) {
+                          const time = editCursor?.time || 0;
+                          setStaffs((prev) =>
+                            prev.map((s) =>
+                              s.id === selectedStaff
+                                ? {
+                                    ...s,
+                                    dynamics: [
+                                      ...s.dynamics,
+                                      { time, marking: dynamic },
+                                    ].sort((a, b) => a.time - b.time),
+                                  }
+                                : s
+                            )
+                          );
+                        }
+                      }}
+                    >
+                      {dynamic}
+                    </Button>
+                  )
+                )}
               </div>
 
               {/* Articulations */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Articulations:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Articulations:
+                </span>
                 {[
                   { type: 'staccato', symbol: '·', name: 'Staccato' },
                   { type: 'accent', symbol: '>', name: 'Accent' },
                   { type: 'tenuto', symbol: '−', name: 'Tenuto' },
                   { type: 'marcato', symbol: '^', name: 'Marcato' },
-                  { type: 'fermata', symbol: '𝄐', name: 'Fermata' }
+                  { type: 'fermata', symbol: '𝄐', name: 'Fermata' },
                 ].map((art) => (
                   <Button
                     key={art.type}
@@ -931,13 +1088,15 @@ export function ScoreEditor({
             <div className="flex items-center space-x-2">
               {/* Barlines */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Barlines:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Barlines:
+                </span>
                 {[
                   { type: 'single', symbol: '|', name: 'Single Bar' },
                   { type: 'double', symbol: '||', name: 'Double Bar' },
                   { type: 'final', symbol: '|||', name: 'Final Bar' },
                   { type: 'repeat-start', symbol: '|:', name: 'Repeat Start' },
-                  { type: 'repeat-end', symbol: ':|', name: 'Repeat End' }
+                  { type: 'repeat-end', symbol: ':|', name: 'Repeat End' },
                 ].map((bar) => (
                   <Button
                     key={bar.type}
@@ -959,7 +1118,9 @@ export function ScoreEditor({
 
               {/* Text Elements */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Text:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Text:
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -984,14 +1145,25 @@ export function ScoreEditor({
             <div className="flex items-center space-x-2">
               {/* Virtual Instruments */}
               <div className="flex items-center space-x-1 pr-3 border-r border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)]">Instruments:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Instruments:
+                </span>
                 <select
-                  value={selectedStaff ? staffs.find(s => s.id === selectedStaff)?.instrument || 'Piano' : 'Piano'}
+                  value={
+                    selectedStaff
+                      ? staffs.find((s) => s.id === selectedStaff)
+                          ?.instrument || 'Piano'
+                      : 'Piano'
+                  }
                   onChange={(e) => {
                     if (selectedStaff) {
-                      setStaffs(prev => prev.map(s => 
-                        s.id === selectedStaff ? { ...s, instrument: e.target.value } : s
-                      ));
+                      setStaffs((prev) =>
+                        prev.map((s) =>
+                          s.id === selectedStaff
+                            ? { ...s, instrument: e.target.value }
+                            : s
+                        )
+                      );
                     }
                   }}
                   className="h-8 px-2 bg-[var(--background)] border border-[var(--border)] rounded text-sm"
@@ -1032,7 +1204,9 @@ export function ScoreEditor({
 
               {/* Tempo Display */}
               <div className="flex items-center space-x-1">
-                <span className="text-xs text-[var(--muted-foreground)]">Tempo:</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Tempo:
+                </span>
                 <span className="text-sm font-mono">{bpm} BPM</span>
               </div>
             </div>
@@ -1056,10 +1230,14 @@ export function ScoreEditor({
 
         {/* Staff Management Sidebar */}
         <div className="w-64 border-l border-[var(--border)] bg-[var(--muted)] p-4 overflow-y-auto">
-          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Score Properties</h3>
-          
+          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">
+            Score Properties
+          </h3>
+
           <div className="space-y-2 mb-4">
-            <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">Staffs</h4>
+            <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">
+              Staffs
+            </h4>
             {staffs.map((staff) => (
               <div
                 key={staff.id}
@@ -1072,9 +1250,12 @@ export function ScoreEditor({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="text-sm font-medium">{staff.instrument}</div>
+                    <div className="text-sm font-medium">
+                      {staff.instrument}
+                    </div>
                     <div className="text-xs text-[var(--muted-foreground)]">
-                      {staff.clef} • {staff.keySignature} • {staff.timeSignature[0]}/{staff.timeSignature[1]}
+                      {staff.clef} • {staff.keySignature} •{' '}
+                      {staff.timeSignature[0]}/{staff.timeSignature[1]}
                     </div>
                     <div className="text-xs text-[var(--muted-foreground)] mt-1">
                       {staff.notes.length} notes • ♩ = {staff.tempo}
@@ -1110,7 +1291,7 @@ export function ScoreEditor({
               </div>
             ))}
           </div>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -1127,14 +1308,18 @@ export function ScoreEditor({
                 chords: [],
                 dynamics: [],
                 measures: [
-                  { id: `measure-${Date.now()}-1`, number: 1, barline: 'single' }
+                  {
+                    id: `measure-${Date.now()}-1`,
+                    number: 1,
+                    barline: 'single',
+                  },
                 ],
                 visible: true,
                 locked: false,
                 volume: 100,
-                pan: 0
+                pan: 0,
               };
-              setStaffs(prev => [...prev, newStaff]);
+              setStaffs((prev) => [...prev, newStaff]);
             }}
           >
             <Plus className="h-4 w-4 mr-1" />

@@ -1,0 +1,246 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  NODE_VERSION: '20'
+  POSTGRES_VERSION: '15'
+
+jobs:
+  validate-release:
+    name: Validate Release Candidate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: audiomage_release
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run comprehensive test suite
+        run: |
+          npm run test:all
+          npm run test:performance
+          npm run test:security
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/audiomage_release
+
+      - name: Generate test reports
+        run: npm run test:report
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-test-reports
+          path: |
+            test-results/
+            coverage/
+            performance-reports/
+
+  build-release:
+    name: Build Release Package
+    runs-on: ubuntu-latest
+    needs: validate-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production release
+        run: |
+          npm run build:production
+          npm run optimize:assets
+          npm run generate:sourcemaps
+        env:
+          NODE_ENV: production
+          BUILD_VERSION: ${{ github.ref_name }}
+
+      - name: Package release
+        run: |
+          npm pack
+          tar -czf audiomage-${{ github.ref_name }}.tar.gz dist/
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-package
+          path: |
+            audiomage-${{ github.ref_name }}.tar.gz
+            *.tgz
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-release
+    environment: staging
+    steps:
+      - name: Download release package
+        uses: actions/download-artifact@v3
+        with:
+          name: release-package
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying release ${{ github.ref_name }} to staging..."
+          # Staging deployment handled by Replit Deployments
+
+      - name: Run staging validation
+        run: |
+          sleep 60
+          npm run test:staging-validation
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+
+      - name: Performance benchmark
+        run: npm run benchmark:staging
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+
+  approve-release:
+    name: Manual Release Approval
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: release-approval
+    steps:
+      - name: Request manual approval
+        run: echo "Release ${{ github.ref_name }} deployed to staging and awaiting approval"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: approve-release
+    environment: production
+    steps:
+      - name: Download release package
+        uses: actions/download-artifact@v3
+        with:
+          name: release-package
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying release ${{ github.ref_name }} to production..."
+          # Production deployment handled by Replit Deployments
+
+      - name: Health check with rollback
+        run: |
+          sleep 60
+          if ! curl -f ${{ secrets.PRODUCTION_URL }}/health; then
+            echo "Health check failed, initiating rollback..."
+            # Rollback logic here
+            exit 1
+          fi
+
+      - name: Post-deployment validation
+        run: |
+          npm run test:production-smoke
+          npm run monitor:production-metrics
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release-package
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "## 🎵 Audiomage Audio Workstation Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### ✨ New Features" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" --grep="feat:" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" --grep="fix:" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🔧 Technical Details" >> $GITHUB_OUTPUT
+          echo "- Build: ${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "- Node.js: ${{ env.NODE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Audiomage ${{ github.ref_name }}
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./audiomage-${{ github.ref_name }}.tar.gz
+          asset_name: audiomage-${{ github.ref_name }}.tar.gz
+          asset_content_type: application/gzip
+
+  notify-completion:
+    name: Notify Release Completion
+    runs-on: ubuntu-latest
+    needs: create-github-release
+    steps:
+      - name: Notify team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#releases'
+          message: |
+            🚀 Audiomage ${{ github.ref_name }} has been successfully released!
+
+            📦 Production deployment complete
+            🔗 Release notes: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

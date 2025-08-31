@@ -17,13 +17,17 @@ interface MediaPreviewPaneProps {
   isVisible: boolean;
 }
 
-export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneProps) {
+export function MediaPreviewPane({
+  file,
+  onClose,
+  isVisible,
+}: MediaPreviewPaneProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [error, setError] = useState<string | null>(null);
-  
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -37,13 +41,14 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
   }, [file]);
 
   const handlePlayPause = () => {
-    const mediaElement = file?.type === 'video' ? videoRef.current : audioRef.current;
+    const mediaElement =
+      file?.type === 'video' ? videoRef.current : audioRef.current;
     if (!mediaElement) return;
 
     if (isPlaying) {
       mediaElement.pause();
     } else {
-      mediaElement.play().catch(err => {
+      mediaElement.play().catch((err) => {
         setError('Failed to play media file');
         console.error('Media playback error:', err);
       });
@@ -52,7 +57,8 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
   };
 
   const handleTimeUpdate = () => {
-    const mediaElement = file?.type === 'video' ? videoRef.current : audioRef.current;
+    const mediaElement =
+      file?.type === 'video' ? videoRef.current : audioRef.current;
     if (mediaElement) {
       setCurrentTime(mediaElement.currentTime);
       setDuration(mediaElement.duration || 0);
@@ -60,13 +66,14 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const mediaElement = file?.type === 'video' ? videoRef.current : audioRef.current;
+    const mediaElement =
+      file?.type === 'video' ? videoRef.current : audioRef.current;
     if (!mediaElement || !duration) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const seekTime = (clickX / rect.width) * duration;
-    
+
     mediaElement.currentTime = seekTime;
     setCurrentTime(seekTime);
   };
@@ -74,8 +81,9 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
-    
-    const mediaElement = file?.type === 'video' ? videoRef.current : audioRef.current;
+
+    const mediaElement =
+      file?.type === 'video' ? videoRef.current : audioRef.current;
     if (mediaElement) {
       mediaElement.volume = newVolume;
     }
@@ -88,7 +96,8 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
   };
 
   const handleReset = () => {
-    const mediaElement = file?.type === 'video' ? videoRef.current : audioRef.current;
+    const mediaElement =
+      file?.type === 'video' ? videoRef.current : audioRef.current;
     if (mediaElement) {
       mediaElement.currentTime = 0;
       setCurrentTime(0);
@@ -107,15 +116,24 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${
-                file.type === 'audio' ? 'bg-[var(--blue)]' :
-                file.type === 'video' ? 'bg-[var(--green)]' :
-                'bg-[var(--purple)]'
-              }`} />
-              <h3 className="text-sm font-medium text-[var(--foreground)]">{file.name}</h3>
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  file.type === 'audio'
+                    ? 'bg-[var(--blue)]'
+                    : file.type === 'video'
+                      ? 'bg-[var(--green)]'
+                      : 'bg-[var(--purple)]'
+                }`}
+              />
+              <h3 className="text-sm font-medium text-[var(--foreground)]">
+                {file.name}
+              </h3>
             </div>
             <div className="text-xs text-[var(--muted-foreground)] capitalize">
-              {file.type} • {file.size ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : 'Unknown size'}
+              {file.type} •{' '}
+              {file.size
+                ? `${(file.size / 1024 / 1024).toFixed(1)} MB`
+                : 'Unknown size'}
             </div>
           </div>
           <Button
@@ -166,7 +184,9 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
                 <div className="w-16 h-16 mx-auto mb-4 bg-[var(--primary)]/20 rounded-full flex items-center justify-center">
                   <Volume2 className="w-8 h-8 text-[var(--primary)]" />
                 </div>
-                <div className="text-sm text-[var(--muted-foreground)]">Audio Preview</div>
+                <div className="text-sm text-[var(--muted-foreground)]">
+                  Audio Preview
+                </div>
               </div>
             </div>
           )}
@@ -196,13 +216,13 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handlePlayPause}
                   className="h-10 w-10 p-0 hover:bg-[var(--accent)]"
-                  title={isPlaying ? "Pause" : "Play"}
+                  title={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? (
                     <Pause className="w-5 h-5" />
@@ -214,20 +234,29 @@ export function MediaPreviewPane({ file, onClose, isVisible }: MediaPreviewPaneP
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <div 
+                <div
                   className="relative h-2 bg-[var(--muted)] rounded-full cursor-pointer"
                   onClick={handleSeek}
                 >
-                  <div 
+                  <div
                     className="absolute top-0 left-0 h-full bg-[var(--primary)] rounded-full transition-all duration-150"
-                    style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
+                    style={{
+                      width: duration
+                        ? `${(currentTime / duration) * 100}%`
+                        : '0%',
+                    }}
                   />
-                  <div 
+                  <div
                     className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-[var(--primary)] rounded-full transition-all duration-150"
-                    style={{ left: duration ? `${(currentTime / duration) * 100}%` : '0%', marginLeft: '-6px' }}
+                    style={{
+                      left: duration
+                        ? `${(currentTime / duration) * 100}%`
+                        : '0%',
+                      marginLeft: '-6px',
+                    }}
                   />
                 </div>
-                
+
                 <div className="flex justify-between text-xs text-[var(--muted-foreground)] font-mono">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>

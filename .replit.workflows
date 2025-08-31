@@ -1,0 +1,94 @@
+# Replit Workflows Configuration for Audiomage CI/CD Pipeline
+
+[workflows]
+runButton = "Development"
+
+[[workflows.workflow]]
+name = "Development"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Run Unit Tests"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx vitest run client/src/test/unit/hooks/useAudioWorkstation.test.ts"
+
+[[workflows.workflow]]
+name = "Full Test Suite"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/replit-runner.js test-all"
+
+[[workflows.workflow]]
+name = "Code Quality Check"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx tsc --noEmit && npx eslint . --ext .ts,.tsx"
+
+[[workflows.workflow]]
+name = "Build Production"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run build"
+
+[[workflows.workflow]]
+name = "Security Audit"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm audit --audit-level=moderate"
+
+[[workflows.workflow]]
+name = "Interactive Workflow Manager"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/replit-runner.js interactive"
+
+[[workflows.workflow]]
+name = "Development with Testing"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/replit-workflows.sh dev-test"
+
+[[workflows.workflow]]
+name = "Deploy Check"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/replit-runner.js deploy-check"
+
+[[workflows.workflow]]
+name = "Format Code"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx prettier --write ."

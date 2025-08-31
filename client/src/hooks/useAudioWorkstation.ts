@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AudioTrack, Project, Session, TransportState, AIAnalysis, MixerChannel } from '../types/audio';
+import {
+  AudioTrack,
+  Project,
+  Session,
+  TransportState,
+  AIAnalysis,
+  MixerChannel,
+} from '../types/audio';
 
 export function useAudioWorkstation() {
   // Transport state
@@ -72,9 +79,13 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 85,
           color: '#88C0D0',
-          waveformData: [45, 60, 30, 85, 70, 40, 90, 35, 75, 55, 80, 25, 95, 60, 50, 85, 40, 70, 90, 30, 65, 85, 45, 75, 60, 90, 35, 80, 55, 70, 85, 40, 60, 75, 50, 90, 45, 65, 80, 35],
+          waveformData: [
+            45, 60, 30, 85, 70, 40, 90, 35, 75, 55, 80, 25, 95, 60, 50, 85, 40,
+            70, 90, 30, 65, 85, 45, 75, 60, 90, 35, 80, 55, 70, 85, 40, 60, 75,
+            50, 90, 45, 65, 80, 35,
+          ],
           fadeIn: 0.1,
-          fadeOut: 0.2
+          fadeOut: 0.2,
         },
         {
           id: 'clip-2',
@@ -85,13 +96,35 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 90,
           color: '#88C0D0',
-          waveformData: [55, 70, 40, 95, 80, 50, 85, 45, 90, 65, 75, 35, 88, 70, 60, 95, 50, 80, 85, 40, 75, 95, 55, 85, 70, 80, 45, 90, 65, 80, 95, 50, 70, 85, 60, 88, 55, 75, 90, 45]
-        }
+          waveformData: [
+            55, 70, 40, 95, 80, 50, 85, 45, 90, 65, 75, 35, 88, 70, 60, 95, 50,
+            80, 85, 40, 75, 95, 55, 85, 70, 80, 45, 90, 65, 80, 95, 50, 70, 85,
+            60, 88, 55, 75, 90, 45,
+          ],
+        },
       ],
       effects: [
-        { id: '1', name: 'AI DeNoise Pro', type: 'noise-reduction', enabled: true, parameters: {} },
-        { id: '2', name: 'EQ - Vintage', type: 'equalizer', enabled: true, parameters: {} },
-        { id: '3', name: 'Compressor', type: 'dynamics', enabled: true, parameters: {} },
+        {
+          id: '1',
+          name: 'AI DeNoise Pro',
+          type: 'noise-reduction',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '2',
+          name: 'EQ - Vintage',
+          type: 'equalizer',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '3',
+          name: 'Compressor',
+          type: 'dynamics',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -113,12 +146,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 80,
           color: '#BF616A',
-          waveformData: [95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70, 50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35, 90, 25, 80, 45, 95, 30]
-        }
+          waveformData: [
+            95, 30, 85, 25, 90, 35, 80, 40, 95, 20, 75, 45, 85, 30, 90, 25, 70,
+            50, 95, 35, 80, 45, 75, 30, 90, 40, 85, 25, 95, 30, 70, 50, 85, 35,
+            90, 25, 80, 45, 95, 30,
+          ],
+        },
       ],
       effects: [
-        { id: '4', name: 'Gate - Precision', type: 'gate', enabled: true, parameters: {} },
-        { id: '5', name: 'AI Drum Enhance', type: 'ai-enhancement', enabled: true, parameters: {} },
+        {
+          id: '4',
+          name: 'Gate - Precision',
+          type: 'gate',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '5',
+          name: 'AI Drum Enhance',
+          type: 'ai-enhancement',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -139,7 +188,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 75,
           color: '#B48EAD',
-          waveformData: [75, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75, 65, 90, 60, 85, 75, 70, 80, 65, 90, 55, 85, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75]
+          waveformData: [
+            75, 75, 70, 80, 65, 85, 70, 75, 80, 60, 90, 55, 85, 70, 75, 65, 90,
+            60, 85, 75, 70, 80, 65, 90, 55, 85, 75, 70, 80, 65, 85, 70, 75, 80,
+            60, 90, 55, 85, 70, 75,
+          ],
         },
         {
           id: 'clip-5',
@@ -149,7 +202,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 78,
           color: '#B48EAD',
-          waveformData: [80, 70, 85, 75, 90, 65, 75, 85, 70, 90, 60, 85, 75, 80, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 90, 65, 85, 75, 80]
+          waveformData: [
+            80, 70, 85, 75, 90, 65, 75, 85, 70, 90, 60, 85, 75, 80, 70, 90, 65,
+            85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80,
+            70, 90, 65, 85, 75, 80,
+          ],
         },
         {
           id: 'clip-6',
@@ -159,12 +216,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 72,
           color: '#B48EAD',
-          waveformData: [70, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85]
-        }
+          waveformData: [
+            70, 80, 75, 85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75,
+            85, 70, 90, 65, 85, 75, 80, 70, 85, 75, 90, 65, 80, 75, 85, 70, 90,
+            65, 85, 75, 80, 70, 85,
+          ],
+        },
       ],
       effects: [
-        { id: '6', name: 'Bass Compressor', type: 'compressor', enabled: true, parameters: {} },
-        { id: '7', name: 'EQ - Low Cut', type: 'eq', enabled: true, parameters: {} }
+        {
+          id: '6',
+          name: 'Bass Compressor',
+          type: 'compressor',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '7',
+          name: 'EQ - Low Cut',
+          type: 'eq',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -185,7 +258,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 80,
           color: '#EBCB8B',
-          waveformData: [60, 85, 40, 90, 55, 85, 45, 95, 35, 80, 50, 85, 40, 90, 45, 85, 55, 95, 35, 80, 50, 85, 45, 90, 40, 85, 55, 95, 35, 80, 50, 85, 45, 90, 40, 85, 55, 95, 35, 80]
+          waveformData: [
+            60, 85, 40, 90, 55, 85, 45, 95, 35, 80, 50, 85, 40, 90, 45, 85, 55,
+            95, 35, 80, 50, 85, 45, 90, 40, 85, 55, 95, 35, 80, 50, 85, 45, 90,
+            40, 85, 55, 95, 35, 80,
+          ],
         },
         {
           id: 'clip-8',
@@ -195,7 +272,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 85,
           color: '#EBCB8B',
-          waveformData: [45, 95, 30, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85]
+          waveformData: [
+            45, 95, 30, 85, 50, 90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50,
+            90, 35, 95, 25, 80, 55, 90, 30, 95, 40, 85, 50, 90, 35, 95, 25, 80,
+            55, 90, 30, 95, 40, 85,
+          ],
         },
         {
           id: 'clip-9',
@@ -205,12 +286,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 88,
           color: '#EBCB8B',
-          waveformData: [35, 95, 25, 90, 40, 95, 20, 85, 45, 95, 30, 90, 35, 95, 25, 85, 50, 95, 20, 90, 40, 95, 30, 85, 45, 95, 25, 90, 35, 95, 30, 85, 50, 95, 20, 90, 40, 95, 25, 85]
-        }
+          waveformData: [
+            35, 95, 25, 90, 40, 95, 20, 85, 45, 95, 30, 90, 35, 95, 25, 85, 50,
+            95, 20, 90, 40, 95, 30, 85, 45, 95, 25, 90, 35, 95, 30, 85, 50, 95,
+            20, 90, 40, 95, 25, 85,
+          ],
+        },
       ],
       effects: [
-        { id: '8', name: 'Amp Simulator', type: 'amp', enabled: true, parameters: {} },
-        { id: '9', name: 'Reverb Hall', type: 'reverb', enabled: true, parameters: {} }
+        {
+          id: '8',
+          name: 'Amp Simulator',
+          type: 'amp',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '9',
+          name: 'Reverb Hall',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -231,7 +328,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 70,
           color: '#A3BE8C',
-          waveformData: [50, 65, 45, 70, 40, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70]
+          waveformData: [
+            50, 65, 45, 70, 40, 75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45,
+            75, 35, 65, 50, 70, 45, 75, 40, 65, 50, 70, 45, 75, 35, 65, 50, 70,
+            45, 75, 40, 65, 50, 70,
+          ],
         },
         {
           id: 'clip-11',
@@ -241,11 +342,21 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 65,
           color: '#A3BE8C',
-          waveformData: [40, 55, 35, 60, 30, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60]
-        }
+          waveformData: [
+            40, 55, 35, 60, 30, 65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35,
+            65, 25, 55, 40, 60, 35, 65, 30, 55, 40, 60, 35, 65, 25, 55, 40, 60,
+            35, 65, 30, 55, 40, 60,
+          ],
+        },
       ],
       effects: [
-        { id: '10', name: 'Acoustic Enhancer', type: 'enhancer', enabled: true, parameters: {} }
+        {
+          id: '10',
+          name: 'Acoustic Enhancer',
+          type: 'enhancer',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -266,7 +377,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 77,
           color: '#88C0D0',
-          waveformData: [55, 70, 50, 75, 45, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75]
+          waveformData: [
+            55, 70, 50, 75, 45, 80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50,
+            80, 40, 70, 55, 75, 50, 80, 45, 70, 55, 75, 50, 80, 40, 70, 55, 75,
+            50, 80, 45, 70, 55, 75,
+          ],
         },
         {
           id: 'clip-13',
@@ -276,11 +391,21 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 73,
           color: '#88C0D0',
-          waveformData: [45, 85, 35, 80, 50, 85, 30, 75, 55, 85, 40, 80, 45, 85, 35, 75, 60, 85, 30, 80, 50, 85, 40, 75, 55, 85, 35, 80, 45, 85, 40, 75, 60, 85, 30, 80, 50, 85, 35, 75]
-        }
+          waveformData: [
+            45, 85, 35, 80, 50, 85, 30, 75, 55, 85, 40, 80, 45, 85, 35, 75, 60,
+            85, 30, 80, 50, 85, 40, 75, 55, 85, 35, 80, 45, 85, 40, 75, 60, 85,
+            30, 80, 50, 85, 35, 75,
+          ],
+        },
       ],
       effects: [
-        { id: '11', name: 'Piano Reverb', type: 'reverb', enabled: true, parameters: {} }
+        {
+          id: '11',
+          name: 'Piano Reverb',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -301,12 +426,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 68,
           color: '#D08770',
-          waveformData: [30, 60, 25, 65, 20, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65]
-        }
+          waveformData: [
+            30, 60, 25, 65, 20, 70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25,
+            70, 15, 60, 30, 65, 25, 70, 20, 60, 30, 65, 25, 70, 15, 60, 30, 65,
+            25, 70, 20, 60, 30, 65,
+          ],
+        },
       ],
       effects: [
-        { id: '12', name: 'Strings Reverb', type: 'reverb', enabled: true, parameters: {} },
-        { id: '13', name: 'Chorus', type: 'chorus', enabled: true, parameters: {} }
+        {
+          id: '12',
+          name: 'Strings Reverb',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '13',
+          name: 'Chorus',
+          type: 'chorus',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -327,7 +468,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 80,
           color: '#5E81AC',
-          waveformData: [40, 90, 30, 85, 50, 90, 25, 80, 55, 90, 35, 85, 40, 90, 30, 80, 60, 90, 25, 85, 50, 90, 35, 80, 55, 90, 30, 85, 40, 90, 35, 80, 60, 90, 25, 85, 50, 90, 30, 80]
+          waveformData: [
+            40, 90, 30, 85, 50, 90, 25, 80, 55, 90, 35, 85, 40, 90, 30, 80, 60,
+            90, 25, 85, 50, 90, 35, 80, 55, 90, 30, 85, 40, 90, 35, 80, 60, 90,
+            25, 85, 50, 90, 30, 80,
+          ],
         },
         {
           id: 'clip-16',
@@ -337,12 +482,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 82,
           color: '#5E81AC',
-          waveformData: [35, 95, 25, 90, 45, 95, 20, 85, 50, 95, 30, 90, 35, 95, 25, 85, 55, 95, 20, 90, 45, 95, 30, 85, 50, 95, 25, 90, 35, 95, 30, 85, 55, 95, 20, 90, 45, 95, 25, 85]
-        }
+          waveformData: [
+            35, 95, 25, 90, 45, 95, 20, 85, 50, 95, 30, 90, 35, 95, 25, 85, 55,
+            95, 20, 90, 45, 95, 30, 85, 50, 95, 25, 90, 35, 95, 30, 85, 55, 95,
+            20, 90, 45, 95, 25, 85,
+          ],
+        },
       ],
       effects: [
-        { id: '14', name: 'Delay', type: 'delay', enabled: true, parameters: {} },
-        { id: '15', name: 'Filter Sweep', type: 'filter', enabled: true, parameters: {} }
+        {
+          id: '14',
+          name: 'Delay',
+          type: 'delay',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '15',
+          name: 'Filter Sweep',
+          type: 'filter',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -363,12 +524,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 85,
           color: '#BF616A',
-          waveformData: [60, 45, 70, 40, 65, 50, 75, 35, 60, 55, 70, 40, 65, 45, 75, 50, 60, 40, 70, 55, 65, 35, 75, 45, 60, 50, 70, 40, 65, 55, 75, 35, 60, 45, 70, 50, 65, 40, 75, 55]
-        }
+          waveformData: [
+            60, 45, 70, 40, 65, 50, 75, 35, 60, 55, 70, 40, 65, 45, 75, 50, 60,
+            40, 70, 55, 65, 35, 75, 45, 60, 50, 70, 40, 65, 55, 75, 35, 60, 45,
+            70, 50, 65, 40, 75, 55,
+          ],
+        },
       ],
       effects: [
-        { id: '16', name: 'Bass Compressor', type: 'compressor', enabled: true, parameters: {} },
-        { id: '17', name: 'Sub Bass', type: 'eq', enabled: true, parameters: {} }
+        {
+          id: '16',
+          name: 'Bass Compressor',
+          type: 'compressor',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '17',
+          name: 'Sub Bass',
+          type: 'eq',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -389,11 +566,21 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 72,
           color: '#A3BE8C',
-          waveformData: [35, 50, 30, 55, 25, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55]
-        }
+          waveformData: [
+            35, 50, 30, 55, 25, 60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30,
+            60, 20, 50, 35, 55, 30, 60, 25, 50, 35, 55, 30, 60, 20, 50, 35, 55,
+            30, 60, 25, 50, 35, 55,
+          ],
+        },
       ],
       effects: [
-        { id: '18', name: 'String Reverb', type: 'reverb', enabled: true, parameters: {} }
+        {
+          id: '18',
+          name: 'String Reverb',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -414,7 +601,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 65,
           color: '#BF616A',
-          waveformData: [50, 75, 45, 80, 40, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80]
+          waveformData: [
+            50, 75, 45, 80, 40, 85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45,
+            85, 35, 75, 50, 80, 45, 85, 40, 75, 50, 80, 45, 85, 35, 75, 50, 80,
+            45, 85, 40, 75, 50, 80,
+          ],
         },
         {
           id: 'clip-18',
@@ -424,7 +615,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 68,
           color: '#BF616A',
-          waveformData: [45, 80, 40, 85, 35, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85]
+          waveformData: [
+            45, 80, 40, 85, 35, 90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40,
+            90, 30, 80, 45, 85, 40, 90, 35, 80, 45, 85, 40, 90, 30, 80, 45, 85,
+            40, 90, 35, 80, 45, 85,
+          ],
         },
         {
           id: 'clip-19',
@@ -434,12 +629,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 70,
           color: '#BF616A',
-          waveformData: [55, 85, 50, 90, 45, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90]
-        }
+          waveformData: [
+            55, 85, 50, 90, 45, 95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50,
+            95, 40, 85, 55, 90, 50, 95, 45, 85, 55, 90, 50, 95, 40, 85, 55, 90,
+            50, 95, 45, 85, 55, 90,
+          ],
+        },
       ],
       effects: [
-        { id: '16', name: 'Vocal Reverb', type: 'reverb', enabled: true, parameters: {} },
-        { id: '17', name: 'De-esser', type: 'de-esser', enabled: true, parameters: {} }
+        {
+          id: '16',
+          name: 'Vocal Reverb',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '17',
+          name: 'De-esser',
+          type: 'de-esser',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -460,7 +671,11 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 60,
           color: '#EBCB8B',
-          waveformData: [25, 70, 20, 75, 15, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75]
+          waveformData: [
+            25, 70, 20, 75, 15, 80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20,
+            80, 10, 70, 25, 75, 20, 80, 15, 70, 25, 75, 20, 80, 10, 70, 25, 75,
+            20, 80, 15, 70, 25, 75,
+          ],
         },
         {
           id: 'clip-21',
@@ -470,11 +685,21 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 55,
           color: '#EBCB8B',
-          waveformData: [15, 55, 10, 60, 5, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60]
-        }
+          waveformData: [
+            15, 55, 10, 60, 5, 65, 0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65,
+            0, 55, 15, 60, 10, 65, 5, 55, 15, 60, 10, 65, 0, 55, 15, 60, 10, 65,
+            5, 55, 15, 60,
+          ],
+        },
       ],
       effects: [
-        { id: '18', name: 'EQ - High Boost', type: 'eq', enabled: true, parameters: {} }
+        {
+          id: '18',
+          name: 'EQ - High Boost',
+          type: 'eq',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -495,12 +720,28 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 60,
           color: '#81A1C1',
-          waveformData: [30, 65, 25, 70, 20, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70]
-        }
+          waveformData: [
+            30, 65, 25, 70, 20, 75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25,
+            75, 15, 65, 30, 70, 25, 75, 20, 65, 30, 70, 25, 75, 15, 65, 30, 70,
+            25, 75, 20, 65, 30, 70,
+          ],
+        },
       ],
       effects: [
-        { id: '19', name: 'Woodwind Reverb', type: 'reverb', enabled: true, parameters: {} },
-        { id: '20', name: 'Breath Controller', type: 'dynamics', enabled: true, parameters: {} }
+        {
+          id: '19',
+          name: 'Woodwind Reverb',
+          type: 'reverb',
+          enabled: true,
+          parameters: {},
+        },
+        {
+          id: '20',
+          name: 'Breath Controller',
+          type: 'dynamics',
+          enabled: true,
+          parameters: {},
+        },
       ],
     },
     {
@@ -521,8 +762,12 @@ export function useAudioWorkstation() {
           offset: 0,
           volume: 38,
           color: '#4C566A',
-          waveformData: [10, 30, 5, 35, 0, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35]
-        }
+          waveformData: [
+            10, 30, 5, 35, 0, 40, -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40,
+            -5, 30, 10, 35, 5, 40, 0, 30, 10, 35, 5, 40, -5, 30, 10, 35, 5, 40,
+            0, 30, 10, 35,
+          ],
+        },
       ],
       effects: [],
     },
@@ -705,144 +950,197 @@ export function useAudioWorkstation() {
 
   // Transport controls
   const play = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: true, isPaused: false, isStopped: false }));
+    setTransport((prev) => ({
+      ...prev,
+      isPlaying: true,
+      isPaused: false,
+      isStopped: false,
+    }));
   }, []);
 
   const pause = useCallback(() => {
-    setTransport(prev => ({ ...prev, isPlaying: false, isPaused: true, isStopped: false }));
+    setTransport((prev) => ({
+      ...prev,
+      isPlaying: false,
+      isPaused: true,
+      isStopped: false,
+    }));
   }, []);
 
   const stop = useCallback(() => {
-    setTransport(prev => ({ 
-      ...prev, 
-      isPlaying: false, 
-      isPaused: false, 
-      isStopped: true, 
-      currentTime: 0 
+    setTransport((prev) => ({
+      ...prev,
+      isPlaying: false,
+      isPaused: false,
+      isStopped: true,
+      currentTime: 0,
     }));
   }, []);
 
   const toggleRecording = useCallback(() => {
-    setTransport(prev => ({ ...prev, isRecording: !prev.isRecording }));
+    setTransport((prev) => ({ ...prev, isRecording: !prev.isRecording }));
   }, []);
 
   const seekTo = useCallback((time: number) => {
-    setTransport(prev => ({ ...prev, currentTime: Math.max(0, time) }));
+    setTransport((prev) => ({ ...prev, currentTime: Math.max(0, time) }));
   }, []);
 
   // Track controls
   const updateTrackVolume = useCallback((trackId: string, volume: number) => {
-    setTracks(prev => prev.map(track => 
-      track.id === trackId ? { ...track, volume } : track
-    ));
+    setTracks((prev) =>
+      prev.map((track) => (track.id === trackId ? { ...track, volume } : track))
+    );
   }, []);
 
   const toggleTrackMute = useCallback((trackId: string) => {
-    setTracks(prev => prev.map(track => 
-      track.id === trackId ? { ...track, muted: !track.muted } : track
-    ));
+    setTracks((prev) =>
+      prev.map((track) =>
+        track.id === trackId ? { ...track, muted: !track.muted } : track
+      )
+    );
   }, []);
 
   const toggleTrackSolo = useCallback((trackId: string) => {
-    setTracks(prev => prev.map(track => 
-      track.id === trackId ? { ...track, soloed: !track.soloed } : track
-    ));
+    setTracks((prev) =>
+      prev.map((track) =>
+        track.id === trackId ? { ...track, soloed: !track.soloed } : track
+      )
+    );
   }, []);
 
   // Session management
   const switchSession = useCallback((sessionId: string) => {
-    setSessions(prev => prev.map(session => ({
-      ...session,
-      isActive: session.id === sessionId,
-    })));
+    setSessions((prev) =>
+      prev.map((session) => ({
+        ...session,
+        isActive: session.id === sessionId,
+      }))
+    );
   }, []);
 
   // Update clip position function
-  const updateClipPosition = useCallback((clipId: string, fromTrackId: string, toTrackId: string, newStartTime: number) => {
-    console.log(`updateClipPosition called: ${clipId} from ${fromTrackId} to ${toTrackId} at ${newStartTime}s`);
-    
-    setTracks(prevTracks => {
-      // Find the clip in the source track
-      const sourceTrack = prevTracks.find(t => t.id === fromTrackId);
-      const clipToMove = sourceTrack?.clips?.find(c => c.id === clipId);
-      
-      if (!clipToMove) {
-        console.error('Clip not found for movement');
-        return prevTracks;
-      }
+  const updateClipPosition = useCallback(
+    (
+      clipId: string,
+      fromTrackId: string,
+      toTrackId: string,
+      newStartTime: number
+    ) => {
+      console.log(
+        `updateClipPosition called: ${clipId} from ${fromTrackId} to ${toTrackId} at ${newStartTime}s`
+      );
 
-      console.log(`Moving clip "${clipToMove.name}" from ${clipToMove.startTime}s to ${newStartTime}s`);
+      setTracks((prevTracks) => {
+        // Find the clip in the source track
+        const sourceTrack = prevTracks.find((t) => t.id === fromTrackId);
+        const clipToMove = sourceTrack?.clips?.find((c) => c.id === clipId);
 
-      // Update tracks with moved clip
-      const updatedTracks = prevTracks.map(track => {
-        if (track.id === fromTrackId && fromTrackId === toTrackId) {
-          // Same track movement - just update the clip's position
-          const updatedClip = {
-            ...clipToMove,
-            startTime: newStartTime
-          };
-          const updatedTrack = {
-            ...track,
-            clips: track.clips?.map(c => c.id === clipId ? updatedClip : c) || []
-          };
-          console.log(`Updated clip position on same track ${track.name}, total clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
-        } else if (track.id === fromTrackId) {
-          // Remove clip from source track (different track movement)
-          const updatedTrack = {
-            ...track,
-            clips: track.clips?.filter(c => c.id !== clipId) || []
-          };
-          console.log(`Removed clip from track ${track.name}, remaining clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
-        } else if (track.id === toTrackId) {
-          // Add clip to target track with new position (different track movement)
-          const updatedClip = {
-            ...clipToMove,
-            startTime: newStartTime
-          };
-          const updatedTrack = {
-            ...track,
-            clips: [...(track.clips || []), updatedClip]
-          };
-          console.log(`Added clip to track ${track.name}, total clips:`, updatedTrack.clips?.length);
-          return updatedTrack;
+        if (!clipToMove) {
+          console.error('Clip not found for movement');
+          return prevTracks;
         }
-        return track;
+
+        console.log(
+          `Moving clip "${clipToMove.name}" from ${clipToMove.startTime}s to ${newStartTime}s`
+        );
+
+        // Update tracks with moved clip
+        const updatedTracks = prevTracks.map((track) => {
+          if (track.id === fromTrackId && fromTrackId === toTrackId) {
+            // Same track movement - just update the clip's position
+            const updatedClip = {
+              ...clipToMove,
+              startTime: newStartTime,
+            };
+            const updatedTrack = {
+              ...track,
+              clips:
+                track.clips?.map((c) => (c.id === clipId ? updatedClip : c)) ||
+                [],
+            };
+            console.log(
+              `Updated clip position on same track ${track.name}, total clips:`,
+              updatedTrack.clips?.length
+            );
+            return updatedTrack;
+          } else if (track.id === fromTrackId) {
+            // Remove clip from source track (different track movement)
+            const updatedTrack = {
+              ...track,
+              clips: track.clips?.filter((c) => c.id !== clipId) || [],
+            };
+            console.log(
+              `Removed clip from track ${track.name}, remaining clips:`,
+              updatedTrack.clips?.length
+            );
+            return updatedTrack;
+          } else if (track.id === toTrackId) {
+            // Add clip to target track with new position (different track movement)
+            const updatedClip = {
+              ...clipToMove,
+              startTime: newStartTime,
+            };
+            const updatedTrack = {
+              ...track,
+              clips: [...(track.clips || []), updatedClip],
+            };
+            console.log(
+              `Added clip to track ${track.name}, total clips:`,
+              updatedTrack.clips?.length
+            );
+            return updatedTrack;
+          }
+          return track;
+        });
+
+        console.log(
+          'Updated tracks state:',
+          updatedTracks.map((t) => ({ name: t.name, clips: t.clips?.length }))
+        );
+        return updatedTracks;
       });
-      
-      console.log('Updated tracks state:', updatedTracks.map(t => ({ name: t.name, clips: t.clips?.length })));
-      return updatedTracks;
-    });
-  }, []);
+    },
+    []
+  );
 
   // Update clip properties (for resizing)
-  const updateClipProperties = useCallback((clipId: string, trackId: string, newStartTime: number, newDuration: number) => {
-    console.log(`updateClipProperties called: ${clipId} on ${trackId} - startTime: ${newStartTime}s, duration: ${newDuration}s`);
-    
-    setTracks(prevTracks => {
-      return prevTracks.map(track => {
-        if (track.id === trackId) {
-          const updatedTrack = {
-            ...track,
-            clips: track.clips?.map(clip => {
-              if (clip.id === clipId) {
-                return {
-                  ...clip,
-                  startTime: newStartTime,
-                  duration: newDuration
-                };
-              }
-              return clip;
-            }) || []
-          };
-          console.log(`Updated clip properties on track ${track.name}`);
-          return updatedTrack;
-        }
-        return track;
+  const updateClipProperties = useCallback(
+    (
+      clipId: string,
+      trackId: string,
+      newStartTime: number,
+      newDuration: number
+    ) => {
+      console.log(
+        `updateClipProperties called: ${clipId} on ${trackId} - startTime: ${newStartTime}s, duration: ${newDuration}s`
+      );
+
+      setTracks((prevTracks) => {
+        return prevTracks.map((track) => {
+          if (track.id === trackId) {
+            const updatedTrack = {
+              ...track,
+              clips:
+                track.clips?.map((clip) => {
+                  if (clip.id === clipId) {
+                    return {
+                      ...clip,
+                      startTime: newStartTime,
+                      duration: newDuration,
+                    };
+                  }
+                  return clip;
+                }) || [],
+            };
+            console.log(`Updated clip properties on track ${track.name}`);
+            return updatedTrack;
+          }
+          return track;
+        });
       });
-    });
-  }, []);
+    },
+    []
+  );
 
   // AI suggestions
   const [aiSuggestions] = useState([
@@ -858,9 +1156,9 @@ export function useAudioWorkstation() {
     let interval: NodeJS.Timeout;
     if (transport.isPlaying) {
       interval = setInterval(() => {
-        setTransport(prev => ({ 
-          ...prev, 
-          currentTime: prev.currentTime + 0.1 
+        setTransport((prev) => ({
+          ...prev,
+          currentTime: prev.currentTime + 0.1,
         }));
       }, 100);
     }
@@ -871,10 +1169,13 @@ export function useAudioWorkstation() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (transport.isPlaying) {
-        setTracks(prev => prev.map(track => ({
-          ...track,
-          waveformData: track.waveformData?.map(() => Math.random() * 100 + 20) || [],
-        })));
+        setTracks((prev) =>
+          prev.map((track) => ({
+            ...track,
+            waveformData:
+              track.waveformData?.map(() => Math.random() * 100 + 20) || [],
+          }))
+        );
       }
     }, 150);
 

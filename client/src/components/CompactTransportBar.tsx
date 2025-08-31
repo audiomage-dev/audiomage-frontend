@@ -1,5 +1,21 @@
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square, Circle, SkipBack, SkipForward, Music, Piano, Lock, Unlock, Volume2, Minus, Plus, X, FileMusic } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  Square,
+  Circle,
+  SkipBack,
+  SkipForward,
+  Music,
+  Piano,
+  Lock,
+  Unlock,
+  Volume2,
+  Minus,
+  Plus,
+  X,
+  FileMusic,
+} from 'lucide-react';
 import { TransportState } from '@/types/audio';
 import { useState, useRef, useEffect } from 'react';
 
@@ -43,7 +59,14 @@ interface MetronomeProps {
   onTimeSignatureChange: (timeSignature: [number, number]) => void;
 }
 
-function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, onTimeSignatureChange }: MetronomeProps) {
+function Metronome({
+  isOpen,
+  onClose,
+  currentBpm,
+  timeSignature,
+  onBpmChange,
+  onTimeSignatureChange,
+}: MetronomeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState(0);
   const [volume, setVolume] = useState(50);
@@ -53,7 +76,8 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
   // Initialize audio context
   const initAudioContext = () => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
     }
     return audioContextRef.current;
   };
@@ -72,13 +96,19 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
     gainNode.connect(audioContext.destination);
 
     // Higher frequency for accent beats
-    oscillator.frequency.setValueAtTime(isAccent ? 1200 : 800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(
+      isAccent ? 1200 : 800,
+      audioContext.currentTime
+    );
     oscillator.type = 'sine';
 
     // Volume control
     const adjustedVolume = (volume / 100) * 0.1; // Keep volume reasonable
     gainNode.gain.setValueAtTime(adjustedVolume, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.1
+    );
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
@@ -106,7 +136,7 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
 
     // Play first beat immediately
     tick();
-    
+
     intervalRef.current = setInterval(tick, interval);
     setIsPlaying(true);
   };
@@ -140,8 +170,17 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
     onBpmChange(newBpm);
   };
 
-  const presetBpms = [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180];
-  const timeSignatures: [number, number][] = [[4, 4], [3, 4], [2, 4], [6, 8], [9, 8], [12, 8]];
+  const presetBpms = [
+    60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180,
+  ];
+  const timeSignatures: [number, number][] = [
+    [4, 4],
+    [3, 4],
+    [2, 4],
+    [6, 8],
+    [9, 8],
+    [12, 8],
+  ];
 
   if (!isOpen) return null;
 
@@ -156,8 +195,12 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
                 <Volume2 className="h-4 w-4 text-[var(--primary-foreground)]" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">Metronome</h3>
-                <p className="text-xs text-[var(--muted-foreground)]">Professional timing and tempo control</p>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">
+                  Metronome
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Professional timing and tempo control
+                </p>
               </div>
             </div>
             <Button
@@ -184,19 +227,28 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              
+
               <div className="flex flex-col items-center">
                 <input
                   type="number"
                   value={currentBpm}
-                  onChange={(e) => onBpmChange(Math.max(60, Math.min(200, parseInt(e.target.value) || 60)))}
+                  onChange={(e) =>
+                    onBpmChange(
+                      Math.max(
+                        60,
+                        Math.min(200, parseInt(e.target.value) || 60)
+                      )
+                    )
+                  }
                   className="text-4xl font-bold text-center bg-transparent border-none outline-none w-20 text-[var(--foreground)]"
                   min="60"
                   max="200"
                 />
-                <span className="text-sm text-[var(--muted-foreground)] uppercase tracking-wider">BPM</span>
+                <span className="text-sm text-[var(--muted-foreground)] uppercase tracking-wider">
+                  BPM
+                </span>
               </div>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -216,8 +268,8 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
                     i === currentBeat && isPlaying
                       ? 'bg-[var(--primary)] border-[var(--primary)] scale-125'
                       : i === 0
-                      ? 'border-[var(--primary)] bg-transparent'
-                      : 'border-[var(--muted-foreground)] bg-transparent'
+                        ? 'border-[var(--primary)] bg-transparent'
+                        : 'border-[var(--muted-foreground)] bg-transparent'
                   }`}
                 />
               ))}
@@ -238,12 +290,18 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
 
           {/* Time Signature */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Time Signature</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              Time Signature
+            </label>
             <div className="flex justify-center space-x-2">
               {timeSignatures.map((sig) => (
                 <Button
                   key={`${sig[0]}/${sig[1]}`}
-                  variant={timeSignature[0] === sig[0] && timeSignature[1] === sig[1] ? "default" : "outline"}
+                  variant={
+                    timeSignature[0] === sig[0] && timeSignature[1] === sig[1]
+                      ? 'default'
+                      : 'outline'
+                  }
                   size="sm"
                   onClick={() => onTimeSignatureChange(sig)}
                   className="text-xs"
@@ -256,7 +314,9 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
 
           {/* Volume Control */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Volume</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              Volume
+            </label>
             <div className="flex items-center space-x-3">
               <span className="text-sm text-[var(--muted-foreground)]">0</span>
               <input
@@ -267,19 +327,25 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
                 onChange={(e) => setVolume(parseInt(e.target.value))}
                 className="flex-1 h-2 bg-[var(--secondary)] rounded-lg appearance-none cursor-pointer"
               />
-              <span className="text-sm text-[var(--muted-foreground)]">100</span>
+              <span className="text-sm text-[var(--muted-foreground)]">
+                100
+              </span>
             </div>
-            <div className="text-center mt-1 text-sm text-[var(--muted-foreground)]">{volume}%</div>
+            <div className="text-center mt-1 text-sm text-[var(--muted-foreground)]">
+              {volume}%
+            </div>
           </div>
 
           {/* BPM Presets */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Quick BPM</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              Quick BPM
+            </label>
             <div className="grid grid-cols-4 gap-2">
               {presetBpms.map((bpm) => (
                 <Button
                   key={bpm}
-                  variant={currentBpm === bpm ? "default" : "outline"}
+                  variant={currentBpm === bpm ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onBpmChange(bpm)}
                   className="text-xs"
@@ -297,7 +363,9 @@ function Metronome({ isOpen, onClose, currentBpm, timeSignature, onBpmChange, on
             <div className="flex items-center space-x-4">
               <span>Click BPM display in transport to open</span>
             </div>
-            <span>{timeSignature[0]}/{timeSignature[1]} at {currentBpm} BPM</span>
+            <span>
+              {timeSignature[0]}/{timeSignature[1]} at {currentBpm} BPM
+            </span>
           </div>
         </div>
       </div>
@@ -330,7 +398,7 @@ export function CompactTransportBar({
   onTimelineLockToggle,
   onMidiLockToggle,
   onBpmChange,
-  onTimeSignatureChange
+  onTimeSignatureChange,
 }: CompactTransportBarProps) {
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [isTimeEditing, setIsTimeEditing] = useState(false);
@@ -407,15 +475,22 @@ export function CompactTransportBar({
         >
           <SkipBack className="w-4 h-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Play button clicked! ViewMode:', viewMode, 'SelectedTrack:', selectedTrack, 'IsMidiPlaying:', isMidiPlaying);
-            
+            console.log(
+              'Play button clicked! ViewMode:',
+              viewMode,
+              'SelectedTrack:',
+              selectedTrack,
+              'IsMidiPlaying:',
+              isMidiPlaying
+            );
+
             if (viewMode === 'midi') {
               // MIDI mode: handle MIDI playback
               if (isMidiPlaying) {
@@ -436,9 +511,13 @@ export function CompactTransportBar({
           }}
           className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
           title={
-            viewMode === 'midi' 
-              ? (isMidiPlaying ? "Pause MIDI" : "Play MIDI")
-              : (transport.isPlaying ? "Pause" : "Play")
+            viewMode === 'midi'
+              ? isMidiPlaying
+                ? 'Pause MIDI'
+                : 'Play MIDI'
+              : transport.isPlaying
+                ? 'Pause'
+                : 'Play'
           }
           disabled={viewMode === 'midi' && !selectedTrack}
         >
@@ -448,7 +527,7 @@ export function CompactTransportBar({
             <Play className="w-4 h-4" />
           )}
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -460,11 +539,11 @@ export function CompactTransportBar({
             }
           }}
           className="h-8 w-8 p-0 hover:bg-[var(--accent)]"
-          title={viewMode === 'midi' ? "Stop MIDI" : "Stop"}
+          title={viewMode === 'midi' ? 'Stop MIDI' : 'Stop'}
         >
           <Square className="w-4 h-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -474,7 +553,9 @@ export function CompactTransportBar({
           }`}
           title="Record"
         >
-          <Circle className={`w-4 h-4 ${transport.isRecording ? 'fill-current' : ''}`} />
+          <Circle
+            className={`w-4 h-4 ${transport.isRecording ? 'fill-current' : ''}`}
+          />
         </Button>
 
         <Button
@@ -501,7 +582,7 @@ export function CompactTransportBar({
             placeholder="MM:SS"
           />
         ) : (
-          <div 
+          <div
             className="text-sm font-mono text-[var(--foreground)] cursor-pointer hover:bg-[var(--accent)] px-2 py-1 rounded transition-colors"
             onClick={handleTimeClick}
             title="Click to edit time position"
@@ -510,7 +591,7 @@ export function CompactTransportBar({
           </div>
         )}
         <div className="w-px h-4 bg-[var(--border)]"></div>
-        <button 
+        <button
           className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer px-2 py-1 rounded hover:bg-[var(--accent)]"
           onClick={() => setIsMetronomeOpen(true)}
           title="Click to open Metronome"
@@ -526,8 +607,8 @@ export function CompactTransportBar({
           <button
             onClick={() => onViewModeChange?.('timeline')}
             className={`h-7 px-2 flex items-center justify-center transition-colors ${
-              viewMode === 'timeline' 
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+              viewMode === 'timeline'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
                 : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
             }`}
             title="Audio Editor"
@@ -537,8 +618,8 @@ export function CompactTransportBar({
           <button
             onClick={() => onViewModeChange?.('midi')}
             className={`h-7 px-2 flex items-center justify-center transition-colors ${
-              viewMode === 'midi' 
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+              viewMode === 'midi'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
                 : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
             }`}
             title="MIDI Editor"
@@ -548,8 +629,8 @@ export function CompactTransportBar({
           <button
             onClick={() => onViewModeChange?.('score')}
             className={`h-7 px-2 flex items-center justify-center transition-colors ${
-              viewMode === 'score' 
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' 
+              viewMode === 'score'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
                 : 'hover:bg-[var(--accent)] text-[var(--foreground)]'
             }`}
             title="Score Editor"
@@ -580,11 +661,11 @@ export function CompactTransportBar({
             +
           </button>
         </div>
-        
+
         <div className="text-xs text-[var(--muted-foreground)]">
           {transport.isLooping ? 'LOOP' : 'LINEAR'}
         </div>
-        
+
         {/* Lock Session Button */}
         <Button
           variant="ghost"
@@ -597,12 +678,19 @@ export function CompactTransportBar({
               onMidiLockToggle();
             }
           }}
-          title={`${viewMode === 'timeline' ? (isTimelineLocked ? 'Unlock Timeline' : 'Lock Timeline') : (isMidiLocked ? 'Unlock MIDI Editor' : 'Lock MIDI Editor')}`}
+          title={`${viewMode === 'timeline' ? (isTimelineLocked ? 'Unlock Timeline' : 'Lock Timeline') : isMidiLocked ? 'Unlock MIDI Editor' : 'Lock MIDI Editor'}`}
         >
-          {viewMode === 'timeline' ? 
-            (isTimelineLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />) :
-            (isMidiLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />)
-          }
+          {viewMode === 'timeline' ? (
+            isTimelineLocked ? (
+              <Lock className="w-3 h-3" />
+            ) : (
+              <Unlock className="w-3 h-3" />
+            )
+          ) : isMidiLocked ? (
+            <Lock className="w-3 h-3" />
+          ) : (
+            <Unlock className="w-3 h-3" />
+          )}
         </Button>
 
         {transport.isRecording && (

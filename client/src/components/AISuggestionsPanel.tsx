@@ -18,33 +18,38 @@ export function AISuggestionsPanel() {
       id: '1',
       category: 'Mix Enhancement',
       title: 'High-shelf EQ on vocals',
-      description: 'Consider adding high-shelf EQ to vocals around 8kHz for more presence',
-      borderColor: 'border-l-[#5E81AC]'
+      description:
+        'Consider adding high-shelf EQ to vocals around 8kHz for more presence',
+      borderColor: 'border-l-[#5E81AC]',
     },
     {
       id: '2',
       category: 'Arrangement',
       title: 'Sidechain compression',
-      description: 'Bass and kick drum could benefit from sidechain compression',
-      borderColor: 'border-l-[#A3BE8C]'
+      description:
+        'Bass and kick drum could benefit from sidechain compression',
+      borderColor: 'border-l-[#A3BE8C]',
     },
     {
       id: '3',
       category: 'Creative Idea',
       title: 'Tape saturation',
-      description: 'Try a subtle tape saturation on the drum bus for vintage warmth',
-      borderColor: 'border-l-[#EBCB8B]'
+      description:
+        'Try a subtle tape saturation on the drum bus for vintage warmth',
+      borderColor: 'border-l-[#EBCB8B]',
     },
     {
       id: '4',
       category: 'Mastering',
       title: 'LUFS optimization',
       description: 'Current LUFS: -14.2. Target: -14.0 for streaming platforms',
-      borderColor: 'border-l-[#B48EAD]'
-    }
+      borderColor: 'border-l-[#B48EAD]',
+    },
   ]);
 
-  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleSelection = (suggestionId: string) => {
     const newSelected = new Set(selectedSuggestions);
@@ -57,10 +62,12 @@ export function AISuggestionsPanel() {
   };
 
   const acceptSuggestion = (suggestionId: string) => {
-    setSuggestions(prev => prev.map(s => 
-      s.id === suggestionId ? { ...s, accepted: true, ignored: false } : s
-    ));
-    setSelectedSuggestions(prev => {
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === suggestionId ? { ...s, accepted: true, ignored: false } : s
+      )
+    );
+    setSelectedSuggestions((prev) => {
       const newSet = new Set(prev);
       newSet.delete(suggestionId);
       return newSet;
@@ -68,10 +75,12 @@ export function AISuggestionsPanel() {
   };
 
   const ignoreSuggestion = (suggestionId: string) => {
-    setSuggestions(prev => prev.map(s => 
-      s.id === suggestionId ? { ...s, ignored: true, accepted: false } : s
-    ));
-    setSelectedSuggestions(prev => {
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === suggestionId ? { ...s, ignored: true, accepted: false } : s
+      )
+    );
+    setSelectedSuggestions((prev) => {
       const newSet = new Set(prev);
       newSet.delete(suggestionId);
       return newSet;
@@ -79,38 +88,53 @@ export function AISuggestionsPanel() {
   };
 
   const acceptSelected = () => {
-    setSuggestions(prev => prev.map(s => 
-      selectedSuggestions.has(s.id) ? { ...s, accepted: true, ignored: false } : s
-    ));
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        selectedSuggestions.has(s.id)
+          ? { ...s, accepted: true, ignored: false }
+          : s
+      )
+    );
     setSelectedSuggestions(new Set());
   };
 
   const ignoreSelected = () => {
-    setSuggestions(prev => prev.map(s => 
-      selectedSuggestions.has(s.id) ? { ...s, ignored: true, accepted: false } : s
-    ));
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        selectedSuggestions.has(s.id)
+          ? { ...s, ignored: true, accepted: false }
+          : s
+      )
+    );
     setSelectedSuggestions(new Set());
   };
 
   const selectAll = () => {
-    const activeSuggestions = suggestions.filter(s => !s.accepted && !s.ignored);
-    setSelectedSuggestions(new Set(activeSuggestions.map(s => s.id)));
+    const activeSuggestions = suggestions.filter(
+      (s) => !s.accepted && !s.ignored
+    );
+    setSelectedSuggestions(new Set(activeSuggestions.map((s) => s.id)));
   };
 
   const clearSelection = () => {
     setSelectedSuggestions(new Set());
   };
 
-  const activeSuggestions = suggestions.filter(s => !s.accepted && !s.ignored);
-  const acceptedCount = suggestions.filter(s => s.accepted).length;
-  const ignoredCount = suggestions.filter(s => s.ignored).length;
+  const activeSuggestions = suggestions.filter(
+    (s) => !s.accepted && !s.ignored
+  );
+  const acceptedCount = suggestions.filter((s) => s.accepted).length;
+  const ignoredCount = suggestions.filter((s) => s.ignored).length;
 
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-[var(--foreground)]">AI Suggestions</h3>
+        <h3 className="text-sm font-medium text-[var(--foreground)]">
+          AI Suggestions
+        </h3>
         <div className="text-xs text-[var(--muted-foreground)]">
-          {activeSuggestions.length} active • {acceptedCount} accepted • {ignoredCount} ignored
+          {activeSuggestions.length} active • {acceptedCount} accepted •{' '}
+          {ignoredCount} ignored
         </div>
       </div>
 
@@ -141,7 +165,7 @@ export function AISuggestionsPanel() {
               {selectedSuggestions.size} selected
             </span>
           </div>
-          
+
           {selectedSuggestions.size > 0 && (
             <div className="flex space-x-2">
               <Button
@@ -172,7 +196,9 @@ export function AISuggestionsPanel() {
           <div
             key={suggestion.id}
             className={`bg-[var(--muted)] rounded-md p-3 border-l-2 ${suggestion.borderColor} ${
-              selectedSuggestions.has(suggestion.id) ? 'ring-1 ring-[var(--primary)]' : ''
+              selectedSuggestions.has(suggestion.id)
+                ? 'ring-1 ring-[var(--primary)]'
+                : ''
             }`}
           >
             <div className="flex items-start justify-between mb-2">

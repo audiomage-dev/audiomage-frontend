@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Folder, 
-  FolderOpen, 
-  Volume2, 
-  Music, 
-  Piano, 
-  Sliders, 
-  FileText, 
-  Code, 
-  Image, 
+import {
+  Folder,
+  FolderOpen,
+  Volume2,
+  Music,
+  Piano,
+  Sliders,
+  FileText,
+  Code,
+  Image,
   File,
   Drum,
   Bot,
@@ -25,13 +25,22 @@ import {
   RefreshCw,
   Move,
   Scissors,
-  Info
+  Info,
 } from 'lucide-react';
 
 interface ProjectItem {
   id: string;
   name: string;
-  type: 'audio' | 'midi' | 'folder' | 'project' | 'fx' | 'samples' | 'file' | 'video' | 'image';
+  type:
+    | 'audio'
+    | 'midi'
+    | 'folder'
+    | 'project'
+    | 'fx'
+    | 'samples'
+    | 'file'
+    | 'video'
+    | 'image';
   children?: ProjectItem[];
   level: number;
   url?: string;
@@ -51,11 +60,13 @@ interface ProjectBrowserProps {
 }
 
 export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['1', '5', '8', '21']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
+    new Set(['1', '5', '8', '21'])
+  );
   const [searchTerm, setSearchTerm] = useState('');
-  const [contextMenu, setContextMenu] = useState<{ 
-    x: number; 
-    y: number; 
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
     item: ProjectItem;
   } | null>(null);
 
@@ -66,79 +77,79 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       type: 'folder',
       level: 0,
       children: [
-        { 
-          id: '2', 
-          name: 'Lead_Vocal_take3.wav', 
-          type: 'audio', 
+        {
+          id: '2',
+          name: 'Lead_Vocal_take3.wav',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 2048000,
-          duration: 15.3
+          duration: 15.3,
         },
-        { 
-          id: '3', 
-          name: 'Drums_Master.wav', 
-          type: 'audio', 
+        {
+          id: '3',
+          name: 'Drums_Master.wav',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 1536000,
-          duration: 8.7
+          duration: 8.7,
         },
-        { 
-          id: '4', 
-          name: 'Bass_DI_compressed.wav', 
-          type: 'audio', 
+        {
+          id: '4',
+          name: 'Bass_DI_compressed.wav',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 3072000,
-          duration: 32.1
+          duration: 32.1,
         },
-        { 
-          id: '11', 
-          name: 'Guitar_Clean.wav', 
-          type: 'audio', 
+        {
+          id: '11',
+          name: 'Guitar_Clean.wav',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 1024000,
-          duration: 12.5
+          duration: 12.5,
         },
-        { 
-          id: '12', 
-          name: 'Synth_Pad.wav', 
-          type: 'audio', 
+        {
+          id: '12',
+          name: 'Synth_Pad.wav',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 2560000,
-          duration: 45.2
+          duration: 45.2,
         },
-        { 
-          id: '17', 
-          name: 'Vocal_Harmony.mp3', 
-          type: 'audio', 
+        {
+          id: '17',
+          name: 'Vocal_Harmony.mp3',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 4096000,
-          duration: 180.7
+          duration: 180.7,
         },
-        { 
-          id: '18', 
-          name: 'Background_Music.flac', 
-          type: 'audio', 
+        {
+          id: '18',
+          name: 'Background_Music.flac',
+          type: 'audio',
           level: 1,
           url: '/demo-audio.wav',
           size: 8192000,
-          duration: 240.1
+          duration: 240.1,
         },
-        { 
-          id: '19', 
-          name: 'file_example_WAV_1MG (1).wav', 
-          type: 'audio', 
+        {
+          id: '19',
+          name: 'file_example_WAV_1MG (1).wav',
+          type: 'audio',
           level: 1,
           url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
           size: 1048576,
-          duration: 33.0
+          duration: 33.0,
         },
-      ]
+      ],
     },
     {
       id: '25',
@@ -146,16 +157,16 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       type: 'folder',
       level: 0,
       children: [
-        { 
-          id: '26', 
-          name: 'SampleVideo_1280x720_1mb.mp4', 
-          type: 'video', 
+        {
+          id: '26',
+          name: 'SampleVideo_1280x720_1mb.mp4',
+          type: 'video',
           level: 1,
           url: '/attached_assets/SampleVideo_1280x720_1mb.mp4',
           size: 1048576,
-          duration: 30.0
+          duration: 30.0,
         },
-      ]
+      ],
     },
     {
       id: '5',
@@ -167,7 +178,7 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         { id: '7', name: 'Synth_Lead.mid', type: 'midi', level: 1 },
         { id: '13', name: 'Drum_Pattern.mid', type: 'midi', level: 1 },
         { id: '19', name: 'Bass_Line.midi', type: 'midi', level: 1 },
-      ]
+      ],
     },
     {
       id: '8',
@@ -179,7 +190,7 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         { id: '10', name: 'Compressor_Vintage.fxp', type: 'fx', level: 1 },
         { id: '14', name: 'EQ_Master.fxp', type: 'fx', level: 1 },
         { id: '20', name: 'Delay_Stereo.vstpreset', type: 'fx', level: 1 },
-      ]
+      ],
     },
     {
       id: '21',
@@ -191,7 +202,7 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         { id: '23', name: 'session_info.json', type: 'file', level: 1 },
         { id: '24', name: 'album_cover.png', type: 'file', level: 1 },
         { id: '25', name: 'README.md', type: 'file', level: 1 },
-      ]
+      ],
     },
     { id: '15', name: 'Samples', type: 'folder', level: 0, children: [] },
     { id: '16', name: 'Project.amg', type: 'project', level: 0 },
@@ -199,12 +210,20 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
 
   const getFileIcon = (type: string, name: string = '') => {
     const fileName = name.toLowerCase();
-    
+
     // Check file extensions for more specific icons
-    if (fileName.endsWith('.wav') || fileName.endsWith('.aiff') || fileName.endsWith('.flac')) {
+    if (
+      fileName.endsWith('.wav') ||
+      fileName.endsWith('.aiff') ||
+      fileName.endsWith('.flac')
+    ) {
       return <Volume2 className="w-3 h-3" />;
     }
-    if (fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.ogg')) {
+    if (
+      fileName.endsWith('.mp3') ||
+      fileName.endsWith('.m4a') ||
+      fileName.endsWith('.ogg')
+    ) {
       return <Music className="w-3 h-3" />;
     }
     if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
@@ -219,31 +238,51 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
     if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
       return <FileText className="w-3 h-3" />;
     }
-    if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+    if (
+      fileName.endsWith('.png') ||
+      fileName.endsWith('.jpg') ||
+      fileName.endsWith('.jpeg')
+    ) {
       return <Image className="w-3 h-3" />;
     }
-    
+
     // Check by type
     switch (type) {
-      case 'folder': return <Folder className="w-3 h-3" />;
-      case 'audio': return <Volume2 className="w-3 h-3" />;
-      case 'midi': return <Piano className="w-3 h-3" />;
-      case 'fx': return <Sliders className="w-3 h-3" />;
-      case 'project': return <FolderOpen className="w-3 h-3" />;
-      case 'samples': return <Drum className="w-3 h-3" />;
-      case 'ai-generated': return <Bot className="w-3 h-3" />;
-      default: return <File className="w-3 h-3" />;
+      case 'folder':
+        return <Folder className="w-3 h-3" />;
+      case 'audio':
+        return <Volume2 className="w-3 h-3" />;
+      case 'midi':
+        return <Piano className="w-3 h-3" />;
+      case 'fx':
+        return <Sliders className="w-3 h-3" />;
+      case 'project':
+        return <FolderOpen className="w-3 h-3" />;
+      case 'samples':
+        return <Drum className="w-3 h-3" />;
+      case 'ai-generated':
+        return <Bot className="w-3 h-3" />;
+      default:
+        return <File className="w-3 h-3" />;
     }
   };
 
   const getFileColor = (type: string, name: string = '') => {
     const fileName = name.toLowerCase();
-    
+
     // Color by file extension with Nord theme colors
-    if (fileName.endsWith('.wav') || fileName.endsWith('.aiff') || fileName.endsWith('.flac')) {
+    if (
+      fileName.endsWith('.wav') ||
+      fileName.endsWith('.aiff') ||
+      fileName.endsWith('.flac')
+    ) {
       return '#5E81AC'; // Nord blue
     }
-    if (fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.ogg')) {
+    if (
+      fileName.endsWith('.mp3') ||
+      fileName.endsWith('.m4a') ||
+      fileName.endsWith('.ogg')
+    ) {
       return '#A3BE8C'; // Nord green
     }
     if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
@@ -258,20 +297,32 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
     if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
       return '#4C566A'; // Nord gray
     }
-    if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+    if (
+      fileName.endsWith('.png') ||
+      fileName.endsWith('.jpg') ||
+      fileName.endsWith('.jpeg')
+    ) {
       return '#88C0D0'; // Nord frost
     }
-    
+
     // Color by type
     switch (type) {
-      case 'folder': return '#81A1C1';
-      case 'audio': return '#5E81AC';
-      case 'midi': return '#EBCB8B';
-      case 'fx': return '#B48EAD';
-      case 'project': return '#8FBCBB';
-      case 'samples': return '#D08770';
-      case 'ai-generated': return '#BF616A';
-      default: return '#4C566A';
+      case 'folder':
+        return '#81A1C1';
+      case 'audio':
+        return '#5E81AC';
+      case 'midi':
+        return '#EBCB8B';
+      case 'fx':
+        return '#B48EAD';
+      case 'project':
+        return '#8FBCBB';
+      case 'samples':
+        return '#D08770';
+      case 'ai-generated':
+        return '#BF616A';
+      default:
+        return '#4C566A';
     }
   };
 
@@ -291,14 +342,20 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         console.log('Opening:', item.name);
         break;
       case 'preview':
-        if ((item.type === 'audio' || item.type === 'video' || item.type === 'image') && item.url && onFileSelect) {
+        if (
+          (item.type === 'audio' ||
+            item.type === 'video' ||
+            item.type === 'image') &&
+          item.url &&
+          onFileSelect
+        ) {
           onFileSelect({
             id: item.id,
             name: item.name,
             type: item.type,
             url: item.url,
             duration: item.duration,
-            size: item.size
+            size: item.size,
           });
         }
         break;
@@ -347,19 +404,45 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       { id: 'open', label: 'Open', icon: Eye, shortcut: 'Enter' },
       { id: 'rename', label: 'Rename', icon: Edit3, shortcut: 'F2' },
       { id: 'duplicate', label: 'Duplicate', icon: Copy, shortcut: 'Ctrl+D' },
-      { id: 'delete', label: 'Delete', icon: Trash2, shortcut: 'Del', dangerous: true },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: Trash2,
+        shortcut: 'Del',
+        dangerous: true,
+      },
       { id: 'separator1', label: '', icon: null },
-      { id: 'copyPath', label: 'Copy Path', icon: Copy, shortcut: 'Ctrl+Shift+C' },
-      { id: 'properties', label: 'Properties', icon: Info, shortcut: 'Alt+Enter' },
+      {
+        id: 'copyPath',
+        label: 'Copy Path',
+        icon: Copy,
+        shortcut: 'Ctrl+Shift+C',
+      },
+      {
+        id: 'properties',
+        label: 'Properties',
+        icon: Info,
+        shortcut: 'Alt+Enter',
+      },
     ];
 
     if (item.type === 'folder') {
       return [
         { id: 'open', label: 'Expand', icon: FolderOpen, shortcut: 'Enter' },
-        { id: 'newFolder', label: 'New Folder', icon: FolderPlus, shortcut: 'Ctrl+Shift+N' },
-        { id: 'import', label: 'Import Files', icon: Upload, shortcut: 'Ctrl+I' },
+        {
+          id: 'newFolder',
+          label: 'New Folder',
+          icon: FolderPlus,
+          shortcut: 'Ctrl+Shift+N',
+        },
+        {
+          id: 'import',
+          label: 'Import Files',
+          icon: Upload,
+          shortcut: 'Ctrl+I',
+        },
         { id: 'separator1', label: '', icon: null },
-        ...baseItems.slice(1)
+        ...baseItems.slice(1),
       ];
     }
 
@@ -367,24 +450,44 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       return [
         { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
         { id: 'play', label: 'Play', icon: Play, shortcut: 'Enter' },
-        { id: 'addToTimeline', label: 'Add to Timeline', icon: Move, shortcut: 'Ctrl+T' },
+        {
+          id: 'addToTimeline',
+          label: 'Add to Timeline',
+          icon: Move,
+          shortcut: 'Ctrl+T',
+        },
         { id: 'separator1', label: '', icon: null },
         { id: 'export', label: 'Export', icon: Download, shortcut: 'Ctrl+E' },
-        { id: 'convertFormat', label: 'Convert Format', icon: RefreshCw, shortcut: 'Ctrl+Shift+C' },
+        {
+          id: 'convertFormat',
+          label: 'Convert Format',
+          icon: RefreshCw,
+          shortcut: 'Ctrl+Shift+C',
+        },
         { id: 'separator2', label: '', icon: null },
-        ...baseItems.slice(1)
+        ...baseItems.slice(1),
       ];
     }
 
     if (item.type === 'midi') {
       return [
-        { id: 'open', label: 'Open in Piano Roll', icon: Piano, shortcut: 'Enter' },
+        {
+          id: 'open',
+          label: 'Open in Piano Roll',
+          icon: Piano,
+          shortcut: 'Enter',
+        },
         { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
-        { id: 'addToTimeline', label: 'Add to Timeline', icon: Move, shortcut: 'Ctrl+T' },
+        {
+          id: 'addToTimeline',
+          label: 'Add to Timeline',
+          icon: Move,
+          shortcut: 'Ctrl+T',
+        },
         { id: 'separator1', label: '', icon: null },
         { id: 'export', label: 'Export', icon: Download, shortcut: 'Ctrl+E' },
         { id: 'separator2', label: '', icon: null },
-        ...baseItems.slice(1)
+        ...baseItems.slice(1),
       ];
     }
 
@@ -393,9 +496,14 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         { id: 'open', label: 'Load Effect', icon: Sliders, shortcut: 'Enter' },
         { id: 'preview', label: 'Preview', icon: Eye, shortcut: 'Space' },
         { id: 'separator1', label: '', icon: null },
-        { id: 'export', label: 'Export Preset', icon: Download, shortcut: 'Ctrl+E' },
+        {
+          id: 'export',
+          label: 'Export Preset',
+          icon: Download,
+          shortcut: 'Ctrl+E',
+        },
         { id: 'separator2', label: '', icon: null },
-        ...baseItems.slice(1)
+        ...baseItems.slice(1),
       ];
     }
 
@@ -404,23 +512,26 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
 
   const highlightSearchTerm = (text: string, searchTerm: string) => {
     if (!searchTerm) return text;
-    
+
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => {
-      if (part.toLowerCase() === searchTerm.toLowerCase()) {
-        return `<mark class="bg-[var(--yellow)] text-[var(--background)] px-1 rounded">${part}</mark>`;
-      }
-      return part;
-    }).join('');
+
+    return parts
+      .map((part, index) => {
+        if (part.toLowerCase() === searchTerm.toLowerCase()) {
+          return `<mark class="bg-[var(--yellow)] text-[var(--background)] px-1 rounded">${part}</mark>`;
+        }
+        return part;
+      })
+      .join('');
   };
 
   const renderItem = (item: ProjectItem) => {
     const isExpanded = expandedFolders.has(item.id);
     const hasChildren = item.children && item.children.length > 0;
     const paddingLeft = item.level * 16 + 8;
-    const matchesSearch = searchTerm && item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      searchTerm && item.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     return (
       <div key={item.id}>
@@ -432,14 +543,20 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
           onClick={() => {
             if (hasChildren) {
               toggleFolder(item.id);
-            } else if ((item.type === 'audio' || item.type === 'video' || item.type === 'image') && item.url && onFileSelect) {
+            } else if (
+              (item.type === 'audio' ||
+                item.type === 'video' ||
+                item.type === 'image') &&
+              item.url &&
+              onFileSelect
+            ) {
               onFileSelect({
                 id: item.id,
                 name: item.name,
                 type: item.type,
                 url: item.url,
                 duration: item.duration,
-                size: item.size
+                size: item.size,
               });
             }
           }}
@@ -448,84 +565,101 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
             setContextMenu({
               x: e.clientX,
               y: e.clientY,
-              item
+              item,
             });
           }}
         >
           {hasChildren && (
-            <i 
+            <i
               className={`fas fa-chevron-${isExpanded ? 'down' : 'right'} text-xs text-[var(--muted-foreground)] mr-1 w-2`}
             />
           )}
           {!hasChildren && <div className="w-3 mr-1" />}
-          
-          <div 
-            className="mr-2 flex items-center" 
+
+          <div
+            className="mr-2 flex items-center"
             style={{ color: getFileColor(item.type, item.name) }}
           >
             {getFileIcon(item.type, item.name)}
           </div>
-          
-          <span 
+
+          <span
             className="text-[var(--foreground)] flex-1 truncate leading-none"
-            dangerouslySetInnerHTML={{ 
-              __html: highlightSearchTerm(item.name, searchTerm) 
+            dangerouslySetInnerHTML={{
+              __html: highlightSearchTerm(item.name, searchTerm),
             }}
           />
-          
+
           {item.type === 'audio' && (
-            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">WAV</span>
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">
+              WAV
+            </span>
           )}
           {item.type === 'midi' && (
-            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">MIDI</span>
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">
+              MIDI
+            </span>
           )}
           {item.type === 'fx' && (
-            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">FX</span>
+            <span className="text-xs text-[var(--muted-foreground)] ml-2 opacity-60">
+              FX
+            </span>
           )}
         </div>
-        
-        {hasChildren && isExpanded && item.children?.map(child => renderItem(child))}
+
+        {hasChildren &&
+          isExpanded &&
+          item.children?.map((child) => renderItem(child))}
       </div>
     );
   };
 
   const filterItems = (items: ProjectItem[], term: string): ProjectItem[] => {
     if (!term) return items;
-    
+
     return items.reduce((filtered: ProjectItem[], item) => {
       const searchTerm = term.toLowerCase();
       const itemName = item.name.toLowerCase();
       const itemType = item.type.toLowerCase();
-      
+
       // Search in name, type, and file extensions
       const matchesName = itemName.includes(searchTerm);
       const matchesType = itemType.includes(searchTerm);
-      const matchesExtension = itemName.endsWith('.wav') && searchTerm.includes('wav') ||
-                              itemName.endsWith('.mid') && searchTerm.includes('mid') ||
-                              itemName.endsWith('.fxp') && searchTerm.includes('fx');
-      
-      const filteredChildren = item.children ? filterItems(item.children, term) : [];
-      
-      if (matchesName || matchesType || matchesExtension || filteredChildren.length > 0) {
+      const matchesExtension =
+        (itemName.endsWith('.wav') && searchTerm.includes('wav')) ||
+        (itemName.endsWith('.mid') && searchTerm.includes('mid')) ||
+        (itemName.endsWith('.fxp') && searchTerm.includes('fx'));
+
+      const filteredChildren = item.children
+        ? filterItems(item.children, term)
+        : [];
+
+      if (
+        matchesName ||
+        matchesType ||
+        matchesExtension ||
+        filteredChildren.length > 0
+      ) {
         filtered.push({
           ...item,
-          children: filteredChildren.length > 0 ? filteredChildren : item.children
+          children:
+            filteredChildren.length > 0 ? filteredChildren : item.children,
         });
       }
-      
+
       return filtered;
     }, []);
   };
 
   const filteredItems = filterItems(projectItems, searchTerm);
-  
+
   // Count total items and search results
   const countItems = (items: ProjectItem[]): number => {
     return items.reduce((count, item) => {
       return count + 1 + (item.children ? countItems(item.children) : 0);
     }, 0);
   };
-  
+
   const totalItems = countItems(projectItems);
   const searchResults = searchTerm ? countItems(filteredItems) : totalItems;
 
@@ -558,14 +692,14 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
           )}
         </div>
       </div>
-      
+
       {/* File Tree */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="py-1">
-          {filteredItems.map(item => renderItem(item))}
+          {filteredItems.map((item) => renderItem(item))}
         </div>
       </div>
-      
+
       {/* Footer Info */}
       <div className="flex-none p-2 border-t border-[var(--border)] bg-[var(--muted)]">
         <div className="text-xs text-[var(--muted-foreground)] flex items-center justify-between">
@@ -583,7 +717,9 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
         </div>
         {searchTerm && (
           <div className="text-xs text-[var(--muted-foreground)] mt-1">
-            <kbd className="px-1 py-0.5 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">Esc</kbd>
+            <kbd className="px-1 py-0.5 bg-[var(--secondary)] border border-[var(--border)] rounded text-xs">
+              Esc
+            </kbd>
             <span className="ml-1">to clear search</span>
           </div>
         )}
@@ -592,8 +728,8 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
       {/* Context Menu */}
       {contextMenu && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
+          <div
+            className="fixed inset-0 z-40"
             onClick={() => setContextMenu(null)}
           />
           <div
@@ -603,13 +739,17 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
               top: contextMenu.y,
               backgroundColor: 'var(--background)',
               borderColor: 'var(--border)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+              boxShadow:
+                '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
             }}
           >
             {getContextMenuItems(contextMenu.item).map((item, index) => {
               if (item.id.startsWith('separator')) {
                 return (
-                  <div key={index} className="h-px bg-[var(--border)] my-1 mx-2" />
+                  <div
+                    key={index}
+                    className="h-px bg-[var(--border)] my-1 mx-2"
+                  />
                 );
               }
 
@@ -617,9 +757,13 @@ export function ProjectBrowser({ onFileSelect }: ProjectBrowserProps = {}) {
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleContextMenuAction(item.id, contextMenu.item)}
+                  onClick={() =>
+                    handleContextMenuAction(item.id, contextMenu.item)
+                  }
                   className={`w-full px-3 py-1.5 text-left text-sm flex items-center justify-between hover:bg-[var(--accent)] transition-colors ${
-                    item.dangerous ? 'text-[var(--destructive)] hover:bg-[var(--destructive)]/10' : 'text-[var(--foreground)]'
+                    item.dangerous
+                      ? 'text-[var(--destructive)] hover:bg-[var(--destructive)]/10'
+                      : 'text-[var(--foreground)]'
                   }`}
                 >
                   <div className="flex items-center">

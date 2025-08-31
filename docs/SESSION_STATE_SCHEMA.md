@@ -69,7 +69,7 @@ interface SessionState {
     type: 'audio' | 'midi' | 'instrument' | 'aux' | 'ai-generated';
     color: string;                 // Track color (hex)
     icon?: string;                 // Track icon identifier
-    
+
     // Audio Properties
     filePath?: string;             // Audio file location
     startOffset: number;           // File start offset in seconds
@@ -77,14 +77,14 @@ interface SessionState {
     sampleRate?: number;           // Source sample rate
     bitDepth?: number;             // Source bit depth
     channels: number;              // Mono=1, Stereo=2, etc.
-    
+
     // Timeline Position
     position: number;              // Start position in seconds
     length: number;                // Track length in seconds
     locked: boolean;               // Position locked
     timeStretch: number;           // Time stretch ratio (0.5-2.0)
     pitchShift: number;            // Pitch shift in semitones
-    
+
     // Mix Parameters
     volume: number;                // Track volume (0-100)
     pan: number;                   // Pan position (-100 to 100)
@@ -94,7 +94,7 @@ interface SessionState {
     soloed: boolean;               // Track solo state
     armed: boolean;                // Record armed
     monitor: 'off' | 'input' | 'tape'; // Monitor mode
-    
+
     // Automation
     automation: {
       volume: AutomationLane;
@@ -102,23 +102,23 @@ interface SessionState {
       gain: AutomationLane;
       [paramName: string]: AutomationLane;
     };
-    
+
     // Effects Chain
     effects: AudioEffect[];
-    
+
     // Visual State
     waveformData?: number[];       // Cached waveform points
     peakData?: number[];           // Peak meter data
     collapsed: boolean;            // Track height collapsed
     height: number;                // Track height in pixels
     lanes: TrackLane[];            // Sub-lanes (takes, comps, etc.)
-    
+
     // MIDI Properties (when type === 'midi')
     midiChannel?: number;          // MIDI channel (1-16)
     midiPort?: string;             // MIDI port identifier
     notes?: MidiNote[];            // MIDI note data
     controllers?: MidiController[]; // MIDI CC data
-    
+
     // Instrument Properties (when type === 'instrument')
     instrument?: {
       pluginId: string;
@@ -178,7 +178,7 @@ interface SessionState {
     id: string;                    // Channel identifier
     trackId: string;               // Associated track
     name: string;                  // Channel name
-    
+
     // Channel Strip
     input: {
       gain: number;                // Input gain (-60 to 60 dB)
@@ -186,7 +186,7 @@ interface SessionState {
       highpass: number;            // HPF frequency (20-2000 Hz)
       lowpass: number;             // LPF frequency (2k-20k Hz)
     };
-    
+
     // EQ Section
     eq: {
       enabled: boolean;
@@ -195,7 +195,7 @@ interface SessionState {
       lowMid: EQBand;
       lowShelf: EQBand;
     };
-    
+
     // Dynamics
     compressor: {
       enabled: boolean;
@@ -206,7 +206,7 @@ interface SessionState {
       knee: number;                // dB
       gain: number;                // Makeup gain dB
     };
-    
+
     gate: {
       enabled: boolean;
       threshold: number;           // dB
@@ -215,16 +215,16 @@ interface SessionState {
       hold: number;                // ms
       release: number;             // ms
     };
-    
+
     // Mix Controls
     volume: number;                // Channel fader (0-100)
     pan: number;                   // Pan position (-100 to 100)
     muted: boolean;                // Channel mute
     soloed: boolean;               // Channel solo
-    
+
     // Send Levels
     sends: Record<string, number>; // Send ID -> level
-    
+
     // Metering
     meters: {
       peak: number;                // Peak level dB
@@ -246,13 +246,13 @@ interface SessionState {
     volume: number;                // Master fader
     pan: number;                   // Master pan
     muted: boolean;                // Master mute
-    
+
     // Master EQ
     eq: {
       enabled: boolean;
       bands: EQBand[];
     };
-    
+
     // Master Compressor
     compressor: {
       enabled: boolean;
@@ -263,17 +263,17 @@ interface SessionState {
       knee: number;
       gain: number;
     };
-    
+
     // Master Limiter
     limiter: {
       enabled: boolean;
       ceiling: number;             // dB
       release: number;             // ms
     };
-    
+
     // Master Effects
     effects: AudioEffect[];
-    
+
     // Metering
     meters: {
       peak: number;
@@ -351,7 +351,7 @@ interface SessionState {
       mixerVisible: boolean;
       mixerHeight: number;
     };
-    
+
     panels: {
       projectBrowser: boolean;
       aiSuggestions: boolean;
@@ -361,15 +361,15 @@ interface SessionState {
       trackInspector: boolean;
       chatAssistant: boolean;
     };
-    
+
     theme: 'nord-light' | 'nord-dark';
-    
+
     zoom: {
       timeline: number;
       mixer: number;
       waveform: number;
     };
-    
+
     view: {
       trackMode: 'normal' | 'compact' | 'minimal';
       meterMode: 'peak' | 'rms' | 'lufs';
@@ -377,14 +377,14 @@ interface SessionState {
       followPlayhead: boolean;
       autoScroll: boolean;
     };
-    
+
     selection: {
       activeTrack?: string;
       selectedTracks: string[];
       selectedRegion?: TimelineSelection;
       activeTool: 'select' | 'cut' | 'zoom' | 'hand' | 'pencil';
     };
-    
+
     commandPalette: {
       visible: boolean;
       lastCommands: string[];      // Recent command history
@@ -396,9 +396,9 @@ interface SessionState {
     chatHistory: {
       [sessionId: string]: ChatMessage[];
     };
-    
+
     suggestions: AISuggestion[];
-    
+
     analysis: {
       lastRun: Date;
       spectralData: number[];
@@ -408,7 +408,7 @@ interface SessionState {
       peak: number;
       isProcessing: boolean;
     };
-    
+
     soundLibrary: {
       searchQuery: string;
       selectedCategory?: string;
@@ -521,7 +521,7 @@ interface SessionState {
         lastUpdated: Date;
       };
     };
-    
+
     project: {
       spectralBalance: number[];
       dynamicRange: number;
@@ -590,18 +590,21 @@ interface SessionState {
 ## Session State Management
 
 ### State Persistence
+
 - Session state is automatically saved every 30 seconds
 - Manual save triggers complete state serialization
 - State is stored in JSON format with compression
 - Binary audio data is stored separately with references
 
 ### State Validation
+
 - All numeric values have defined ranges
 - Required fields are validated on load
 - Backward compatibility maintained across versions
 - Migration scripts handle schema updates
 
 ### State Synchronization
+
 - Real-time updates via WebSocket events
 - Optimistic updates for immediate UI feedback
 - Conflict resolution for concurrent modifications
@@ -610,50 +613,53 @@ interface SessionState {
 ## Usage Patterns
 
 ### Creating New Session
+
 ```typescript
 const newSession: SessionState = {
   session: {
     id: generateId(),
-    name: "Untitled_Session.amp",
+    name: 'Untitled_Session.amp',
     projectId: projectId,
     isActive: true,
     createdAt: new Date(),
     lastAccessed: new Date(),
     lastSaved: new Date(),
     isDirty: false,
-    version: "1.0.0"
+    version: '1.0.0',
   },
   // ... default values for all other properties
 };
 ```
 
 ### Session State Updates
+
 ```typescript
 // Update transport state
 updateSessionState({
   path: 'transport.isPlaying',
   value: true,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 });
 
 // Update track volume
 updateSessionState({
   path: `tracks.${trackId}.volume`,
   value: 75,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 });
 ```
 
 ### State Queries
+
 ```typescript
 // Get current playback position
 const position = sessionState.transport.currentTime;
 
 // Check if track is muted
-const isMuted = sessionState.tracks.find(t => t.id === trackId)?.muted;
+const isMuted = sessionState.tracks.find((t) => t.id === trackId)?.muted;
 
 // Get mixer channel state
-const channel = sessionState.mixer.channels.find(c => c.trackId === trackId);
+const channel = sessionState.mixer.channels.find((c) => c.trackId === trackId);
 ```
 
 This comprehensive session state object captures the complete working state of an AudioMage session, enabling full restoration, collaboration, version control, and real-time synchronization across all system components.

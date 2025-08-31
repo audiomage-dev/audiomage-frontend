@@ -1,16 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  MessageCircle, 
-  Send, 
-  X, 
+import {
+  MessageCircle,
+  Send,
+  X,
   ChevronLeft,
   Bot,
   User,
   Trash2,
   MoreVertical,
   Copy,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -26,18 +26,24 @@ interface AIChatSidebarProps {
   currentSession?: string;
 }
 
-export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSidebarProps) {
+export function AIChatSidebar({
+  isOpen,
+  onToggle,
+  currentSession,
+}: AIChatSidebarProps) {
   // Store messages per session
-  const [sessionMessages, setSessionMessages] = useState<Record<string, ChatMessage[]>>({});
-  
+  const [sessionMessages, setSessionMessages] = useState<
+    Record<string, ChatMessage[]>
+  >({});
+
   // Get messages for current session
   const messages = sessionMessages[currentSession || 'default'] || [
     {
       id: '1',
       role: 'assistant',
       content: `Hello! I'm your AI audio production assistant for ${currentSession || 'this session'}. I can help with mixing techniques, creative suggestions, technical questions, and workflow optimization. What would you like to work on today?`,
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   ];
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -60,7 +66,7 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      
+
       const newWidth = window.innerWidth - e.clientX;
       // Constrain width between 300px and 800px
       const constrainedWidth = Math.max(300, Math.min(800, newWidth));
@@ -97,14 +103,14 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
       id: Date.now().toString(),
       role: 'user',
       content: inputValue.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Update messages for current session
     const sessionKey = currentSession || 'default';
-    setSessionMessages(prev => ({
+    setSessionMessages((prev) => ({
       ...prev,
-      [sessionKey]: [...(prev[sessionKey] || []), userMessage]
+      [sessionKey]: [...(prev[sessionKey] || []), userMessage],
     }));
     setInputValue('');
     setIsTyping(true);
@@ -115,11 +121,11 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: `I understand you're working on your ${currentSession || 'audio project'}. While I don't have access to external AI services right now, I can still provide guidance based on audio production best practices. What specific aspect would you like help with?`,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setSessionMessages(prev => ({
+      setSessionMessages((prev) => ({
         ...prev,
-        [sessionKey]: [...(prev[sessionKey] || []), aiResponse]
+        [sessionKey]: [...(prev[sessionKey] || []), aiResponse],
       }));
       setIsTyping(false);
     }, 1500);
@@ -134,14 +140,16 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
 
   const clearChat = () => {
     const sessionKey = currentSession || 'default';
-    setSessionMessages(prev => ({
+    setSessionMessages((prev) => ({
       ...prev,
-      [sessionKey]: [{
-        id: '1',
-        role: 'assistant',
-        content: `Chat cleared for ${currentSession || 'this session'}. How can I assist you with your audio production today?`,
-        timestamp: new Date()
-      }]
+      [sessionKey]: [
+        {
+          id: '1',
+          role: 'assistant',
+          content: `Chat cleared for ${currentSession || 'this session'}. How can I assist you with your audio production today?`,
+          timestamp: new Date(),
+        },
+      ],
     }));
   };
 
@@ -168,7 +176,7 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
   }
 
   return (
-    <div 
+    <div
       ref={sidebarRef}
       className="fixed right-0 top-14 h-[calc(100vh-80px)] bg-[var(--background)] border-l border-[var(--border)] flex flex-col z-20 shadow-lg"
       style={{ width: `${sidebarWidth}px` }}
@@ -187,7 +195,9 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
           <Bot className="w-5 h-5 text-[var(--primary)]" />
           <div>
             <h3 className="text-sm font-medium">AI Assistant</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">{currentSession || 'Current Session'}</p>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {currentSession || 'Current Session'}
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-1">
@@ -219,7 +229,9 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
             key={message.id}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+            <div
+              className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}
+            >
               <div
                 className={`p-3 rounded-lg ${
                   message.role === 'user'
@@ -229,7 +241,9 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
-              <div className={`flex items-center mt-1 space-x-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`flex items-center mt-1 space-x-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <span className="text-xs text-[var(--muted-foreground)]">
                   {formatTime(message.timestamp)}
                 </span>
@@ -245,12 +259,16 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
                 )}
               </div>
             </div>
-            <div className={`flex-shrink-0 ${message.role === 'user' ? 'order-1 ml-2' : 'order-2 mr-2'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                message.role === 'user' 
-                  ? 'bg-[var(--secondary)]' 
-                  : 'bg-[var(--primary)] text-[var(--primary-foreground)]'
-              }`}>
+            <div
+              className={`flex-shrink-0 ${message.role === 'user' ? 'order-1 ml-2' : 'order-2 mr-2'}`}
+            >
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  message.role === 'user'
+                    ? 'bg-[var(--secondary)]'
+                    : 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                }`}
+              >
                 {message.role === 'user' ? (
                   <User className="w-4 h-4" />
                 ) : (
@@ -260,7 +278,7 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
             </div>
           </div>
         ))}
-        
+
         {isTyping && (
           <div className="flex justify-start">
             <div className="max-w-[85%]">
@@ -291,7 +309,7 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
               rows={1}
               style={{
                 height: 'auto',
-                minHeight: '44px'
+                minHeight: '44px',
               }}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -310,14 +328,14 @@ export function AIChatSidebar({ isOpen, onToggle, currentSession }: AIChatSideba
             </Button>
           </div>
         </div>
-        
+
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-1 mt-2">
           {[
             'Mixing tips',
             'EQ suggestions',
             'Creative ideas',
-            'Workflow help'
+            'Workflow help',
           ].map((suggestion) => (
             <Button
               key={suggestion}
