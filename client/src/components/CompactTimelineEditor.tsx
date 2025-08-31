@@ -262,11 +262,12 @@ export function CompactTimelineEditor({
   }, []);
 
   const timelineRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null); // grid layer
-  const clipsCanvasRef = useRef<HTMLCanvasElement>(null); // clips layer
-  const overlayCanvasRef = useRef<HTMLCanvasElement>(null); // UI/overlay layer
+  const canvasRef = useRef<HTMLCanvasElement>(null); // grid layer (viewport)
+  const clipsCanvasRef = useRef<HTMLCanvasElement>(null); // clips layer (viewport)
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null); // UI/overlay layer (viewport)
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentSize, setContentSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [viewportSize, setViewportSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const rafIdRef = useRef<number | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
   // Zoom functions
@@ -305,8 +306,8 @@ export function CompactTimelineEditor({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const widthCss = contentSize.w;
-    const heightCss = contentSize.h;
+    const widthCss = viewportSize.w;
+    const heightCss = tracks.length * 96;
     if (widthCss <= 0 || heightCss <= 0) return;
 
     const { ctx } = setupHiDPICanvas(canvas, widthCss, heightCss);
@@ -325,11 +326,14 @@ export function CompactTimelineEditor({
     const totalTime = timelineWidth / zoomLevel;
     const gridInterval = (30 / totalTime) * timelineWidth; // 30 seconds
 
-    for (let x = 0; x < widthCss; x += gridInterval) {
-      ctx.beginPath();
-      ctx.moveTo(x + 0.5, 0);
-      ctx.lineTo(x + 0.5, heightCss);
-      ctx.stroke();
+    if (gridInterval > 0 && Number.isFinite(gridInterval)) {
+      const startX = - (scrollX % gridInterval);
+      for (let x = startX; x < widthCss; x += gridInterval) {
+        ctx.beginPath();
+        ctx.moveTo(Math.floor(x) + 0.5, 0);
+        ctx.lineTo(Math.floor(x) + 0.5, heightCss);
+        ctx.stroke();
+      }
     }
 
     // Horizontal track lines
@@ -342,15 +346,15 @@ export function CompactTimelineEditor({
     }
 
     ctx.globalAlpha = 1;
-  }, [tracks, zoomLevel, getTimelineWidth, contentSize.w, contentSize.h]);
+  }, [tracks, zoomLevel, getTimelineWidth, viewportSize.w, scrollX]);
 
   // Canvas drawing for clips layer (basic rectangles)
   const drawClipsLayer = useCallback(() => {
     const canvas = clipsCanvasRef.current;
     if (!canvas) return;
 
-    const widthCss = contentSize.w;
-    const heightCss = contentSize.h;
+    const widthCss = viewportSize.w;
+    const heightCss = tracks.length * 96;
     if (widthCss <= 0 || heightCss <= 0) return;
 
     const { ctx } = setupHiDPICanvas(canvas, widthCss, heightCss);
@@ -379,12 +383,16 @@ export function CompactTimelineEditor({
         const clipWidth = (clip.duration / totalTime) * timelineWidth;
         if (clipWidth <= 0) return;
 
+        const drawX = clipStartX - scrollX;
+        const drawW = clipWidth;
+        if (drawX > widthCss || drawX + drawW < 0) return; // cull
+
         // Clip body
         ctx.fillStyle = clip.color || 'rgba(94,129,172,0.8)';
         const radius = 6;
-        const x = clipStartX;
+        const x = drawX;
         const y = yTop;
-        const w = clipWidth;
+        const w = drawW;
         const h = clipHeight;
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
@@ -429,28 +437,81 @@ export function CompactTimelineEditor({
         ctx.stroke();
       });
     }
-  }, [tracks, zoomLevel, getTimelineWidth, contentSize.w, contentSize.h]);
+  }, [tracks, zoomLevel, getTimelineWidth, viewportSize.w, scrollX]);
+
+  // Overlay layer: playhead and selection guides
+  const drawOverlayLayer = useCallback(() => {
+    const canvas = overlayCanvasRef.current;
+    if (!canvas) return;
+
+    const widthCss = viewportSize.w;
+    const heightCss = tracks.length * 96;
+    if (widthCss <= 0 || heightCss <= 0) return;
+
+    const { ctx } = setupHiDPICanvas(canvas, widthCss, heightCss);
+    clearCanvas(ctx, widthCss, heightCss);
+
+    // Playhead
+    const timelineWidth = getTimelineWidth();
+    const playheadXFull = (transport.currentTime / (timelineWidth / zoomLevel)) * timelineWidth;
+    const x = Math.floor(playheadXFull - scrollX) + 0.5;
+    ctx.save();
+    ctx.strokeStyle = getComputedStyle(document.documentElement)
+      .getPropertyValue('--primary')
+      .trim() || '#0ea5e9';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, heightCss);
+    ctx.stroke();
+    ctx.restore();
+  }, [viewportSize.w, tracks.length, transport.currentTime, zoomLevel, getTimelineWidth, scrollX]);
 
   // Redraw canvas when dependencies change
   useEffect(() => {
     drawCanvasGrid();
     if (USE_CANVAS_TIMELINE) {
       drawClipsLayer();
+      drawOverlayLayer();
     }
-  }, [drawCanvasGrid, drawClipsLayer]);
+  }, [drawCanvasGrid, drawClipsLayer, drawOverlayLayer]);
 
-  // Resize observer for content area sizing
+  // Resize observer for viewport sizing
   useEffect(() => {
-    const el = contentRef.current;
+    const el = timelineRef.current;
     if (!el) return;
     const update = () => {
-      setContentSize({ w: Math.max(1, Math.floor(el.clientWidth)), h: Math.max(1, Math.floor(el.clientHeight)) });
+      setViewportSize({ w: Math.max(1, Math.floor(el.clientWidth)), h: Math.max(1, Math.floor(tracks.length * 96)) });
     };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [tracks.length]);
+
+  // Animation loop while playing
+  useEffect(() => {
+    if (!USE_CANVAS_TIMELINE) return;
+    if (!transport.isPlaying) {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      // Ensure overlay reflects last position
+      drawOverlayLayer();
+      return;
+    }
+    const tick = () => {
+      drawOverlayLayer();
+      // Grid/clips are static unless scrolling/zooming; redraw occasionally not needed each frame
+      rafIdRef.current = requestAnimationFrame(tick);
+    };
+    rafIdRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    };
+  }, [transport.isPlaying, drawOverlayLayer]);
 
   const handleTrackSelect = useCallback(
     (trackId: string, e?: React.MouseEvent) => {
@@ -2118,7 +2179,7 @@ export function CompactTimelineEditor({
 
         {/* Timeline Content with Canvas Grid */}
         <div
-          className="flex-1 overflow-auto scrollbar-thin select-none"
+          className="flex-1 overflow-auto scrollbar-thin select-none relative"
           ref={timelineRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -2148,22 +2209,7 @@ export function CompactTimelineEditor({
               transform: `translateX(-${scrollX}px)`,
             }}
           >
-            {/* Grid lines inside timeline content */}
-            <canvas
-              ref={canvasRef}
-              className="absolute top-0 left-0 pointer-events-none z-0"
-              width={getTimelineWidth()}
-              height={tracks.length * 96}
-            />
-            {/* Clips layer (canvas) */}
-            {USE_CANVAS_TIMELINE && (
-              <canvas
-                ref={clipsCanvasRef}
-                className="absolute top-0 left-0 pointer-events-none z-10"
-                width={getTimelineWidth()}
-                height={tracks.length * 96}
-              />
-            )}
+            {/* DOM-based rendering fallback is controlled below */}
             {!USE_CANVAS_TIMELINE && tracks.map((track, index) => (
               <div
                 key={track.id}
@@ -2484,6 +2530,33 @@ export function CompactTimelineEditor({
               }}
             />
           </div>
+
+          {/* Canvas layers overlayed on viewport */}
+          {USE_CANVAS_TIMELINE && (
+            <>
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 right-0 pointer-events-none z-0"
+                width={viewportSize.w}
+                height={tracks.length * 96}
+                style={{ width: `${viewportSize.w}px`, height: `${tracks.length * 96}px` }}
+              />
+              <canvas
+                ref={clipsCanvasRef}
+                className="absolute top-0 left-0 right-0 pointer-events-none z-10"
+                width={viewportSize.w}
+                height={tracks.length * 96}
+                style={{ width: `${viewportSize.w}px`, height: `${tracks.length * 96}px` }}
+              />
+              <canvas
+                ref={overlayCanvasRef}
+                className="absolute top-0 left-0 right-0 pointer-events-none z-20"
+                width={viewportSize.w}
+                height={tracks.length * 96}
+                style={{ width: `${viewportSize.w}px`, height: `${tracks.length * 96}px` }}
+              />
+            </>
+          )}
         </div>
       </div>
 
