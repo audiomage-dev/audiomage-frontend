@@ -987,17 +987,55 @@ export function useAudioWorkstation() {
 
   // Track controls
   const updateTrackVolume = useCallback((trackId: string, volume: number) => {
-    setTracks((prev) =>
-      prev.map((track) => (track.id === trackId ? { ...track, volume } : track))
-    );
+    setTracks((previousTracks) => {
+      const trackExists = previousTracks.some((track) => track.id === trackId);
+      if (trackExists) {
+        return previousTracks.map((track) =>
+          track.id === trackId ? { ...track, volume } : track
+        );
+      }
+
+      const newTrack: AudioTrack = {
+        id: trackId,
+        name: `Track ${trackId}`,
+        type: 'audio',
+        volume,
+        pan: 50,
+        muted: false,
+        soloed: false,
+        color: '#CCCCCC',
+        clips: [],
+        effects: [],
+      };
+
+      return [...previousTracks, newTrack];
+    });
   }, []);
 
   const toggleTrackMute = useCallback((trackId: string) => {
-    setTracks((prev) =>
-      prev.map((track) =>
-        track.id === trackId ? { ...track, muted: !track.muted } : track
-      )
-    );
+    setTracks((previousTracks) => {
+      const track = previousTracks.find((t) => t.id === trackId);
+      if (track) {
+        return previousTracks.map((t) =>
+          t.id === trackId ? { ...t, muted: !t.muted } : t
+        );
+      }
+
+      const newTrack: AudioTrack = {
+        id: trackId,
+        name: `Track ${trackId}`,
+        type: 'audio',
+        volume: 75,
+        pan: 50,
+        muted: true,
+        soloed: false,
+        color: '#CCCCCC',
+        clips: [],
+        effects: [],
+      };
+
+      return [...previousTracks, newTrack];
+    });
   }, []);
 
   const toggleTrackSolo = useCallback((trackId: string) => {

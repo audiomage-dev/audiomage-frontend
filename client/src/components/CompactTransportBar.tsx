@@ -534,6 +534,9 @@ export function CompactTransportBar({
           onClick={() => {
             if (viewMode === 'midi') {
               onMidiStop?.();
+              if (transport.isPlaying) {
+                onPause();
+              }
             } else {
               onStop();
             }
